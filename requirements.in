@@ -1,0 +1,13 @@
+cssmin
+email_validator
+Flask
+Flask-Compress
+Flask-Limiter
+Flask-Talisman
+govuk-frontend-jinja
+govuk-frontend-wtf
+click
+python-dotenv
+requests
+pyopenssl
+PyYAML
