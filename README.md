@@ -1,19 +1,15 @@
-# MOJ GOV.UK Frontend Flask
+# Civil Legal Advice Helpline (CLAH)
 
 [![Standards Icon]][Standards Link]
-
-This is a clone from the HM Land Registery Flask skeleton [GOV.UK Frontend Flask](https://github.com/LandRegistry/govuk-frontend-flask). Thank you, Land Registry.
-
 ![govuk-frontend 5.11.2](https://img.shields.io/badge/govuk--frontend%20version-5.11.2-005EA5?logo=gov.uk&style=flat)
 
-**GOV.UK Frontend Flask is a [community tool](https://design-system.service.gov.uk/community/resources-and-tools/) of the [GOV.UK Design System](https://design-system.service.gov.uk/). The Design System team is not responsible for it and cannot support you with using it. Contact the [maintainers](#contributors) directly if you need [help](#support) or you want to request a feature.**
+The Civil Legal Advice Helpline (CLAH) is a frontend (web UI), part of the Civil Legal Advice product. Used by call centre operators and specialist providers to view and edit information about a case.
 
-This is a template [Flask](https://flask.palletsprojects.com) app using the [GOV.UK Frontend](https://frontend.design-system.service.gov.uk/) and [GOV.UK Design System](https://design-system.service.gov.uk/) which is designed to get a new project started quicker. It is also a reference implementation of two core packages:
+Please note: This is still in a [Flask](https://flask.palletsprojects.com) app template/skeleton state which is being customized for CLAH using the [GOV.UK Frontend](https://frontend.design-system.service.gov.uk/) and [GOV.UK Design System](https://design-system.service.gov.uk/). It is also a reference implementation of two core packages:
 
 - [GOV.UK Frontend Jinja](https://github.com/LandRegistry/govuk-frontend-jinja) which provides Jinja macros of GOV.UK components
 - [GOV.UK Frontend WTForms](https://github.com/LandRegistry/govuk-frontend-wtf) which provides WTForms widgets to integrate the above Jinja macros into form generation and validation
 
-The app is provided intentionally bare, with just the essential parts that all services need, such as error pages, accessibility statement, cookie banner, cookie page and privacy notice. It uses a number of other packages to provide the [features](#features) described below with sensible and best-practice defaults. Please read the [next steps](#next-steps) section for guidance on how to start building out your app on top of this template.
 
 # Versioning 
 - Python: 3.13
