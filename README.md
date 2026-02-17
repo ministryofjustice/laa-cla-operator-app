@@ -15,7 +15,8 @@ This is a template [Flask](https://flask.palletsprojects.com) app using the [GOV
 
 The app is provided intentionally bare, with just the essential parts that all services need, such as error pages, accessibility statement, cookie banner, cookie page and privacy notice. It uses a number of other packages to provide the [features](#features) described below with sensible and best-practice defaults. Please read the [next steps](#next-steps) section for guidance on how to start building out your app on top of this template.
 
-# Versioning 
+# Versioning
+
 - Python: 3.13
 - Node.js: 24.19.0
 - npm: 10.9.3
@@ -37,12 +38,28 @@ pip install -r requirements.in -r requirements_dev.in
 
 Note on dependencies:
 
-* requirements.in are the direct dependencies of the app.
-* requirements_dev.in are the dependencies needed only during development - linters, code formatting etc
-* (requirements*.txt - in a production system we'd generate a .txt from each .in file. The .txt file includes all direct
-dependencies in the .in, plus their dependencies too (indirect dependencies). And all dependencies have their exact 
-version specified ('pinned'). This ensures production environment installs exactly the same as the test environment and
-what developers install.)
+- requirements.in are the direct dependencies of the app.
+- requirements_dev.in are the dependencies needed only during development - linters, code formatting etc
+- (requirements\*.txt - in a production system we'd generate a .txt from each .in file. The .txt file includes all direct
+  dependencies in the .in, plus their dependencies too (indirect dependencies). And all dependencies have their exact
+  version specified ('pinned'). This ensures production environment installs exactly the same as the test environment and
+  what developers install.)
+
+### Pre-commit hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to run security and code quality checks before each commit. To set up the Git hooks locally:
+
+```shell
+pre-commit install
+```
+
+You can also run all hooks against the entire codebase at any time:
+
+```shell
+pre-commit run --all-files
+```
+
+> **Note:** Some hooks require [Docker](https://www.docker.com/products/docker-desktop/) to be running on your machine. Make sure Docker Desktop is started before running the hooks.
 
 ### Assets setup
 
@@ -50,7 +67,7 @@ This project uses **Node.js** to manage assets and handle other Node.js-related 
 
 To get started, ensure you have [NVM](https://github.com/nvm-sh/nvm) installed on your machine.
 
-This project includes an `.nvmrc` file, making it easy to set up the correct Node.js version. 
+This project includes an `.nvmrc` file, making it easy to set up the correct Node.js version.
 
 Follow these commands to configure your environment:
 
@@ -59,7 +76,9 @@ nvm install
 nvm use
 node -v
 ```
+
 Now that Node is installed
+
 ```shell
 npm install
 ```
@@ -206,17 +225,17 @@ Please refer to the specific packages documentation for more details.
 
 Custom CSS and JavaScript files are merged and compressed using [Flask Assets](https://flask-assets.readthedocs.io/en/latest/) and [Webassets](https://webassets.readthedocs.io/en/latest/). This takes all `*.css` files in `app/static/src/css` and all `*.js` files in `app/static/src/js` and outputs a single compressed file to both `app/static/dist/css` and `app/static/dist/js` respectively.
 
-CSS is [minified](https://en.wikipedia.org/wiki/Minification_(programming)) using [CSSMin](https://github.com/zacharyvoase/cssmin) and JavaScript is minified using [JSMin](https://github.com/tikitu/jsmin/). This removes all whitespace characters, comments and line breaks to reduce the size of the source code, making its transmission over a network more efficient.
+CSS is [minified](<https://en.wikipedia.org/wiki/Minification_(programming)>) using [CSSMin](https://github.com/zacharyvoase/cssmin) and JavaScript is minified using [JSMin](https://github.com/tikitu/jsmin/). This removes all whitespace characters, comments and line breaks to reduce the size of the source code, making its transmission over a network more efficient.
 
 Flask-Assets provides a built-in cache system to improve performance by caching compiled assets. However, this can
 sometimes lead to issues where changes to your source files are not immediately reflected in the compiled output.
 
-Flask-Assets uses `ASSETS_MANIFEST` which enables the cache manifest feature. Flask-Assets will generate a cache manifest 
+Flask-Assets uses `ASSETS_MANIFEST` which enables the cache manifest feature. Flask-Assets will generate a cache manifest
 file containing the paths to the compiled asset files. These are used to help with the hashing on generated asset files.
 
 Note: When you start developing with Flask, you'll see a directory appear `app/static/webasset-cache`. webassets-cache
 stores the asset manifest. If for some reason Flask-Assets is not picking up your changes to files, clear the folder of
-its caches. 
+its caches.
 
 ### Cache busting
 

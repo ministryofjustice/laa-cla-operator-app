@@ -1,0 +1,6 @@
+# Gitleaks fingerprints to ignore (false positives or accepted findings).
+# See: https://github.com/ministryofjustice/devsecops-hooks?tab=readme-ov-file#ignore-file
+#      https://github.com/gitleaks/gitleaks#gitleaksignore
+#
+# TODO: Migrate any API keys/secrets to environment variables (GitHub Secrets).
+# Fingerprints below are temporarily ignored to unblock the pre-commit pipeline.
