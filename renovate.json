@@ -1,0 +1,3 @@
+{
+  "extends": ["github>ministryofjustice/devsecops-actions"]
+}

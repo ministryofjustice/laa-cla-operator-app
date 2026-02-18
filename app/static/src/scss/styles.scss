@@ -1,5 +1,5 @@
 /* Import GOVUK frontend SCSS to be compiled to CSS */
-@use "govuk-frontend/dist/govuk/all.scss" as govuk;
+@use "govuk-frontend/dist/govuk/index.scss" as govuk;
 
 
 /* Import your custom SCSS below to be compiled into one by Flask Assets */
