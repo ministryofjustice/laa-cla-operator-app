@@ -1,6 +1,6 @@
 # Civil Legal Advice Helpline (CLAH)
 
-[![Standards Icon]][Standards Link]
+[![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/laa-cla-operator-app/badge)](https://github-community.service.justice.gov.uk/repository-standards/laa-cla-operator-app)
 ![govuk-frontend 5.11.2](https://img.shields.io/badge/govuk--frontend%20version-5.11.2-005EA5?logo=gov.uk&style=flat)
 
 The Civil Legal Advice Helpline (CLAH) is a frontend (web UI), part of the Civil Legal Advice product. Used by call centre operators and specialist providers to view and edit information about a case.
@@ -9,7 +9,6 @@ Please note: This is still in a [Flask](https://flask.palletsprojects.com) app t
 
 - [GOV.UK Frontend Jinja](https://github.com/LandRegistry/govuk-frontend-jinja) which provides Jinja macros of GOV.UK components
 - [GOV.UK Frontend WTForms](https://github.com/LandRegistry/govuk-frontend-wtf) which provides WTForms widgets to integrate the above Jinja macros into form generation and validation
-
 
 # Versioning
 
