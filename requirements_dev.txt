@@ -28,7 +28,7 @@ dnspython==2.8.0
 email-validator==2.3.0
 filelock==3.19.1
 flake8==7.3.0
-flake8-bugbear==24.12.12
+flake8-bugbear==25.11.29
 flask==3.1.2
 flask-compress==1.23
 flask-limiter==3.13
