@@ -25,12 +25,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install pre-commit
         pre-commit clean
-        ls requirements/source/* | xargs pre-commit run pip-compile --files
+        pre-commit run pip-compile --files requirements.in requirements_dev.in
 
     - name: Check command result
       if: steps.pip_compile.outcome != 'success'
       run: |
-        echo "pip-compile failed because the compilation of requirements/source do not match of that in requirements/generated." >&2
+        echo "pip-compile failed because requirements.in and requirements_dev.in are not properly compiled to requirements.txt and requirements_dev.txt." >&2
         exit 1
 
   secret-scan:
