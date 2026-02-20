@@ -1,0 +1,61 @@
+# Staging Environment Values
+# Overrides for the Staging environment
+
+replicaCount: 2
+
+image:
+  pullPolicy: Always
+  containerPort: 8000
+
+ingress:
+  enabled: true
+  className: "modsec"
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-laa-cla-operator-applaa-cla-operator-app-staging-green
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+  hosts:
+    - host: laa-cla-operator-app-staging.cloud-platform.service.justice.gov.uk
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: laa-cla-operator-app-staging-tls
+      hosts:
+        - laa-cla-operator-app-staging.cloud-platform.service.justice.gov.uk
+  whitelist:
+    enabled: true
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+
+# Environment variables can be added here
+envVars: {}

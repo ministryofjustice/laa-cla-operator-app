@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=python:3.13-slim
 
-FROM node:lts-iron as node_build
+FROM node:lts-iron AS node_build
 WORKDIR /home/node
 COPY esbuild.config.js package.json package-lock.json ./
 COPY app/static/src app/static/src
@@ -11,10 +11,11 @@ RUN npm run build
 FROM $BASE_IMAGE AS base
 # Change this to your production requirments for production purposes.
 ARG REQUIREMENTS_FILE=requirements_dev.txt
+ARG FLASK_RUN_PORT=8000
 
 # Set environment variables
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=${FLASK_RUN_PORT:-8000}
+ENV FLASK_RUN_PORT=${FLASK_RUN_PORT}
 ENV PYTHONUNBUFFERED=1
 
 # Create a non-root user
