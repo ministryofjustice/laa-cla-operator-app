@@ -1,7 +1,7 @@
 # UAT Environment Values
 # Overrides for the UAT environment
 
-replicaCount: 2
+replicaCount: 1
 
 image:
   pullPolicy: Always
@@ -11,7 +11,7 @@ ingress:
   enabled: true
   className: "modsec"
   annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-uat-green
+    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-laa-cla-operator-applaa-cla-operator-app-uat-green
     external-dns.alpha.kubernetes.io/aws-weight: "100"
   hosts:
     - host: # Will be set dynamically by workflow
