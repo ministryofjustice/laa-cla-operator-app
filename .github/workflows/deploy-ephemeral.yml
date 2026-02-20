@@ -44,12 +44,12 @@ jobs:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
           KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
         run: |
-          trap 'rm -f ca.crt' EXIT
           echo "${{ secrets.KUBE_CERT }}" > ca.crt
-          kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
+          kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER} --embed-certs=true
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${KUBE_NAMESPACE}
           kubectl config use-context ${KUBE_CLUSTER}
+          rm -f ca.crt
 
       - name: Fetch and set SHARED_IP_RANGES_LAA environment variable
         run: |
