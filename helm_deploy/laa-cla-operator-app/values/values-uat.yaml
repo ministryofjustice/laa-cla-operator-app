@@ -10,9 +10,8 @@ image:
 ingress:
   enabled: true
   className: "modsec"
-  annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-laa-cla-operator-applaa-cla-operator-app-uat-green
-    external-dns.alpha.kubernetes.io/aws-weight: "100"
+  annotations: {}
+    # Dynamic annotations will be set by workflow for ephemeral deployments
   hosts:
     - host: # Will be set dynamically by workflow
       paths:

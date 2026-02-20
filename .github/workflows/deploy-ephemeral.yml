@@ -83,12 +83,18 @@ jobs:
           --set image.repository=${REGISTRY}/${REPOSITORY} \
           --set image.tag=${IMAGE_TAG} \
           --set fullnameOverride=${CLEANED_BRANCH_NAME} \
-          --set ingress.host=${HOST_NAME} \
+          --set ingress.hosts[0].host=${HOST_NAME} \
+          --set ingress.annotations."external-dns\.alpha\.kubernetes\.io/set-identifier"=${CLEANED_BRANCH_NAME}-laa-cla-operator-app-${{ secrets.KUBE_NAMESPACE }}-green \
+          --set ingress.annotations."external-dns\.alpha\.kubernetes\.io/aws-weight"="100" \
           --set sharedIPRangesLAA=$SHARED_IP_RANGES_LAA \
           --set pingdomIPs=$PINGDOM_IPS \
           --set envVars.ENTRA_ID_SKIP_AUTH.value=True \
           --force \
           --install
+
+# upgrade command above may need the following added, it should default to this from values-uat.yml:
+# --set ingress.hosts[0].paths[0].path=/ \
+# --set ingress.hosts[0].paths[0].pathType=ImplementationSpecific \
 
       - name: Post deployment comment
         run: |
