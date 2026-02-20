@@ -12,7 +12,8 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
-  containerPort: 8080
+  # This sets the container port that the application listens on
+  containerPort: 8000
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -66,26 +67,18 @@ service:
 ingress:
   enabled: true
   className: "modsec"
-  cluster:
-    name: green
-    weight: "100"
-  tls: {}
-
+  annotations: {}
+  hosts:
+    - host: laa-cla-operator-app.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: laa-cla-operator-app-tls
+  #    hosts:
+  #      - laa-cla-operator-app.local
   whitelist:
     enabled: true
-
-    # annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-    # hosts:
-    #   - host: chart-example.local
-    #     paths:
-    #      - path: /
-    #         pathType: ImplementationSpecific
-    # tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -100,14 +93,23 @@ resources: {}
   #   memory: 128Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-# livenessProbe:
-#   httpGet:
-#     path: /
-#     port: http
-# readinessProbe:
-#   httpGet:
-#     path: /
-#     port: http
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -131,3 +133,15 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# Environment variables to be passed to the container
+envVars: {}
+# Example:
+# envVars:
+#   DATABASE_URL:
+#     value: "postgresql://..."
+#   SECRET_KEY:
+#     valueFrom:
+#       secretKeyRef:
+#         name: app-secrets
+#         key: secret-key

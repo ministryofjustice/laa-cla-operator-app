@@ -1,0 +1,51 @@
+# UAT Environment Values
+# Overrides for the UAT environment
+
+replicaCount: 2
+
+image:
+  pullPolicy: Always
+  containerPort: 8000
+
+ingress:
+  enabled: true
+  className: "modsec"
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-uat-green
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+  hosts:
+    - host: # Will be set dynamically by workflow
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  whitelist:
+    enabled: true
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Environment variables can be added here
+envVars: {}
