@@ -22,7 +22,7 @@ flask-compress==1.23
 flask-limiter==3.13
 flask-talisman==1.1.0
 flask-wtf==1.2.2
-govuk-frontend-jinja==3.7.0
+govuk-frontend-jinja==3.10.0
 govuk-frontend-wtf==3.2.0
 idna==3.10
 itsdangerous==2.2.0
@@ -36,8 +36,8 @@ packaging==25.0
 pycparser==2.23
 pygments==2.19.2
 pyopenssl==25.3.0
-python-dotenv==1.1.1
-pyyaml==6.0.2
+python-dotenv==1.2.1
+pyyaml==6.0.3
 requests==2.32.5
 rich==14.1.0
 typing-extensions==4.15.0
