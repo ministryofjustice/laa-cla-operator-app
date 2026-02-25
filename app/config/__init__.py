@@ -6,7 +6,9 @@ load_dotenv()
 
 
 class Config(object):
-    ENVIRONMENT = os.environ.get("CLAH_ENVIRONMENT", os.environ.get("CLAH_ENVIRONMENT", "production"))
+    ENVIRONMENT = os.environ.get(
+        "CLAH_ENVIRONMENT", os.environ.get("CLAH_ENVIRONMENT", "production")
+    )
     CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
     CONTACT_PHONE = os.environ.get("CONTACT_PHONE", "")
     DEPARTMENT_NAME = os.environ.get("DEPARTMENT_NAME", "Justice Digital")
@@ -17,4 +19,6 @@ class Config(object):
     SERVICE_PHASE = os.environ.get("SERVICE_PHASE", "Alpha")
     SERVICE_URL = os.environ.get("SERVICE_URL", "")
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
+    SESSION_COOKIE_SECURE = (
+        os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
+    )
