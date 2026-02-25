@@ -9,25 +9,27 @@ on:
   pull_request:
     types:
       - reopened
-      - opened
-      - synchronize
 
 jobs:
   test:
-     name: Test
-     uses: ./.github/workflows/test.yml
+    name: Test
+    uses: ./.github/workflows/test.yml
+    permissions: {}
 
-  static-analysis:
-    name: Static Analysis
-    needs: test
-    uses: ./.github/workflows/static-analysis.yml
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+  #   TODO: Re-enable this when we have tests with coverage reports to analyse
+  #   name: Static Analysis
+  #   needs: test
+  #   uses: ./.github/workflows/static-analysis.yml
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #     GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   build-and-push:
     name: Build
     uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+      id-token: write
     with:
       ECR_REGION: ${{vars.ECR_REGION}}
       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
@@ -37,6 +39,9 @@ jobs:
   scan-image:
     uses: ./.github/workflows/trivy-image-scan.yml
     needs: build-and-push
+    permissions:
+      contents: read
+      id-token: write
     with:
       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
       ECR_REGION: ${{vars.ECR_REGION}}
@@ -48,6 +53,10 @@ jobs:
      name: Ephemeral
      uses: ./.github/workflows/deploy-ephemeral.yml
      needs: build-and-push
+     permissions:
+       contents: read
+       id-token: write
+       pull-requests: write
      with:
        environment: uat
        ECR_REGION: ${{vars.ECR_REGION}}

@@ -11,11 +11,14 @@ jobs:
   test:
     name: Test
     uses: ./.github/workflows/test.yml
+    permissions: {}
 
   static-analysis:
     name: Static Analysis
     needs: test
     uses: ./.github/workflows/static-analysis.yml
+    permissions:
+      contents: read
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
@@ -24,6 +27,9 @@ jobs:
     name: Build
     uses: ./.github/workflows/build.yml
     needs: [static-analysis, test]
+    permissions:
+      contents: read
+      id-token: write
     with:
       ECR_REGION: ${{vars.ECR_REGION}}
       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
@@ -33,6 +39,9 @@ jobs:
   scan-image:
     uses: ./.github/workflows/trivy-image-scan.yml
     needs: build-and-push
+    permissions:
+      contents: read
+      id-token: write
     with:
       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
       ECR_REGION: ${{vars.ECR_REGION}}
@@ -44,6 +53,10 @@ jobs:
      name: UAT
      uses: ./.github/workflows/deploy.yml
      needs: build-and-push
+     permissions:
+       contents: read
+       id-token: write
+       pull-requests: write
      with:
        environment: uat
        ECR_REGION: ${{vars.ECR_REGION}}
@@ -61,6 +74,10 @@ jobs:
     name: Staging
     uses: ./.github/workflows/deploy.yml
     needs: deploy-uat
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
     with:
       environment: staging
       ECR_REGION: ${{vars.ECR_REGION}}
@@ -78,6 +95,10 @@ jobs:
     name: Production
     uses: ./.github/workflows/deploy.yml
     needs: deploy-staging
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
     with:
       environment: production
       ECR_REGION: ${{vars.ECR_REGION}}

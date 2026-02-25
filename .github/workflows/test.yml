@@ -11,6 +11,7 @@ jobs:
   placeholder:
     name: Placeholder (No tests yet)
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
     - name: Skip tests
       run: echo "Tests not yet implemented - skipping"
