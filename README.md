@@ -138,6 +138,7 @@ In the `compose.yml` file you will find a number of environment variables. These
 - SERVICE_NAME
 - SERVICE_PHASE
 - SERVICE_URL
+- CLAH_ENVIRONMENT
 
 You must also set a new unique `SECRET_KEY`, which is used to securely sign the session cookie and CSRF tokens. It should be a long random `bytes` or `str`. You can use the output of this Python comand to generate a new key:
 
