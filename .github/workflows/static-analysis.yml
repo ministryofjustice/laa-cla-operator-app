@@ -6,6 +6,9 @@ on:
         required: true
       GITLEAKS_LICENSE:
         required: true
+
+permissions: {}
+
 jobs:
   pip-compile:
     name: pip-compile

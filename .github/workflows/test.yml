@@ -1,6 +1,9 @@
 name: Test
 
 on: workflow_call
+
+permissions: {}
+
 env:
   SECRET_KEY: "TEST_KEY"
 
