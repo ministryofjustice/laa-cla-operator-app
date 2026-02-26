@@ -23,6 +23,10 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+{{- define "laa-cla-operator-app.whitelist" -}}
+{{ join "," (list .Values.sharedIPRangesLAA .Values.pingdomIPs)}}
+{{- end -}}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
