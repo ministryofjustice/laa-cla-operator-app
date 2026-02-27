@@ -5,11 +5,9 @@ metadata:
   name: {{ include "laa-cla-operator-app.fullname" . }}
   labels:
     {{- include "laa-cla-operator-app.labels" . | nindent 4 }}
-  {{- if or .Values.ingress.annotations .Values.ingress.whitelist.enabled }}
+  {{- if or .Values.ingress.annotations .Values.ingress.enabled }}
   annotations:
-    {{- if .Values.ingress.whitelist.enabled }}
     nginx.ingress.kubernetes.io/whitelist-source-range: {{ include "laa-cla-operator-app.whitelist" . | quote }}
-    {{- end }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
