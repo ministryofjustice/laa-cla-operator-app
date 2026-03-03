@@ -1,0 +1,38 @@
+# Production Environment Values
+# Overrides for the Production environment
+
+replicaCount: 4
+
+image:
+  pullPolicy: Always
+  containerPort: 8000
+
+ingress:
+  enabled: true
+  className: "modsec"
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-laa-cla-operator-app-laa-cla-operator-app-production-green
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+  hosts:
+    - host: laa-cla-operator-app.cloud-platform.service.justice.gov.uk
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: laa-cla-operator-app-production-tls
+      hosts:
+        - laa-cla-operator-app.cloud-platform.service.justice.gov.uk
+  whitelist:
+    enabled: true
+
+resources: {}
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Environment variables can be added here
+envVars: {}

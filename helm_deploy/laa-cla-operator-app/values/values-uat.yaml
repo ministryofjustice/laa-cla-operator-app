@@ -1,0 +1,26 @@
+# UAT Environment Values
+# Overrides for the UAT environment
+
+replicaCount: 1
+
+image:
+  pullPolicy: Always
+  containerPort: 8000
+
+ingress:
+  enabled: true
+  className: "modsec"
+  annotations: {}
+    # Dynamic annotations will be set by workflow for ephemeral deployments
+  hosts:
+    - host: # Will be set dynamically by workflow
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  whitelist:
+    enabled: true
+
+resources: {}
+
+# Environment variables can be added here
+envVars: {}

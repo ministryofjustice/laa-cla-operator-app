@@ -1,0 +1,115 @@
+name: Release
+
+run-name: Release - ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+    permissions: {}
+
+  static-analysis:
+    name: Static Analysis
+    needs: test
+    uses: ./.github/workflows/static-analysis.yml
+    permissions:
+      contents: read
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  build-and-push:
+    name: Build
+    uses: ./.github/workflows/build.yml
+    needs: [static-analysis, test]
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      ECR_REGION: ${{vars.ECR_REGION}}
+      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+    secrets:
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+
+  scan-image:
+    uses: ./.github/workflows/trivy-image-scan.yml
+    needs: build-and-push
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+      ECR_REGION: ${{vars.ECR_REGION}}
+    secrets:
+      ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+
+  deploy-uat:
+     name: UAT
+     uses: ./.github/workflows/deploy.yml
+     needs: build-and-push
+     permissions:
+       contents: read
+       id-token: write
+       pull-requests: write
+     with:
+       environment: uat
+       ECR_REGION: ${{vars.ECR_REGION}}
+       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+       DEPLOYMENT_URL: ${{vars.DEPLOYMENT_URL}}
+     secrets:
+       ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+       KUBE_CERT: ${{ secrets.KUBE_CERT }}
+       KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+       KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+       KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+
+  deploy-staging:
+    name: Staging
+    uses: ./.github/workflows/deploy.yml
+    needs: deploy-uat
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    with:
+      environment: staging
+      ECR_REGION: ${{vars.ECR_REGION}}
+      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+      DEPLOYMENT_URL: ${{vars.DEPLOYMENT_URL}}
+    secrets:
+      ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+
+  deploy-production:
+    name: Production
+    uses: ./.github/workflows/deploy.yml
+    needs: deploy-staging
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    with:
+      environment: production
+      ECR_REGION: ${{vars.ECR_REGION}}
+      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+      DEPLOYMENT_URL: ${{vars.DEPLOYMENT_URL}}
+    secrets:
+      ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}

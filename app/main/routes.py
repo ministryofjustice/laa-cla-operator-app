@@ -59,6 +59,20 @@ def privacy():
     return render_template("privacy.html")
 
 
+@bp.route("/health", methods=["GET"])
+def health():
+    """Liveness probe endpoint - checks if the application is running"""
+    return {"status": "healthy"}, 200
+
+
+@bp.route("/ready", methods=["GET"])
+def ready():
+    """Readiness probe endpoint - checks if the application is ready to serve traffic"""
+    # Add any checks here for dependencies (database, cache, etc.)
+    # For now, if the app is running, it's ready
+    return {"status": "ready"}, 200
+
+
 @bp.app_errorhandler(HTTPException)
 def http_exception(error):
     return render_template(f"{error.code}.html"), error.code
