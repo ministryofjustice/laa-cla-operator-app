@@ -8,8 +8,10 @@ attrs==25.4.0
     # via flake8-bugbear
 backports-zstd==1.3.0
     # via flask-compress
-bandit==1.9.3
+bandit==1.9.4
+    # via -r requirements_dev.in
 black==26.1.0
+    # via -r requirements_dev.in
 blinker==1.9.0
     # via flask
 boolean-py==5.0
@@ -60,7 +62,14 @@ flake8==7.3.0
     #   flake8-bugbear
     #   pep8-naming
 flake8-bugbear==25.11.29
+    # via -r requirements_dev.in
 flask==3.1.3
+    # via
+    #   -r requirements.in
+    #   flask-compress
+    #   flask-limiter
+    #   flask-wtf
+    #   govuk-frontend-wtf
 flask-compress==1.23
     # via -r requirements.in
 flask-limiter==4.1.1
@@ -83,7 +92,7 @@ idna==3.11
     #   requests
 iniconfig==2.3.0
     # via pytest
-isort==8.0.0
+isort==8.0.1
     # via -r requirements_dev.in
 itsdangerous==2.2.0
     # via
@@ -197,7 +206,9 @@ pytest-playwright==0.7.2
 python-dotenv==1.2.1
     # via -r requirements.in
 python-slugify==8.0.4
+    # via pytest-playwright
 pytokens==0.4.1
+    # via black
 pyyaml==6.0.3
     # via
     #   -r requirements.in
