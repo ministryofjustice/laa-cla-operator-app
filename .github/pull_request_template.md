@@ -1,20 +1,23 @@
-## What does this pull request do?
+# Introduction :pencil2:
 
-<!-- Briefly describe the change and why it's needed. -->
+Include a summary of the changes and related feature(s) or issue(s).
 
 **Ticket:** LGA-XXX
 
-## Any other changes worth highlighting?
+## Resolution :heavy_check_mark:
 
-<!-- Note any side effects, refactors, or related changes that reviewers should be aware of. Remove this section if not applicable. -->
+Include a summary of the changes and related feature(s) or issue(s)
 
-None.
+## Miscellaneous :heavy_plus_sign:
 
-## Screenshots / evidence
+List any additional fixes or improvements.
 
-<!-- If this includes UI changes, add before/after screenshots. Remove this section if not applicable. -->
+## Screenshot(s) :camera_flash:
 
-## Checklist
+If this includes UI changes, add before/after screenshots.
+Remove this section if not applicable
+
+## Checklist :notebook:
 
 - [ ] Provided Jira ticket number in the PR title, e.g. `LGA-152: Sample title`
 - [ ] Tested locally and verified the change works as expected
