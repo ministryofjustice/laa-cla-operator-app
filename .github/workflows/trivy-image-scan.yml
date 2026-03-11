@@ -34,15 +34,6 @@ jobs:
         with:
           mask-password: true
 
-      - name: Restore Trivy cache
-        id: trivy-cache
-        uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
-        with:
-          path: ${{ github.workspace }}/.cache/trivy
-          key: cache-trivy-${{ github.run_id }}
-          restore-keys: |
-            cache-trivy-
-
       - name: Scan for breaking vulnerabilities
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
@@ -54,10 +45,6 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-        env:
-          TRIVY_CACHE_DIR: ${{ github.workspace }}/.cache/trivy
-          TRIVY_SKIP_DB_UPDATE: ${{ steps.trivy-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
-          TRIVY_SKIP_JAVA_DB_UPDATE: ${{ steps.trivy-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
 
       - name: Scan for vulnerabilities (informative, non-breaking)
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
@@ -69,7 +56,3 @@ jobs:
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'UNKNOWN,LOW,MEDIUM,CRITICAL,HIGH'
-        env:
-          TRIVY_CACHE_DIR: ${{ github.workspace }}/.cache/trivy
-          TRIVY_SKIP_DB_UPDATE: ${{ steps.trivy-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
-          TRIVY_SKIP_JAVA_DB_UPDATE: ${{ steps.trivy-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
