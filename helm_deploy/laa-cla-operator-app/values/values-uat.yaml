@@ -13,7 +13,7 @@ ingress:
   annotations: {}
     # Dynamic annotations will be set by workflow for ephemeral deployments
   hosts:
-    - host: # Will be set dynamically by workflow
+    - host: laa-cla-operator-app-uat.cloud-platform.service.justice.gov.uk
       paths:
         - path: /
           pathType: ImplementationSpecific
