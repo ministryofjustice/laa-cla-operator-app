@@ -80,7 +80,7 @@ packaging==26.0
     # via limits
 pycparser==3.0
     # via cffi
-pyopenssl==25.3.0
+pyopenssl==26.0.0
     # via -r requirements.in
 python-dotenv==1.2.2
     # via -r requirements.in

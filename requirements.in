@@ -9,5 +9,5 @@ govuk-frontend-wtf
 click
 python-dotenv
 requests
-pyopenssl
+pyopenssl==26.0.0
 PyYAML
