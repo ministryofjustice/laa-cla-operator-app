@@ -214,7 +214,7 @@ pytest==9.0.2
     #   pytest-playwright
 pytest-base-url==2.1.0
     # via pytest-playwright
-pytest-cov==7.0.0
+pytest-cov==7.1.0
     # via -r requirements_dev.in
 pytest-playwright==0.7.2
     # via -r requirements_dev.in
@@ -253,12 +253,10 @@ tomli-w==1.2.0
     # via pip-audit
 typing-extensions==4.15.0
     # via
-    #   cyclonedx-python-lib
     #   flask-limiter
     #   limits
     #   mypy
     #   pyee
-    #   pyopenssl
 urllib3==2.6.3
     # via requests
 virtualenv==21.2.0
