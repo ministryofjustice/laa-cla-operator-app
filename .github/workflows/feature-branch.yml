@@ -45,7 +45,8 @@ jobs:
       snyk_token: ${{ steps.get_snyk_token.outputs.token }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-      - name: get_snyk_token
+      - name: Get snyk token
+        id: get_snyk_token
         uses: ministryofjustice/laa-reusable-github-actions/.github/actions/snyk-auth/@main
         with:
           client_id: ${{ secrets.SNYK_CLIENT_ID }}
