@@ -38,6 +38,13 @@ jobs:
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
+  scan-image:
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/scan-image.yml@main
+    needs: build-and-push
+    with:
+      image_uri: ${{ steps.Build.outputs.tags }}
+    secrets: inherit
+
   deploy-ephemeral:
      name: Ephemeral
      uses: ./.github/workflows/deploy-ephemeral.yml
