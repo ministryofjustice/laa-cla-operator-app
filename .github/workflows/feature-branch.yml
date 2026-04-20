@@ -47,10 +47,16 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
       - name: Get snyk token
         id: get_snyk_token
-        uses: ministryofjustice/laa-reusable-github-actions/.github/actions/snyk-auth/@main
+        uses: ministryofjustice/laa-reusable-github-actions/.github/actions/snyk-auth@main
         with:
           client_id: ${{ secrets.SNYK_CLIENT_ID }}
           client_secret: ${{ secrets.SNYK_CLIENT_SECRET }}
+      - name: Validate Token Presence
+        run: |
+          if [ -z "${{ steps.get_snyk_token.outputs.token }}" ]; then
+            echo "Token is empty!"
+            exit 1
+          fi
 
   scan-image:
     needs: [build-and-push, snyk-auth]
