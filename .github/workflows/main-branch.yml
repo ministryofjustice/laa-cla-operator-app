@@ -28,8 +28,6 @@ jobs:
     name: Build
     uses: ./.github/workflows/build.yml
     needs: [static-analysis, test]
-    outputs:
-      tags: ${{ jobs.build-and-push-to-ecr.outputs.tags }}
     permissions:
       contents: read
       id-token: write

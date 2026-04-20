@@ -29,8 +29,6 @@ jobs:
   build-and-push:
     name: Build
     uses: ./.github/workflows/build.yml
-    outputs:
-      tags: ${{ jobs.build-and-push-to-ecr.outputs.tags }}
     permissions:
       contents: read
       id-token: write
