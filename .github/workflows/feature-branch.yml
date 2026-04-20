@@ -38,12 +38,18 @@ jobs:
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
-  scan-image:
-    uses: ministryofjustice/laa-reusable-github-actions/.github/actions/image-scan/action.yml@main
+  snyk-auth:
+    runs-on: ubuntu-latest
     needs: [build-and-push]
-    with:
-      image_uri: ${{ needs.build-and-push.outputs.image_tag }}
-    secrets: inherit
+    outputs:
+      snyk_token: ${{ steps.get_snyk_token.outputs.token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+      - name: get_snyk_token
+        uses: ministryofjustice/laa-reusable-github-actions/.github/actions/snyk-auth/@main
+        with:
+          client_id: ${{ secrets.SNYK_CLIENT_ID }}
+          client_secret: ${{ secrets.SNYK_CLIENT_SECRET }}
 
 
   deploy-ephemeral:
