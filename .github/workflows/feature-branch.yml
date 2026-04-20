@@ -29,6 +29,8 @@ jobs:
   build-and-push:
     name: Build
     uses: ./.github/workflows/build.yml
+    outputs:
+      tags: ${{ jobs.build-and-push-to-ecr.outputs.tags }}
     permissions:
       contents: read
       id-token: write
@@ -51,6 +53,14 @@ jobs:
           client_id: ${{ secrets.SNYK_CLIENT_ID }}
           client_secret: ${{ secrets.SNYK_CLIENT_SECRET }}
 
+  scan-image:
+    needs: [build-and-push, snyk-auth]
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/snyk@main
+    with:
+      tag: ${{ needs.build-and-push.outputs.image_tag }}
+      dockerfile_path: "Dockerfile"
+    secrets:
+      snyk_token: ${{ needs.snyk-auth.snyk-auth.outputs.snyk_token }}
 
   deploy-ephemeral:
      name: Ephemeral
