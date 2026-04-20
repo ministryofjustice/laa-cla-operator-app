@@ -53,7 +53,7 @@ jobs:
 
   scan-image:
     needs: [build-and-push, snyk-auth]
-    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/snyk@main
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/snyk.yml@main
     with:
       tag: ${{ needs.build-and-push.outputs.image_tag }}
       dockerfile_path: "Dockerfile"
