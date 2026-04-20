@@ -40,9 +40,9 @@ jobs:
 
   scan-image:
     uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/scan-image.yml@main
-    needs: build-and-push
+    needs: [build-and-push]
     with:
-      image_uri: ${{ steps.Build.outputs.tags }}
+      image_uri: ${{ needs.build-and-push.outputs.image_tag }}
     secrets: inherit
 
   deploy-ephemeral:

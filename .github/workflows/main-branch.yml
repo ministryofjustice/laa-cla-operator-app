@@ -37,6 +37,13 @@ jobs:
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
+  scan-image:
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/scan-image.yml@main
+    needs: [build-and-push]
+    with:
+      image_uri: ${{ needs.build-and-push.outputs.image_tag }}
+    secrets: inherit
+
   deploy-uat:
      name: UAT
      uses: ./.github/workflows/deploy.yml
