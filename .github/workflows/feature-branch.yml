@@ -39,7 +39,7 @@ jobs:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
   scan-image:
-    uses: ministryofjustice/laa-reusable-github-actions/.github/actions/scan-image.yml@main
+    uses: ministryofjustice/laa-reusable-github-actions/.github/actions/scan-image@main
     needs: [build-and-push]
     with:
       image_uri: ${{ needs.build-and-push.outputs.image_tag }}
