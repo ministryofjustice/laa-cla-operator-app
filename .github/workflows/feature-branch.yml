@@ -58,12 +58,12 @@ jobs:
       tag: snyk-scan
       dockerfile_path: "Dockerfile"
     secrets:
-      snyk_token: ${{ needs.snyk-auth.snyk-auth.outputs.snyk_token }}
+      snyk_token: ${{ needs.snyk-auth.outputs.snyk_token }}
 
   deploy-ephemeral:
      name: Ephemeral
      uses: ./.github/workflows/deploy-ephemeral.yml
-     needs: build-and-push
+     needs: [build-and-push, scan-image]
      permissions:
        contents: read
        id-token: write
