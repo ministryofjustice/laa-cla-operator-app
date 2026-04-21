@@ -11,6 +11,10 @@ on:
     secrets:
       ECR_ROLE_TO_ASSUME:
         required: true
+      SNYK_CLIENT_ID:
+        required: true
+      SNYK_CLIENT_SECRET:
+        required: true
 
     outputs:
           image_tag:
@@ -64,17 +68,17 @@ jobs:
           cache-to: type=gha,mode=max
           target: production
 
-      # - name: Get Snyk OAuth Token
-      #   id: snyk-auth
-      #   run: |
-      #     TOKEN=$(curl -s -X POST "https://api.snyk.io/oauth2/token" \
-      #       -H "Content-Type: application/x-www-form-urlencoded" \
-      #       -d "grant_type=client_credentials" \
-      #       -d "client_id=${{ secrets.SNYK_CLIENT_ID }}" \
-      #       -d "client_secret=${{ secrets.SNYK_CLIENT_SECRET }}" \
-      #       | jq -r '.access_token')
+      - name: Get Snyk OAuth Token
+        id: snyk-auth
+        run: |
+          TOKEN=$(curl -s -X POST "https://api.snyk.io/oauth2/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.SNYK_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.SNYK_CLIENT_SECRET }}" \
+            | jq -r '.access_token')
 
-          # echo "SNYK_OAUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
+          echo "SNYK_OAUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       # - name: Build local Docker image
       #   run: |
@@ -82,10 +86,10 @@ jobs:
       #       --tag laa-cla-operator-app:scan \
       #       --file Dockerfile .
 
-      # - name: Run Snyk to scan Docker image
-      #   uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
-      #   with:
-      #     image: ${{ steps.meta.outputs.tags }}
-      #     args: --docker --severity-threshold=high --policy-path=.snyk
-      #   env:
-      #     SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
+      - name: Run Snyk to scan Docker image
+        uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
+        with:
+          image: ${{ steps.meta.outputs.tags }}
+          args: --docker --severity-threshold=high --policy-path=.snyk
+        env:
+          SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
