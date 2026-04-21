@@ -59,11 +59,11 @@ jobs:
 
           echo "SNYK_OAUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      - name: Build local Docker image
-        run: |
-          docker build \
-            --tag laa-cla-operator-app:scan \
-            --file Dockerfile .
+      # - name: Build local Docker image
+      #   run: |
+      #     docker build \
+      #       --tag laa-cla-operator-app:scan \
+      #       --file Dockerfile .
 
       - name: Run Snyk to scan Docker image
         uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
