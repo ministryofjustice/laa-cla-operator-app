@@ -33,27 +33,43 @@ jobs:
       contents: read
       id-token: write
     with:
-      ECR_REGION: ${{vars.ECR_REGION}}
-      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+      ECR_REGION: ${{ vars.ECR_REGION }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
+  scan-image:
+    name: Snyk image scan
+    needs: [build-and-push]
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@main
+    permissions:
+      id-token: write
+      contents: read
+      security-events: write
+      actions: read
+    with:
+      image_uri: ${{ needs.build-and-push.outputs.image_tag }}
+      dockerfile_path: Dockerfile
+    secrets:
+      SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
+      SNYK_CLIENT_SECRET: ${{ secrets.SNYK_CLIENT_SECRET }}
+
   deploy-ephemeral:
-     name: Ephemeral
-     uses: ./.github/workflows/deploy-ephemeral.yml
-     needs: build-and-push
-     permissions:
-       contents: read
-       id-token: write
-       pull-requests: write
-     with:
-       environment: uat
-       ECR_REGION: ${{vars.ECR_REGION}}
-       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
-     secrets:
-       ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
-       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
-       KUBE_CERT: ${{ secrets.KUBE_CERT }}
-       KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
-       KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
-       KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+    name: Ephemeral
+    uses: ./.github/workflows/deploy-ephemeral.yml
+    needs: [build-and-push]
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    with:
+      environment: uat
+      ECR_REGION: ${{ vars.ECR_REGION }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+    secrets:
+      ECR_REGISTRY_URL: ${{ secrets.ECR_REGISTRY_URL }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
