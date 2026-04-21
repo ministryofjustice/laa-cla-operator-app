@@ -62,6 +62,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           target: production
+
       - name: Get Snyk OAuth Token
         id: snyk-auth
         run: |
@@ -83,7 +84,7 @@ jobs:
       - name: Run Snyk to scan Docker image
         uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
         with:
-          image: ${{ steps.meta.outputs.token }}
+          image: ${{ steps.meta.outputs.tags }}
           args: --docker --severity-threshold=high --policy-path=.snyk
         env:
           SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
