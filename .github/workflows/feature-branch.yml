@@ -68,7 +68,7 @@ jobs:
       - name: Run Snyk to scan Docker image
         uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
         with:
-          image: ${{ needs["build-and-push"].outputs.image_tag }}
+          image: ${{ needs.["build-and-push"].outputs.image_tag }}
           args: --docker --severity-threshold=high --policy-path=.snyk
         env:
           SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
