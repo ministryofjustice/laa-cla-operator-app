@@ -38,7 +38,7 @@ jobs:
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
-
+  snyk:
     name: Snyk scan docker image
     runs-on: ubuntu-latest
 
