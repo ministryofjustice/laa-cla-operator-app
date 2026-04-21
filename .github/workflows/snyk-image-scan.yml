@@ -37,3 +37,13 @@ jobs:
           args: --docker --severity-threshold=high --policy-path=.snyk
         env:
           SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
+
+      - name: Monitor docker image using Snyk
+        continue-on-error: true
+        uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
+        env:
+            SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
+        with:
+            command: monitor
+            image: laa-inquests-api:scan
+            args: --file=Dockerfile --policy-path=.snyk
