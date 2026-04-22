@@ -38,10 +38,28 @@ jobs:
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
+  snyk-image-scane:
+    name: Build
+    needs: [build-and-push]
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@a652d1076b05dd80d3ab619d263aac6ce526d70b
+    permissions:
+      id-token: write
+      contents: read
+      security-events: write
+      actions: read
+    with:
+      image_uri: ${{ needs.build-and-push.outputs.image_tag }}
+      dockerfile_path: Dockerfile
+    secrets:
+      SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
+      SNYK_CLIENT_SECRET: ${{ secrets.SNYK_CLIENT_SECRET }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+
+
   deploy-ephemeral:
      name: Ephemeral
      uses: ./.github/workflows/deploy-ephemeral.yml
-     needs: build-and-push
+     needs: [build-and-push]
      permissions:
        contents: read
        id-token: write

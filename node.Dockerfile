@@ -1,5 +1,5 @@
 # Used only for local development
-FROM node:lts-iron
+FROM node:lts-krypton
 WORKDIR /home/node
 COPY esbuild.config.js package.json package-lock.json ./
 COPY app/static/src app/static/src
