@@ -8,7 +8,9 @@ on:
       - main
   pull_request:
     types:
+      - opened
       - reopened
+      - synchronize
 
 permissions: {}
 
