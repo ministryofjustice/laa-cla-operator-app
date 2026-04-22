@@ -37,7 +37,7 @@ jobs:
     secrets:
       ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
 
-  snyk-image-scane:
+  snyk-image-scan:
     name: Build
     needs: [build-and-push]
     uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@a652d1076b05dd80d3ab619d263aac6ce526d70b
