@@ -40,18 +40,21 @@ jobs:
   snyk-image-scane:
     name: Build
     needs: [build-and-push]
-    uses: ./.github/workflows/snyk-image-scan.yml
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@main
     permissions:
       id-token: write
       contents: read
       security-events: write
       actions: read
     with:
-      ECR_REGION: ${{vars.ECR_REGION}}
-      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+      # ECR_REGION: ${{vars.ECR_REGION}}
+      # ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
       image_uri: ${{ needs.build-and-push.outputs.image_tag }}
       dockerfile_path: Dockerfile
-    secrets: inherit
+    secrets:
+      SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
+      SNYK_CLIENT_SECRET: ${{ secrets.SNYK_CLIENT_SECRET }}
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
   # snyk:
   #   name: Snyk scan docker image
   #   runs-on: ubuntu-latest
