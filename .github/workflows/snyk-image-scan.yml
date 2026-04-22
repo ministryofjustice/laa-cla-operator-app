@@ -1,49 +1,124 @@
-name: Snyk image scan
-on: push
-permissions:
-    contents: read
+name: Perform Static Application Security Testing
+description: A reusable workflow to perform SaST on a given repo. Please consult the Security Guardrails for Secure Pipelines for more info.
+
+on:
+  workflow_call:
+    inputs:
+      image_uri:
+        description: "URI of image to scan. The workflow intentionally doesn't perform any image building."
+        required: true
+        type: string
+      dockerfile_path:
+        description: "Path to Dockerfile that will be used by Snyk to scan"
+        required: false
+        default: "Dockerfile"
+        type: string
+      iac_path:
+        description: "Path to repo's IaC. Leave unset to not run the checks"
+        required: false
+        default: ""
+        type: string
+      ECR_REGION:
+        required: true
+        type: string
+      ECR_REPOSITORY:
+        required: true
+        type: string
+    secrets:
+      ECR_ROLE_TO_ASSUME:
+        required: true
+      SNYK_CLIENT_ID:
+        required: true
+      SNYK_CLIENT_SECRET:
+        required: true
+    
 
 jobs:
-  snyk:
-    name: Snyk scan docker image
+  sast:
+    name: Scan IaC & Container with Snyk
     runs-on: ubuntu-latest
-
+    permissions:
+      id-token: write
+      contents: read
+      security-events: write
+      actions: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - name: Get Snyk OAuth Token
-        id: snyk-auth
+      # Early exit if there's no container setup to scan
+      - name: Check Dockerfile exists
         run: |
-          TOKEN=$(curl -s -X POST "https://api.snyk.io/oauth2/token" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "grant_type=client_credentials" \
-            -d "client_id=${{ secrets.SNYK_CLIENT_ID }}" \
-            -d "client_secret=${{ secrets.SNYK_CLIENT_SECRET }}" \
-            | jq -r '.access_token')
+          if [ ! -f "${{ inputs.dockerfile_path }}" ]; then
+            echo "::error::Dockerfile not found at ${{ inputs.dockerfile_path }}, seems there isn't a container to scan"
+            exit 1
+          fi
 
-          echo "SNYK_OAUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
+      - name: Assume role in Cloud Platform
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ inputs.ECR_REGION }}
 
-      - name: Build local Docker image
+      - name: Login to container repository
+        uses: aws-actions/amazon-ecr-login@261fc3d4806db1fa66a15cc11113c456db8870a7 # v2.1.0
+        id: login-ecr
+        with:
+          mask-password: true
+
+      - name: Pull Docker image
+        run: docker pull ${{ inputs.image_uri }}
+
+      - name: Obtain Short-lived token
+        id: auth
+        uses: ministryofjustice/laa-reusable-github-actions/.github/actions/snyk-auth@main
+        with:
+          client_id: ${{ secrets.SNYK_CLIENT_ID }}
+          client_secret: ${{ secrets.SNYK_CLIENT_SECRET }}
+
+      - name: Install Snyk CLI
+        uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04
+
+      - name: Scan dependencies using container runtime
+        env:
+          SNYK_OAUTH_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
-          docker build \
-            --tag laa-cla-operator-app:scan \
-            --file Dockerfile .
+          snyk container test ${{ inputs.image_uri }} \
+            --severity-threshold=critical \
+            --sarif-file-output=snyk.sarif \
+            --file=${{ inputs.dockerfile_path }} \
+            --app-vulns
 
-      - name: Run Snyk to scan Docker image
-        uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
-        with:
-          image: laa-cla-operator-app:scan
-          args: --docker --severity-threshold=high --policy-path=.snyk
+      - name: Monitor current dependencies
         env:
-          SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
+          SNYK_OAUTH_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          snyk container monitor ${{ inputs.image_uri }} \
+            --file=${{ inputs.dockerfile_path }}
 
-      - name: Monitor docker image using Snyk
-        continue-on-error: true
-        uses: snyk/actions/docker@c75628d834bd4a804426e1cb7b31a9aa43a54c31
+      - name: Scan IaC files
+        if: hashFiles(inputs.iac_path)
         env:
-            SNYK_OAUTH_TOKEN: ${{ env.SNYK_OAUTH_TOKEN }}
+          SNYK_OAUTH_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          snyk iac test ${{ inputs.iac_path }} \
+            --severity-threshold=critical \
+            --sarif-file-output=snyk-iac.sarif
+
+      - name: Sanitise SARIF
+        if: always() && hashFiles('snyk.sarif') != ''
+        run: |
+          sed -i 's/"security-severity": "null"/"security-severity": "0"/g' snyk.sarif
+          sed -i 's/"security-severity": "undefined"/"security-severity": "0"/g' snyk.sarif
+
+      - name: Upload container SARIF
+        if: always() && hashFiles('snyk.sarif') != ''
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13
         with:
-            command: monitor
-            image: laa-inquests-api:scan
-            args: --file=Dockerfile --policy-path=.snyk
+          sarif_file: snyk.sarif
+
+      - name: Upload IaC SARIF
+        if: always() && hashFiles('snyk-iac.sarif') != ''
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13
+        with:
+          sarif_file: snyk-iac.sarif

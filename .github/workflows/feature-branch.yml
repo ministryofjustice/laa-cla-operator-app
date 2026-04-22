@@ -37,6 +37,21 @@ jobs:
       ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
     secrets: inherit
 
+  snyk-image-scane:
+    name: Build
+    needs: [build-and-push]
+    uses: ./.github/workflows/snyk-image-scan.yml
+    permissions:
+      id-token: write
+      contents: read
+      security-events: write
+      actions: read
+    with:
+      ECR_REGION: ${{vars.ECR_REGION}}
+      ECR_REPOSITORY: ${{vars.ECR_REPOSITORY}}
+      image_uri: ${{ needs.build-and-push.outputs.image_tag }}
+      dockerfile_path: Dockerfile
+    secrets: inherit
   # snyk:
   #   name: Snyk scan docker image
   #   runs-on: ubuntu-latest
