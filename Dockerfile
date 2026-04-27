@@ -1,6 +1,6 @@
-ARG BASE_IMAGE=python:3.13-slim
+ARG BASE_IMAGE=python:3.14-slim
 
-FROM node:lts-iron AS node_build
+FROM node:lts-krypton AS node_build
 WORKDIR /home/node
 COPY esbuild.config.js package.json package-lock.json ./
 COPY app/static/src app/static/src
