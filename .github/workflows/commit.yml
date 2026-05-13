@@ -31,4 +31,4 @@ jobs:
 
     steps:
       - name: Validate
-        uses: ministryofjustice/devsecops-actions/github/commit@f965eb1771ec66cfc41d7d57dc607fa6dfbc10ed # v1.4.0
+        uses: ministryofjustice/devsecops-actions/github/commit@7dc13c20e2bf541b8a77fa1320a04983b18846f6 # v1.6.0
