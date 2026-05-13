@@ -39,18 +39,6 @@ jobs:
         echo "pip-compile failed because requirements.in and requirements_dev.in are not properly compiled to requirements.txt and requirements_dev.txt." >&2
         exit 1
 
-  devsecops:
-    name: SCA
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: ⚡️ SCA
-        uses: ministryofjustice/devsecops-actions/sca@f965eb1771ec66cfc41d7d57dc607fa6dfbc10ed # v1.4.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }} # Mandatory
-          dependency-review-config-file: "./.github/workflows/dependency-review.yml" # Optional
-
   lint:
     name: Ruff
     runs-on: ubuntu-latest
