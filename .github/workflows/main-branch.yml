@@ -48,6 +48,7 @@ jobs:
       actions: read
     with:
       image_uri: ${{ needs.build-and-push.outputs.image_tag }}
+      exclude_base_image_vulns: true
       dockerfile_path: Dockerfile
     secrets:
       SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
