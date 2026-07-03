@@ -6,8 +6,10 @@ Flask-Limiter
 Flask-Talisman
 govuk-frontend-jinja
 govuk-frontend-wtf
-click
+click>=8.3.3
+cryptography>=48.0.1
 python-dotenv
-requests
-pyopenssl
+requests>=2.34.2
+pyopenssl>=26.0.0
 PyYAML
+urllib3>=2.7.0

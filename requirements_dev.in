@@ -3,6 +3,7 @@ bandit
 black
 flake8-bugbear
 isort
+msgpack>=1.2.1
 mypy
 pep8-naming
 pip-audit
