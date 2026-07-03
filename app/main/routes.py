@@ -5,6 +5,7 @@ from werkzeug.exceptions import HTTPException
 from app.main import bp
 from app.main.forms import CookiesForm
 
+_ERROR_TEMPLATES = {400: "400.html", 404: "404.html", 500: "500.html"}
 
 @bp.route("/", methods=["GET"])
 def index():
@@ -75,8 +76,8 @@ def ready():
 
 @bp.app_errorhandler(HTTPException)
 def http_exception(error):
-    return render_template(f"{error.code}.html"), error.code
-
+    template = _ERROR_TEMPLATES.get(error.code, "500.html")
+    return render_template(template), error.code
 
 @bp.app_errorhandler(CSRFError)
 def csrf_error(error):
