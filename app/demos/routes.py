@@ -24,13 +24,13 @@ def components():
 
 @bp.route("/components/<string:component>", methods=["GET"])
 def component(component):
-    try:
-        with open(
-            f"app/demos/govuk_components/{component}/{component}.yaml"
-        ) as yaml_file:
-            fixtures = yaml.safe_load(yaml_file)
-    except FileNotFoundError:
+    if component not in os.listdir("app/demos/govuk_components"):
         raise NotFound
+
+    with open(
+        f"app/demos/govuk_components/{component}/{component}.yaml"
+    ) as yaml_file:
+        fixtures = yaml.safe_load(yaml_file)
 
     return render_template(
         "component.html",
