@@ -47,7 +47,7 @@ jobs:
   snyk-image-scan:
     name: Build
     needs: [build-and-push]
-    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@df9a4a8ad625a391c27ccf81a1c1a2d7b23e6474
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@df9a4a8ad625a391c27ccf81a1c1a2d7b23e6474 #unversioned
     permissions:
       id-token: write
       contents: read
