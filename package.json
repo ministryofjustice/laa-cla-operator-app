@@ -10,10 +10,10 @@
     "npm": ">= 11.14.1"
   },
   "dependencies": {
-    "govuk-frontend": ">= 6.2.0"
+    "govuk-frontend": ">= 6.3.0"
   },
   "devDependencies": {
-    "esbuild": ">= 0.28.0",
+    "esbuild": ">= 0.28.1",
     "esbuild-sass-plugin": ">= 3.7.0"
   },
   "overrides": {
