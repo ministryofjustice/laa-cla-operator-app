@@ -12,6 +12,10 @@ on:
       - reopened
       - synchronize
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
@@ -43,7 +47,7 @@ jobs:
   snyk-image-scan:
     name: Build
     needs: [build-and-push]
-    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@a652d1076b05dd80d3ab619d263aac6ce526d70b
+    uses: ministryofjustice/laa-reusable-github-actions/.github/workflows/sast.yml@df9a4a8ad625a391c27ccf81a1c1a2d7b23e6474 #unversioned
     permissions:
       id-token: write
       contents: read
