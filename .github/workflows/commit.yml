@@ -30,5 +30,7 @@ jobs:
     runs-on: ["ubuntu-latest"]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Validate
         uses: ministryofjustice/devsecops-actions/github/commit@7dc13c20e2bf541b8a77fa1320a04983b18846f6 # v1.6.0
