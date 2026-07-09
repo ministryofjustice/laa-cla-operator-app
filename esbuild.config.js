@@ -1,5 +1,6 @@
-import esbuild from 'esbuild';
 import { sassPlugin } from 'esbuild-sass-plugin';
+import esbuild from 'esbuild';
+import path from "path";
 import fs from 'fs';
 
 const isProduction = process.env.ENVIRONMENT === 'production';
@@ -9,6 +10,7 @@ const build = async (shouldWatch) => {
         plugins: [
             sassPlugin({
                 quietDeps: true,
+                loadPaths: [path.resolve("."), path.resolve("node_modules")],
             }),
         ],
         entryPoints: [

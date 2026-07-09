@@ -5,6 +5,7 @@
 {%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner -%}
 {%- from 'govuk_frontend_jinja/components/phase-banner/macro.html' import govukPhaseBanner -%}
 {%- from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation -%}
+{%- from 'components/header.html' import mojHeader %}
 
 {% set govukRebrand = True %}
 
@@ -115,18 +116,12 @@
 {% endblock %}
 
 {% block header %}
-  {{ govukHeader({
-    'classes': 'govuk-header--full-width-border',
-    'homepageUrl': url_for('main.index'),
-  }) }}
+  {{ mojHeader() }}
 
   {{ govukServiceNavigation({
     'serviceName': config['SERVICE_NAME'],
     'serviceUrl': url_for('main.index'),
-    'navigation': [
-      {'href': url_for('demos.components'), 'text': 'Components'},
-      {'href': url_for('demos.forms'), 'text': 'Forms'}
-    ]
+    'navigation': []
   }) }}
 {% endblock %}
 

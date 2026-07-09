@@ -48,7 +48,7 @@ def cookies():
             form.functional.data = cookies_policy["functional"]
             form.analytics.data = cookies_policy["analytics"]
         else:
-            # If conset not previously set, use default "no" policy
+            # If consent not previously set, use default "no" policy
             form.functional.data = cookies_policy["functional"]
             form.analytics.data = cookies_policy["analytics"]
     return render_template("cookies.html", form=form)
@@ -58,6 +58,9 @@ def cookies():
 def privacy():
     return render_template("privacy.html")
 
+@bp.route("/receive-call", methods=["GET"])
+def receive_call():
+    return render_template("receive-call.html")
 
 @bp.route("/health", methods=["GET"])
 def health():
