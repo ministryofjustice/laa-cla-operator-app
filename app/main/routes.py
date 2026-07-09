@@ -42,10 +42,25 @@ def register_routes(app):
         # Default cookies policy to reject all categories of cookie
         cookies_policy = {"functional": "no", "analytics": "no"}
 
-        if form.validate_on_submit():
-            # Update cookies policy consent from form data
-            cookies_policy["functional"] = form.functional.data
-            cookies_policy["analytics"] = form.analytics.data
+        # Set cookies policy for one year
+        response.set_cookie(
+            "cookies_policy",
+            json.dumps(cookies_policy),
+            max_age=31557600,
+            secure=True,
+        )
+        return response
+    elif request.method == "GET":
+        if request.cookies.get("cookies_policy"):
+            # Set cookie consent radios to current consent
+            cookies_policy = json.loads(request.cookies.get("cookies_policy"))
+            form.functional.data = cookies_policy["functional"]
+            form.analytics.data = cookies_policy["analytics"]
+        else:
+            # If consent not previously set, use default "no" policy
+            form.functional.data = cookies_policy["functional"]
+            form.analytics.data = cookies_policy["analytics"]
+    return render_template("cookies.html", form=form)
 
             # Create flash message confirmation before rendering template
             flash("You’ve set your cookie preferences.", "success")
@@ -53,26 +68,9 @@ def register_routes(app):
             # Create the response so we can set the cookie before returning
             response = make_response(render_template("main/cookies.html", form=form))
 
-            # Set cookies policy for one year
-            response.set_cookie(
-                "cookies_policy",
-                json.dumps(cookies_policy),
-                max_age=31557600,
-                secure=True,
-                samesite="Strict",
-            )
-            return response
-        elif request.method == "GET":
-            if request.cookies.get("cookies_policy"):
-                # Set cookie consent radios to current consent
-                cookies_policy = json.loads(request.cookies.get("cookies_policy"))
-                form.functional.data = cookies_policy["functional"]
-                form.analytics.data = cookies_policy["analytics"]
-            else:
-                # If consent not previously set, use default "no" policy
-                form.functional.data = cookies_policy["functional"]
-                form.analytics.data = cookies_policy["analytics"]
-        return render_template("main/cookies.html", form=form)
+@bp.route("/receive-call", methods=["GET"])
+def receive_call():
+    return render_template("receive-call.html")
 
     @app.get("/privacy")
     def privacy():
