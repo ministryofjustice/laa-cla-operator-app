@@ -11,6 +11,22 @@ def index():
     return render_template("index.html")
 
 
+@bp.route("/sign-in", methods=["GET"])
+def sign_in():
+    return render_template("sign_in.html")
+
+@bp.route("/help", methods=["GET"])
+def help():
+    return render_template("help.html")
+  
+@bp.route("/feedback", methods=["GET"])
+def feedback():
+    return render_template("feedback.html")
+
+@bp.route("/updates", methods=["GET"])
+def updates():
+    return render_template("updates.html")
+
 @bp.route("/accessibility", methods=["GET"])
 def accessibility():
     return render_template("accessibility.html")

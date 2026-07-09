@@ -131,7 +131,7 @@
     'tag': {
       'text': config['SERVICE_PHASE']
     },
-    'html': 'This is a new service – your <a class="govuk-link" href="mailto:' + config['CONTACT_EMAIL'] + '">feedback</a> will help us to improve it.'
+    'html': 'This is a new service. Help us improve it and <a class="govuk-link" href="mailto:' + config['CONTACT_EMAIL'] + '">give your feedback</a>.'
   }) }}
 {% endblock %}
 
@@ -154,19 +154,30 @@
     'meta': {
       'items': [
         {
-          'href': url_for('main.accessibility'),
-          'text': "Accessibility"
+          'href': url_for('main.help'),
+          'text': "Help"
+        },
+        {
+          'href': url_for('main.feedback'),
+          'text': "Feedback"
+        },
+        {
+          'href': url_for('main.updates'),
+          'text': "Updates"
+        },
+        {
+          'href': url_for('main.privacy'),
+          'text': "Privacy policy"
         },
         {
           'href': url_for('main.cookies'),
-          'text': "Cookies"
+          'text': "Cookie policy"
         },
         {
-            'href': url_for('main.privacy'),
-            'text': "Privacy"
-          }
+          'href': url_for('main.accessibility'),
+          'text': "Accessibility"
+        }
       ],
-      'html': 'Built by <a href="' + config['DEPARTMENT_URL'] +'" class="govuk-footer__link">' + config['DEPARTMENT_NAME'] + '</a>'
     }
   }) }}
 {% endblock %}
