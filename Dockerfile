@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=python:3.14-slim
+ARG BASE_IMAGE=python:3.12-slim-bookworm
 
 FROM node:lts-krypton AS node_build
 WORKDIR /home/node
