@@ -4,21 +4,21 @@ from flask import flash, json, make_response, redirect, render_template, request
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm
+from app.main import bp
+from app.main.forms import CookiesForm, WhosCallingForm
 
 
-def register_routes(app):
-    @app.get("/")
-    def index():
-        return render_template("main/index.html")
+@bp.route("/")
+def index():
+    return render_template("index.html")
 
     @app.get("/sign-in")
     def sign_in():
         return render_template("main/sign_in.html")
 
-    @app.get("/status")
-    def status():
-        return "OK"
+@bp.route("/accessibility")
+def accessibility():
+    return render_template("accessibility.html")
 
     @app.get("/help")
     def help():
@@ -65,22 +65,44 @@ def register_routes(app):
             # Create flash message confirmation before rendering template
             flash("You’ve set your cookie preferences.", "success")
 
-            # Create the response so we can set the cookie before returning
-            response = make_response(render_template("main/cookies.html", form=form))
+@bp.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
 
-@bp.route("/receive-call", methods=["GET"])
+@bp.route("/receive-call", methods=["GET", "POST"])
 def receive_call():
-    return render_template("receive-call.html")
+    form = WhosCallingForm()
+    if form.validate_on_submit():
+        # TODO: route "myself" vs "another" once the next step exists
+        return redirect(url_for("main.receive_call"))
+    return render_template("receive-call.html", form=form)
 
-    @app.get("/privacy")
-    def privacy():
-        return render_template("main/privacy.html")
+@bp.route("/health")
+def health():
+    """Liveness probe endpoint - checks if the application is running"""
+    return {"status": "healthy"}, 200
 
     @app.errorhandler(HTTPException)
     def http_exception(error):
         return render_template(f"main/{error.code}.html"), error.code
 
-    @app.errorhandler(CSRFError)
-    def csrf_error(error):
-        flash("The form you were submitting has expired. Please try again.")
-        return redirect(request.full_path)
+@bp.route("/ready")
+def ready():
+    """Readiness probe endpoint - checks if the application is ready to serve traffic"""
+    # Add any checks here for dependencies (database, cache, etc.)
+    # For now, if the app is running, it's ready
+    return {"status": "ready"}, 200
+
+
+@bp.app_errorhandler(HTTPException)
+def http_exception(error):
+    try:
+        return render_template(f"errors/{error.code}.html"), error.code
+    except TemplateNotFound:
+        return render_template("errors/500.html"), error.code
+
+
+@bp.app_errorhandler(CSRFError)
+def csrf_error(error):
+    flash("The form you were submitting has expired. Please try again.")
+    return redirect(request.full_path)

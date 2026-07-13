@@ -21,10 +21,13 @@
 {% endblock %}
 {% block beforeContent %} {{ super() }} {% endblock %}
 
+{% block pageTitle %}{%- if form.errors %}Error: {% endif -%}Taking calls from clients – {{config['SERVICE_NAME']}} – GOV.UK{% endblock %}
+
 {% block content %}
+{{ super() }}
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
-  <h1 class="govuk-heading-l">Taking calls from clients</h1>
+  <div class="govuk-grid-column-three-quarters">
+  <h1 class="govuk-heading-xl">Taking calls from clients</h1>
     <p class="govuk-body">Introduce the caller to Civil Legal Advice and check if they are ringing on their own behalf, or someone else's.</p>
     <div class="govuk-inset-text taking-call-inset">
         <p class="govuk-body">Thank you for calling the Civil Legal Advice helpline, my name is [agent name].</p>
@@ -34,35 +37,11 @@
         <p class="govuk-body">As a first step, I'm going to take a few details from you. The information you give me will be stored on our system to help us assess your case.</p>
     </div>
 
-    <div class="govuk-form-group">
-  <fieldset class="govuk-fieldset">
-    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-      <h1 class="govuk-fieldset__heading">
-        Are you calling on behalf of yourself or another person?
-      </h1>
-    </legend>
-    <div class="govuk-radios" data-module="govuk-radios">
-      <div class="govuk-radios__item">
-        <input class="govuk-radios__input" id="whosCalling-myself" name="whosCalling" type="radio" value="myself">
-        <label class="govuk-label govuk-radios__label" for="whosCalling-myself">
-          Myself
-        </label>
-      </div>
-      <div class="govuk-radios__item">
-        <input class="govuk-radios__input" id="whosCalling-another" name="whosCalling" type="radio" value="another">
-        <label class="govuk-label govuk-radios__label" for="whosCalling-another">
-          Another person
-        </label>
-      </div>
-    </div>
-  </fieldset>
-
-</div>
-  <div>
-      <button type="submit" class="govuk-button" data-module="govuk-button">
-    Continue
-    </button>
-  </div>
+    <form action="{{ url_for('main.receive_call') }}" method="post" novalidate>
+      {{ form.csrf_token }}
+      {{ form.whosCalling }}
+      {{ form.submit }}
+    </form>
   </div>
 </div>
 {% endblock %}
