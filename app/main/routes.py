@@ -6,28 +6,31 @@ from app.main import bp
 from app.main.forms import CookiesForm
 
 
-@bp.route("/", methods=["GET"])
+@bp.get("/")
 def index():
     return render_template("index.html")
 
-
-@bp.route("/sign-in", methods=["GET"])
+@bp.get("/sign-in")
 def sign_in():
     return render_template("sign_in.html")
+  
+@bp.get("/status")
+def status():
+    return "OK"
 
-@bp.route("/help", methods=["GET"])
+@bp.get("/help")
 def help():
     return render_template("help.html")
   
-@bp.route("/feedback", methods=["GET"])
+@bp.get("/feedback")
 def feedback():
     return render_template("feedback.html")
 
-@bp.route("/updates", methods=["GET"])
+@bp.get("/updates")
 def updates():
     return render_template("updates.html")
 
-@bp.route("/accessibility", methods=["GET"])
+@bp.get("/accessibility")
 def accessibility():
     return render_template("accessibility.html")
 
@@ -54,7 +57,8 @@ def cookies():
             "cookies_policy",
             json.dumps(cookies_policy),
             max_age=31557600,
-            secure=True,
+            secure=True, 
+            samesite="Strict"
         )
         return response
     elif request.method == "GET":
@@ -70,23 +74,9 @@ def cookies():
     return render_template("cookies.html", form=form)
 
 
-@bp.route("/privacy", methods=["GET"])
+@bp.get("/privacy")
 def privacy():
     return render_template("privacy.html")
-
-
-@bp.route("/health", methods=["GET"])
-def health():
-    """Liveness probe endpoint - checks if the application is running"""
-    return {"status": "healthy"}, 200
-
-
-@bp.route("/ready", methods=["GET"])
-def ready():
-    """Readiness probe endpoint - checks if the application is ready to serve traffic"""
-    # Add any checks here for dependencies (database, cache, etc.)
-    # For now, if the app is running, it's ready
-    return {"status": "ready"}, 200
 
 
 @bp.app_errorhandler(HTTPException)

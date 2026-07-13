@@ -1,5 +1,4 @@
 # Default values for laa-cla-operator-app.
-# This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
@@ -104,12 +103,12 @@ resources: {}
 # Probes are defined in deployment.yaml with sensible defaults, but can be overridden here if needed
 # livenessProbe:
 #   httpGet:
-#     path: /health
+#     path: /status
 #     port: http
 #   initialDelaySeconds: 30
 # readinessProbe:
 #   httpGet:
-#     path: /ready
+#     path: /status
 #     port: http
 #   initialDelaySeconds: 10
 
