@@ -1,0 +1,66 @@
+{% extends "base.html" %} 
+{%- from "govuk_frontend_jinja/components/button/macro.html" import govukButton -%}
+{% block beforeContent %} {{ super() }} {% endblock %}
+
+{% block content %}
+
+<h1 class="govuk-heading-l">Search client’s details</h1>
+
+<p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.</p>
+
+<!--Main search area-->
+
+<div class="search-action-button">
+  <span class="search-actions">
+    <button type="submit" class="govuk-button" data-module="govuk-button">
+      Search
+    </button>
+
+    <span class="govuk-body">
+      <a href="#" class="govuk-link">Clear all</a>
+    </span>
+  </span>
+</div>
+
+
+
+
+
+
+
+<!--The button to start new case-->
+<p class="govuk-body">Start new case using the details entered</p>
+
+<!--Sub heading that display the search results-->
+<h3 class="govuk-heading-l">1 search results</h3>
+
+<table class="govuk-table" data-module="moj-sortable-table">
+  <caption class="govuk-table__caption">Select a  client’s name to display their case history.</caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header" aria-sort="ascending">Name</th>
+       <th scope="col" class="govuk-table__header" aria-sort="ascending">Phone number</th>
+      <th scope="col" class="govuk-table__header" aria-sort="none">Post code</th>
+      <th scope="col" class="govuk-table__header" aria-sort="none">Date of Birth</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell"><a href="#"> Janet Jackson</a></td>
+      <td class="govuk-table__cell">07483 024822</td>
+      <td class="govuk-table__cell">S6 3WE</td>
+    <td class="govuk-table__cell">29 May 2001</td>
+
+    </tr>
+ 
+
+  </tbody>
+</table>
+
+
+
+{% endblock %}
+
+
+
+

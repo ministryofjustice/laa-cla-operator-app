@@ -6,7 +6,7 @@ from werkzeug.exceptions import HTTPException
 
 from app.main import bp
 from app.main.forms import CookiesForm, WhosCallingForm
-
+from app.services.search import search
 
 @bp.route("/")
 def index():
@@ -67,6 +67,14 @@ def receive_call():
         # TODO: route "myself" vs "another" once the next step exists
         return redirect(url_for("main.receive_call"))
     return render_template("receive-call.html", form=form)
+
+
+@bp.route("/search-client")
+def search_user():
+
+    return search.search()
+
+
 
 @bp.route("/health")
 def health():
