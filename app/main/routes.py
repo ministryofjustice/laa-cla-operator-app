@@ -1,17 +1,19 @@
-from flask import flash, json, make_response, redirect, render_template, request
+from jinja2 import TemplateNotFound
+
+from flask import flash, json, make_response, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
 from app.main import bp
-from app.main.forms import CookiesForm
+from app.main.forms import CookiesForm, WhosCallingForm
 
 
-@bp.route("/", methods=["GET"])
+@bp.route("/")
 def index():
     return render_template("index.html")
 
 
-@bp.route("/accessibility", methods=["GET"])
+@bp.route("/accessibility")
 def accessibility():
     return render_template("accessibility.html")
 
@@ -54,21 +56,25 @@ def cookies():
     return render_template("cookies.html", form=form)
 
 
-@bp.route("/privacy", methods=["GET"])
+@bp.route("/privacy")
 def privacy():
     return render_template("privacy.html")
 
-@bp.route("/receive-call", methods=["GET"])
+@bp.route("/receive-call", methods=["GET", "POST"])
 def receive_call():
-    return render_template("receive-call.html")
+    form = WhosCallingForm()
+    if form.validate_on_submit():
+        # TODO: route "myself" vs "another" once the next step exists
+        return redirect(url_for("main.receive_call"))
+    return render_template("receive-call.html", form=form)
 
-@bp.route("/health", methods=["GET"])
+@bp.route("/health")
 def health():
     """Liveness probe endpoint - checks if the application is running"""
     return {"status": "healthy"}, 200
 
 
-@bp.route("/ready", methods=["GET"])
+@bp.route("/ready")
 def ready():
     """Readiness probe endpoint - checks if the application is ready to serve traffic"""
     # Add any checks here for dependencies (database, cache, etc.)
@@ -78,7 +84,10 @@ def ready():
 
 @bp.app_errorhandler(HTTPException)
 def http_exception(error):
-    return render_template(f"{error.code}.html"), error.code
+    try:
+        return render_template(f"errors/{error.code}.html"), error.code
+    except TemplateNotFound:
+        return render_template("errors/500.html"), error.code
 
 
 @bp.app_errorhandler(CSRFError)
