@@ -34,11 +34,11 @@
     {% endset %}
 
     {% set acceptHtml %}
-      <p class="govuk-body">You’ve accepted additional cookies. You can <a class="govuk-link" href="{{ url_for('main.cookies') }}">change your cookie settings</a> at any time.</p>
+      <p class="govuk-body">You’ve accepted additional cookies. You can <a class="govuk-link" href="{{ url_for('cookies') }}">change your cookie settings</a> at any time.</p>
     {% endset %}
 
     {% set rejectHtml %}
-      <p class="govuk-body">You’ve rejected additional cookies. You can <a class="govuk-link" href="{{ url_for('main.cookies') }}">change your cookie settings</a> at any time.</p>
+      <p class="govuk-body">You’ve rejected additional cookies. You can <a class="govuk-link" href="{{ url_for('cookies') }}">change your cookie settings</a> at any time.</p>
     {% endset %}
 
     {{ govukCookieBanner({
@@ -74,7 +74,7 @@
             },
             {
               'text': "View cookies",
-              'href': url_for('main.cookies')
+              'href': url_for('cookies')
             }
           ]
         },
@@ -120,7 +120,7 @@
 
   {{ govukServiceNavigation({
     'serviceName': config['SERVICE_NAME'],
-    'serviceUrl': url_for('main.index'),
+    'serviceUrl': url_for('index'),
     'navigation': [
     ]
   }) }}
@@ -154,27 +154,27 @@
     'meta': {
       'items': [
         {
-          'href': url_for('main.help'),
+          'href': url_for('help'),
           'text': "Help"
         },
         {
-          'href': url_for('main.feedback'),
+          'href': url_for('feedback'),
           'text': "Feedback"
         },
         {
-          'href': url_for('main.updates'),
+          'href': url_for('updates'),
           'text': "Updates"
         },
         {
-          'href': url_for('main.privacy'),
+          'href': url_for('privacy'),
           'text': "Privacy policy"
         },
         {
-          'href': url_for('main.cookies'),
+          'href': url_for('cookies'),
           'text': "Cookie policy"
         },
         {
-          'href': url_for('main.accessibility'),
+          'href': url_for('accessibility'),
           'text': "Accessibility"
         }
       ],

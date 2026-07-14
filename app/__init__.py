@@ -115,12 +115,10 @@ def create_app(config_class=Config):
 
     WTFormsHelpers(app)
 
-    # Register blueprints
-    from app.demos import bp as demo_bp
-    from app.main import bp as main_bp
+    # Register application routes
+    from app.main.routes import register_routes
 
-    app.register_blueprint(demo_bp)
-    app.register_blueprint(main_bp)
+    register_routes(app)
 
     @app.context_processor
     def inject_hashed_filename():
