@@ -26,14 +26,13 @@ class CookiesForm(FlaskForm):
     )
     save = SubmitField("Save cookie settings", widget=GovSubmitInput())
 
+
 class WhosCallingForm(FlaskForm):
     whos_calling = RadioField(
         "Are you calling on behalf of yourself or another person?",
         widget=CustomRadioInput(heading_class="govuk-fieldset__legend--s"),
         validators=[
-            InputRequired(
-                message="You must select either 'Myself' or 'Another person'"
-            )
+            InputRequired(message="You must select either 'Myself' or 'Another person'")
         ],
         choices=[("myself", "Myself"), ("another", "Another person")],
     )

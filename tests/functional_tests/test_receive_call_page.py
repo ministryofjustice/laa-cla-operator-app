@@ -38,6 +38,7 @@ def test_receive_call_page(page: Page, base_url: str) -> None:
     expect(continue_button).to_be_visible()
     expect(continue_button).to_be_enabled()
 
+
 def test_receive_call_error_message(page: Page, base_url: str) -> None:
     page.goto("/receive-call")
 
@@ -46,8 +47,12 @@ def test_receive_call_error_message(page: Page, base_url: str) -> None:
 
     error_summary = page.get_by_role("alert")
     expect(error_summary).to_be_visible()
-    expect(error_summary).to_contain_text("You must select either 'Myself' or 'Another person'")
+    expect(error_summary).to_contain_text(
+        "You must select either 'Myself' or 'Another person'"
+    )
 
     error_message = page.locator("#whosCalling-error")
     expect(error_message).to_be_visible()
-    expect(error_message).to_contain_text("You must select either 'Myself' or 'Another person'")
+    expect(error_message).to_contain_text(
+        "You must select either 'Myself' or 'Another person'"
+    )

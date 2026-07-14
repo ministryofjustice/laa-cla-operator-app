@@ -1,4 +1,12 @@
-from flask import flash, json, make_response, redirect, render_template, request, url_for
+from flask import (
+    flash,
+    json,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
@@ -33,7 +41,7 @@ def register_routes(app):
     @app.get("/accessibility")
     def accessibility():
         return render_template("pages/accessibility.html")
-    
+
     @app.route("/receive-call", methods=["GET", "POST"])
     def receive_call():
         form = WhosCallingForm()
