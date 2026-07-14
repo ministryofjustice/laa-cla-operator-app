@@ -1,11 +1,11 @@
 {% extends 'govuk_frontend_jinja/template.html' %}
 
-{%- from 'govuk_frontend_jinja/components/cookie-banner/macro.html' import govukCookieBanner-%}
-{%- from 'govuk_frontend_jinja/components/error-summary/macro.html' import govukErrorSummary-%}
-{%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner -%}
-{%- from 'govuk_frontend_jinja/components/phase-banner/macro.html' import govukPhaseBanner -%}
-{%- from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation -%}
-{%- from 'components/header.html' import mojHeader %}
+{%- from 'govuk_frontend_jinja/components/cookie-banner/macro.html' import govukCookieBanner as govuk_cookie_banner -%}
+{%- from 'govuk_frontend_jinja/components/error-summary/macro.html' import govukErrorSummary as govuk_error_summary -%}
+{%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner as govuk_notification_banner -%}
+{%- from 'govuk_frontend_jinja/components/phase-banner/macro.html' import govukPhaseBanner as govuk_phase_banner -%}
+{%- from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation -%}
+{%- from 'components/header.html' import mojHeader as moj_header %}
 
 {% set govukRebrand = True %}
 
@@ -116,12 +116,13 @@
 {% endblock %}
 
 {% block header %}
-  {{ mojHeader() }}
+  {{ moj_header() }}
 
   {{ govuk_service_navigation({
     'serviceName': config['SERVICE_NAME'],
-    'serviceUrl': url_for('main.index'),
-    'navigation': []
+    'serviceUrl': url_for('index'),
+    'navigation': [
+    ]
   }) }}
 {% endblock %}
 
