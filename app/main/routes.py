@@ -8,12 +8,12 @@ from app.main import bp
 from app.main.forms import CookiesForm, WhosCallingForm
 
 
-@bp.route("/")
+@bp.get("/")
 def index():
     return render_template("index.html")
 
 
-@bp.route("/accessibility")
+@bp.get("/accessibility")
 def accessibility():
     return render_template("accessibility.html")
 
@@ -56,7 +56,7 @@ def cookies():
     return render_template("cookies.html", form=form)
 
 
-@bp.route("/privacy")
+@bp.get("/privacy")
 def privacy():
     return render_template("privacy.html")
 
@@ -68,13 +68,13 @@ def receive_call():
         return redirect(url_for("main.receive_call"))
     return render_template("receive-call.html", form=form)
 
-@bp.route("/health")
+@bp.get("/health")
 def health():
     """Liveness probe endpoint - checks if the application is running"""
     return {"status": "healthy"}, 200
 
 
-@bp.route("/ready")
+@bp.get("/ready")
 def ready():
     """Readiness probe endpoint - checks if the application is ready to serve traffic"""
     # Add any checks here for dependencies (database, cache, etc.)
