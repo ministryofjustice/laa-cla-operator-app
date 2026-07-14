@@ -1,11 +1,11 @@
 {% extends 'govuk_frontend_jinja/template.html' %}
 
-{%- from 'govuk_frontend_jinja/components/cookie-banner/macro.html' import govukCookieBanner-%}
-{%- from 'govuk_frontend_jinja/components/error-summary/macro.html' import govukErrorSummary-%}
-{%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner -%}
-{%- from 'govuk_frontend_jinja/components/phase-banner/macro.html' import govukPhaseBanner -%}
-{%- from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation -%}
-{%- from 'components/header.html' import mojHeader %}
+{%- from 'govuk_frontend_jinja/components/cookie-banner/macro.html' import govukCookieBanner as govuk_cookie_banner -%}
+{%- from 'govuk_frontend_jinja/components/error-summary/macro.html' import govukErrorSummary as govuk_error_summary -%}
+{%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner as govuk_notification_banner -%}
+{%- from 'govuk_frontend_jinja/components/phase-banner/macro.html' import govukPhaseBanner as govuk_phase_banner -%}
+{%- from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation -%}
+{%- from 'components/header.html' import mojHeader as moj_header %}
 
 {% set govukRebrand = True %}
 
@@ -28,20 +28,20 @@
 
 {% block bodyStart %}
   {% if "cookies_policy" not in request.cookies %}
-    {% set html %}
+    {% set default_message_html %}
       <p class="govuk-body">We use some essential cookies to make this service work.</p>
       <p class="govuk-body">We’d like to set additional cookies so we can remember your settings, understand how people use the service and make improvements.</p>
     {% endset %}
 
-    {% set acceptHtml %}
-      <p class="govuk-body">You’ve accepted additional cookies. You can <a class="govuk-link" href="{{ url_for('main.cookies') }}">change your cookie settings</a> at any time.</p>
+    {% set accept_html %}
+      <p class="govuk-body">You’ve accepted additional cookies. You can <a class="govuk-link" href="{{ url_for('cookies') }}">change your cookie settings</a> at any time.</p>
     {% endset %}
 
-    {% set rejectHtml %}
-      <p class="govuk-body">You’ve rejected additional cookies. You can <a class="govuk-link" href="{{ url_for('main.cookies') }}">change your cookie settings</a> at any time.</p>
+    {% set reject_html %}
+      <p class="govuk-body">You’ve rejected additional cookies. You can <a class="govuk-link" href="{{ url_for('cookies') }}">change your cookie settings</a> at any time.</p>
     {% endset %}
 
-    {{ govukCookieBanner({
+    {{ govuk_cookie_banner({
       'ariaLabel': "Cookies on " ~ config['SERVICE_NAME'],
       'attributes': {
         'id': "cookie-banner"
@@ -52,7 +52,7 @@
             'id': "default-message"
           },
           'headingText': "Cookies on " ~ config['SERVICE_NAME'],
-          'html': html,
+          'html': default_message_html,
           'actions': [
             {
               'attributes': {
@@ -74,7 +74,7 @@
             },
             {
               'text': "View cookies",
-              'href': url_for('main.cookies')
+              'href': url_for('cookies')
             }
           ]
         },
@@ -82,7 +82,7 @@
           'attributes': {
             'id': "accepted-message"
           },
-          'html': acceptHtml,
+          'html': accept_html,
           'role': "alert",
           'hidden': true,
           'actions': [
@@ -98,7 +98,7 @@
           'attributes': {
             'id': "rejected-message"
           },
-          'html': rejectHtml,
+          'html': reject_html,
           'role': "alert",
           'hidden': true,
           'actions': [
@@ -116,33 +116,34 @@
 {% endblock %}
 
 {% block header %}
-  {{ mojHeader() }}
+  {{ moj_header() }}
 
-  {{ govukServiceNavigation({
+  {{ govuk_service_navigation({
     'serviceName': config['SERVICE_NAME'],
-    'serviceUrl': url_for('main.index'),
-    'navigation': []
+    'serviceUrl': url_for('index'),
+    'navigation': [
+    ]
   }) }}
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukPhaseBanner({
+  {{ govuk_phase_banner({
     'tag': {
       'text': config['SERVICE_PHASE']
     },
-    'html': 'This is a new service – your <a class="govuk-link" href="mailto:' + config['CONTACT_EMAIL'] + '">feedback</a> will help us to improve it.'
+    'html': 'This is a new service. Help us improve it and <a class="govuk-link" href="mailto:' + config['CONTACT_EMAIL'] + '">give your feedback</a>.'
   }) }}
 {% endblock %}
 
 {% block content %}
   {% if form and form.errors %}
-    {{ govukErrorSummary(wtforms_errors(form)) }}
+    {{ govuk_error_summary(wtforms_errors(form)) }}
   {% endif %}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-          {{ govukNotificationBanner({'type': category, 'html': message}) }}
+          {{ govuk_notification_banner({'type': category, 'html': message}) }}
       {% endfor %}
     {% endif %}
   {% endwith %}
@@ -153,19 +154,30 @@
     'meta': {
       'items': [
         {
-          'href': url_for('main.accessibility'),
+          'href': url_for('help'),
+          'text': "Help"
+        },
+        {
+          'href': url_for('feedback'),
+          'text': "Feedback"
+        },
+        {
+          'href': url_for('updates'),
+          'text': "Updates"
+        },
+        {
+          'href': url_for('privacy'),
+          'text': "Privacy policy"
+        },
+        {
+          'href': url_for('cookies'),
+          'text': "Cookie policy"
+        },
+        {
+          'href': url_for('accessibility'),
           'text': "Accessibility"
-        },
-        {
-          'href': url_for('main.cookies'),
-          'text': "Cookies"
-        },
-        {
-            'href': url_for('main.privacy'),
-            'text': "Privacy"
-          }
+        }
       ],
-      'html': 'Built by <a href="' + config['DEPARTMENT_URL'] +'" class="govuk-footer__link">' + config['DEPARTMENT_NAME'] + '</a>'
     }
   }) }}
 {% endblock %}

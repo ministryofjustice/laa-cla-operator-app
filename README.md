@@ -1,11 +1,11 @@
-# Civil Legal Advice Helpline (CLAH)
+# Assess and refer for civil legal advice
 
 [![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/laa-cla-operator-app/badge)](https://github-community.service.justice.gov.uk/repository-standards/laa-cla-operator-app)
 ![govuk-frontend 5.11.2](https://img.shields.io/badge/govuk--frontend%20version-5.11.2-005EA5?logo=gov.uk&style=flat)
 
-The Civil Legal Advice Helpline (CLAH) is a frontend (web UI), part of the Civil Legal Advice product. Used by call centre operators and specialist providers to view and edit information about a case.
+Assess and refer for civil legal advice is a frontend (web UI), part of the Civil Legal Advice product. Used by call centre operators and specialist providers to view and edit information about a case.
 
-Please note: This is still in a [Flask](https://flask.palletsprojects.com) app template/skeleton state which is being customized for CLAH using the [GOV.UK Frontend](https://frontend.design-system.service.gov.uk/) and [GOV.UK Design System](https://design-system.service.gov.uk/). It is also a reference implementation of two core packages:
+Please note: This is still in a [Flask](https://flask.palletsprojects.com) app template/skeleton state which is being customized for Assess and refer for civil legal advice using the [GOV.UK Frontend](https://frontend.design-system.service.gov.uk/) and [GOV.UK Design System](https://design-system.service.gov.uk/). It is also a reference implementation of two core packages:
 
 - [GOV.UK Frontend Jinja](https://github.com/LandRegistry/govuk-frontend-jinja) which provides Jinja macros of GOV.UK components
 - [GOV.UK Frontend WTForms](https://github.com/LandRegistry/govuk-frontend-wtf) which provides WTForms widgets to integrate the above Jinja macros into form generation and validation
@@ -13,8 +13,8 @@ Please note: This is still in a [Flask](https://flask.palletsprojects.com) app t
 # Versioning
 
 - Python: 3.13
-- Node.js: 24.19.0
-- npm: 10.9.3
+- Node.js: 24.18.0
+- npm: 10.16.0
 - pip: 25.2
 
 # Getting started

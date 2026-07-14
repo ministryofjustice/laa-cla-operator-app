@@ -1,0 +1,15 @@
+{% extends "base.html" %} 
+{%- from "govuk_frontend_jinja/components/button/macro.html" import govukButton -%}
+{% block beforeContent %} {{ super() }} {% endblock %}
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-8">Assess and refer for civil legal advice</h1>
+    {{ govukButton({
+      "text": "Sign in",
+      "href": url_for("index"),
+      "isStartButton": true
+    }) }}
+  </div>
+</div>
+{% endblock %}
