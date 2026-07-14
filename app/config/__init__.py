@@ -15,8 +15,8 @@ class Config(object):
     DEPARTMENT_URL = os.environ.get("DEPARTMENT_URL", "https://mojdigital.blog.gov.uk/")
     RATELIMIT_HEADERS_ENABLED = True
     SECRET_KEY = os.environ.get("SECRET_KEY", "Change me")
-    SERVICE_NAME = os.environ.get("SERVICE_NAME", "Civil Legal Advice Helpline")
-    SERVICE_PHASE = os.environ.get("SERVICE_PHASE", "Alpha")
+    SERVICE_NAME = os.environ.get("SERVICE_NAME", "Assess and refer for civil legal advice")
+    SERVICE_PHASE = os.environ.get("SERVICE_PHASE", "Beta")
     SERVICE_URL = os.environ.get("SERVICE_URL", "")
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = (

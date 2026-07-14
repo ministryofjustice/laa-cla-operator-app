@@ -1,0 +1,11 @@
+{% macro mojHeader(user=None) %}
+  <header class="moj-header" role="banner">
+    <div class="moj-header__container">
+      <div class="moj-header__logo">
+        {% include "components/moj_crest.html" %}
+        <a class="moj-header__link moj-header__link--organisation-name"
+           href="https://www.gov.uk/government/organisations/legal-aid-agency">Legal Aid Agency</a>
+      </div>
+    </div>
+  </header>
+{% endmacro %}

@@ -1,6 +1,8 @@
-/* Import GOVUK frontend SCSS to be compiled to CSS */
-@use "govuk-frontend/dist/govuk/index.scss" as govuk;
-
-
-/* Import your custom SCSS below to be compiled into one by Flask Assets */
+/* Your custom overrides */
 @use "./custom" as custom;
+
+/* Full GOV.UK component styles */
+@import "govuk-frontend/dist/govuk/govuk-frontend.min.css";
+
+/* MOJ component styles */
+@import "@ministryofjustice/frontend/moj/moj-frontend.min.css";
