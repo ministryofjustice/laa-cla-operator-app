@@ -1,5 +1,6 @@
 /* Example of a custom SCSS file which is combined into one SCSS application file by Flask Assets */
 @use "govuk-frontend/dist/govuk/settings/_index.scss" as govuk-index;
+@use "govuk-frontend/dist/govuk/base" as govuk;
 
 /* Example below of using GOVUK frontend SCSS variables in custom SCSS */
 .moj-skeleton {
@@ -7,4 +8,9 @@
 	&__example {
 		background: govuk-index.$govuk-brand-colour;
 	}
+}
+
+.taking-call-inset {
+	border-left-color: govuk.govuk-functional-colour("brand");
+	background-color: govuk.govuk-functional-colour("template-background");
 }

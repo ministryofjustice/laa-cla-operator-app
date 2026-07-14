@@ -17,8 +17,8 @@ def test_sign_in(page: Page, base_url: str) -> None:
     # Click the Sign in button
     page.get_by_role("button", name="Sign in").click()
 
-    # Check we've been redirected to the home page
-    expect(page).to_have_url(f"{base_url}/")
+    # Check we've continued to the next page (target only the main H1)
+    expect(page).to_have_url(f"{base_url}/receive-call")
     expect(
         page.get_by_role(
             "heading",

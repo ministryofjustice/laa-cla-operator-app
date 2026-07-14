@@ -1,8 +1,8 @@
-from flask import flash, json, make_response, redirect, render_template, request
+from flask import flash, json, make_response, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm
+from app.main.forms import CookiesForm, WhosCallingForm
 
 
 def register_routes(app):
@@ -12,7 +12,7 @@ def register_routes(app):
 
     @app.get("/sign-in")
     def sign_in():
-        return render_template("main/sign_in.html")
+        return render_template("auth/sign_in.html")
 
     @app.get("/status")
     def status():
@@ -20,19 +20,27 @@ def register_routes(app):
 
     @app.get("/help")
     def help():
-        return render_template("main/help.html")
+        return render_template("pages/help.html")
 
     @app.get("/feedback")
     def feedback():
-        return render_template("main/feedback.html")
+        return render_template("pages/feedback.html")
 
     @app.get("/updates")
     def updates():
-        return render_template("main/updates.html")
+        return render_template("pages/updates.html")
 
     @app.get("/accessibility")
     def accessibility():
-        return render_template("main/accessibility.html")
+        return render_template("pages/accessibility.html")
+    
+    @app.route("/receive-call", methods=["GET", "POST"])
+    def receive_call():
+        form = WhosCallingForm()
+        if form.validate_on_submit():
+            # TODO: route "myself" vs "another" once the next step exists
+            return redirect(url_for("receive_call"))
+        return render_template("calls/receive_call.html", form=form)
 
     @app.route("/cookies", methods=["GET", "POST"])
     def cookies():
@@ -78,7 +86,7 @@ def register_routes(app):
 
     @app.errorhandler(HTTPException)
     def http_exception(error):
-        return render_template(f"main/{error.code}.html"), error.code
+        return render_template(f"errors/{error.code}.html"), error.code
 
     @app.errorhandler(CSRFError)
     def csrf_error(error):
