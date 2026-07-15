@@ -130,7 +130,7 @@ mccabe==0.7.0
     # via flake8
 mdurl==0.1.2
     # via markdown-it-py
-msgpack==1.1.2
+msgpack==1.2.1
     # via cachecontrol
 mypy==2.1.0
     # via -r requirements_dev.in
@@ -257,7 +257,7 @@ typing-extensions==4.15.0
     #   limits
     #   mypy
     #   pyee
-urllib3==2.6.3
+urllib3==2.7.0
     # via requests
 virtualenv==21.2.0
     # via pre-commit
