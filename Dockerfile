@@ -10,7 +10,7 @@ RUN npm run build
 
 FROM $BASE_IMAGE AS base
 # Change this to your production requirments for production purposes.
-ARG REQUIREMENTS_FILE=requirements_dev.txt
+ARG REQUIREMENTS_FILE=requirements.txt
 ARG FLASK_RUN_PORT=8000
 
 # Set environment variables

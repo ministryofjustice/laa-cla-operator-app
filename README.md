@@ -88,16 +88,6 @@ npm run build
 
 Ensure you do this before starting your Flask project as you're JS and SCSS imports will fail in the flask run.
 
-### Demo assets
-
-For the demo of the MOJ Flask Skeleton, you'll need the `govuk_components` yaml files.
-
-```shell
-./build.sh
-```
-
-You will not need this in your development project. This is only for the MOJ Flask Skeleton Demo.
-
 ### Configuration environment variables
 
 Create your local config file `.env` from the template file:
@@ -151,10 +141,6 @@ python -c 'import secrets; print(secrets.token_hex())'
 ```shell
 docker compose up --build
 ```
-
-## Demos
-
-There are some helpful demos included by default that show all of the components available from GOV.UK Frontend Jinja and a selection of forms and validation patterns from GOV.UK Frontend WTForms. These are located in the `app/demos` and `app/templates/demos` directories, along with the `demos` blueprint. Use them for reference whilst building your service, but make sure to delete them, along with the relevant section in `build.sh`, before deploying the app.
 
 ## Testing
 
