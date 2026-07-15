@@ -1,6 +1,5 @@
 # Uninstalls the ephemeral helm chart when a PR is merged or closed
 name: Clean up ephemeral deployment
-
 run-name: Clean up ${{ github.head_ref || github.ref_name }}
 
 on:

@@ -31,6 +31,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      
       - name: Validate
         uses: ministryofjustice/devsecops-actions/github/commit@7dc13c20e2bf541b8a77fa1320a04983b18846f6 # v1.6.0
