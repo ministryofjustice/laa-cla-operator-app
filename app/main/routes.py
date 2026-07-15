@@ -14,9 +14,13 @@ from app.main.forms import CookiesForm, WhosCallingForm
 
 
 def register_routes(app):
-    @app.get("/")
-    def index():
-        return render_template("main/index.html")
+    @app.route("/", methods=["GET", "POST"])
+    def receive_call():
+        form = WhosCallingForm()
+        if form.validate_on_submit():
+            # TODO: route "myself" vs "another" once the next step exists
+            return redirect(url_for("receive_call"))
+        return render_template("main/index.html", form=form)
 
     @app.get("/sign-in")
     def sign_in():
@@ -42,13 +46,6 @@ def register_routes(app):
     def accessibility():
         return render_template("pages/accessibility.html")
 
-    @app.route("/receive-call", methods=["GET", "POST"])
-    def receive_call():
-        form = WhosCallingForm()
-        if form.validate_on_submit():
-            # TODO: route "myself" vs "another" once the next step exists
-            return redirect(url_for("receive_call"))
-        return render_template("calls/receive_call.html", form=form)
 
     @app.route("/cookies", methods=["GET", "POST"])
     def cookies():

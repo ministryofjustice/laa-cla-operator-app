@@ -3,7 +3,7 @@ from playwright.sync_api import Page, expect
 
 # Simple test to check that the receive call page is rendered correctly and the buttons work as expected
 def test_receive_call_page(page: Page, base_url: str) -> None:
-    page.goto("/receive-call")
+    page.goto("/")
 
     expect(
         page.get_by_role(
@@ -40,7 +40,7 @@ def test_receive_call_page(page: Page, base_url: str) -> None:
 
 
 def test_receive_call_error_message(page: Page, base_url: str) -> None:
-    page.goto("/receive-call")
+    page.goto("/")
 
     continue_button = page.get_by_role("button", name="Continue")
     continue_button.click()
@@ -51,7 +51,7 @@ def test_receive_call_error_message(page: Page, base_url: str) -> None:
         "You must select either 'Myself' or 'Another person'"
     )
 
-    error_message = page.locator("#whosCalling-error")
+    error_message = page.locator("#whos_calling-error")
     expect(error_message).to_be_visible()
     expect(error_message).to_contain_text(
         "You must select either 'Myself' or 'Another person'"

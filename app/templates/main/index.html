@@ -1,13 +1,49 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
+{% from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation %}
+{% from 'components/header.html' import mojHeader as moj_header %}
+
+{% block header %}
+  {{ moj_header() }}
+
+  {{ govuk_service_navigation({
+    'serviceName': config['SERVICE_NAME'],
+    'serviceUrl': url_for('receive_call'),
+    'navigation': [
+      {
+        'href': url_for('receive_call'),
+        'text': 'Receive calls',
+        'current': true
+      },
+      {
+        'href': url_for('receive_call'),
+        'text': 'Make calls'
+      }
+    ]
+  }) }}
+{% endblock %}
 {% block beforeContent %} {{ super() }} {% endblock %}
+
+{% block pageTitle %}{%- if form.errors %}Error: {% endif -%}Taking calls from clients – {{config['SERVICE_NAME']}} – GOV.UK{% endblock %}
+
 {% block content %}
+{{ super() }}
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-l">Index Page</h1>
-    <p class="govuk-body">Placeholder content for the index page.</p>
-        <div class="govuk-inset-text taking-call-inset">
-        <p class="govuk-body">Use some of the available routes: for example, <a href="{{ url_for('sign_in') }}">/sign-in</a></p>
+  <div class="govuk-grid-column-three-quarters">
+  <h1 class="govuk-heading-xl">Taking calls from clients</h1>
+    <p class="govuk-body">Introduce the caller to Civil Legal Advice and check if they are ringing on their own behalf, or someone else's.</p>
+    <div class="govuk-inset-text taking-call-inset">
+        <p class="govuk-body">Thank you for calling the Civil Legal Advice helpline, my name is [agent name].</p>
+        <p class="govuk-body">I'm going to ask you some questions about your legal problem and your financial situation to check if you are eligible for legal aid.</p>
+        <p class="govuk-body">I am not trained to give legal advice. If you are likely to be eligible for legal aid, I'll refer you to a legal professional at the end of this call. Depending on your problem, they may need to complete further checks before they can help.</p>
+        <p class="govuk-body">If you are not eligible for legal aid, I'll try to direct you to someone else who can help you.</p>
+        <p class="govuk-body">As a first step, I'm going to take a few details from you. The information you give me will be stored on our system to help us assess your case.</p>
     </div>
+
+    <form action="{{ url_for('receive_call') }}" method="post" novalidate>
+      {{ form.csrf_token }}
+      {{ form.whos_calling }}
+      {{ form.submit }}
+    </form>
   </div>
 </div>
 {% endblock %}
