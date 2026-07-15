@@ -95,23 +95,3 @@ jobs:
 # upgrade command above may need the following added, it should default to this from values-uat.yml:
 # --set ingress.hosts[0].paths[0].path=/ \
 # --set ingress.hosts[0].paths[0].pathType=ImplementationSpecific \
-
-      - name: Post deployment comment
-        run: |
-          # Get short commit SHA
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          
-          # Get commit message
-          COMMIT_MSG=$(git log -1 --pretty=format:"%s" ${{ github.sha }} 2>/dev/null || echo "Latest changes")
-          
-          # Create comment
-          gh pr comment ${{ github.event.number }} --body "## 🚀 Ephemeral Deployment Successful
-          
-          **Build:** [\`${SHORT_SHA}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) • ${COMMIT_MSG}
-          
-          **View live site:** ${{ env.DEPLOYMENT_URL }}
-          
-          ---
-          *Deployed to ${{ inputs.environment }} by ${{ github.actor }} • [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
