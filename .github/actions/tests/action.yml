@@ -1,0 +1,57 @@
+name: Unit Test with Coverage Report
+description: 
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.14'
+  test-path:
+    description: 'Path to test directory or file'
+    required: false
+    default: 'tests/'
+  coverage-fail-under:
+    description: 'Minimum coverage percentage required to pass'
+    required: false
+    default: '100'
+  requirements-file:
+    description: 'Path to requirements file to install'
+    required: false
+    default: 'requirements.txt'
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout GitHub repository
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+    - name: Set up Python
+      uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v6.0.0
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        pip install -r ${{ inputs.requirements-file }}
+        pip install pytest pytest-cov
+
+    - name: Run tests with coverage
+      shell: bash
+      # No continue-on-error — a failure here stops the job and fails the caller.
+      run: |
+        pytest ${{ inputs.test-path }} \
+          --cov=. \
+          --cov-report=term-missing \
+          --cov-report=xml \
+          --cov-fail-under=${{ inputs.coverage-fail-under }}
+
+    - name: Upload coverage report
+      id: upload-coverage
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: coverage-report
+        path: coverage.xml
+
+    - name: Echo coverage report URL
+      shell: bash
+      run: echo "Coverage report available at ${{ steps.upload-coverage.outputs.artifact-url }}"

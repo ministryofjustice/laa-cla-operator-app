@@ -1,0 +1,81 @@
+name: Deploy to a Cloud Platform environment
+description: Deploy to a Cloud Platform environment
+inputs:
+  environment:
+    required: true
+    type: string
+  ECR_REGION:
+    required: true
+    type: string
+  ECR_REPOSITORY:
+    required: true
+    type: string
+  DEPLOYMENT_URL:
+    description: 'Deployment URL'
+    required: false
+    type: string
+    default: "https://laa-cla-operator-app-uat.cloud-platform.service.justice.gov.uk"
+  ECR_REGISTRY_URL:
+    required: true
+  ECR_ROLE_TO_ASSUME:
+    required: true
+  KUBE_CERT:
+    required: true
+  KUBE_CLUSTER:
+    required: true
+  KUBE_NAMESPACE:
+    required: true
+  KUBE_TOKEN:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout GitHub repository
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+    - name: Authenticate to the cluster
+      shell: bash
+      env:
+        KUBE_NAMESPACE: ${{ inputs.KUBE_NAMESPACE }}
+        KUBE_CLUSTER: ${{ inputs.KUBE_CLUSTER }}
+        KUBE_CERT: ${{ inputs.KUBE_CERT }}
+        KUBE_TOKEN: ${{ inputs.KUBE_TOKEN }}
+      run: |
+        echo "${KUBE_CERT}" > ca.crt
+        kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
+        kubectl config set-credentials deploy-user --token=${KUBE_TOKEN}
+        kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${KUBE_NAMESPACE}
+        kubectl config use-context ${KUBE_CLUSTER}
+
+    - name: Fetch and set whitelist IP environment variables
+      shell: bash
+      run: |
+        # Pull ranges from shared LAA IP ranges and then remove spaces,
+        # replace linebreaks with commas, remove last comma, and escape commas for helm input
+        SHARED_IP_RANGES_LAA=$(curl -s https://raw.githubusercontent.com/ministryofjustice/laa-ip-allowlist/main/cidrs.txt | tr -d ' ' | tr '\n' ',' | sed 's/,/\\,/g' | sed 's/\\,$//')
+        PINGDOM_IPS=$(curl -s https://my.pingdom.com/probes/ipv4 | tr -d ' ' | tr '\n' ',' | sed 's/,/\\,/g' | sed 's/\\,$//')
+        echo "PINGDOM_IPS=$PINGDOM_IPS" >> $GITHUB_ENV
+        echo "SHARED_IP_RANGES_LAA=$SHARED_IP_RANGES_LAA" >> $GITHUB_ENV
+
+    - name: Upgrade the Helm chart
+      shell: bash
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+        REGISTRY: ${{ inputs.ECR_REGISTRY_URL }}
+        REPOSITORY: ${{ inputs.ECR_REPOSITORY }}
+        HELM_DIR: "helm_deploy/laa-cla-operator-app"
+        KUBE_NAMESPACE: ${{ inputs.KUBE_NAMESPACE }}
+        SHARED_IP_RANGES_LAA: ${{ env.SHARED_IP_RANGES_LAA }}
+      run: |
+        helm upgrade laa-cla-operator-app \
+          ${HELM_DIR} \
+          --namespace=${KUBE_NAMESPACE} \
+          --values ${HELM_DIR}/values/values-${{ inputs.environment }}.yaml \
+          --set image.repository=${REGISTRY}/${REPOSITORY} \
+          --set image.tag=${IMAGE_TAG} \
+          --set sharedIPRangesLAA=$SHARED_IP_RANGES_LAA \
+          --set pingdomIPs=$PINGDOM_IPS \
+          --force \
+          --install
+
