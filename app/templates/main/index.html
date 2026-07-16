@@ -26,9 +26,9 @@
 {% block pageTitle %}{%- if form.errors %}Error: {% endif -%}Taking calls from clients – {{config['SERVICE_NAME']}} – GOV.UK{% endblock %}
 
 {% block content %}
-{{ super() }}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-three-quarters">
+  {{ super() }}
   <h1 class="govuk-heading-xl">Taking calls from clients</h1>
     <p class="govuk-body">Introduce the caller to Civil Legal Advice and check if they are ringing on their own behalf, or someone else's.</p>
     <div class="govuk-inset-text taking-call-inset">
