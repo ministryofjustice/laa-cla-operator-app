@@ -2,13 +2,13 @@
 
 {%- from 'govuk_frontend_jinja/components/back-link/macro.html' import govukBackLink -%}
 
-{% block pageTitle %}Feedback – {{config['SERVICE_NAME']}} – GOV.UK{% endblock %}
+{% block pageTitle %}Help – {{config['SERVICE_NAME']}} – GOV.UK{% endblock %}
 
 {% block beforeContent %}
   {{ super() }}
   {{ govukBackLink({
     'text': "Back",
-    'href': url_for('index')
+    'href': url_for('receive_call')
   }) }}
 {% endblock %}
 
@@ -16,7 +16,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         {{ super() }}
-        <h1 class="govuk-heading-xl">Feedback</h1>
+        <h1 class="govuk-heading-xl">Help</h1>
     </div>
 </div>
 {% endblock %}

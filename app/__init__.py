@@ -14,7 +14,7 @@ compress = Compress()
 csrf = CSRFProtect()
 limiter = Limiter(
     get_remote_address,
-    default_limits=["2 per second", "60 per minute"],
+    default_limits=["20 per second", "60 per minute"],
 )
 talisman = Talisman()
 
