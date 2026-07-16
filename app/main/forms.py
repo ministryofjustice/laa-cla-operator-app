@@ -37,3 +37,7 @@ class WhosCallingForm(FlaskForm):
         choices=[("myself", "Myself"), ("another", "Another person")],
     )
     submit = SubmitField("Continue", widget=GovSubmitInput())
+
+
+class serachForm:
+    search = None

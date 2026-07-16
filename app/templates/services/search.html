@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation %}
+{% from 'components/header.html' import mojHeader as moj_header %}
+{% block header %}
+  {{ moj_header() }}
+
+  {{ govuk_service_navigation({
+    'serviceName': config['SERVICE_NAME'],
+    'navigation': [
+      {
+        'text': 'Receive calls',
+        'current': true
+      },
+      {
+        'text': 'Make calls'
+      }
+    ]
+  }) }}
+{% endblock %}
+{% block beforeContent %} {{ super() }} {% endblock %}
+{% block pageTitle %}{%- if form.errors %}Error: {% endif -%}Search client’s details – {{config['SERVICE_NAME']}} – GOV.UK{% endblock %}
+
+{% block content %}
+
+<!--Display the error messsage-->
+
+<div class="govuk-error-summary" data-module="govuk-error-summary">
+  <div role="alert">
+    <h2 class="govuk-error-summary__title">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <a href="#">You must complete at least one search field </a>
+        </li>
+   
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-three-quarters">
+  <h1 class="govuk-heading-xl">Search client’s details</h1>
+    <p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.  </p>
+
+<div class="taking-call-inset">
+
+    <div class="govuk-form-group">
+        <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="search">
+          What's your name?
+        </label>
+      <input class="govuk-input moj-search__input " id="search" name="search" type="search" aria-describedby="search-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="search">
+       What's your phone number?
+      </label>
+      <div id="search-hint" class="govuk-hint moj-search__hint ">
+        If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so. 
+      </div>
+      <input class="govuk-input moj-search__input " id="search" name="search" type="search" aria-describedby="search-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="search">
+       What's your postcode?
+      </label>
+      <input class="govuk-input moj-search__input " id="search" name="search" type="search" aria-describedby="search-hint">
+    </div>
+
+
+    <div class="moj-datepicker" data-module="moj-date-picker">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="date">
+       What's your date of birth?
+      </label>
+      <div id="date-hint" class="govuk-hint">
+        For example, 17/5/2024.
+      </div>
+      <input class="govuk-input moj-js-datepicker-input " id="date" name="date" type="text" aria-describedby="date-hint" autocomplete="on">
+    </div>
+  </div>
+
+  <!--Search Action button-->
+   <div class="govuk-button-group">
+        <button class="govuk-button dialog-button govuk" data-module="govuk-button" data-element="govuk-modal-dialogue-close">Search</button>
+          <a class="govuk-link" href="#" data-element="govuk-modal-dialogue-close">Clear all</a>
+    </div>
+
+     </div>
+
+  <!--Starting a new case-->
+  <div class="moj-button-action">
+      <button type="submit" class="govuk-button govuk-button--secondary moj-add-another__add-button govuk-!-margin-bottom-4" data-module="govuk-button">
+       Start a new case using the details entered 
+      </button>
+    </div>
+
+
+  <!--Display the search result-->
+  <table class="govuk-table" data-module="moj-sortable-table">
+    <caption class="govuk-table__caption">Mountains of the world</caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header" aria-sort="ascending">Name</th>
+        <th scope="col" class="govuk-table__header" aria-sort="none">Phone number</th>
+        <th scope="col" class="govuk-table__header" aria-sort="none">Post code</th>
+        <th scope="col" class="govuk-table__header govuk-table__header--numeric" aria-sort="none">Date of birth</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"> <a href=""> Jannet Jackson</a></td>
+        <td class="govuk-table__cell" data-sort-value="6961">07656599559</td>
+        <td class="govuk-table__cell">South America</td>
+        <td class="govuk-table__cell govuk-table__cell--numeric" data-sort-value="1897">1897</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+
+
+
+    <form action="{{ url_for('receive_call') }}" method="post" novalidate>
+      {{ form.csrf_token }}
+      {{ form.whos_calling }}
+      {{ form.submit }}
+    </form>
+  </div>
+</div>
+
+<div class="moj-pagination">
+  <nav class="govuk-pagination moj-pagination__pagination " aria-label="Pagination">
+    <div class="govuk-pagination__prev">
+      <a class="govuk-link govuk-pagination__link" href="#" rel="prev">
+        <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+          <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+        </svg>
+        <span class="govuk-pagination__link-title">
+          Previous
+        </span>
+      </a>
+    </div>
+    <ul class="govuk-pagination__list">
+      <li class="govuk-pagination__item">
+        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
+          1
+        </a>
+      </li>
+      <li class="govuk-pagination__item govuk-pagination__item--current">
+        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 2" aria-current="page">
+          2
+        </a>
+      </li>
+      <li class="govuk-pagination__item">
+        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 3">
+          3
+        </a>
+      </li>
+      <li class="govuk-pagination__item govuk-pagination__item--ellipsis">
+        &ctdot;
+      </li>
+      <li class="govuk-pagination__item">
+        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 7">
+          7
+        </a>
+      </li>
+    </ul>
+    <div class="govuk-pagination__next">
+      <a class="govuk-link govuk-pagination__link" href="#" rel="next">
+        <span class="govuk-pagination__link-title">
+          Next
+        </span>
+        <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+          <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+        </svg>
+      </a>
+    </div>
+  </nav>
+  <p class="moj-pagination__results">Showing 26 to 50 of 157 total results</p>
+</div>
+
+
+
+{% endblock %}
