@@ -15,4 +15,24 @@
 	background-color: govuk.govuk-functional-colour("template-background");
 }
 
+.search-container {
+  width: 100dvh;
+  background-color: govuk.govuk-functional-colour("template-background");
+  padding: 20px;
+}
 
+.search-container .govuk-form-group {
+  max-width: 40em; 
+}
+
+.search-container .govuk-input {
+  max-width: 40em; 
+}
+
+.search-container .moj-datepicker .govuk-input {
+  max-width: 10em;
+}
+
+.moj-button-action {
+	padding: 40px 40px 40px 0;
+}

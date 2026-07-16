@@ -1,9 +1,8 @@
 from govuk_frontend_wtf.wtforms_widgets import GovRadioInput, GovSubmitInput
 from app.main.utils.widgets import CustomRadioInput
-from wtforms.fields import RadioField, SubmitField
-from wtforms.validators import InputRequired
 from flask_wtf import FlaskForm
-
+from wtforms import RadioField, StringField, SubmitField
+from wtforms.validators import InputRequired
 
 class CookiesForm(FlaskForm):
     functional = RadioField(
@@ -39,5 +38,36 @@ class WhosCallingForm(FlaskForm):
     submit = SubmitField("Continue", widget=GovSubmitInput())
 
 
-class serachForm:
-    search = None
+
+
+class SearchForm(FlaskForm):
+
+    name = StringField(
+        "Name",
+        validators=[
+            InputRequired(message="Please enter at least 1 character for the name")
+        ],
+    )
+
+    phone_number = StringField(
+        "Phone number",
+        validators=[
+            InputRequired(message="Please enter at least 1 character for the phone number")
+        ],
+    )
+
+    post_code = StringField(
+        "Post code",
+        validators=[
+            InputRequired(message="Please enter at least 1 character for the post code")
+        ],
+    )
+
+    date_of_birth = StringField(
+        "Date of birth",
+        validators=[
+            InputRequired(message="Please enter at least 1 character for the date of birth")
+        ],
+    )
+
+    submit = SubmitField("Continue", widget=GovSubmitInput())
