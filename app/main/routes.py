@@ -46,7 +46,6 @@ def register_routes(app):
     def accessibility():
         return render_template("pages/accessibility.html")
 
-
     @app.route("/cookies", methods=["GET", "POST"])
     def cookies():
         form = CookiesForm()
