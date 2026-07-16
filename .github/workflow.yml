@@ -100,12 +100,10 @@ jobs:
   deploy-staging:
     name: Staging
     needs: deploy-uat 
-
     permissions:
       contents: read
       id-token: write
       pull-requests: write
-    
     steps:
       uses: ./.github/actions/deploy 
       with:
@@ -129,7 +127,6 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-
     steps:
       uses: ./.github/actions/deploy 
     with:
