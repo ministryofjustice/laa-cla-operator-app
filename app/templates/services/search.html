@@ -33,14 +33,13 @@
   <div class="govuk-grid-column-three-quarters">
     <h1 class="govuk-heading-xl">Search client's details</h1>
     <p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.</p>
-
-  
     
-  <div class="search-container">
-    <form action="{{ url_for('search_client') }}" method="get" >
+    <div class="search-container">
+  <form action="{{ url_for('search_client') }}" method="POST" novalidate>
+    {{ form.csrf_token }}
 
     <div class="govuk-form-group">
-      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="search">What's your name?</label>
+      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's your name?</label>
       <input class="govuk-input moj-search__input" id="name" name="name" type="search" aria-describedby="search-hint">
     </div>
 
@@ -57,19 +56,22 @@
       <input class="govuk-input moj-search__input" id="postcode" name="postcode" type="search">
     </div>
 
-    <div class="moj-datepicker" data-module="moj-date-picker">
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="date">What's your date of birth?</label>
-        <div id="date-hint" class="govuk-hint">For example, 17/5/2024.</div>
-        <input class="govuk-input moj-js-datepicker-input" id="date" name="date"type="text" aria-describedby="date-hint" autocomplete="on">
-      </div>
-    </div>
-
-    <div class="govuk-button-group">
+    <!--Date Picker-->
+  
+  {{ mojDatePicker({
+  id: "date",
+  name: "date",
+  label: {
+    text: "Date"
+  },
+  hint: {
+    text: "For example, 17/5/2024."
+  }
+}) }}
+<div class="govuk-button-group">
       <button class="govuk-button dialog-button govuk" data-module="govuk-button" type="submit">Search</button>
-      <a class="govuk-link" href="{{ url_for('search_client') }}">Clear all</a>
+      <a class="govuk-link" href="#" id="clear-all-link">Clear all</a>
     </div>
-
   </form>
 </div>
 
@@ -139,4 +141,6 @@
 
   </div>
 </div>
+
+
 {% endblock %}

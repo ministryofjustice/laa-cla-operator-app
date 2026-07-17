@@ -26,7 +26,7 @@
 }
 
 .search-container .govuk-input {
-  max-width: 40em; 
+  max-width: 30em; 
 }
 
 .search-container .moj-datepicker .govuk-input {
@@ -47,4 +47,8 @@
 
 .govuk-heading-xl {
 	margin-top: 5% !important;
+}
+
+.moj-datepicker__dialog--open {
+	display: none;
 }

@@ -10,29 +10,34 @@ from flask import (
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm, WhosCallingForm, SearchForm
+from app.main.forms import CookiesForm, WhosCallingForm, SearchForm,SearchUser
 
 
 def register_routes(app):
     @app.route("/search-client", methods=["GET", "POST"])
     def search_client():
-        name = request.args.get("name")
-        phone = request.args.get("phone")
-        postcode = request.args.get("postcode")
-        date = request.args.get("date")
+        form = SearchUser()
 
-        if not any([name, phone, postcode, date]):
-            search = {"error": True}
-        else:
-            form = SearchForm(
-                name=name,
-                phone_number=phone,
-                post_code=postcode,
-                date_of_birth=date
-            )
-            search = form.search() 
+        if form.validate_on_submit():
+            name = form.name.data
+            phone = form.phone.data
+            postcode = form.postcode.data
+            date = form.date.data
 
-        return render_template("services/search.html", search=search)
+            if not any([name, phone, postcode, date]):
+                search = {"error": True}
+            else:
+                search_form = SearchForm(
+                    name=name,
+                    phone_number=phone,
+                    post_code=postcode,
+                    date_of_birth=date,
+                )
+                search = search_form.search()
+
+            return render_template("services/search.html", search=search, form=form)
+
+        return render_template("services/search.html", search={}, form=form)
 
 
     @app.route("/", methods=["GET", "POST"])

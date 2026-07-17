@@ -1,4 +1,4 @@
-from govuk_frontend_wtf.wtforms_widgets import GovRadioInput, GovSubmitInput
+from govuk_frontend_wtf.wtforms_widgets import GovRadioInput, GovSubmitInput,GovTextInput
 from app.main.utils.widgets import CustomRadioInput
 from flask_wtf import FlaskForm
 from wtforms import RadioField, StringField, SubmitField
@@ -38,6 +38,15 @@ class WhosCallingForm(FlaskForm):
     submit = SubmitField("Continue", widget=GovSubmitInput())
 
 
+
+
+
+class SearchUser(FlaskForm):
+    name = StringField("What's your name?", widget=GovTextInput())
+    phone = StringField("What's your phone number?", widget=GovTextInput())
+    postcode = StringField("What's your postcode?", widget=GovTextInput())
+    date = StringField("What's your date of birth?", widget=GovTextInput())
+    submit = SubmitField("Continue", widget=GovSubmitInput())
 
 
 import random
