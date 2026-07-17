@@ -37,7 +37,7 @@
   
     
   <div class="search-container">
-    <form action="{{ url_for('search_client') }}" method="post" >
+    <form action="{{ url_for('search_client') }}" method="get" >
 
     <div class="govuk-form-group">
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="search">What's your name?</label>
@@ -94,7 +94,7 @@
         <tbody class="govuk-table__body">
           {% for r in search.result %}
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell"><a href="{{ url_for('view_client', client_id=r.id) }}">{{ r.name }}</a></td>
+            <td class="govuk-table__cell"><a href="#">{{ r.name }}</a></td>
             <td class="govuk-table__cell" data-sort-value="{{ r.phone }}">{{ r.phone }}</td>
             <td class="govuk-table__cell">{{ r.postcode }}</td>
             <td class="govuk-table__cell govuk-table__cell--numeric" data-sort-value="{{ r.dob_sort }}">{{ r.dob }}</td>

@@ -40,34 +40,27 @@ class WhosCallingForm(FlaskForm):
 
 
 
-class SearchForm(FlaskForm):
+import random
 
-    name = StringField(
-        "Name",
-        validators=[
-            InputRequired(message="Please enter at least 1 character for the name")
-        ],
-    )
 
-    phone_number = StringField(
-        "Phone number",
-        validators=[
-            InputRequired(message="Please enter at least 1 character for the phone number")
-        ],
-    )
+class SearchForm:
+    def __init__(self, name: str, phone_number: str, post_code: str, date_of_birth: str):
+        self.name = name
+        self.phone_number = phone_number
+        self.post_code = post_code
+        self.date_of_birth = date_of_birth
 
-    post_code = StringField(
-        "Post code",
-        validators=[
-            InputRequired(message="Please enter at least 1 character for the post code")
-        ],
-    )
+    def search(self):
+        # Placeholder record shaped to match the results table.
+       
+        record = {
+            "id": 1,
+            "name": self.name,
+            "phone": self.phone_number if self.phone_number else 8895957959,
+            "postcode": self.post_code if self.post_code else "TA44 7YU",
+            "dob": self.date_of_birth if self.date_of_birth else "27/09/2000",
 
-    date_of_birth = StringField(
-        "Date of birth",
-        validators=[
-            InputRequired(message="Please enter at least 1 character for the date of birth")
-        ],
-    )
+        }
 
-    submit = SubmitField("Continue", widget=GovSubmitInput())
+        found = random.choice([True, False])
+        return {"result": [record] if found else []}
