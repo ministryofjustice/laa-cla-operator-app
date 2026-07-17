@@ -34,7 +34,7 @@ def register_routes(app):
                     date_of_birth=date,
                 )
                 search = search_form.search()
-
+        
             return render_template("services/search.html", search=search, form=form)
 
         return render_template("services/search.html", search={}, form=form)

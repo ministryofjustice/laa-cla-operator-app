@@ -15,4 +15,3 @@ document.getElementById('clear-all-link').addEventListener('click', function(eve
   clearInputFields();
 });
 
-

@@ -14,6 +14,7 @@
 {% endblock %}
 {% block beforeContent %} {{ super() }} {% endblock %}
 {% block content %}
+<body class="govuk-template__body"></body>
 <a href="#" class="govuk-back-link">Back</a>
 
 <!--Display the error message-->
@@ -40,7 +41,7 @@
 
     <div class="govuk-form-group">
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's your name?</label>
-      <input class="govuk-input moj-search__input" id="name" name="name" type="search" aria-describedby="search-hint">
+      <input class="govuk-input moj-search__input" value="{{ form.name.data or '' }}" id="name" name="name" type="search" aria-describedby="search-hint">
     </div>
 
     <div class="govuk-form-group">
@@ -48,12 +49,12 @@
       <div id="search-hint" class="govuk-hint moj-search__hint">
         If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.
       </div>
-      <input class="govuk-input moj-search__input" id="phone" name="phone" type="search" aria-describedby="search-hint">
+      <input class="govuk-input moj-search__input" id="phone" name="phone" type="search" aria-describedby="search-hint" value="{{ form.phone.data or '' }}">
     </div>
 
     <div class="govuk-form-group">
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="postcode">What's your postcode?</label>
-      <input class="govuk-input moj-search__input" id="postcode" name="postcode" type="search">
+      <input class="govuk-input moj-search__input" id="postcode" name="postcode" type="search"  value="{{ form.postcode.data or '' }}">
     </div>
 
     <!--Date Picker-->
@@ -69,7 +70,7 @@
       </div>
   <div class="moj-datepicker__wrapper">
     <div class="govuk-input__wrapper">
-      <input class="govuk-input moj-js-datepicker-input " id="date" name="date" type="text" aria-describedby="date-hint" autocomplete="off">
+      <input class="govuk-input moj-js-datepicker-input " id="date" name="date" type="text" aria-describedby="date-hint" autocomplete="off" value="{{ form.date.data or '' }}">
       <button class="moj-datepicker__toggle moj-js-datepicker-toggle" type="button" aria-haspopup="dialog" aria-controls="datepicker-date" aria-expanded="true">
             <span class="govuk-visually-hidden">Choose date</span>
             <svg width="32" height="24" focusable="false" class="moj-datepicker-icon" aria-hidden="true" role="img" viewBox="0 0 22 22">
@@ -199,4 +200,5 @@
 
   </div>
 </div>
+
 {% endblock %}
