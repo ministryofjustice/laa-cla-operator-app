@@ -14,31 +14,38 @@ from app.main.forms import CookiesForm, WhosCallingForm, SearchForm,SearchUser
 
 
 def register_routes(app):
-    @app.route("/search-client", methods=["GET", "POST"])
+    @app.route("/search-client", methods=["GET"])
     def search_client():
-        form = SearchUser()
+        form = SearchUser(request.args) 
 
-        if form.validate_on_submit():
+        submitted = request.args.get("submitted") == "true"
+
+        if submitted:
+            page = request.args.get("page", 1, type=int)
             name = form.name.data
             phone = form.phone.data
-            postcode = form.postcode.data
+            post_code =form.postcode.data
             date = form.date.data
 
-            if not any([name, phone, postcode, date]):
+            has_input = any([
+                name,
+                phone, 
+                post_code,
+                date
+            ])
+    
+            if not has_input:
                 search = {"error": True}
-            else:
-                search_form = SearchForm(
-                    name=name,
-                    phone_number=phone,
-                    post_code=postcode,
-                    date_of_birth=date,
-                )
-                search = search_form.search()
-        
-            return render_template("services/search.html", search=search, form=form)
+                return render_template("services/search.html", search=search, form=form)
+
+            search = SearchForm(name, phone, post_code, date, page)
+            results = search.search()
+
+
+            return render_template("services/search.html", search=results, form=form)
 
         return render_template("services/search.html", search={}, form=form)
-
+    
 
     @app.route("/", methods=["GET", "POST"])
     def receive_call():

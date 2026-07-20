@@ -14,4 +14,3 @@ document.getElementById('clear-all-link').addEventListener('click', function(eve
   event.preventDefault();
   clearInputFields();
 });
-
