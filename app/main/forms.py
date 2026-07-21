@@ -79,7 +79,7 @@ class SearchForm:
 
         # Fixed dataset size: always 50 results, 10 per page
         total_records = 50
-        per_page = 10
+        per_page = 20
 
         # Guard: coerce page to a valid int, default to 1 if missing/invalid
         try:
