@@ -2,9 +2,9 @@ from govuk_frontend_wtf.wtforms_widgets import GovRadioInput, GovSubmitInput,Gov
 from app.main.utils.widgets import CustomRadioInput
 from flask_wtf import FlaskForm
 from wtforms import RadioField, StringField, SubmitField
-from wtforms.validators import InputRequired
 import random
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+from wtforms.validators import Optional, Regexp, Length, ValidationError, InputRequired
 
 
 class CookiesForm(FlaskForm):
@@ -42,17 +42,84 @@ class WhosCallingForm(FlaskForm):
 
 
 class SearchUser(FlaskForm):
-    name = StringField("What's your name?", widget=GovTextInput())
-    phone = StringField("What's your phone number?", widget=GovTextInput())
-    postcode = StringField("What's your postcode?", widget=GovTextInput())
+    name = StringField(
+        "What's your name?",
+        widget=GovTextInput(),
+        validators=[
+            Optional(),
+            Length(min=2, max=100, message="Name must be between 2 and 100 characters"),
+        ],
+    )
 
-    date_of_birth_day = StringField("Day")
-    date_of_birth_month = StringField("Month")
-    date_of_birth_year = StringField("Year")
+    phone = StringField(
+        "What's your phone number?",
+        widget=GovTextInput(),
+        validators=[
+            Optional(),
+            Regexp(r"^[0-9+\-\s()]{10,20}$", message="Enter a valid phone number"),
+        ],
+    )
 
+    postcode = StringField(
+        "What's your postcode?",
+        widget=GovTextInput(),
+        validators=[
+            Optional(),
+            Regexp(
+                r"^[A-Za-z]{1,2}\d[A-Za-z\d]?\s?\d[A-Za-z]{2}$",
+                message="Enter a valid UK postcode",
+            ),
+        ],
+    )
+
+    date_of_birth_day = StringField(
+        "Day",
+        validators=[
+            Optional(),
+            Regexp(r"^(0?[1-9]|[12][0-9]|3[01])$", message="Enter a valid day"),
+        ],
+    )
+    date_of_birth_month = StringField(
+        "Month",
+        validators=[
+            Optional(),
+            Regexp(r"^(0?[1-9]|1[0-2])$", message="Enter a valid month"),
+        ],
+    )
+    date_of_birth_year = StringField(
+        "Year",
+        validators=[
+            Optional(),
+            Regexp(r"^\d{4}$", message="Enter a valid year"),
+        ],
+    )
     submit = SubmitField("Continue", widget=GovSubmitInput())
 
-class SearchForm:
+    def validate(self, extra_validators=None):
+        # Run standard per-field validation first
+        if not super().validate(extra_validators=extra_validators):
+            return False
+
+        day = self.date_of_birth_day.data
+        month = self.date_of_birth_month.data
+        year = self.date_of_birth_year.data
+
+        if not any([day, month, year]):
+            return True  # no DOB entered — fine
+
+        if not all([day, month, year]):
+            self.date_of_birth_year.errors.append("Enter a complete date of birth")
+            return False
+
+        try:
+            datetime(int(year), int(month), int(day))
+        except ValueError:
+            self.date_of_birth_year.errors.append("Enter a valid date of birth")
+            return False
+
+        return True
+
+class ClientSearchQuery:
     def __init__(self, name: str, phone_number: str, post_code: str, date_of_birth: str, page: int = 1):
         self.name = name
         self.phone_number = phone_number
