@@ -71,7 +71,7 @@
           <label class="govuk-label govuk-date-input__label" for="date_of_birth">
             Day
           </label>
-          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-day" name="date_of_birth_day" type="text" inputmode="numeric">
+          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-day" name="date_of_birth_day" type="text" inputmode="numeric" value="{{ form.date_of_birth-issued-day.data or '' }}">>
         </div>
       </div>
       <div class="govuk-date-input__item">
@@ -79,7 +79,7 @@
           <label class="govuk-label govuk-date-input__label" for="date_of_birth-month">
             Month
           </label>
-          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-month" name="date_of_birth_month" type="text" inputmode="numeric">
+          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-month" name="date_of_birth_month" type="text" inputmode="numeric" value="{{ form.date_of_birth-issued-month.data or '' }}">
         </div>
       </div>
       <div class="govuk-date-input__item">
@@ -88,7 +88,7 @@
             Year
           </label>
           
-          <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="date_of_birth-issued-year" name="date_of_birthyear" type="text" inputmode="numeric">
+          <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="date_of_birth-issued-year" name="date_of_birthyear" type="text" inputmode="numeric" value="{{ form.date_of_birth-issued-birthyear.data or '' }}">>
         </div>
       </div>
     </div>
