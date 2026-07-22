@@ -46,8 +46,7 @@ class SearchUser(FlaskForm):
         "What's your name?",
         widget=GovTextInput(),
         validators=[
-            Optional(),
-            Length(min=2, max=100, message="Name must be between 2 and 100 characters"),
+            Optional()
         ],
     )
 
