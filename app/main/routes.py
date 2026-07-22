@@ -19,31 +19,35 @@ def register_routes(app):
         form = SearchUser(request.args) 
 
         submitted = request.args.get("submitted") == "true"
-
         if submitted:
             page = request.args.get("page", 1, type=int)
             name = form.name.data
             phone = form.phone.data
             post_code =form.postcode.data
-            date = form.date.data
+            day = (form.date_of_birth_day.data or "").strip()
+            month = (form.date_of_birth_month.data or "").strip()
+            year = (form.date_of_birth_year.data or "").strip()
+
+            date_of_birth = f"{day}/{month}/{year}" if all([day, month, year]) else None
 
             has_input = any([
                 name,
                 phone, 
                 post_code,
-                date
+                year,
+                month,
+                year
             ])
     
             if not has_input:
                 search = {"error": True}
                 return render_template("services/search.html", search=search, form=form)
 
-            search = SearchForm(name, phone, post_code, date, page)
+            search = SearchForm(name, phone, post_code, date_of_birth, page)
             results = search.search()
 
-
             return render_template("services/search.html", search=results, form=form)
-
+        
         return render_template("services/search.html", search={}, form=form)
     
 

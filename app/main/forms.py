@@ -3,7 +3,6 @@ from app.main.utils.widgets import CustomRadioInput
 from flask_wtf import FlaskForm
 from wtforms import RadioField, StringField, SubmitField
 from wtforms.validators import InputRequired
-
 import random
 from datetime import date, timedelta
 
@@ -42,20 +41,16 @@ class WhosCallingForm(FlaskForm):
     submit = SubmitField("Continue", widget=GovSubmitInput())
 
 
-
-
-
 class SearchUser(FlaskForm):
     name = StringField("What's your name?", widget=GovTextInput())
     phone = StringField("What's your phone number?", widget=GovTextInput())
     postcode = StringField("What's your postcode?", widget=GovTextInput())
-    date = StringField("What's your date of birth?", widget=GovTextInput())
+
+    date_of_birth_day = StringField("Day")
+    date_of_birth_month = StringField("Month")
+    date_of_birth_year = StringField("Year")
+
     submit = SubmitField("Continue", widget=GovSubmitInput())
-
-
-import random
-from datetime import date, timedelta
-
 
 class SearchForm:
     def __init__(self, name: str, phone_number: str, post_code: str, date_of_birth: str, page: int = 1):

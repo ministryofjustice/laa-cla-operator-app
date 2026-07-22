@@ -41,92 +41,59 @@
     <input type="hidden" name="submitted" value="true">
     <div class="govuk-form-group">
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's your name?</label>
-      <input class="govuk-input moj-search__input" value="{{ form.name.data or '' }}" id="name" name="name" type="search" aria-describedby="search-hint">
+      <input class="govuk-input moj-search__input govuk-input-long" value="{{ form.name.data or '' }}" id="name" name="name" type="search" aria-describedby="search-hint">
     </div>
 
     <div class="govuk-form-group">
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone">What's your phone number?</label>
-      <div id="search-hint" class="govuk-hint moj-search__hint">
+      <div id="search-hint" class="govuk-hint moj-search__hint govuk-input-long">
         If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.
       </div>
-      <input class="govuk-input moj-search__input" id="phone" name="phone" type="search" aria-describedby="search-hint" value="{{ form.phone.data or '' }}">
+      <input class="govuk-input moj-search__input govuk-input-long" id="phone" name="phone" type="search" aria-describedby="search-hint" value="{{ form.phone.data or '' }}">
     </div>
 
     <div class="govuk-form-group">
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="postcode">What's your postcode?</label>
-      <input class="govuk-input moj-search__input" id="postcode" name="postcode" type="search"  value="{{ form.postcode.data or '' }}">
+      <input class="govuk-input moj-search__input govuk-input-long" id="postcode" name="postcode" type="search"  value="{{ form.postcode.data or '' }}">
     </div>
 
-    <!--Date Picker-->
-  
-    <div class="moj-datepicker" data-module="moj-date-picker" data-moj-date-picker-init="">
-    
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="date">
-          Date
-        </label>
-      <div id="date-hint" class="govuk-hint">
-        For example, 17/5/2024.
+    <!--Date of birth-->
+    <fieldset class="govuk-fieldset" role="group" aria-describedby="date_of_birth">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone"> What's your date of birth?</label>
+    </legend>
+    <div id="date_of_birth-issued-hint" class="govuk-hint">
+      For example, 27 3 2007
+    </div>
+    <div class="govuk-date-input" id="date_of_birth-issued">
+      <div class="govuk-date-input__item">
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-date-input__label" for="date_of_birth">
+            Day
+          </label>
+          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-day" name="date_of_birth_day" type="text" inputmode="numeric">
+        </div>
       </div>
-  <div class="moj-datepicker__wrapper">
-    <div class="govuk-input__wrapper">
-      <input class="govuk-input moj-js-datepicker-input " id="date" name="date" type="text" aria-describedby="date-hint" autocomplete="off" value="{{ form.date.data or '' }}">
-      <button class="moj-datepicker__toggle moj-js-datepicker-toggle" type="button" aria-haspopup="dialog" aria-controls="datepicker-date" aria-expanded="true">
-            <span class="govuk-visually-hidden">Choose date</span>
-            <svg width="32" height="24" focusable="false" class="moj-datepicker-icon" aria-hidden="true" role="img" viewBox="0 0 22 22">
-              <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M16.1333 2.93333H5.86668V4.4C5.86668 5.21002 5.21003 5.86667 4.40002 5.86667C3.59 5.86667 2.93335 5.21002 2.93335 4.4V2.93333H2C0.895431 2.93333 0 3.82877 0 4.93334V19.2667C0 20.3712 0.89543 21.2667 2 21.2667H20C21.1046 21.2667 22 20.3712 22 19.2667V4.93333C22 3.82876 21.1046 2.93333 20 2.93333H19.0667V4.4C19.0667 5.21002 18.41 5.86667 17.6 5.86667C16.79 5.86667 16.1333 5.21002 16.1333 4.4V2.93333ZM20.5333 8.06667H1.46665V18.8C1.46665 19.3523 1.91436 19.8 2.46665 19.8H19.5333C20.0856 19.8 20.5333 19.3523 20.5333 18.8V8.06667Z"></path>
-              <rect x="3.66669" width="1.46667" height="5.13333" rx="0.733333" fill="currentColor"></rect>
-              <rect x="16.8667" width="1.46667" height="5.13333" rx="0.733333" fill="currentColor"></rect>
-            </svg>
-          </button></div><div id="datepicker-date" class="moj-datepicker__dialog moj-datepicker__dialog--open" role="dialog" aria-modal="true" aria-labelledby="datepicker-title-date" style="top: 43px;"><div class="moj-datepicker__dialog-header">
-            <div class="moj-datepicker__dialog-navbuttons">
-              <button type="button" class="moj-datepicker__button moj-js-datepicker-prev-year">
-                <span class="govuk-visually-hidden">Previous year</span>
-                <svg width="44" height="40" viewBox="0 0 44 40" fill="none" focusable="false" aria-hidden="true" role="img">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M23.1643 20L28.9572 14.2071L27.5429 12.7929L20.3358 20L27.5429 27.2071L28.9572 25.7929L23.1643 20Z" fill="currentColor"></path>
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.1643 20L22.9572 14.2071L21.5429 12.7929L14.3358 20L21.5429 27.2071L22.9572 25.7929L17.1643 20Z" fill="currentColor"></path>
-                </svg>
-              </button>
-
-              <button type="button" class="moj-datepicker__button moj-js-datepicker-prev-month">
-                <span class="govuk-visually-hidden">Previous month</span>
-                <svg width="44" height="40" viewBox="0 0 44 40" fill="none" focusable="false" aria-hidden="true" role="img">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M20.5729 20L25.7865 14.2071L24.5137 12.7929L18.0273 20L24.5137 27.2071L25.7865 25.7929L20.5729 20Z" fill="currentColor"></path>
-                </svg>
-              </button>
-            </div>
-            <h2 id="datepicker-title-date" class="moj-datepicker__dialog-title moj-js-datepicker-month-year" aria-live="polite">July 2026</h2>
-            <div class="moj-datepicker__dialog-navbuttons">
-              <button type="button" class="moj-datepicker__button moj-js-datepicker-next-month">
-                <span class="govuk-visually-hidden">Next month</span>
-                <svg width="44" height="40" viewBox="0 0 44 40" fill="none" focusable="false" aria-hidden="true" role="img">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M23.4271 20L18.2135 14.2071L19.4863 12.7929L25.9727 20L19.4863 27.2071L18.2135 25.7929L23.4271 20Z" fill="currentColor"></path>
-                </svg>
-              </button>
-              <button type="button" class="moj-datepicker__button moj-js-datepicker-next-year">
-                <span class="govuk-visually-hidden">Next year</span>
-                <svg width="44" height="40" viewBox="0 0 44 40" fill="none" focusable="false" aria-hidden="true" role="img">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M20.8357 20L15.0428 14.2071L16.4571 12.7929L23.6642 20L16.4571 27.2071L15.0428 25.7929L20.8357 20Z" fill="currentColor"></path>
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M26.8357 20L21.0428 14.2071L22.4571 12.7929L29.6642 20L22.4571 27.2071L21.0428 25.7929L26.8357 20Z" fill="currentColor"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <table class="moj-datepicker__calendar moj-js-datepicker-grid" role="application" aria-labelledby="datepicker-title-date">
-            <thead>
-              <tr><th scope="col"><span aria-hidden="true">Mon</span><span class="govuk-visually-hidden">Monday</span></th><th scope="col"><span aria-hidden="true">Tue</span><span class="govuk-visually-hidden">Tuesday</span></th><th scope="col"><span aria-hidden="true">Wed</span><span class="govuk-visually-hidden">Wednesday</span></th><th scope="col"><span aria-hidden="true">Thu</span><span class="govuk-visually-hidden">Thursday</span></th><th scope="col"><span aria-hidden="true">Fri</span><span class="govuk-visually-hidden">Friday</span></th><th scope="col"><span aria-hidden="true">Sat</span><span class="govuk-visually-hidden">Saturday</span></th><th scope="col"><span aria-hidden="true">Sun</span><span class="govuk-visually-hidden">Sunday</span></th></tr>
-            </thead>
-
-            <tbody><tr><td><button type="button" style="display: none;" data-testid="29/6/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Monday 29 June 2026</span><span aria-hidden="true">29</span></button></td><td><button type="button" style="display: none;" data-testid="30/6/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Tuesday 30 June 2026</span><span aria-hidden="true">30</span></button></td><td><button type="button" style="display: block;" data-testid="1/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Wednesday 1 July 2026</span><span aria-hidden="true">1</span></button></td><td><button type="button" style="display: block;" data-testid="2/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Thursday 2 July 2026</span><span aria-hidden="true">2</span></button></td><td><button type="button" style="display: block;" data-testid="3/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Friday 3 July 2026</span><span aria-hidden="true">3</span></button></td><td><button type="button" style="display: block;" data-testid="4/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Saturday 4 July 2026</span><span aria-hidden="true">4</span></button></td><td><button type="button" style="display: block;" data-testid="5/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Sunday 5 July 2026</span><span aria-hidden="true">5</span></button></td></tr><tr><td><button type="button" style="display: block;" data-testid="6/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Monday 6 July 2026</span><span aria-hidden="true">6</span></button></td><td><button type="button" style="display: block;" data-testid="7/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Tuesday 7 July 2026</span><span aria-hidden="true">7</span></button></td><td><button type="button" style="display: block;" data-testid="8/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Wednesday 8 July 2026</span><span aria-hidden="true">8</span></button></td><td><button type="button" style="display: block;" data-testid="9/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Thursday 9 July 2026</span><span aria-hidden="true">9</span></button></td><td><button type="button" style="display: block;" data-testid="10/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Friday 10 July 2026</span><span aria-hidden="true">10</span></button></td><td><button type="button" style="display: block;" data-testid="11/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Saturday 11 July 2026</span><span aria-hidden="true">11</span></button></td><td><button type="button" style="display: block;" data-testid="12/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Sunday 12 July 2026</span><span aria-hidden="true">12</span></button></td></tr><tr><td><button type="button" style="display: block;" data-testid="13/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Monday 13 July 2026</span><span aria-hidden="true">13</span></button></td><td><button type="button" style="display: block;" data-testid="14/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Tuesday 14 July 2026</span><span aria-hidden="true">14</span></button></td><td><button type="button" style="display: block;" data-testid="15/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Wednesday 15 July 2026</span><span aria-hidden="true">15</span></button></td><td><button type="button" style="display: block;" data-testid="16/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Thursday 16 July 2026</span><span aria-hidden="true">16</span></button></td><td><button type="button" style="display: block;" data-testid="17/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day moj-datepicker__button--current moj-datepicker__button--today moj-datepicker__button--selected" tabindex="0" aria-current="date"><span class="govuk-visually-hidden">Friday 17 July 2026</span><span aria-hidden="true">17</span></button></td><td><button type="button" style="display: block;" data-testid="18/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Saturday 18 July 2026</span><span aria-hidden="true">18</span></button></td><td><button type="button" style="display: block;" data-testid="19/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Sunday 19 July 2026</span><span aria-hidden="true">19</span></button></td></tr><tr><td><button type="button" style="display: block;" data-testid="20/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Monday 20 July 2026</span><span aria-hidden="true">20</span></button></td><td><button type="button" style="display: block;" data-testid="21/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Tuesday 21 July 2026</span><span aria-hidden="true">21</span></button></td><td><button type="button" style="display: block;" data-testid="22/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Wednesday 22 July 2026</span><span aria-hidden="true">22</span></button></td><td><button type="button" style="display: block;" data-testid="23/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Thursday 23 July 2026</span><span aria-hidden="true">23</span></button></td><td><button type="button" style="display: block;" data-testid="24/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Friday 24 July 2026</span><span aria-hidden="true">24</span></button></td><td><button type="button" style="display: block;" data-testid="25/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Saturday 25 July 2026</span><span aria-hidden="true">25</span></button></td><td><button type="button" style="display: block;" data-testid="26/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Sunday 26 July 2026</span><span aria-hidden="true">26</span></button></td></tr><tr><td><button type="button" style="display: block;" data-testid="27/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Monday 27 July 2026</span><span aria-hidden="true">27</span></button></td><td><button type="button" style="display: block;" data-testid="28/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Tuesday 28 July 2026</span><span aria-hidden="true">28</span></button></td><td><button type="button" style="display: block;" data-testid="29/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Wednesday 29 July 2026</span><span aria-hidden="true">29</span></button></td><td><button type="button" style="display: block;" data-testid="30/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Thursday 30 July 2026</span><span aria-hidden="true">30</span></button></td><td><button type="button" style="display: block;" data-testid="31/7/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Friday 31 July 2026</span><span aria-hidden="true">31</span></button></td><td><button type="button" style="display: none;" data-testid="1/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Saturday 1 August 2026</span><span aria-hidden="true">1</span></button></td><td><button type="button" style="display: none;" data-testid="2/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Sunday 2 August 2026</span><span aria-hidden="true">2</span></button></td></tr><tr><td><button type="button" style="display: none;" data-testid="3/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Monday 3 August 2026</span><span aria-hidden="true">3</span></button></td><td><button type="button" style="display: none;" data-testid="4/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Tuesday 4 August 2026</span><span aria-hidden="true">4</span></button></td><td><button type="button" style="display: none;" data-testid="5/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Wednesday 5 August 2026</span><span aria-hidden="true">5</span></button></td><td><button type="button" style="display: none;" data-testid="6/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Thursday 6 August 2026</span><span aria-hidden="true">6</span></button></td><td><button type="button" style="display: none;" data-testid="7/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Friday 7 August 2026</span><span aria-hidden="true">7</span></button></td><td><button type="button" style="display: none;" data-testid="8/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Saturday 8 August 2026</span><span aria-hidden="true">8</span></button></td><td><button type="button" style="display: none;" data-testid="9/8/2026" class="moj-datepicker__button moj-datepicker__calendar-day" tabindex="-1"><span class="govuk-visually-hidden">Sunday 9 August 2026</span><span aria-hidden="true">9</span></button></td></tr></tbody>
-          </table>
-          <div class="govuk-button-group">
-            <button type="button" class="govuk-button moj-js-datepicker-ok">Select</button>
-            <button type="button" class="govuk-button govuk-button--secondary moj-js-datepicker-cancel">Close</button>
-          </div></div></div>
-
+      <div class="govuk-date-input__item">
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-date-input__label" for="date_of_birth-month">
+            Month
+          </label>
+          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-month" name="date_of_birth_month" type="text" inputmode="numeric">
+        </div>
       </div>
+      <div class="govuk-date-input__item">
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-date-input__label" for="date_of_birth-issued-year">
+            Year
+          </label>
+          
+          <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="date_of_birth-issued-year" name="date_of_birthyear" type="text" inputmode="numeric">
+        </div>
       </div>
-
+    </div>
+  </fieldset>
+ 
 <div class="govuk-button-group">
       <button class="govuk-button dialog-button govuk" data-module="govuk-button" type="submit">Search</button>
       <a class="govuk-link" href="#" id="clear-all-link">Clear all</a>
@@ -168,7 +135,7 @@
     <div class="govuk-pagination__prev">
       {% if search.pagination.page > 1 %}
       <a class="govuk-link govuk-pagination__link"
-         href="{{ url_for('search_client', page=search.pagination.page - 1, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date=form.date.data) }}"
+         href="{{ url_for('search_client', page=search.pagination.page - 1, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data,date_of_birth_month=form.date_of_birth_month.data,date_of_birth_year=form.date_of_birth_year.data) }}"
          rel="prev">
         <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
           <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
@@ -182,7 +149,7 @@
       {% for p in range(1, search.pagination.total_pages + 1) %}
       <li class="govuk-pagination__item {% if p == search.pagination.page %}govuk-pagination__item--current{% endif %}">
         <a class="govuk-link govuk-pagination__link"
-           href="{{ url_for('search_client', page=p, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date=form.date.data) }}"
+           href="{{ url_for('search_client', page=p, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data,date_of_birth_month=form.date_of_birth_month.data,date_of_birth_year=form.date_of_birth_year.data) }}"
            aria-label="Page {{ p }}"
            {% if p == search.pagination.page %}aria-current="page"{% endif %}>{{ p }}</a>
       </li>
@@ -192,7 +159,8 @@
     <div class="govuk-pagination__next">
       {% if search.pagination.page < search.pagination.total_pages %}
       <a class="govuk-link govuk-pagination__link"
-         href="{{ url_for('search_client', page=search.pagination.page + 1, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date=form.date.data) }}"
+
+         href="{{ url_for('search_client', page=search.pagination.page + 1, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data, date_of_birth_month=form.date_of_birth_month.data, date_of_birth_year=form.date_of_birth_year.data) }}"
          rel="next">
         <span class="govuk-pagination__link-title">Next</span>
         <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">

@@ -21,17 +21,14 @@
   padding: 20px;
 }
 
-.search-container .govuk-form-group {
+.search-container .govuk-form-grouping {
   max-width: 40em; 
 }
 
-.search-container .govuk-input {
+.search-container .govuk-input-long {
   max-width: 30em; 
 }
 
-.search-container .moj-datepicker .govuk-input {
-  max-width: 10em;
-}
 
 .moj-button-action {
 	padding: 40px 40px 40px 0;
@@ -47,8 +44,4 @@
 
 .govuk-heading-xl {
 	margin-top: 5% !important;
-}
-
-.moj-datepicker__dialog--open {
-	display: none;
 }
