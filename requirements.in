@@ -12,3 +12,5 @@ requests
 urllib3>=2.7.0
 pyopenssl
 PyYAML
+govuk-frontend-jinja
+govuk-frontend-wtf
