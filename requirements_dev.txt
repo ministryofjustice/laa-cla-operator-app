@@ -134,7 +134,7 @@ msgpack==1.2.1
     # via
     #   -r requirements_dev.in
     #   cachecontrol
-mypy==2.2.0
+mypy==2.3.0
     # via -r requirements_dev.in
 mypy-extensions==1.1.0
     # via
