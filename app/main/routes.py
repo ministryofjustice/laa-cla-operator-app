@@ -19,7 +19,6 @@ def register_routes(app):
     def receive_call():
         form = WhosCallingForm()
 
-        # Preserve previous selection if the user returns to this page.
         if request.method == "GET":
             form.whos_calling.data = session.get("who_is_calling")
 
@@ -71,8 +70,6 @@ def register_routes(app):
                 "services/search.html",
                 search=search,
                 form=form,
-                who_is_calling=who_is_calling,
-                is_calling_for_another=is_calling_for_another,
             )
 
         search = ClientSearchQuery(
@@ -89,8 +86,6 @@ def register_routes(app):
             "services/search.html",
             search=results,
             form=form,
-            who_is_calling=who_is_calling,
-            is_calling_for_another=is_calling_for_another,
         )
 
     @app.get("/sign-in")
