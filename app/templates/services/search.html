@@ -14,7 +14,6 @@
 {% endblock %}
 {% block beforeContent %} {{ super() }} {% endblock %}
 {% block content %}
-<body class="govuk-template__body"></body>
 <a href="{{url_for ('receive_call')}}" class="govuk-back-link">Back</a>
 
 <!--Display the error message-->
@@ -42,19 +41,31 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-three-quarters">
     <h1 class="govuk-heading-xl">Search client's details</h1>
+    {% if is_calling_for_another %}
+    <p class="govuk-body">If someone is calling on behalf of another person (acting as a ‘third party’), take the details of the person they are representing. Search for any existing records in that person’s name before starting a new case, using one or more of the search terms below.</p>
+    {% elif who_is_calling == "myself" %}
     <p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.</p>
-    
+    {% endif %}
+
     <div class="search-container">
   <form action="{{ url_for('search_client') }}" method="GET" novalidate>
-   
+
     <input type="hidden" name="submitted" value="true">
     <div class="govuk-form-group">
+    {% if is_calling_for_another %}
+      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's the name of the person you are calling on behalf of?</label>
+    {% elif who_is_calling == "myself" %}
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's your name?</label>
+    {% endif %}
       <input class="govuk-input moj-search__input govuk-input-long" value="{{ form.name.data or '' }}" id="name" name="name" type="search" aria-describedby="search-hint">
     </div>
 
     <div class="govuk-form-group">
+    {% if is_calling_for_another %}
+      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone">What's their phone number?</label>
+    {% elif who_is_calling == "myself" %}
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone">What's your phone number?</label>
+    {% endif %}
       <div id="search-hint" class="govuk-hint moj-search__hint govuk-input-long">
         If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.
       </div>
@@ -62,14 +73,22 @@
     </div>
 
     <div class="govuk-form-group">
+    {% if is_calling_for_another %}
+      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="postcode">What's their postcode?</label>
+    {% elif who_is_calling == "myself" %}
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="postcode">What's your postcode?</label>
+    {% endif %}
       <input class="govuk-input moj-search__input govuk-input-long" id="postcode" name="postcode" type="search"  value="{{ form.postcode.data or '' }}">
     </div>
 
     <!--Date of birth-->
     <fieldset class="govuk-fieldset" role="group" aria-describedby="date_of_birth">
     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone"> What's your date of birth?</label>
+      {% if is_calling_for_another %}
+       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="date_of_birth"> What's their date of birth?</label>
+      {% elif who_is_calling == "myself" %}
+       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="date_of_birth"> What's your date of birth?</label>
+      {% endif %}
     </legend>
     <div id="date_of_birth-issued-hint" class="govuk-hint">
       For example, 27 3 2007
@@ -96,13 +115,13 @@
           <label class="govuk-label govuk-date-input__label" for="date_of_birth-issued-year">
             Year
           </label>
-          
-          <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="date_of_birth-issued-year" name="date_of_birth_year" type="text" inputmode="numeric" value="{{ form.date_of_birth_year.data or '' }}">>
+
+          <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="date_of_birth-issued-year" name="date_of_birth_year" type="text" inputmode="numeric" value="{{ form.date_of_birth_year.data or '' }}">
         </div>
       </div>
     </div>
   </fieldset>
- 
+
 <div class="govuk-button-group">
       <button class="govuk-button dialog-button govuk" data-module="govuk-button" type="submit">Search</button>
       <a class="govuk-link" href="#" id="clear-all-link">Clear all</a>
