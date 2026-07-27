@@ -24,6 +24,11 @@ jobs:
     uses: ./.github/workflows/test.yml
     permissions: {}
 
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
+    permissions: {}
+
   #   TODO: Re-enable this when we have tests with coverage reports to analyse
   #   name: Static Analysis
   #   needs: test
@@ -35,6 +40,7 @@ jobs:
   build-and-push:
     name: Build
     uses: ./.github/workflows/build.yml
+    needs: [lint, test]
     permissions:
       contents: read
       id-token: write
