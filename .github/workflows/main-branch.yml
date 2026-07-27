@@ -16,7 +16,8 @@ jobs:
   lint:
     name: Lint
     uses: ./.github/workflows/lint.yml
-    permissions: {}
+    permissions:
+      contents: read
 
   static-analysis:
     name: Static Analysis

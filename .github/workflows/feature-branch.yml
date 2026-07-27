@@ -27,7 +27,8 @@ jobs:
   lint:
     name: Lint
     uses: ./.github/workflows/lint.yml
-    permissions: {}
+    permissions:
+      contents: read
 
   #   TODO: Re-enable this when we have tests with coverage reports to analyse
   #   name: Static Analysis
