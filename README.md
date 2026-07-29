@@ -12,7 +12,7 @@ Please note: This is still in a [Flask](https://flask.palletsprojects.com) app t
 
 # Versioning
 
-- Python: 3.13
+- Python: 3.14
 - Node.js: 24.18.0
 - npm: 10.16.0
 - pip: 25.2

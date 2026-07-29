@@ -1,10 +1,14 @@
-from govuk_frontend_wtf.wtforms_widgets import GovRadioInput, GovSubmitInput,GovTextInput
+from govuk_frontend_wtf.wtforms_widgets import (
+    GovRadioInput,
+    GovSubmitInput,
+    GovTextInput,
+)
 from app.main.utils.widgets import CustomRadioInput
 from flask_wtf import FlaskForm
 from wtforms import RadioField, StringField, SubmitField
 import random
 from datetime import date, timedelta, datetime
-from wtforms.validators import Optional, Regexp, Length, ValidationError, InputRequired
+from wtforms.validators import Optional, Regexp, InputRequired
 
 
 class CookiesForm(FlaskForm):
@@ -45,9 +49,7 @@ class SearchUser(FlaskForm):
     name = StringField(
         "What's your name?",
         widget=GovTextInput(),
-        validators=[
-            Optional()
-        ],
+        validators=[Optional()],
     )
 
     phone = StringField(
@@ -118,8 +120,16 @@ class SearchUser(FlaskForm):
 
         return True
 
+
 class ClientSearchQuery:
-    def __init__(self, name: str, phone_number: str, post_code: str, date_of_birth: str, page: int = 1):
+    def __init__(
+        self,
+        name: str,
+        phone_number: str,
+        post_code: str,
+        date_of_birth: str,
+        page: int = 1,
+    ):
         self.name = name
         self.phone_number = phone_number
         self.post_code = post_code
@@ -128,11 +138,33 @@ class ClientSearchQuery:
 
     def search(self):
         last_names = [
-            "Smith", "Jones", "Taylor", "Brown", "Williams",
-            "Wilson", "Johnson", "Davies", "Robinson", "Wright",
-            "Thompson", "Evans", "Walker", "White", "Roberts",
+            "Smith",
+            "Jones",
+            "Taylor",
+            "Brown",
+            "Williams",
+            "Wilson",
+            "Johnson",
+            "Davies",
+            "Robinson",
+            "Wright",
+            "Thompson",
+            "Evans",
+            "Walker",
+            "White",
+            "Roberts",
         ]
-        postcode_areas = ["TA44", "SW1A", "M1", "B33", "LS1", "EH1", "CF10", "NE1", "G1"]
+        postcode_areas = [
+            "TA44",
+            "SW1A",
+            "M1",
+            "B33",
+            "LS1",
+            "EH1",
+            "CF10",
+            "NE1",
+            "G1",
+        ]
         postcode_letters = "ABDEFGHJLNPQRSTUWXYZ"
 
         has_last_name = bool(getattr(self, "last_name", None))
@@ -184,13 +216,15 @@ class ClientSearchQuery:
                 age_days = random.randint(18 * 365, 80 * 365)
                 dob = (today - timedelta(days=age_days)).strftime("%d/%m/%Y")
 
-            record.append({
-                "id": start_index + i,
-                "name": full_name,
-                "phone": phone,
-                "postcode": postcode,
-                "dob": dob,
-            })
+            record.append(
+                {
+                    "id": start_index + i,
+                    "name": full_name,
+                    "phone": phone,
+                    "postcode": postcode,
+                    "dob": dob,
+                }
+            )
 
         return {
             "result": record,

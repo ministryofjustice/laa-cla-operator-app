@@ -10,7 +10,7 @@ from flask import (
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery,SearchUser
+from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
 
 
 def register_routes(app):
@@ -19,9 +19,8 @@ def register_routes(app):
         form = WhosCallingForm()
         if form.validate_on_submit():
             # TODO: route "myself" vs "another" once the next step exists
-            return redirect(url_for("receive_call"))
+            return redirect(url_for("search_client"))
         return render_template("main/index.html", form=form)
-
 
     @app.route("/search-client", methods=["GET"])
     def search_client():
@@ -63,8 +62,8 @@ def register_routes(app):
 
         search = ClientSearchQuery(
             name=name,
-            phone_number=phone,     
-            post_code=post_code,  
+            phone_number=phone,
+            post_code=post_code,
             date_of_birth=date_of_birth,
             page=page,
         )
@@ -76,7 +75,6 @@ def register_routes(app):
             search=results,
             form=form,
         )
-    
 
     @app.get("/sign-in")
     def sign_in():
@@ -101,7 +99,6 @@ def register_routes(app):
     @app.get("/accessibility")
     def accessibility():
         return render_template("pages/accessibility.html")
-
 
     @app.route("/cookies", methods=["GET", "POST"])
     def cookies():
