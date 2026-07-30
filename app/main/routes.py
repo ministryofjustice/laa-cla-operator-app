@@ -107,7 +107,6 @@ def register_routes(app):
             return redirect(url_for("search_client"))
         return render_template("main/index.html", form=form)
 
-
     @app.route("/search-client", methods=["GET"])
     def search_client():
         form = SearchUser(request.args, meta={"csrf": False})
