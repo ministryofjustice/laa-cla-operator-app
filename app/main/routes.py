@@ -24,7 +24,10 @@ def _build_backend_date(year: str, month: str, day: str) -> str | None:
 
 
 def register_routes(app):
-    mock_auth_enabled = app.config.get("ENTRA_AUTH_MOCK_ENABLED") and app.config.get("ENVIRONMENT") == "local"
+    mock_auth_enabled = (
+        app.config.get("ENTRA_AUTH_MOCK_ENABLED")
+        and app.config.get("ENVIRONMENT") == "local"
+    )
 
     def _seed_mock_entra_session() -> None:
         session["entra_access_token"] = "test-access-token"
@@ -43,9 +46,9 @@ def register_routes(app):
 
     @app.before_request
     def require_authentication():
-    # ==========================
-    # This is a Basic Entra auth to connect A&R with backend seamlessly.
-    # ==========================
+        # ==========================
+        # This is a Basic Entra auth to connect A&R with backend seamlessly.
+        # ==========================
         if not EntraAuthView.configured():
             return None
 

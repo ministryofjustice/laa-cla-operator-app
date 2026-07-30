@@ -24,7 +24,10 @@ def create_app(config_class=Config):
     app.url_map.strict_slashes = False  # This allows www.host.gov.uk/category to be routed to www.host.gov.uk/category/
     app.config.from_object(config_class)
 
-    if app.config.get("ENTRA_AUTH_MOCK_ENABLED") and app.config.get("ENVIRONMENT") != "local":
+    if (
+        app.config.get("ENTRA_AUTH_MOCK_ENABLED")
+        and app.config.get("ENVIRONMENT") != "local"
+    ):
         raise RuntimeError(
             "ENTRA_AUTH_MOCK_ENABLED can only be used when CLAH_ENVIRONMENT=local"
         )

@@ -25,7 +25,7 @@ class Config(object):
         os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
     )
     SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
-    
+
     BACKEND_BASE_URI = os.environ.get("BACKEND_BASE_URI", "http://127.0.0.1:8010")
 
     # Entra auth config

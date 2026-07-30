@@ -213,12 +213,12 @@ class EntraAuthView:
         # Prevent stale functional-test sessions from bypassing auth when
         # mock mode is disabled.
         if token == "test-access-token":
-            mock_auth_enabled = current_app.config.get(
-                "ENTRA_AUTH_MOCK_ENABLED"
-            ) and current_app.config.get("ENVIRONMENT") == "local"
+            mock_auth_enabled = (
+                current_app.config.get("ENTRA_AUTH_MOCK_ENABLED")
+                and current_app.config.get("ENVIRONMENT") == "local"
+            )
             return bool(
-                mock_auth_enabled
-                and user.get("username") == "functional-test@local"
+                mock_auth_enabled and user.get("username") == "functional-test@local"
             )
 
         return True
