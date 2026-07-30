@@ -85,7 +85,7 @@ flask-talisman==1.1.0
     # via -r requirements.in
 flask-wtf==1.2.2
     # via govuk-frontend-wtf
-govuk-frontend-jinja==4.0.0
+govuk-frontend-jinja==4.1.0
     # via
     #   -r requirements.in
     #   govuk-frontend-wtf
@@ -167,7 +167,7 @@ pip-audit==2.10.1
     # via -r requirements_dev.in
 pip-requirements-parser==32.0.1
     # via pip-audit
-pip-tools==7.5.3
+pip-tools==7.6.0
     # via -r requirements_dev.in
 platformdirs==4.9.2
     # via
@@ -183,7 +183,7 @@ pluggy==1.6.0
     # via
     #   pytest
     #   pytest-cov
-pre-commit==4.6.0
+pre-commit==4.6.1
     # via -r requirements_dev.in
 pur==7.4.0
     # via -r requirements_dev.in

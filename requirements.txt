@@ -45,7 +45,7 @@ flask-talisman==1.1.0
     # via -r requirements.in
 flask-wtf==1.2.2
     # via govuk-frontend-wtf
-govuk-frontend-jinja==4.0.0
+govuk-frontend-jinja==4.1.0
     # via
     #   -r requirements.in
     #   govuk-frontend-wtf
@@ -91,7 +91,9 @@ typing-extensions==4.15.0
     #   flask-limiter
     #   limits
 urllib3==2.7.0
-    # via requests
+    # via
+    #   -r requirements.in
+    #   requests
 werkzeug==3.1.6
     # via flask
 wrapt==2.1.1
