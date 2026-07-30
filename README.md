@@ -136,6 +136,10 @@ You must also set a new unique `SECRET_KEY`, which is used to securely sign the 
 python -c 'import secrets; print(secrets.token_hex())'
 ```
 
+For backend API connectivity and auth token forwarding, set:
+
+- `BACKEND_BASE_URI` - base URL for the backend API
+
 ### Run containers
 
 ```shell

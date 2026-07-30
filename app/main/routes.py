@@ -5,12 +5,21 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery,SearchUser
+from app.main.client_api import search_clients
+from app.main.forms import CookiesForm, StartCaseForm, WhosCallingForm, SearchUser
+from app.main.client_api import create_case
+
+
+def _build_backend_date(year: str, month: str, day: str) -> str | None:
+    if not all([year, month, day]):
+        return None
+    return f"{year}/{month.zfill(2)}/{day.zfill(2)}"
 
 
 def register_routes(app):
@@ -18,14 +27,15 @@ def register_routes(app):
     def receive_call():
         form = WhosCallingForm()
         if form.validate_on_submit():
-            # TODO: route "myself" vs "another" once the next step exists
-            return redirect(url_for("receive_call"))
+            session["call_context"] = {"whos_calling": form.whos_calling.data}
+            return redirect(url_for("search_client"))
         return render_template("main/index.html", form=form)
-
 
     @app.route("/search-client", methods=["GET"])
     def search_client():
         form = SearchUser(request.args, meta={"csrf": False})
+        start_case_form = StartCaseForm()
+
         submitted = request.args.get("submitted") == "true"
 
         if not submitted:
@@ -33,17 +43,19 @@ def register_routes(app):
                 "services/search.html",
                 search={},
                 form=form,
+                start_case_form=start_case_form,
             )
         if not form.validate():
             return render_template(
                 "services/search.html",
                 search={"error": True},
                 form=form,
+                start_case_form=start_case_form,
             )
 
         page = request.args.get("page", 1, type=int)
 
-        name = (form.name.data or "").strip()
+        full_name = (form.full_name.data or "").strip()
         phone = (form.phone.data or "").strip()
         post_code = (form.postcode.data or "").strip()
 
@@ -51,32 +63,54 @@ def register_routes(app):
         month = (form.date_of_birth_month.data or "").strip()
         year = (form.date_of_birth_year.data or "").strip()
 
-        date_of_birth = f"{day}/{month}/{year}" if all([day, month, year]) else None
+        date_of_birth = _build_backend_date(year, month, day)
 
-        if not any([name, phone, post_code, day, month, year]):
+        if not any([full_name, phone, post_code, day, month, year]):
             search = {"error": True}
             return render_template(
                 "services/search.html",
                 search=search,
                 form=form,
+                start_case_form=start_case_form,
             )
 
-        search = ClientSearchQuery(
-            name=name,
-            phone_number=phone,     
-            post_code=post_code,  
-            date_of_birth=date_of_birth,
-            page=page,
-        )
+        payload = {
+            "full_name": full_name,
+            "phone": phone,
+            "postcode": post_code,
+            "date_of_birth": date_of_birth,
+            "page": page,
+            "call_context": session.get("call_context", {}),
+        }
+        api_response = search_clients(payload)
 
-        results = search.search()
+        if not api_response["ok"]:
+            return render_template(
+                "services/search.html",
+                search={
+                    "error": True,
+                    "error_api": True,
+                    "error_message": api_response["error"],
+                    "result": [],
+                    "pagination": {
+                        "page": 1,
+                        "per_page": 20,
+                        "total_pages": 1,
+                        "total_records": 0,
+                        "start": 0,
+                        "end": 0,
+                    },
+                },
+                form=form,
+                start_case_form=start_case_form,
+            )
 
         return render_template(
             "services/search.html",
-            search=results,
+            search=api_response["data"]["search"],
             form=form,
+            start_case_form=start_case_form,
         )
-    
 
     @app.get("/sign-in")
     def sign_in():
@@ -101,7 +135,6 @@ def register_routes(app):
     @app.get("/accessibility")
     def accessibility():
         return render_template("pages/accessibility.html")
-
 
     @app.route("/cookies", methods=["GET", "POST"])
     def cookies():
@@ -153,3 +186,48 @@ def register_routes(app):
     def csrf_error(error):
         flash("The form you were submitting has expired. Please try again.")
         return redirect(request.full_path)
+
+    @app.post("/start-case")
+    def start_case():
+        form = StartCaseForm()
+
+        if not form.validate_on_submit():
+            return redirect(url_for("search_client"))
+
+        day = (form.date_of_birth_day.data or "").strip()
+        month = (form.date_of_birth_month.data or "").strip()
+        year = (form.date_of_birth_year.data or "").strip()
+
+        payload = {
+            "full_name": (form.full_name.data or "").strip(),
+            "phone": (form.phone.data or "").strip(),
+            "postcode": (form.postcode.data or "").strip(),
+            "date_of_birth": _build_backend_date(year, month, day) or "",
+        }
+
+        api_response = create_case(payload)
+
+        if not api_response["ok"]:
+            flash(api_response["error"] or "Create case service unavailable")
+            return redirect(url_for("search_client"))
+
+        # keep only non-PII identifiers in session if needed
+        case_ref = (api_response.get("data") or {}).get("reference")
+        if case_ref:
+            session["case_reference"] = case_ref
+
+        created = api_response.get("data") or {}
+
+        prefill = {
+            "full_name": created.get("full_name")
+            or (form.full_name.data or "").strip(),
+            "phone": created.get("phone") or (form.phone.data or "").strip(),
+            "postcode": created.get("postcode") or (form.postcode.data or "").strip(),
+            "date_of_birth": created.get("date_of_birth")
+            or (_build_backend_date(year, month, day) or ""),
+        }
+        return render_template(
+            "services/add_client.html",
+            case_reference=case_ref,
+            prefill=prefill,
+        )
