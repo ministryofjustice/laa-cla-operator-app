@@ -6,9 +6,17 @@
 
   {{ govuk_service_navigation({
     'serviceName': config['SERVICE_NAME'],
+    'serviceUrl': url_for('receive_call'),
     'navigation': [
-      { 'text': 'Receive calls', 'current': true },
-      { 'text': 'Make calls' }
+      {
+        'href': url_for('receive_call'),
+        'text': 'Receive calls',
+        'current': true
+      },
+      {
+        'href': url_for('receive_call'),
+        'text': 'Make calls'
+      }
     ]
   }) }}
 {% endblock %}

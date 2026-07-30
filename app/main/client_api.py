@@ -1,8 +1,7 @@
-import os
 import requests
 
 from typing import Any
-from flask import current_app, has_request_context, request
+from flask import current_app, has_request_context, session
 
 REQUEST_TIMEOUT_SECONDS = 5
 
@@ -38,30 +37,26 @@ def _build_url(path: str) -> str:
     return f"{base_url.rstrip('/')}/{path.lstrip('/')}"
 
 
+def _resolve_auth_token() -> str:
+    if not has_request_context():
+        return ""
+    return (session.get("entra_access_token") or "").strip()
+
+
 def _request(method: str, path: str, **kwargs: Any) -> requests.Response:
     url = _build_url(path)
 
-    # This is for local testing so I can see results with token in .env file. In production, the token should be passed in the request header.
-    auth_header_name = os.getenv("AUTHORIZATION_HEADER", "Authorization")
-    auth_token = ""
+    auth_token = _resolve_auth_token()
 
-    # Prefer live request header when available.
-    if has_request_context():
-        auth_token = request.headers.get(auth_header_name, "").strip()
-
-    # Fallback to local .env token for manual testing.
     if not auth_token:
-        auth_token = os.getenv("AUTHORIZATION_TOKEN", "").strip()
+        raise ClientApiError("Missing Entra access token", status=401)
 
-    if auth_token:
-        if (
-            auth_header_name.lower() == "authorization"
-            and not auth_token.lower().startswith("bearer ")
-        ):
-            auth_token = f"Bearer {auth_token}"
-        headers = kwargs.pop("headers", {})
-        headers[auth_header_name] = auth_token
-        kwargs["headers"] = headers
+    if not auth_token.lower().startswith("bearer "):
+        auth_token = f"Bearer {auth_token}"
+
+    headers = kwargs.pop("headers", {})
+    headers["Authorization"] = auth_token
+    kwargs["headers"] = headers
     try:
         response = requests.request(
             method, url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs

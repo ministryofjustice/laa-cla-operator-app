@@ -11,6 +11,7 @@ python-dotenv
 requests
 urllib3>=2.7.0
 pyopenssl
+PyJWT[crypto]==2.13.0
 PyYAML
 govuk-frontend-jinja
 govuk-frontend-wtf

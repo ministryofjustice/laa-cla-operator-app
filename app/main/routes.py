@@ -11,25 +11,102 @@ from flask import (
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.client_api import search_clients
-from app.main.forms import CookiesForm, StartCaseForm, WhosCallingForm, SearchUser
 from app.main.client_api import create_case
+from app.main.client_api import search_clients
+from app.main.entra_auth import EntraAuthView
+from app.main.forms import CookiesForm, StartCaseForm, WhosCallingForm, SearchUser
 
 
 def _build_backend_date(year: str, month: str, day: str) -> str | None:
     if not all([year, month, day]):
         return None
-    return f"{year}/{month.zfill(2)}/{day.zfill(2)}"
+    return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
 
 
 def register_routes(app):
+    mock_auth_enabled = app.config.get("ENTRA_AUTH_MOCK_ENABLED") and app.config.get("ENVIRONMENT") == "local"
+
+    def _seed_mock_entra_session() -> None:
+        session["entra_access_token"] = "test-access-token"
+        session["id_token_claims"] = {
+            "preferred_username": "functional-test@local",
+            "APP_ROLES": ["Civil Legal Advice - Helpline Operator Manager"],
+            "LAA_ACCOUNTS": ["TEST"],
+        }
+        session["user"] = {
+            "username": "functional-test@local",
+            "roles": ["Civil Legal Advice - Helpline Operator Manager"],
+            "ui_access": ["operator"],
+            "is_manager": True,
+            "office_codes": ["TEST"],
+        }
+
+    @app.before_request
+    def require_authentication():
+    # ==========================
+    # This is a Basic Entra auth to connect A&R with backend seamlessly.
+    # ==========================
+        if not EntraAuthView.configured():
+            return None
+
+        if mock_auth_enabled and not EntraAuthView.authenticated():
+            _seed_mock_entra_session()
+
+        if EntraAuthView.authenticated():
+            return None
+
+        public_endpoints = {
+            "sign_in",
+            "signed_out",
+            "auth_login",
+            "entra_callback",
+            "auth_logout",
+            "status",
+            "static",
+        }
+        if request.endpoint in public_endpoints:
+            return None
+
+        if request.path.startswith("/assets/"):
+            return None
+
+        return redirect(url_for("sign_in"))
+
+    @app.get("/auth/login")
+    def auth_login():
+        if mock_auth_enabled:
+            _seed_mock_entra_session()
+            return redirect(url_for("receive_call"))
+        return EntraAuthView.route_login()
+
+    def entra_callback():
+        return EntraAuthView.route_callback()
+
+    callback_path = (
+        app.config.get("ENTRA_REDIRECT_PATH", "") or ""
+    ).strip() or "/auth/entra-callback"
+    if not callback_path.startswith("/"):
+        callback_path = f"/{callback_path}"
+    app.add_url_rule(
+        callback_path,
+        endpoint="entra_callback",
+        view_func=entra_callback,
+        methods=["GET"],
+    )
+
+    @app.get("/auth/logout")
+    def auth_logout():
+        return EntraAuthView.route_logout()
+
     @app.route("/", methods=["GET", "POST"])
+    @app.route("/receive-call", methods=["GET", "POST"])
     def receive_call():
         form = WhosCallingForm()
         if form.validate_on_submit():
             session["call_context"] = {"whos_calling": form.whos_calling.data}
             return redirect(url_for("search_client"))
         return render_template("main/index.html", form=form)
+
 
     @app.route("/search-client", methods=["GET"])
     def search_client():
@@ -64,6 +141,7 @@ def register_routes(app):
         year = (form.date_of_birth_year.data or "").strip()
 
         date_of_birth = _build_backend_date(year, month, day)
+        print(f"Date of birth: {date_of_birth}")
 
         if not any([full_name, phone, post_code, day, month, year]):
             search = {"error": True}
@@ -114,7 +192,11 @@ def register_routes(app):
 
     @app.get("/sign-in")
     def sign_in():
-        return render_template("auth/sign_in.html")
+        if EntraAuthView.configured():
+            sign_in_href = url_for("auth_login")
+        else:
+            sign_in_href = url_for("receive_call")
+        return render_template("auth/sign_in.html", sign_in_href=sign_in_href)
 
     @app.get("/status")
     def status():

@@ -1,4 +1,5 @@
 import pytest
+from flask import Flask, session
 
 from app.main import client_api
 
@@ -158,3 +159,38 @@ def test_create_case_error_mapping(monkeypatch, status, message):
 )
 def test_parse_dates_supports_backend_formats(raw_date, expected):
     assert client_api._parse_dates(raw_date) == expected
+
+
+def test_request_uses_session_entra_token(monkeypatch):
+    captured = {}
+
+    def fake_requests_request(method, url, timeout=None, **kwargs):
+        captured["method"] = method
+        captured["url"] = url
+        captured["headers"] = kwargs.get("headers", {})
+        return DummyResponse({}, status_code=200)
+
+    app = Flask(__name__)
+    app.config["BACKEND_BASE_URI"] = "http://127.0.0.1:8010"
+    app.secret_key = "test"
+
+    monkeypatch.setattr(client_api.requests, "request", fake_requests_request)
+
+    with app.test_request_context("/search"):
+        session["entra_access_token"] = "entra-token-value"
+        client_api._request("GET", "call_centre/api/v1/case")
+
+    assert captured["headers"]["Authorization"] == "Bearer entra-token-value"
+
+
+def test_request_raises_unauthorized_when_session_token_missing(monkeypatch):
+    app = Flask(__name__)
+    app.config["BACKEND_BASE_URI"] = "http://127.0.0.1:8010"
+    app.secret_key = "test"
+
+    with app.test_request_context("/search"):
+        with pytest.raises(client_api.ClientApiError) as exc:
+            client_api._request("GET", "call_centre/api/v1/case")
+
+    assert exc.value.status == 401
+    assert str(exc.value) == "Missing Entra access token"

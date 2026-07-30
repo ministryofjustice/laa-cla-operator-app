@@ -24,4 +24,16 @@ class Config(object):
     SESSION_COOKIE_SECURE = (
         os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
     )
+    SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
+    
     BACKEND_BASE_URI = os.environ.get("BACKEND_BASE_URI", "http://127.0.0.1:8010")
+
+    # Entra auth config
+    ENTRA_TENANT_ID = os.environ.get("ENTRA_TENANT_ID", "")
+    ENTRA_CLIENT_ID = os.environ.get("ENTRA_CLIENT_ID", "")
+    ENTRA_CLIENT_SECRET = os.environ.get("ENTRA_CLIENT_SECRET", "")
+    ENTRA_SCOPE = os.environ.get("ENTRA_SCOPE", "openid profile email")
+    ENTRA_REDIRECT_PATH = os.environ.get("ENTRA_REDIRECT_PATH", "/auth/entra-callback")
+    ENTRA_AUTH_MOCK_ENABLED = (
+        os.environ.get("ENTRA_AUTH_MOCK_ENABLED", "false").lower() == "true"
+    )
