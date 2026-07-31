@@ -53,6 +53,13 @@ spec:
               {{- else if $value.valueFrom }}
               valueFrom:
                 {{- toYaml $value.valueFrom | nindent 16 }}
+              {{- else if $value.secret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $value.secret.name | quote }}
+                  key: {{ $value.secret.key | quote }}
+              {{- else }}
+              {{- fail (printf "envVars.%s must define one of: value, valueFrom, or secret{name,key}" $key) }}
               {{- end }}
             {{- end }}
           {{- end }}
