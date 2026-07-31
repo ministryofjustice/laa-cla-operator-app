@@ -50,7 +50,16 @@ def register_routes(app):
         # This is a Basic Entra auth to connect A&R with backend seamlessly.
         # ==========================
         if not EntraAuthView.configured():
-            return None
+            public_endpoints = {
+                "sign_in",
+                "status",
+                "static",
+            }
+            if request.endpoint in public_endpoints or request.path.startswith(
+                "/assets/"
+            ):
+                return None
+            return redirect(url_for("sign_in"))
 
         if mock_auth_enabled and not EntraAuthView.authenticated():
             _seed_mock_entra_session()
@@ -197,10 +206,7 @@ def register_routes(app):
 
     @app.get("/sign-in")
     def sign_in():
-        if EntraAuthView.configured():
-            sign_in_href = url_for("auth_login")
-        else:
-            sign_in_href = url_for("receive_call")
+        sign_in_href = url_for("auth_login")
         return render_template("auth/sign_in.html", sign_in_href=sign_in_href)
 
     @app.get("/status")

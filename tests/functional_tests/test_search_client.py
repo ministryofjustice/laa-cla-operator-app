@@ -4,7 +4,8 @@ from playwright.sync_api import Page, expect
 
 
 @pytest.fixture
-def search_page(page: Page):
+def search_page(authenticated_page: Page):
+    page = authenticated_page
     page.goto("/search-client")
     return page
 
