@@ -17,7 +17,9 @@ def _make_app() -> Flask:
         view_func=lambda: "callback",
     )
     app.add_url_rule(
-        "/signed-out", endpoint="signed_out", view_func=lambda: "signed-out"
+        "/auth/signed-out",
+        endpoint="auth_signed_out",
+        view_func=lambda: "signed-out",
     )
     return app
 
@@ -123,7 +125,7 @@ def test_route_callback_rejects_state_mismatch():
     assert response.location.endswith("/sign-in")
 
 
-def test_route_logout_clears_session_and_redirects_to_sign_in():
+def test_route_logout_redirects_to_entra_logout_when_configured():
     app = _make_app()
     app.config.update(
         ENTRA_TENANT_ID="tenant-id",
@@ -138,7 +140,9 @@ def test_route_logout_clears_session_and_redirects_to_sign_in():
         response = EntraAuthView.route_logout()
 
     assert response.status_code == 302
-    assert response.location.endswith("/sign-in")
+    assert "oauth2/v2.0/logout" in response.location
+    assert "post_logout_redirect_uri=" in response.location
+    assert "%2Fauth%2Fsigned-out" in response.location
 
 
 def test_route_callback_success_stores_expected_session_payload(monkeypatch):

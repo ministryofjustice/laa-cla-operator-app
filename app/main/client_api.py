@@ -106,7 +106,7 @@ def normalize_search_response(raw: dict[str, Any]) -> dict[str, Any]:
                 {
                     "id": row.get("id"),
                     "name": row.get("full_name", ""),
-                    "phone": row.get("phone", ""),
+                    "phone": row.get("mobile_phone", ""),
                     "postcode": row.get("postcode", ""),
                     "dob": _parse_dates(row.get("date_of_birth", "")),
                     "dob_sort": row.get("date_of_birth", ""),

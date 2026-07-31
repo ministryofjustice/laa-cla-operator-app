@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block header %}
+  {% set current_endpoint = (request.endpoint or "").rsplit(".", 1)[-1] %}
+
+  {{ moj_header(session.get("user", {})) }}
+
+  {{ govuk_service_navigation({
+    "serviceName": config["SERVICE_NAME"],
+    "serviceUrl": url_for("receive_call"),
+    "navigation": [
+      {
+        "href": url_for("receive_call"),
+        "text": "Receive calls",
+        "current": current_endpoint in [
+          "receive_call",
+          "client_details",
+          "search_client"
+        ]
+      },
+      {
+        "href": url_for("receive_call"),
+        "text": "Make calls",
+        "current": current_endpoint == "make_call"
+      }
+    ]
+  }) }}
+{% endblock %}

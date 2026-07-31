@@ -282,7 +282,15 @@ class EntraAuthView:
     @classmethod
     def route_logout(cls):
         session.clear()
-        return redirect(url_for("sign_in"))
+        if not cls.configured():
+            return redirect(url_for("sign_in"))
+
+        settings = cls._settings()
+        logout_uri = f"{settings.authority}/oauth2/v2.0/logout"
+        params = {
+            "post_logout_redirect_uri": url_for("auth_signed_out", _external=True),
+        }
+        return redirect(f"{logout_uri}?{urlencode(params)}")
 
     @classmethod
     def route_callback(cls):

@@ -5,7 +5,7 @@
 {%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner as govuk_notification_banner -%}
 {%- from 'govuk_frontend_jinja/components/phase-banner/macro.html' import govukPhaseBanner as govuk_phase_banner -%}
 {%- from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation -%}
-{%- from 'components/header.html' import mojHeader as moj_header %}
+{%- from 'components/header.html' import moj_header %}
 
 {% set govukRebrand = True %}
 
@@ -116,13 +116,10 @@
 {% endblock %}
 
 {% block header %}
-  {{ moj_header() }}
+  {{ moj_header(session.get("user", {})) }}
 
   {{ govuk_service_navigation({
-    'serviceName': config['SERVICE_NAME'],
-    'serviceUrl': url_for('receive_call'),
-    'navigation': [
-    ]
+    "serviceName": config["SERVICE_NAME"],
   }) }}
 {% endblock %}
 

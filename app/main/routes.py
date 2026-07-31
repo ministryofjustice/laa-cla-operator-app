@@ -60,7 +60,7 @@ def register_routes(app):
 
         public_endpoints = {
             "sign_in",
-            "signed_out",
+            "auth_signed_out",
             "auth_login",
             "entra_callback",
             "auth_logout",
@@ -100,6 +100,10 @@ def register_routes(app):
     @app.get("/auth/logout")
     def auth_logout():
         return EntraAuthView.route_logout()
+
+    @app.get("/auth/signed-out")
+    def auth_signed_out():
+        return redirect(url_for("sign_in"))
 
     @app.route("/", methods=["GET", "POST"])
     @app.route("/receive-call", methods=["GET", "POST"])
