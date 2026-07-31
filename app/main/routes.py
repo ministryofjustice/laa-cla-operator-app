@@ -105,7 +105,6 @@ def register_routes(app):
     def auth_signed_out():
         return redirect(url_for("sign_in"))
 
-    @app.route("/", methods=["GET", "POST"])
     @app.route("/receive-call", methods=["GET", "POST"])
     def receive_call():
         form = WhosCallingForm()
