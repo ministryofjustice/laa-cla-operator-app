@@ -80,6 +80,8 @@ pycparser==3.0
     # via cffi
 pyopenssl==26.3.0
     # via -r requirements.in
+pyjwt==2.13.0
+    # via -r requirements.in
 python-dotenv==1.2.2
     # via -r requirements.in
 pyyaml==6.0.3

@@ -6,6 +6,7 @@ from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from govuk_frontend_wtf.main import WTFormsHelpers
 from jinja2 import ChoiceLoader, PackageLoader, PrefixLoader
+from werkzeug.middleware.proxy_fix import ProxyFix
 from app.helpers.static_helpers import get_hashed_filename
 
 from app.config import Config
@@ -22,7 +23,19 @@ talisman = Talisman()
 def create_app(config_class=Config):
     app: Flask = Flask(__name__, static_url_path="/assets", static_folder="static/dist")
     app.url_map.strict_slashes = False  # This allows www.host.gov.uk/category to be routed to www.host.gov.uk/category/
+    # Honor X-Forwarded-* headers from ingress so external URLs (OAuth redirects)
+    # use the public HTTPS origin rather than internal HTTP hop details.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     app.config.from_object(config_class)
+
+    if (
+        app.config.get("ENTRA_AUTH_MOCK_ENABLED")
+        and app.config.get("ENVIRONMENT") != "local"
+    ):
+        raise RuntimeError(
+            "ENTRA_AUTH_MOCK_ENABLED can only be used when CLAH_ENVIRONMENT=local"
+        )
+
     app.jinja_env.lstrip_blocks = True
     app.jinja_env.trim_blocks = True
     app.jinja_loader = ChoiceLoader(
@@ -108,9 +121,9 @@ def create_app(config_class=Config):
         permissions_policy=permissions_policy,
         content_security_policy_nonce_in=["script-src"],
         force_https=False,
-        session_cookie_secure=True,
+        session_cookie_secure=app.config["SESSION_COOKIE_SECURE"],
         session_cookie_http_only=True,
-        session_cookie_samesite="Strict",
+        session_cookie_samesite=app.config["SESSION_COOKIE_SAMESITE"],
     )
 
     WTFormsHelpers(app)
