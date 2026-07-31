@@ -6,6 +6,7 @@ from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from govuk_frontend_wtf.main import WTFormsHelpers
 from jinja2 import ChoiceLoader, PackageLoader, PrefixLoader
+from werkzeug.middleware.proxy_fix import ProxyFix
 from app.helpers.static_helpers import get_hashed_filename
 
 from app.config import Config
@@ -22,6 +23,9 @@ talisman = Talisman()
 def create_app(config_class=Config):
     app: Flask = Flask(__name__, static_url_path="/assets", static_folder="static/dist")
     app.url_map.strict_slashes = False  # This allows www.host.gov.uk/category to be routed to www.host.gov.uk/category/
+    # Honor X-Forwarded-* headers from ingress so external URLs (OAuth redirects)
+    # use the public HTTPS origin rather than internal HTTP hop details.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     app.config.from_object(config_class)
 
     if (
