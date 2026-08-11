@@ -37,8 +37,6 @@
 
   <div class="search-container search-client-box">
     <form action="{{ url_for('search_client') }}" method="GET" id="search" novalidate>
-
-      <input type="hidden" name="submitted" value="true">
       <div class="govuk-form-group">
         <label class="govuk-label govuk-!-font-weight-bold" for="full_name">What's your name?</label>
         <input class="govuk-input govuk-!-width-two-thirds" value="{{ form.full_name.data or '' }}" id="full_name" name="full_name" type="search">
@@ -126,35 +124,6 @@
       </div>
     </form>
   </div>
-
-  {% set has_entered_data =
-  (form.full_name.data or '') or
-  (form.phone.data or '') or
-  (form.postcode.data or '') or
-  (form.date_of_birth_day.data or '') or
-  (form.date_of_birth_month.data or '') or
-  (form.date_of_birth_year.data or '')
-  %}
-
-  {# Update this URL with next step form page #}
-  <form action="{{ url_for('receive_call') }}" method="POST" id="create-case-form" novalidate>
-    {{ start_case_form.csrf_token }}
-    <input type="hidden" name="full_name" value="{{ form.full_name.data or '' }}">
-    <input type="hidden" name="phone" value="{{ form.phone.data or '' }}">
-    <input type="hidden" name="postcode" value="{{ form.postcode.data or '' }}">
-    <input type="hidden" name="date_of_birth_day" value="{{ form.date_of_birth_day.data or '' }}">
-    <input type="hidden" name="date_of_birth_month" value="{{ form.date_of_birth_month.data or '' }}">
-    <input type="hidden" name="date_of_birth_year" value="{{ form.date_of_birth_year.data or '' }}">
-    <button type="submit" class="govuk-button govuk-button--secondary">
-      {% if form.full_name.data %}
-      Start a new case for {{ form.full_name.data }}
-      {% elif has_entered_data %}
-      Start a new case using the details entered
-      {% else %}
-      Start a new case
-      {% endif %}
-    </button>
-  </form>
 
     <div class="search-result">
       {% if search.result %}

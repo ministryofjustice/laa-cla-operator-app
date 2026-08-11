@@ -47,7 +47,7 @@ def test_user_can_search_by_name(search_page: Page):
 
     page.get_by_role("button", name="Search").click()
 
-    expect(page).to_have_url(re.compile(r"submitted=true"))
+    expect(page).to_have_url(re.compile(r"full_name=John\+Smith"))
 
 
 @pytest.mark.skip(reason=BACKEND_RESPONSE_PENDING_REASON)

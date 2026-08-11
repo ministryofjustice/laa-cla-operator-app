@@ -12,7 +12,7 @@ from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
 from app.main.client_api import search_clients
-from app.main.forms import CookiesForm, StartCaseForm, WhosCallingForm, SearchUser
+from app.main.forms import CookiesForm, WhosCallingForm, SearchUser
 
 
 def _build_backend_date(year: str, month: str, day: str) -> str | None:
@@ -33,22 +33,19 @@ def register_routes(app):
     @app.route("/search-client", methods=["GET"])
     def search_client():
         form = SearchUser(request.args, meta={"csrf": False})
-        start_case_form = StartCaseForm()
-        submitted = request.args.get("submitted") == "true"
+        submitted = (request.args.get("submitted") == "true") or bool(request.args)
 
         if not submitted:
             return render_template(
                 "services/search.html",
                 search={},
                 form=form,
-                start_case_form=start_case_form,
             )
         if not form.validate():
             return render_template(
                 "services/search.html",
                 search={"error": True},
                 form=form,
-                start_case_form=start_case_form,
             )
 
         page = request.args.get("page", 1, type=int)
@@ -69,7 +66,6 @@ def register_routes(app):
                 "services/search.html",
                 search=search,
                 form=form,
-                start_case_form=start_case_form,
             )
 
         search_payload = {
@@ -101,14 +97,12 @@ def register_routes(app):
                     },
                 },
                 form=form,
-                start_case_form=start_case_form,
             )
 
         return render_template(
             "services/search.html",
             search=results,
             form=form,
-            start_case_form=start_case_form,
         )
 
     @app.get("/sign-in")

@@ -5,7 +5,7 @@ from govuk_frontend_wtf.wtforms_widgets import (
 )
 from app.main.utils.widgets import CustomRadioInput
 from flask_wtf import FlaskForm
-from wtforms import HiddenField, RadioField, StringField, SubmitField
+from wtforms import RadioField, StringField, SubmitField
 from datetime import datetime
 from wtforms.validators import Optional, Regexp, InputRequired
 
@@ -116,72 +116,5 @@ class SearchUser(FlaskForm):
         except ValueError:
             self.date_of_birth_year.errors.append("Enter a valid date of birth")
             return False
-
-        return True
-
-
-class StartCaseForm(FlaskForm):
-    full_name = HiddenField(
-        validators=[Optional()],
-    )
-
-    phone = HiddenField(
-        validators=[
-            Optional(),
-            Regexp(r"^[0-9+\-\s()]{10,20}$", message="Enter a valid phone number"),
-        ],
-    )
-
-    postcode = HiddenField(
-        validators=[
-            Optional(),
-            Regexp(
-                r"^(?:[A-Za-z]{1,2}\d[A-Za-z\d]?)(?:\s?\d[A-Za-z]{2})?$",
-                message="Enter a valid UK postcode",
-            ),
-        ],
-    )
-
-    date_of_birth_day = HiddenField(
-        validators=[
-            Optional(),
-            Regexp(r"^(0?[1-9]|[12][0-9]|3[01])$", message="Enter a valid day"),
-        ],
-    )
-
-    date_of_birth_month = HiddenField(
-        validators=[
-            Optional(),
-            Regexp(r"^(0?[1-9]|1[0-2])$", message="Enter a valid month"),
-        ],
-    )
-
-    date_of_birth_year = HiddenField(
-        validators=[
-            Optional(),
-            Regexp(r"^\d{4}$", message="Enter a valid year"),
-        ],
-    )
-
-    submit = SubmitField("Start a new case", widget=GovSubmitInput())
-
-    def validate(self, extra_validators=None):
-        if not super().validate(extra_validators=extra_validators):
-            return False
-
-        day = (self.date_of_birth_day.data or "").strip()
-        month = (self.date_of_birth_month.data or "").strip()
-        year = (self.date_of_birth_year.data or "").strip()
-
-        if any([day, month, year]) and not all([day, month, year]):
-            self.date_of_birth_year.errors.append("Enter a complete date of birth")
-            return False
-
-        if all([day, month, year]):
-            try:
-                datetime(int(year), int(month), int(day))
-            except ValueError:
-                self.date_of_birth_year.errors.append("Enter a valid date of birth")
-                return False
 
         return True
