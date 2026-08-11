@@ -1,6 +1,26 @@
 {% extends "base.html" %}
 {% from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation %}
 
+{% block header %}
+  {{ moj_header() }}
+
+  {{ govuk_service_navigation({
+    'serviceName': config['SERVICE_NAME'],
+    'serviceUrl': url_for('receive_call'),
+    'navigation': [
+      {
+        'href': url_for('receive_call'),
+        'text': 'Receive calls',
+        'current': true
+      },
+      {
+        'href': url_for('receive_call'),
+        'text': 'Make calls'
+      }
+    ]
+  }) }}
+{% endblock %}
+
 {% block beforeContent %}
 {{ super() }}
   <a href="{{url_for ('receive_call')}}" class="govuk-back-link">Back</a>
