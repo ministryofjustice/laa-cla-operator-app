@@ -24,4 +24,7 @@ ingress:
 resources: {}
 
 # Environment variables can be added here
-envVars: {}
+envVars:
+  BACKEND_BASE_URI:
+      # Using service name instead of external domain name
+      value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"

@@ -15,33 +15,12 @@
 	background-color: govuk.govuk-functional-colour("template-background");
 }
 
-.search-container {
-  width: 100dvh;
-  background-color: govuk.govuk-functional-colour("template-background");
-  padding: 20px;
+.search-client-box {
+	background-color: govuk.govuk-functional-colour("template-background");
+	padding: govuk.govuk-spacing(4) govuk.govuk-spacing(4) govuk.govuk-spacing(3);
+	margin: govuk.govuk-spacing(6) 0 govuk.govuk-spacing(6) 0;
 }
 
-.search-container .govuk-form-grouping {
-  max-width: 40em; 
-}
-
-.search-container .govuk-input-long {
-  max-width: 30em; 
-}
-
-
-.moj-button-action {
-	padding: 40px 40px 40px 0;
-}
-
-.govuk-main-wrapper .govuk-back-link {
-  margin-top: 5px; 
-}
-
- .govuk-main-wrapper {
-	padding-top: 5px !important;
- }
-
-.govuk-heading-xl {
-	margin-top: 5% !important;
+.search-client-box .govuk-button-group {
+	margin-bottom: 0;
 }
