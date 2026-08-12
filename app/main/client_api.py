@@ -1,7 +1,7 @@
 import requests
 
 from typing import Any
-from flask import current_app, has_request_context, session
+from flask import current_app
 
 REQUEST_TIMEOUT_SECONDS = 10
 
@@ -37,26 +37,9 @@ def _build_url(path: str) -> str:
     return f"{base_url.rstrip('/')}/{path.lstrip('/')}"
 
 
-def _resolve_auth_token() -> str:
-    if not has_request_context():
-        return ""
-    return (session.get("entra_access_token") or "").strip()
-
-
 def _request(method: str, path: str, **kwargs: Any) -> requests.Response:
     url = _build_url(path)
 
-    auth_token = _resolve_auth_token()
-
-    if not auth_token:
-        raise ClientApiError("Missing Entra access token", status=401)
-
-    if not auth_token.lower().startswith("bearer "):
-        auth_token = f"Bearer {auth_token}"
-
-    headers = kwargs.pop("headers", {})
-    headers["Authorization"] = auth_token
-    kwargs["headers"] = headers
     try:
         response = requests.request(
             method, url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs
@@ -162,8 +145,6 @@ def search_clients(payload: dict[str, Any]) -> dict[str, Any]:
     except ValueError:
         return _fail("Backend returned invalid response")
     except ClientApiError as exc:
-        if exc.status in (401, 403):
-            return _fail("Search service unauthorized", exc.status)
         if exc.status == 404:
             return _fail("Search endpoint not found on backend", exc.status)
         return _fail("Search service unavailable", exc.status)
@@ -176,8 +157,6 @@ def create_case(payload: dict[str, Any]) -> dict[str, Any]:
     except ValueError:
         return _fail("Backend returned invalid response")
     except ClientApiError as exc:
-        if exc.status in (401, 403):
-            return _fail("Create case service unauthorized", exc.status)
         if exc.status == 404:
             return _fail("Create case endpoint not found on backend", exc.status)
         return _fail("Create case service unavailable", exc.status)

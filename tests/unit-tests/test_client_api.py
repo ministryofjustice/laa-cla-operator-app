@@ -1,5 +1,5 @@
 import pytest
-from flask import Flask, session
+from flask import Flask
 
 from app.main import client_api
 
@@ -66,7 +66,7 @@ def test_search_clients_success_builds_query_and_normalizes(monkeypatch):
     assert search["pagination"]["total_pages"] == 2
 
 
-def test_search_clients_maps_unauthorized_error(monkeypatch):
+def test_search_clients_maps_401_to_unavailable(monkeypatch):
     def fake_request(method, path, **kwargs):
         raise client_api.ClientApiError("backend error", status=401)
 
@@ -77,7 +77,7 @@ def test_search_clients_maps_unauthorized_error(monkeypatch):
     assert result == {
         "ok": False,
         "data": None,
-        "error": "Search service unauthorized",
+        "error": "Search service unavailable",
         "status": 401,
     }
 
@@ -127,7 +127,7 @@ def test_create_case_success(monkeypatch):
 @pytest.mark.parametrize(
     "status, message",
     [
-        (403, "Create case service unauthorized"),
+        (403, "Create case service unavailable"),
         (404, "Create case endpoint not found on backend"),
         (500, "Create case service unavailable"),
     ],
@@ -161,7 +161,7 @@ def test_parse_dates_supports_backend_formats(raw_date, expected):
     assert client_api._parse_dates(raw_date) == expected
 
 
-def test_request_uses_session_entra_token(monkeypatch):
+def test_request_does_not_inject_authorization_header(monkeypatch):
     captured = {}
 
     def fake_requests_request(method, url, timeout=None, **kwargs):
@@ -177,20 +177,6 @@ def test_request_uses_session_entra_token(monkeypatch):
     monkeypatch.setattr(client_api.requests, "request", fake_requests_request)
 
     with app.test_request_context("/search"):
-        session["entra_access_token"] = "entra-token-value"
         client_api._request("GET", "call_centre/api/v1/case")
 
-    assert captured["headers"]["Authorization"] == "Bearer entra-token-value"
-
-
-def test_request_raises_unauthorized_when_session_token_missing(monkeypatch):
-    app = Flask(__name__)
-    app.config["BACKEND_BASE_URI"] = "http://127.0.0.1:8010"
-    app.secret_key = "test"
-
-    with app.test_request_context("/search"):
-        with pytest.raises(client_api.ClientApiError) as exc:
-            client_api._request("GET", "call_centre/api/v1/case")
-
-    assert exc.value.status == 401
-    assert str(exc.value) == "Missing Entra access token"
+    assert "Authorization" not in captured["headers"]

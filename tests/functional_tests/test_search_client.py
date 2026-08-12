@@ -4,7 +4,9 @@ from playwright.sync_api import Page, expect
 
 
 # Temporary until the Auth flow is implemented and the backend can return a response.
-BACKEND_RESPONSE_PENDING_REASON = "Temporary disabled until the Entra auth flow is implemented and the backend can return a response"
+BACKEND_RESPONSE_PENDING_REASON = (
+    "Temporary until the Auth flow is implemented and the backend can return a response"
+)
 
 
 @pytest.fixture
