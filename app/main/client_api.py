@@ -16,26 +16,26 @@ REQUEST_TIMEOUT_SECONDS = 10
 class ClientApiError(Exception):
     """Raised when the backend client API cannot complete a request."""
 
-    def __init__(self, message: str, status: int | None = None):
+    def __init__(self, message: str, status_code: int | None = None):
         super().__init__(message)
-        self.status = status
+        self.status_code = status_code
 
 
-def _ok(data: dict[str, Any], status: int = 200) -> dict[str, Any]:
+def _ok(data: dict[str, Any], status_code: int = 200) -> dict[str, Any]:
     return {
         "ok": True,
         "data": data,
         "error": None,
-        "status": status,
+        "status_code": status_code,
     }
 
 
-def _fail(message: str, status: int | None = None) -> dict[str, Any]:
+def _fail(message: str, status_code: int | None = None) -> dict[str, Any]:
     return {
         "ok": False,
         "data": None,
         "error": message,
-        "status": status,
+        "status_code": status_code,
     }
 
 
@@ -62,7 +62,7 @@ def _request(method: str, path: str, **kwargs: Any) -> requests.Response:
             response.status_code,
         )
         raise ClientApiError(
-            "Backend service returned an error", status=response.status_code
+            "Backend service returned an error", status_code=response.status_code
         )
 
     return response
@@ -102,9 +102,9 @@ def _map_api_error(
     not_found_message: str,
     unavailable_message: str,
 ) -> dict[str, Any]:
-    if exc.status == 404:
-        return _fail(not_found_message, exc.status)
-    return _fail(unavailable_message, exc.status)
+    if exc.status_code == 404:
+        return _fail(not_found_message, exc.status_code)
+    return _fail(unavailable_message, exc.status_code)
 
 
 def normalize_search_response(raw: dict[str, Any]) -> dict[str, Any]:

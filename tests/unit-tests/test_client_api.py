@@ -51,7 +51,7 @@ def test_search_clients_success_builds_query_and_normalizes(monkeypatch):
     )
 
     assert result["ok"] is True
-    assert result["status"] == 200
+    assert result["status_code"] == 200
     assert captured["method"] == "GET"
     assert captured["path"] == "call_centre/api/v1/case"
     assert captured["kwargs"]["params"]["page"] == 2
@@ -68,7 +68,7 @@ def test_search_clients_success_builds_query_and_normalizes(monkeypatch):
 
 def test_search_clients_maps_401_to_unavailable(monkeypatch):
     def fake_request(method, path, **kwargs):
-        raise client_api.ClientApiError("backend error", status=401)
+        raise client_api.ClientApiError("backend error", status_code=401)
 
     monkeypatch.setattr(client_api, "_request", fake_request)
 
@@ -78,13 +78,13 @@ def test_search_clients_maps_401_to_unavailable(monkeypatch):
         "ok": False,
         "data": None,
         "error": "Search service unavailable",
-        "status": 401,
+        "status_code": 401,
     }
 
 
 def test_search_clients_maps_generic_error(monkeypatch):
     def fake_request(method, path, **kwargs):
-        raise client_api.ClientApiError("backend error", status=500)
+        raise client_api.ClientApiError("backend error", status_code=500)
 
     monkeypatch.setattr(client_api, "_request", fake_request)
 
@@ -94,7 +94,7 @@ def test_search_clients_maps_generic_error(monkeypatch):
         "ok": False,
         "data": None,
         "error": "Search service unavailable",
-        "status": 500,
+        "status_code": 500,
     }
 
 
@@ -120,7 +120,7 @@ def test_create_case_success(monkeypatch):
         "ok": True,
         "data": {"reference": "CASE-123"},
         "error": None,
-        "status": 201,
+        "status_code": 201,
     }
 
 
@@ -134,7 +134,7 @@ def test_create_case_success(monkeypatch):
 )
 def test_create_case_error_mapping(monkeypatch, status, message):
     def fake_request(method, path, **kwargs):
-        raise client_api.ClientApiError("backend error", status=status)
+        raise client_api.ClientApiError("backend error", status_code=status)
 
     monkeypatch.setattr(client_api, "_request", fake_request)
 
@@ -144,7 +144,7 @@ def test_create_case_error_mapping(monkeypatch, status, message):
         "ok": False,
         "data": None,
         "error": message,
-        "status": status,
+        "status_code": status,
     }
 
 
