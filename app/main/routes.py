@@ -13,6 +13,8 @@ from werkzeug.exceptions import HTTPException
 from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
 
 
+from app.authenication import entra_sign_in
+
 def register_routes(app):
     @app.route("/", methods=["GET", "POST"])
     def receive_call():
@@ -78,7 +80,8 @@ def register_routes(app):
 
     @app.get("/sign-in")
     def sign_in():
-        return render_template("auth/sign_in.html")
+        auth = entra_sign_in.sign_in_entra()
+        return auth
 
     @app.get("/status")
     def status():
