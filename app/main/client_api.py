@@ -96,12 +96,15 @@ def _json_or_value_error(response: requests.Response) -> dict[str, Any]:
         raise ValueError("Backend returned invalid response") from exc
 
 
-def _build_search_unavailable_error(
-    exc: ClientApiError, not_found_message: str
+def _map_api_error(
+    exc: ClientApiError,
+    *,
+    not_found_message: str,
+    unavailable_message: str,
 ) -> dict[str, Any]:
     if exc.status == 404:
         return _fail(not_found_message, exc.status)
-    return _fail("Search service unavailable", exc.status)
+    return _fail(unavailable_message, exc.status)
 
 
 def normalize_search_response(raw: dict[str, Any]) -> dict[str, Any]:
@@ -165,8 +168,10 @@ def search_clients(payload: dict[str, Any]) -> dict[str, Any]:
     except (ValueError, ValidationError):
         return _fail("Backend returned invalid response")
     except ClientApiError as exc:
-        return _build_search_unavailable_error(
-            exc, "Search endpoint not found on backend"
+        return _map_api_error(
+            exc,
+            not_found_message="Search endpoint not found on backend",
+            unavailable_message="Search service unavailable",
         )
 
 
@@ -183,6 +188,8 @@ def create_case(payload: dict[str, Any]) -> dict[str, Any]:
     except (ValueError, ValidationError):
         return _fail("Backend returned invalid response")
     except ClientApiError as exc:
-        if exc.status == 404:
-            return _fail("Create case endpoint not found on backend", exc.status)
-        return _fail("Create case service unavailable", exc.status)
+        return _map_api_error(
+            exc,
+            not_found_message="Create case endpoint not found on backend",
+            unavailable_message="Create case service unavailable",
+        )
