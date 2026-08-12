@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=requirements_dev.txt requirements_dev.in
 #
+annotated-types==0.8.0
+    # via pydantic
 ast-serialize==0.6.0
     # via mypy
 attrs==25.4.0
@@ -193,6 +195,10 @@ pycodestyle==2.14.0
     # via flake8
 pycparser==3.0
     # via cffi
+pydantic==2.13.4
+    # via -r requirements.in
+pydantic-core==2.46.4
+    # via pydantic
 pyee==13.0.1
     # via playwright
 pyflakes==3.4.0
@@ -258,7 +264,12 @@ typing-extensions==4.15.0
     #   flask-limiter
     #   limits
     #   mypy
+    #   pydantic
+    #   pydantic-core
     #   pyee
+    #   typing-inspection
+typing-inspection==0.4.3
+    # via pydantic
 urllib3==2.7.0
     # via
     #   -r requirements.in

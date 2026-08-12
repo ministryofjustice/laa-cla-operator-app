@@ -2,6 +2,13 @@ import requests
 
 from typing import Any
 from flask import current_app
+from pydantic import ValidationError
+from app.main.models import (
+    PersonalDetails,
+    SearchPagination,
+    SearchResponse,
+    SearchResultRow,
+)
 
 REQUEST_TIMEOUT_SECONDS = 10
 
@@ -73,9 +80,33 @@ def _parse_dates(date_str: str) -> str:
         return ""
 
 
+def _personal_details_from_payload(payload: dict[str, Any]) -> PersonalDetails:
+    return PersonalDetails(
+        full_name=str(payload.get("full_name") or "").strip(),
+        phone=str(payload.get("phone") or "").strip(),
+        postcode=str(payload.get("postcode") or "").strip(),
+        date_of_birth=str(payload.get("date_of_birth") or "").strip(),
+    )
+
+
+def _json_or_value_error(response: requests.Response) -> dict[str, Any]:
+    try:
+        return response.json()
+    except ValueError as exc:
+        raise ValueError("Backend returned invalid response") from exc
+
+
+def _build_search_unavailable_error(
+    exc: ClientApiError, not_found_message: str
+) -> dict[str, Any]:
+    if exc.status == 404:
+        return _fail(not_found_message, exc.status)
+    return _fail("Search service unavailable", exc.status)
+
+
 def normalize_search_response(raw: dict[str, Any]) -> dict[str, Any]:
     if "result" in raw and "pagination" in raw:
-        search = raw
+        search = SearchResponse.model_validate(raw)
     else:
         results = raw.get("results", [])
         page = int(raw.get("page", 1))
@@ -84,49 +115,38 @@ def normalize_search_response(raw: dict[str, Any]) -> dict[str, Any]:
         total_pages = max(1, (total_records + per_page - 1) // per_page)
         start = ((page - 1) * per_page) + 1 if total_records else 0
         end = min(page * per_page, total_records)
-        search = {
-            "result": [
-                {
-                    "id": row.get("id"),
-                    "name": row.get("full_name", ""),
-                    "phone": row.get("mobile_phone", ""),
-                    "postcode": row.get("postcode", ""),
-                    "dob": _parse_dates(row.get("date_of_birth", "")),
-                    "dob_sort": row.get("date_of_birth", ""),
-                }
-                for row in results
-            ],
-            "pagination": {
-                "page": page,
-                "per_page": per_page,
-                "total_pages": total_pages,
-                "total_records": total_records,
-                "start": start,
-                "end": end,
-            },
-        }
+        rows = [
+            SearchResultRow(
+                id=row.get("id"),
+                name=row.get("full_name", ""),
+                phone=row.get("mobile_phone", ""),
+                postcode=row.get("postcode", ""),
+                dob=_parse_dates(row.get("date_of_birth", "")),
+                dob_sort=row.get("date_of_birth", ""),
+            )
+            for row in results
+        ]
+        pagination = SearchPagination(
+            page=page,
+            per_page=per_page,
+            total_pages=total_pages,
+            total_records=total_records,
+            start=start,
+            end=end,
+        )
+        search = SearchResponse(result=rows, pagination=pagination)
 
-    search.setdefault("result", [])
-    search.setdefault(
-        "pagination",
-        {
-            "page": 1,
-            "per_page": 20,
-            "total_pages": 1,
-            "total_records": 0,
-            "start": 0,
-            "end": 0,
-        },
-    )
-    return search
+    return search.model_dump()
 
 
 def search_clients(payload: dict[str, Any]) -> dict[str, Any]:
+    personal_details = _personal_details_from_payload(payload)
+
     search_terms = [
-        payload.get("full_name"),
-        payload.get("phone"),
-        payload.get("postcode"),
-        payload.get("date_of_birth"),
+        personal_details.full_name,
+        personal_details.phone,
+        personal_details.postcode,
+        personal_details.date_of_birth,
     ]
 
     search_value = " ".join(
@@ -140,21 +160,27 @@ def search_clients(payload: dict[str, Any]) -> dict[str, Any]:
 
     try:
         response = _request("GET", "call_centre/api/v1/case", params=query)
-        normalized = normalize_search_response(response.json())
+        normalized = normalize_search_response(_json_or_value_error(response))
         return _ok({"search": normalized}, response.status_code)
-    except ValueError:
+    except (ValueError, ValidationError):
         return _fail("Backend returned invalid response")
     except ClientApiError as exc:
-        if exc.status == 404:
-            return _fail("Search endpoint not found on backend", exc.status)
-        return _fail("Search service unavailable", exc.status)
+        return _build_search_unavailable_error(
+            exc, "Search endpoint not found on backend"
+        )
 
 
 def create_case(payload: dict[str, Any]) -> dict[str, Any]:
+    personal_details = _personal_details_from_payload(payload)
+
     try:
-        response = _request("POST", "call_centre/api/v1/case/", json=payload)
-        return _ok(response.json(), response.status_code)
-    except ValueError:
+        response = _request(
+            "POST",
+            "call_centre/api/v1/case/",
+            json=personal_details.model_dump(),
+        )
+        return _ok(_json_or_value_error(response), response.status_code)
+    except (ValueError, ValidationError):
         return _fail("Backend returned invalid response")
     except ClientApiError as exc:
         if exc.status == 404:
