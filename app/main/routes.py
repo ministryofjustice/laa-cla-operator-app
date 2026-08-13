@@ -1,6 +1,7 @@
 from flask import (
     flash,
     json,
+    session,
     make_response,
     redirect,
     render_template,
@@ -10,7 +11,14 @@ from flask import (
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
+from app.main.client_api import search_clients
+from app.main.forms import CookiesForm, WhosCallingForm, SearchUser
+
+
+def _build_backend_date(year: str, month: str, day: str) -> str | None:
+    if not all([year, month, day]):
+        return None
+    return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
 
 
 def register_routes(app):
@@ -18,14 +26,14 @@ def register_routes(app):
     def receive_call():
         form = WhosCallingForm()
         if form.validate_on_submit():
-            # TODO: route "myself" vs "another" once the next step exists
+            session["call_context"] = {"whos_calling": form.whos_calling.data}
             return redirect(url_for("search_client"))
         return render_template("main/index.html", form=form)
 
     @app.route("/search-client", methods=["GET"])
     def search_client():
         form = SearchUser(request.args, meta={"csrf": False})
-        submitted = request.args.get("submitted") == "true"
+        submitted = (request.args.get("submitted") == "true") or bool(request.args)
 
         if not submitted:
             return render_template(
@@ -42,7 +50,7 @@ def register_routes(app):
 
         page = request.args.get("page", 1, type=int)
 
-        name = (form.name.data or "").strip()
+        full_name = (form.full_name.data or "").strip()
         phone = (form.phone.data or "").strip()
         post_code = (form.postcode.data or "").strip()
 
@@ -50,9 +58,9 @@ def register_routes(app):
         month = (form.date_of_birth_month.data or "").strip()
         year = (form.date_of_birth_year.data or "").strip()
 
-        date_of_birth = f"{day}/{month}/{year}" if all([day, month, year]) else None
+        date_of_birth = _build_backend_date(year, month, day)
 
-        if not any([name, phone, post_code, day, month, year]):
+        if not any([full_name, phone, post_code, day, month, year]):
             search = {"error": True}
             return render_template(
                 "services/search.html",
@@ -60,15 +68,36 @@ def register_routes(app):
                 form=form,
             )
 
-        search = ClientSearchQuery(
-            name=name,
-            phone_number=phone,
-            post_code=post_code,
-            date_of_birth=date_of_birth,
-            page=page,
-        )
+        search_payload = {
+            "full_name": full_name,
+            "phone": phone,
+            "postcode": post_code,
+            "date_of_birth": date_of_birth,
+            "page": page,
+            "call_context": session.get("call_context", {}),
+        }
 
-        results = search.search()
+        results = search_clients(search_payload)
+
+        if not results["ok"]:
+            return render_template(
+                "services/search.html",
+                search={
+                    "error": True,
+                    "error_api": True,
+                    "error_message": results["error"],
+                    "result": [],
+                    "pagination": {
+                        "page": 1,
+                        "per_page": 20,
+                        "total_pages": 1,
+                        "total_records": 0,
+                        "start": 0,
+                        "end": 0,
+                    },
+                },
+                form=form,
+            )
 
         return render_template(
             "services/search.html",
