@@ -80,8 +80,17 @@ def register_routes(app):
 
     @app.get("/sign-in")
     def sign_in():
-        auth = entra_sign_in.sign_in_entra()
+        """
+        Users able to login using Entra/Silas
+        """
+        auth = entra_sign_in.EntraLogin()
+        auth.login() 
+
         return auth
+
+    @pp.get("/sign-out")
+    def logout():
+        pass 
 
     @app.get("/status")
     def status():
