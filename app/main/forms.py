@@ -238,6 +238,4 @@ class ClientSearchQuery:
             },
         }
 
-
-
     submit = SubmitField("Continue", widget=GovSubmitInput())

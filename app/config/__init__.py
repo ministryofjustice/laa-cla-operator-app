@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -27,10 +28,6 @@ class Config(object):
     AUTHORITY = os.getenv("AUTHORITY")
     REDIRECT_PATH = os.getenv("REDIRECT_PATH")
     ENDPOINT = os.getenv("ENDPOINT")
-    SCOPE= os.getenv("SCOPE")
-    SESSION_TYPE= os.getenv("SESSION_TYPE")
+    SCOPE = os.getenv("SCOPE")
+    SESSION_TYPE = os.getenv("SESSION_TYPE")
     TENANT_ID = os.getenv("TENANT_ID")
-
-
-
-

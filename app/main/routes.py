@@ -12,8 +12,8 @@ from werkzeug.exceptions import HTTPException
 
 from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
 
-
 from app.authenication.entra import EntraLogin
+
 
 def register_routes(app):
     @app.route("/", methods=["GET", "POST"])
@@ -89,24 +89,36 @@ def register_routes(app):
 
     @app.route("/sign-in-entra", methods=["GET", "POST"])
     def sign_in_entra():
-            """
-            Users able to login using Entra/Silas
-            """
-            auth = EntraLogin()
-            login = auth.login_entra()
-            return login
+        """
+        Users able to login using Entra/Silas
+        """
+        auth = EntraLogin()
+        login = auth.login_entra()
+        return login
 
-    @app.get("/sign-out")
-    def logout():
-        pass 
-
-
-    @app.route("/getAToken")
-    def getAToken():
-
-        return {
-            "message": "This comes back now"
+    @app.route("/assess/dashboard")
+    def dashboard():
+        data = {
+            "args": request.args.to_dict(),
+            "header": request.headers,
+            "body": request.get_json(silent=True),
         }
+        auth = EntraLogin()
+        access = auth.callback(data)
+
+        return access
+
+    @app.route("/sign-out")
+    def sign_out():
+        data = {
+            "args": request.args.to_dict(),
+            "header": request.headers,
+            "body": request.get_json(silent=True),
+        }
+        auth = EntraLogin()
+        access = auth.logout(data)
+
+        return access
 
     @app.get("/status")
     def status():
