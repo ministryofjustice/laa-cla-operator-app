@@ -10,7 +10,6 @@ def applogging(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
-
         try: 
             result = func(*args, **kwargs)
             exec_time = time.time() - start_time
@@ -20,7 +19,8 @@ def applogging(func):
             return result 
 
         except Exception as e:
-              logger.info(
+                exec_time = time.time() - start_time
+                logger.info(
                             f"\Error Execute '{func.__name__}' Execute sucessfully in {exec_time: .4f} seconds {e} \n",
                             exc_info=True
                         )

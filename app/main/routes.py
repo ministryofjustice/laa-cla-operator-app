@@ -13,7 +13,7 @@ from werkzeug.exceptions import HTTPException
 from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
 
 
-from app.authenication import entra_sign_in
+from app.authenication.entra import EntraLogin
 
 def register_routes(app):
     @app.route("/", methods=["GET", "POST"])
@@ -78,19 +78,35 @@ def register_routes(app):
             form=form,
         )
 
-    @app.get("/sign-in")
+    @app.route("/sign-in", methods=["GET", "POST"])
     def sign_in():
         """
         Users able to login using Entra/Silas
         """
-        auth = entra_sign_in.EntraLogin()
-        auth.login() 
+        auth = EntraLogin()
+        login = auth.login()
+        return login
 
-        return auth
+    @app.route("/sign-in-entra", methods=["GET", "POST"])
+    def sign_in_entra():
+            """
+            Users able to login using Entra/Silas
+            """
+            auth = EntraLogin()
+            login = auth.login_entra()
+            return login
 
-    @pp.get("/sign-out")
+    @app.get("/sign-out")
     def logout():
         pass 
+
+
+    @app.route("/getAToken")
+    def getAToken():
+
+        return {
+            "message": "This comes back now"
+        }
 
     @app.get("/status")
     def status():
