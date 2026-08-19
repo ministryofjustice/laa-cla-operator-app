@@ -96,12 +96,10 @@ def register_routes(app):
         login = auth.login_entra()
         return login
 
-    @app.route("/assess/dashboard")
+    @app.route("/auth/entra-callback")
     def dashboard():
         data = {
             "args": request.args.to_dict(),
-            "header": request.headers,
-            "body": request.get_json(silent=True),
         }
         auth = EntraLogin()
         access = auth.callback(data)

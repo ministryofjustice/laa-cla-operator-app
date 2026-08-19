@@ -3,18 +3,17 @@ from urllib.parse import urlencode
 import requests
 import logging
 import jwt
-from cryptography import load_pem_x509_certificate
-from cryptography.hazmat.backends import default_backend
-
 from app.config import Config
 
 
 class EntraLogin:
     def __init__(self):
-        self.authority = Config.AUTHORITY
+        self.authority = Config.AUTHORITY + Config.TENANT_ID
         self.client_id = Config.CLIENT_ID
         self.redirect_uri = Config.REDIRECT_PATH
         self.scope = Config.SCOPE
+        self.client_secret = Config.CLIENT_SECRET
+        self.tennat_id = Config.TENANT_ID
 
         if not all([self.authority, self.client_id, self.redirect_uri, self.scope]):
             raise ValueError("Config is missing for Entra")
@@ -112,6 +111,11 @@ class EntraLogin:
             issuer=self.issuer,
         )
 
+    def get_jwt_token(token):
+
+        pass 
+
+
     def login(self):
         """
         The page provides a link that redirects the user to the
@@ -170,41 +174,45 @@ class EntraLogin:
         return response
 
     def callback(self, data: dict):
-        """
-        Handle the authentication callback.
-
-        Receives the callback request, checks for authentication errors,
-        retrieves the Authorization token, validates the token, and stores
-        the validated token in a secure HTTP-only cookie.
-
-        Returns:
-            Response: A redirect response on success or failure.
-
-        Raises:
-            ValueError: If no callback data is provided.
-        """
         if not data:
-            raise ValueError("No data provided to verify user")
-
-        error = data.get("args", {}).get("error", None)
-        token = data.get("header", {}).get("Authorization", {})
-
-        if error or not token:
             return redirect(url_for("sign_in"))
 
-        authorized = self.validate_token(token=token)
+     
+        error = data.get("args", {}).get("error")
+        code = data.get("args").get("code", {})
 
-        if not authorized:
+        if error or not code:
+            logging.error("Entra callback error: %s", error)
             return redirect(url_for("sign_in"))
 
-        response = make_response(redirect(url_for("receive_call")))
+        token_data = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": self.redirect_uri,
+            "scope": self.scope,
+        }
 
-        response.set_cookie(
-            "token",
-            token,
-            httponly=True,
-            secure=True,
-            samesite="Lax",
+        token_url = (
+            f"https://login.microsoftonline.com/"
+            f"{self.tennat_id}/oauth2/v2.0/token"
         )
 
-        return response
+        response = requests.post(
+            token_url,
+            data=token_data,
+            timeout=30,
+        )
+
+        if not response.ok:
+            return redirect(url_for("sign_in"))
+
+        token = response.json()
+        _valid = self.validate_token(token)
+
+        if not _valid:
+             return redirect(url_for("sign_in"))
+
+
+        return token
