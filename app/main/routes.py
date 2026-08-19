@@ -87,6 +87,7 @@ def register_routes(app):
         """
         Users able to login using Entra/Silas
         """
+
         auth = EntraLogin()
         login = auth.login()
         return login

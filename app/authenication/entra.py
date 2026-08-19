@@ -92,9 +92,8 @@ class EntraLogin:
             "is_manager": ROLES.get(role, {}).get("is_manager", None),
             "office_codes": office_codes,
         }
-        return user
+        return user if user else None
 
-    @applogs
     def login(self):
         """
         The page provides a link that redirects the user to the
@@ -104,10 +103,20 @@ class EntraLogin:
             Rendered login page, or redirects the user after a
             successful authentication.
         """
-        token = request.get("token")
-        if token:
-            self.callback({"args": token})
-        return render_template("auth/sign_in.html")
+        try:
+            token = request.cookies.get("token")
+
+            if token:
+                user = self.validate_token(token)
+
+                if user:
+                    return redirect(url_for("search_client"))
+                else:
+                    return render_template("auth/sign_in.html")
+
+            return render_template("auth/sign_in.html")
+        except Exception:
+            return render_template("auth/sign_in.html")
 
     @applogs
     def login_entra(self):
@@ -156,12 +165,12 @@ class EntraLogin:
         return response
 
     @applogs
-    def callback(self, data: dict):
-        if not data:
+    def callback(self, payload: dict):
+        if not payload:
             return redirect(url_for("sign_in"))
 
-        error = data.get("args", {}).get("error")
-        code = data.get("args").get("code", {})
+        error = payload.get("args", {}).get("error")
+        code = payload.get("args").get("code", {})
 
         if error or not code:
             logging.error("Entra callback error: %s", error)
@@ -192,7 +201,6 @@ class EntraLogin:
         token = response.get("access_token")
 
         user = self.validate_token(token)
-
         if not user:
             return redirect(url_for("sign_in"))
 
