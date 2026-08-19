@@ -10,9 +10,8 @@ from flask import (
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
-from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
-
 from app.authenication.entra import EntraLogin
+from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
 
 
 def register_routes(app):

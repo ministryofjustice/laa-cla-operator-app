@@ -31,3 +31,4 @@ class Config(object):
     SCOPE = os.getenv("SCOPE")
     SESSION_TYPE = os.getenv("SESSION_TYPE")
     TENANT_ID = os.getenv("TENANT_ID")
+    EXPECTED_AUDIENCE = os.getenv("EXPECTED_AUDIENCE")

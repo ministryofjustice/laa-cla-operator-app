@@ -2,8 +2,13 @@ from flask import render_template, redirect, url_for, make_response
 from urllib.parse import urlencode
 import requests
 import logging
+from cryptography import x509
 import jwt
 from app.config import Config
+from datetime import datetime, timezone
+from constants import ROLES
+
+URLS = []
 
 
 class EntraLogin:
@@ -14,107 +19,66 @@ class EntraLogin:
         self.scope = Config.SCOPE
         self.client_secret = Config.CLIENT_SECRET
         self.tennat_id = Config.TENANT_ID
+        self.audience = Config.EXPECTED_AUDIENCE
+        self.issuer = f"https://login.microsoftonline.com/{Config.TENANT_ID}/v2.0"
 
         if not all([self.authority, self.client_id, self.redirect_uri, self.scope]):
             raise ValueError("Config is missing for Entra")
 
-    def public_keys(self, keys):
-        if not keys:
-            response = requests.get(self.discovery_url)
-            response.raise_for_status()
-            keys = response.json().get("keys", [])
+    def _get_public_key(self):
+        url = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+        response = requests.get(url, timeout=10)
+        return response.json()
 
-        return keys
-
-    def get_public_key(self, retry=True):
-        """Retrieve the public certificate matching the JWT key ID.
-
-        Looks up the key using the token's ``kid`` and retries once if no matching
-        key is found. Returns the certificate or ``None`` if the key is unavailable.
-        """
-        unverified_header = jwt.get_unverified_header(self.token)
-        kid = unverified_header.get("kid")
-        key_data = next((k for k in self.public_keys if k["kid"] == kid), None)
-
-        if not key_data and retry:
-            return self.get_public_key(retry=False)
-        if not key_data:
-            logging.error(
-                "Entra authentication - No public key found for kid: %s" % kid
-            )
-            return None
-        return key_data["x5c"][0]
-
-    def validate_token(self, token):
-        """
-        Validate and decode a JWT using its key ID and matching public certificate.
-
-        Verifies the token signature, algorithm, audience, and issuer, and returns
-        the decoded JWT claims. Raises an error if the key cannot be found or the
-        token fails validation.
-        """
-
+    def get_public_key(self, token):
+        keys = self._get_public_key()
+        keys = keys["keys"]
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get("kid")
-        keys = self._public_keys()
-        key_data = next((k for k in keys if k["kid"] == kid), None)
 
-        if not key_data:
-            keys = self._public_keys()
-            key_data = next((k for k in keys if k["kid"] == kid), None)
+        key_data = next((key for key in keys if key.get("kid") == kid), None)
+        return key_data["x5c"][0]
 
-        if not key_data:
-            raise ValueError("Key ID not found")
+    def decode(self, token):
+        public_key = self.get_public_key(token)
 
-        cert_str = (
-            "-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----"
-            % key_data["x5c"][0]
-        )
-        cert_obj = load_pem_x509_certificate(cert_str.encode("utf-8"), default_backend)
-        public_key = cert_obj.public_key()
-        return jwt.decode(
-            token,
-            public_key,
-            algorithms=["RS256"],
-            audience=self.expected_audience,
-            issuer=self.issuer,
-        )
-
-    def _decode(self):
-        """
-        Decode and validate the Entra JWT using its public key.
-
-        Validates the token signature, issuer, audience, and RS256 algorithm.
-
-        Returns:
-            dict: Decoded JWT claims, or None if the public key cannot be retrieved.
-        """
-        public_key = self.get_public_key()
         if not public_key:
-            logging.error(
-                "Entra authentication - Could not retrieve public key for token"
-            )
-            return
+            return None
+
         cert_str = (
-            "-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----" % public_key
-        )
-        cert_obj = load_pem_x509_certificate(
-            cert_str.encode("utf-8"), default_backend()
-        )
-        public_key = cert_obj.public_key()
-
-        return jwt.decode(
-            self.token,
-            public_key,
-            algorithms=["RS256"],
-            audience=self.expected_audience,
-            issuer=self.issuer,
+            f"-----BEGIN CERTIFICATE-----\n{public_key}\n-----END CERTIFICATE-----"
         )
 
-    def get_jwt_token(token):
+        try:
+            cert_obj = x509.load_pem_x509_certificate(cert_str.encode("utf-8"))
 
-        pass 
+            public_key = cert_obj.public_key()
 
+            return jwt.decode(
+                token,
+                public_key,
+                algorithms=["RS256"],
+                audience=self.audience,
+                issuer=self.issuer,
+            )
+
+        except Exception as e:
+            print(f"JWT decode failed: {e}")
+            return None
+
+    def validate_token(self, token):
+        decode_token = self.decode(token)
+
+        time = int(datetime.now(timezone.utc).timestamp())
+        exp = decode_token.get("exp", int)
+
+        if exp and time > exp:
+            return ValueError("Token has expired")
+
+        roles = decode_token.get("APP_ROLES", [])
+
+        if roles not in ROLES:
+            return ValueError("Role not in scope")
 
     def login(self):
         """
@@ -163,21 +127,18 @@ class EntraLogin:
         """
 
         response = make_response(redirect(url_for("sign_in")))
-
         response.delete_cookie(
             "token",
             httponly=True,
             secure=True,
             samesite="Lax",
         )
-
         return response
 
     def callback(self, data: dict):
         if not data:
             return redirect(url_for("sign_in"))
 
-     
         error = data.get("args", {}).get("error")
         code = data.get("args").get("code", {})
 
@@ -195,10 +156,8 @@ class EntraLogin:
         }
 
         token_url = (
-            f"https://login.microsoftonline.com/"
-            f"{self.tennat_id}/oauth2/v2.0/token"
+            f"https://login.microsoftonline.com/{self.tennat_id}/oauth2/v2.0/token"
         )
-
         response = requests.post(
             token_url,
             data=token_data,
@@ -208,11 +167,12 @@ class EntraLogin:
         if not response.ok:
             return redirect(url_for("sign_in"))
 
-        token = response.json()
+        response = response.json()
+        token = response.get("access_token")
+
         _valid = self.validate_token(token)
 
         if not _valid:
-             return redirect(url_for("sign_in"))
+            return redirect(url_for("sign_in"))
 
-
-        return token
+        return redirect(url_for("receive_call"))
