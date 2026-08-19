@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger
 
 
-def applogging(func):
+def applogs(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()

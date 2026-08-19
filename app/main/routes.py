@@ -6,6 +6,7 @@ from flask import (
     render_template,
     request,
     url_for,
+    session,
 )
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
@@ -15,6 +16,10 @@ from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, Sear
 
 
 def register_routes(app):
+    @app.context_processor
+    def inject_user():
+        return {"user": session.get("user")}
+
     @app.route("/", methods=["GET", "POST"])
     def receive_call():
         form = WhosCallingForm()
@@ -109,8 +114,6 @@ def register_routes(app):
     def sign_out():
         data = {
             "args": request.args.to_dict(),
-            "header": request.headers,
-            "body": request.get_json(silent=True),
         }
         auth = EntraLogin()
         access = auth.logout(data)

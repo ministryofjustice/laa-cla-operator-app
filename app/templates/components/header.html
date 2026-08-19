@@ -10,10 +10,10 @@
       <nav class="moj-header__navigation" aria-label="Account navigation">
         <ul class="moj-header__navigation-list">
           <li class="moj-header__navigation-item">
-            <a class="moj-header__navigation-link" href="#" aria-current="page">{{user.email if user else ""}}</a>
+            <a class="moj-header__navigation-link" href="#" aria-current="page">{{user.username if user else ""}}</a>
           </li>
           <li class="moj-header__navigation-item">
-            <a class="moj-header__navigation-link" href="#">{{'Sign out' if user.email else ""}}</a>
+            <a class="moj-header__navigation-link" href="#">{{'Sign out' if user.username else ""}}</a>
           </li>
         </ul>
       </nav>

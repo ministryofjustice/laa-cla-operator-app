@@ -1,4 +1,4 @@
-ROLES = [
-    "Civil Legal Advice - Helpline Operator Manager",
-    "Civil Legal Advice - Helpline Operator",
-]
+ROLES = {
+    "Civil Legal Advice - Helpline Operator Manager": {"is_manager": True},
+    "Civil Legal Advice - Helpline Operator": {"is_manager": False},
+}

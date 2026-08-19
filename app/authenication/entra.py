@@ -1,14 +1,14 @@
-from flask import render_template, redirect, url_for, make_response
+from flask import render_template, redirect, url_for, make_response, request
 from urllib.parse import urlencode
 import requests
 import logging
 from cryptography import x509
 import jwt
-from app.config import Config
 from datetime import datetime, timezone
-from constants import ROLES
 
-URLS = []
+from app.config import Config
+from app.authenication.constants import ROLES
+from app.helpers.applogging import applogs
 
 
 class EntraLogin:
@@ -48,7 +48,6 @@ class EntraLogin:
         cert_str = (
             f"-----BEGIN CERTIFICATE-----\n{public_key}\n-----END CERTIFICATE-----"
         )
-
         try:
             cert_obj = x509.load_pem_x509_certificate(cert_str.encode("utf-8"))
 
@@ -75,11 +74,27 @@ class EntraLogin:
         if exp and time > exp:
             return ValueError("Token has expired")
 
-        roles = decode_token.get("APP_ROLES", [])
+        role = decode_token.get("APP_ROLES", [])
 
-        if roles not in ROLES:
+        if not role or not ROLES.get(role, {}):
             return ValueError("Role not in scope")
 
+        raw_accounts = decode_token.get("LAA_ACCOUNTS", [])
+        office_codes = (
+            raw_accounts if isinstance(raw_accounts, list) else [raw_accounts]
+        )
+        if not office_codes:
+            return ValueError("Missing the offfice code")
+
+        user = {
+            "username": decode_token["preferred_username"],
+            "roles": role,
+            "is_manager": ROLES.get(role, {}).get("is_manager", None),
+            "office_codes": office_codes,
+        }
+        return user
+
+    @applogs
     def login(self):
         """
         The page provides a link that redirects the user to the
@@ -89,8 +104,12 @@ class EntraLogin:
             Rendered login page, or redirects the user after a
             successful authentication.
         """
+        token = request.get("token")
+        if token:
+            self.callback({"args": token})
         return render_template("auth/sign_in.html")
 
+    @applogs
     def login_entra(self):
         """
         Redirects the user to the Microsoft Entra ID login page
@@ -114,6 +133,7 @@ class EntraLogin:
         auth_url = f"{self.authority}/oauth2/v2.0/authorize?{urlencode(params)}"
         return redirect(auth_url)
 
+    @applogs
     def logout(self):
         """
         Remove the authentication token cookie.
@@ -135,6 +155,7 @@ class EntraLogin:
         )
         return response
 
+    @applogs
     def callback(self, data: dict):
         if not data:
             return redirect(url_for("sign_in"))
@@ -170,9 +191,13 @@ class EntraLogin:
         response = response.json()
         token = response.get("access_token")
 
-        _valid = self.validate_token(token)
+        user = self.validate_token(token)
 
-        if not _valid:
+        if not user:
             return redirect(url_for("sign_in"))
 
-        return redirect(url_for("receive_call"))
+        response = make_response(redirect(url_for("search_client")))
+
+        """param httponly: Disallow JavaScript access to the cookie."""
+        response.set_cookie("token", token, httponly=True, secure=True, samesite="Lax")
+        return response
