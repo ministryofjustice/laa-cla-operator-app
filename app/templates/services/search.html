@@ -52,19 +52,6 @@
 </div>
 {% endif %}
 
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-three-quarters">
-    <h1 class="govuk-heading-xl">Search client's details</h1>
-    <p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.</p>
-
-    <div class="search-container">
-  <form action="{{ url_for('search_client') }}" method="GET" novalidate>
-
-    <input type="hidden" name="submitted" value="true">
-    <div class="govuk-form-group">
-      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's your name?</label>
-      <input class="govuk-input moj-search__input govuk-input-long" value="{{ form.name.data or '' }}" id="name" name="name" type="search" aria-describedby="search-hint">
-    </div>
 <h1 class="govuk-heading-xl">Search client's details</h1>
 <p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.</p>
 
@@ -131,25 +118,6 @@
           >
           </div>
         </div>
-      </div>
-      <div class="govuk-date-input__item">
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-date-input__label" for="date_of_birth-issued-year">
-            Year
-          </label>
-
-          <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="date_of_birth-issued-year" name="date_of_birth_year" type="text" inputmode="numeric" value="{{ form.date_of_birth_year.data or '' }}">>
-        </div>
-      </div>
-    </div>
-  </fieldset>
-
-<div class="govuk-button-group">
-      <button class="govuk-button dialog-button govuk" data-module="govuk-button" type="submit">Search</button>
-      <a class="govuk-link" href="#" id="clear-all-link">Clear all</a>
-    </div>
-  </form>
-</div>
         <div class="govuk-date-input__item">
           <div class="govuk-form-group">
           <label class="govuk-label govuk-date-input__label" for="date_of_birth-year">
@@ -258,8 +226,5 @@
       <h3 class="govuk-heading-m">No results found</h3>
       {% endif %}
     </div>
-
-  </div>
-</div>
 
 {% endblock %}

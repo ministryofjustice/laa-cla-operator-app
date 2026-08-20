@@ -12,7 +12,6 @@ from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import HTTPException
 
 from app.authenication.entra import EntraLogin, LoginRequired
-from app.main.forms import CookiesForm, WhosCallingForm, ClientSearchQuery, SearchUser
 from app.main.client_api import search_clients
 from app.main.forms import CookiesForm, WhosCallingForm, SearchUser
 
@@ -24,6 +23,7 @@ def _build_backend_date(year: str, month: str, day: str) -> str | None:
 
 
 def register_routes(app):
+
     @app.route("/sign-in", methods=["GET", "POST"])
     def sign_in():
         """

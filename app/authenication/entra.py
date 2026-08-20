@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from functools import wraps
 from app.config import Config
 from app.authenication.constants import ROLES
-from app.helpers.applogging import applogs
+
 
 
 class EntraLogin:
@@ -21,9 +21,6 @@ class EntraLogin:
         self.tenant_id = Config.TENANT_ID
         self.audience = Config.EXPECTED_AUDIENCE
         self.issuer = f"https://login.microsoftonline.com/{Config.TENANT_ID}/v2.0"
-
-        if not all([self.authority, self.client_id, self.redirect_uri, self.scope]):
-            raise ValueError("Config is missing for Entra")
 
     def _get_public_key(self):
         url = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
@@ -48,12 +45,12 @@ class EntraLogin:
         cert_str = (
             f"-----BEGIN CERTIFICATE-----\n{public_key}\n-----END CERTIFICATE-----"
         )
-        try:
-            cert_obj = x509.load_pem_x509_certificate(cert_str.encode("utf-8"))
+    
+        cert_obj = x509.load_pem_x509_certificate(cert_str.encode("utf-8"))
 
-            public_key = cert_obj.public_key()
+        public_key = cert_obj.public_key()
 
-            return jwt.decode(
+        return jwt.decode(
                 token,
                 public_key,
                 algorithms=["RS256"],
@@ -61,9 +58,6 @@ class EntraLogin:
                 issuer=self.issuer,
             )
 
-        except Exception as e:
-            print(f"JWT decode failed: {e}")
-            return None
 
     def validate_token(self, token):
         decoded_token = self.decode(token)
@@ -119,22 +113,21 @@ class EntraLogin:
             Rendered login page, or redirects the user after a
             successful authentication.
         """
-        try:
-            token = request.cookies.get("token")
+   
+        token = request.cookies.get("token")
 
-            if token:
-                user = self.validate_token(token)
+        if token:
+            user = self.validate_token(token)
 
-                if user:
+            if user:
                     return redirect(url_for("search_client"))
-                else:
-                    return render_template("auth/sign_in.html")
+            else:
+                return render_template("auth/sign_in.html")
 
-            return render_template("auth/sign_in.html")
-        except Exception:
-            return render_template("auth/sign_in.html")
+        return render_template("auth/sign_in.html")
+  
 
-    @applogs
+
     def login_entra(self):
         """
         Redirects the user to the Microsoft Entra ID login page
@@ -178,7 +171,7 @@ class EntraLogin:
 
         return response
 
-    @applogs
+
     def callback(self, payload: dict = {}):
         if not payload:
             return redirect(url_for("sign_in"))
@@ -244,5 +237,4 @@ class LoginRequired:
             return redirect(url_for("sign_in"))
 
         return wrapper
-
 
