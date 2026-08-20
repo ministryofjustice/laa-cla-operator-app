@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, make_response, request, session
+from flask import render_template, redirect, url_for, make_response, request, session, flash 
 from urllib.parse import urlencode
 import requests
 import logging
@@ -59,50 +59,56 @@ class EntraLogin:
             )
 
 
-    def validate_token(self, token):
-        decoded_token = self.decode(token)
+    def validate_token(self, token= None):
+        if not token:
+            return 
+        try:
+            decoded_token = self.decode(token)
 
-        now = int(datetime.now(timezone.utc).timestamp())
+            now = int(datetime.now(timezone.utc).timestamp())
 
-        # 1. Check expiration
-        exp = decoded_token.get("exp")
-        if exp is not None and now > exp:
-            return ValueError("Token has expired")
+            # 1. Check expiration
+            exp = decoded_token.get("exp")
+            if exp is not None and now > exp:
+                return ValueError("Token has expired")
 
-        #2.  Check role
-        role = decoded_token.get("APP_ROLES")
-        role_config = ROLES.get(role)
+            #2.  Check role
+            role = decoded_token.get("APP_ROLES")
+            role_config = ROLES.get(role)
 
-        if not role or not role_config:
-            return ValueError("Role not in scope")
+            if not role or not role_config:
+                return ValueError("Role not in scope")
 
-        # 3. Check office codes
-        raw_accounts = decoded_token.get("LAA_ACCOUNTS", [])
-        office_codes = (
-            raw_accounts
-            if isinstance(raw_accounts, list)
-            else [raw_accounts]
-        )
+            # 3. Check office codes
+            raw_accounts = decoded_token.get("LAA_ACCOUNTS", [])
+            office_codes = (
+                raw_accounts
+                if isinstance(raw_accounts, list)
+                else [raw_accounts]
+            )
 
-        if not office_codes:
-            return ValueError("Missing office code")
+            if not office_codes:
+                return ValueError("Missing office code")
 
-        #4.  Check username
-        username = decoded_token.get("preferred_username")
-        if not username:
-            return ValueError("Missing username")
+            #4.  Check username
+            username = decoded_token.get("preferred_username")
+            if not username:
+                return ValueError("Missing username")
 
-        user = {
-            "username": username,
-            "roles": role,
-            "is_manager": role_config.get("is_manager"),
-            "office_codes": office_codes,
-        }
-        #5 set the user details to be pass on 
-        session["user"] = user
+            user = {
+                "username": username,
+                "roles": role,
+                "is_manager": role_config.get("is_manager"),
+                "office_codes": office_codes,
+            }
+            #5 set the user details to be pass on 
+            session["user"] = user
 
-        #6 return the user
-        return user
+            #6 return the user
+            return user
+
+        except Exception:
+            return 
 
     def login(self):
         """
@@ -139,17 +145,20 @@ class EntraLogin:
         On authentication failure:
             Display an appropriate error message.
         """
+        try:
+            params = {
+                "client_id": self.client_id,
+                "response_type": "code",
+                "redirect_uri": self.redirect_uri,
+                "response_mode": "query",
+                "scope": self.scope,
+            }
 
-        params = {
-            "client_id": self.client_id,
-            "response_type": "code",
-            "redirect_uri": self.redirect_uri,
-            "response_mode": "query",
-            "scope": self.scope,
-        }
-
-        auth_url = f"{self.authority}/oauth2/v2.0/authorize?{urlencode(params)}"
-        return redirect(auth_url)
+            auth_url = f"{self.authority}/oauth2/v2.0/authorize?{urlencode(params)}"
+            return redirect(auth_url)
+        except Exception:
+            flash("Fail to obtain config for SILAS login","error")
+            return redirect(url_for('receive_call'))
 
     def logout(self):
       
@@ -173,6 +182,7 @@ class EntraLogin:
 
 
     def callback(self, payload: dict = {}):
+
         if not payload:
             return redirect(url_for("sign_in"))
 
@@ -183,39 +193,44 @@ class EntraLogin:
             logging.error("Entra callback error: %s", error)
             return redirect(url_for("sign_in"))
 
-        token_data = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": self.redirect_uri,
-            "scope": self.scope,
-        }
+        try:
+            token_data = {
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": self.redirect_uri,
+                "scope": self.scope,
+            }
 
-        token_url = (
-            f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
-        )
-        response = requests.post(
-            token_url,
-            data=token_data,
-            timeout=30,
-        )
+            token_url = (
+                f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
+            )
+            response = requests.post(
+                token_url,
+                data=token_data,
+                timeout=30,
+            )
 
-        if not response.ok:
-            return redirect(url_for("sign_in"))
+            if not response.ok:
+                return redirect(url_for("sign_in"))
 
-        response = response.json()
-        token = response.get("access_token")
+            response = response.json()
+            token = response.get("access_token")
 
-        user = self.validate_token(token)
-        if not user:
-            return redirect(url_for("sign_in"))
+            user = self.validate_token(token)
+            if not user:
+                return redirect(url_for("sign_in"))
 
-        response = make_response(redirect(url_for("search_client")))
+            response = make_response(redirect(url_for("search_client")))
 
-        """param httponly: Disallow JavaScript access to the cookie."""
-        response.set_cookie("token", token, httponly=True, secure=True, samesite="Lax")
-        return response
+            """param httponly: Disallow JavaScript access to the cookie."""
+            response.set_cookie("token", token, httponly=True, secure=True, samesite="Lax")
+            return response
+
+        except Exception:
+            flash("Fail to obtain config for SILAS login","error")
+            return redirect(url_for('receive_call'))
 
 
 
