@@ -109,7 +109,7 @@ class EntraLogin:
             session["user"] = user
 
             # 6 return the user
-            return user
+            return user if user else None
 
         except Exception:
             return
