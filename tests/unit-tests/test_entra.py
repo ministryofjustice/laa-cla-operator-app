@@ -1,4 +1,3 @@
-import jwt
 import pytest
 from unittest.mock import patch
 from datetime import datetime, timezone, timedelta
@@ -19,7 +18,6 @@ VALID_ROLE = next(iter(ROLES))
             None,
             None,
         ),
-
         # Expired token
         (
             "expired-token",
@@ -33,7 +31,6 @@ VALID_ROLE = next(iter(ROLES))
             },
             "Token has expired",
         ),
-
         # Missing role
         (
             "token",
@@ -43,7 +40,6 @@ VALID_ROLE = next(iter(ROLES))
             },
             "Role not in scope",
         ),
-
         # Invalid role
         (
             "token",
@@ -54,7 +50,6 @@ VALID_ROLE = next(iter(ROLES))
             },
             "Role not in scope",
         ),
-
         # Missing office code
         (
             "token",
@@ -65,7 +60,6 @@ VALID_ROLE = next(iter(ROLES))
             },
             "Missing office code",
         ),
-
         # Missing username
         (
             "token",
@@ -107,7 +101,6 @@ def test_validate_token_valid():
             "app.authenication.entra.session",
             {},
         ) as mock_session:
-
             result = login.validate_token("valid-token")
 
     assert result == {
