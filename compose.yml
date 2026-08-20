@@ -33,7 +33,7 @@ services:
       - SCOPE
       - SESSION_TYPE
       - EXPECTED_AUDIENCE
-  
+
     ports:
       - "8000:8000"
     volumes:

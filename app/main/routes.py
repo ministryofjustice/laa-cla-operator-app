@@ -23,7 +23,6 @@ def _build_backend_date(year: str, month: str, day: str) -> str | None:
 
 
 def register_routes(app):
-
     @app.route("/sign-in", methods=["GET", "POST"])
     def sign_in():
         """
@@ -36,7 +35,7 @@ def register_routes(app):
         auth = EntraLogin()
         login = auth.login()
         return login
-    
+
     @app.route("/sign-in-entra", methods=["GET", "POST"])
     def sign_in_entra():
         """
@@ -48,7 +47,6 @@ def register_routes(app):
         auth = EntraLogin()
         login = auth.login_entra()
         return login
-    
 
     @app.route("/auth/entra-callback")
     def dashboard():
@@ -61,15 +59,15 @@ def register_routes(app):
         Returns:
             Response: The response generated after processing the callback.
         """
-   
+
         data = {
-                "args": request.args.to_dict(),
-            }
+            "args": request.args.to_dict(),
+        }
         auth = EntraLogin()
         access = auth.callback(data)
 
         return access
-        
+
     @app.route("/sign-out")
     def sign_out():
         """
@@ -84,7 +82,7 @@ def register_routes(app):
 
         auth = EntraLogin()
         access = auth.logout()
- 
+
         return access
 
     @app.route("/", methods=["GET", "POST"])
@@ -95,11 +93,9 @@ def register_routes(app):
             return redirect(url_for("search_client"))
         return render_template("main/index.html", form=form)
 
-
     @app.route("/search-client", methods=["GET"])
     @LoginRequired.auth_required
     def search_client():
-
         form = SearchUser(request.args, meta={"csrf": False})
         submitted = (request.args.get("submitted") == "true") or bool(request.args)
 
@@ -172,7 +168,7 @@ def register_routes(app):
             search=results,
             form=form,
         )
-    
+
     @app.get("/status")
     def status():
         return "OK"

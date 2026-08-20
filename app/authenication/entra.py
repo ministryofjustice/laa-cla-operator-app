@@ -1,4 +1,12 @@
-from flask import render_template, redirect, url_for, make_response, request, session, flash 
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    make_response,
+    request,
+    session,
+    flash,
+)
 from urllib.parse import urlencode
 import requests
 import logging
@@ -8,7 +16,6 @@ from datetime import datetime, timezone
 from functools import wraps
 from app.config import Config
 from app.authenication.constants import ROLES
-
 
 
 class EntraLogin:
@@ -45,23 +52,22 @@ class EntraLogin:
         cert_str = (
             f"-----BEGIN CERTIFICATE-----\n{public_key}\n-----END CERTIFICATE-----"
         )
-    
+
         cert_obj = x509.load_pem_x509_certificate(cert_str.encode("utf-8"))
 
         public_key = cert_obj.public_key()
 
         return jwt.decode(
-                token,
-                public_key,
-                algorithms=["RS256"],
-                audience=self.audience,
-                issuer=self.issuer,
-            )
+            token,
+            public_key,
+            algorithms=["RS256"],
+            audience=self.audience,
+            issuer=self.issuer,
+        )
 
-
-    def validate_token(self, token= None):
+    def validate_token(self, token=None):
         if not token:
-            return 
+            return
         try:
             decoded_token = self.decode(token)
 
@@ -72,7 +78,7 @@ class EntraLogin:
             if exp is not None and now > exp:
                 return ValueError("Token has expired")
 
-            #2.  Check role
+            # 2.  Check role
             role = decoded_token.get("APP_ROLES")
             role_config = ROLES.get(role)
 
@@ -82,15 +88,13 @@ class EntraLogin:
             # 3. Check office codes
             raw_accounts = decoded_token.get("LAA_ACCOUNTS", [])
             office_codes = (
-                raw_accounts
-                if isinstance(raw_accounts, list)
-                else [raw_accounts]
+                raw_accounts if isinstance(raw_accounts, list) else [raw_accounts]
             )
 
             if not office_codes:
                 return ValueError("Missing office code")
 
-            #4.  Check username
+            # 4.  Check username
             username = decoded_token.get("preferred_username")
             if not username:
                 return ValueError("Missing username")
@@ -101,14 +105,14 @@ class EntraLogin:
                 "is_manager": role_config.get("is_manager"),
                 "office_codes": office_codes,
             }
-            #5 set the user details to be pass on 
+            # 5 set the user details to be pass on
             session["user"] = user
 
-            #6 return the user
+            # 6 return the user
             return user
 
         except Exception:
-            return 
+            return
 
     def login(self):
         """
@@ -119,20 +123,18 @@ class EntraLogin:
             Rendered login page, or redirects the user after a
             successful authentication.
         """
-   
+
         token = request.cookies.get("token")
 
         if token:
             user = self.validate_token(token)
 
             if user:
-                    return redirect(url_for("search_client"))
+                return redirect(url_for("search_client"))
             else:
                 return render_template("auth/sign_in.html")
 
         return render_template("auth/sign_in.html")
-  
-
 
     def login_entra(self):
         """
@@ -157,18 +159,15 @@ class EntraLogin:
             auth_url = f"{self.authority}/oauth2/v2.0/authorize?{urlencode(params)}"
             return redirect(auth_url)
         except Exception:
-            flash("Fail to obtain config for SILAS login","error")
-            return redirect(url_for('receive_call'))
+            flash("Fail to obtain config for SILAS login", "error")
+            return redirect(url_for("receive_call"))
 
     def logout(self):
-      
         session.clear()
 
         post_logout_uri = url_for("sign_in", _external=True)
 
-        params = urlencode({
-            "post_logout_redirect_uri": post_logout_uri
-        })
+        params = urlencode({"post_logout_redirect_uri": post_logout_uri})
 
         logout_url = (
             f"https://login.microsoftonline.com/"
@@ -180,9 +179,7 @@ class EntraLogin:
 
         return response
 
-
     def callback(self, payload: dict = {}):
-
         if not payload:
             return redirect(url_for("sign_in"))
 
@@ -225,17 +222,17 @@ class EntraLogin:
             response = make_response(redirect(url_for("search_client")))
 
             """param httponly: Disallow JavaScript access to the cookie."""
-            response.set_cookie("token", token, httponly=True, secure=True, samesite="Lax")
+            response.set_cookie(
+                "token", token, httponly=True, secure=True, samesite="Lax"
+            )
             return response
 
         except Exception:
-            flash("Fail to obtain config for SILAS login","error")
-            return redirect(url_for('receive_call'))
-
+            flash("Fail to obtain config for SILAS login", "error")
+            return redirect(url_for("receive_call"))
 
 
 class LoginRequired:
-
     @staticmethod
     def auth_required(func):
         @wraps(func)
@@ -252,4 +249,3 @@ class LoginRequired:
             return redirect(url_for("sign_in"))
 
         return wrapper
-
