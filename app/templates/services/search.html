@@ -1,21 +1,32 @@
 {% extends "base.html" %}
 {% from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation as govuk_service_navigation %}
-{% from 'components/header.html' import mojHeader as moj_header %}
+
 {% block header %}
   {{ moj_header() }}
 
   {{ govuk_service_navigation({
     'serviceName': config['SERVICE_NAME'],
+    'serviceUrl': url_for('receive_call'),
     'navigation': [
-      { 'text': 'Receive calls', 'current': true },
-      { 'text': 'Make calls' }
+      {
+        'href': url_for('receive_call'),
+        'text': 'Receive calls',
+        'current': true
+      },
+      {
+        'href': url_for('receive_call'),
+        'text': 'Make calls'
+      }
     ]
   }) }}
 {% endblock %}
-{% block beforeContent %} {{ super() }} {% endblock %}
+
+{% block beforeContent %}
+{{ super() }}
+  <a href="{{url_for ('receive_call')}}" class="govuk-back-link">Back</a>
+ {% endblock %}
+{% block pageTitle %}{%- if search.error %}Error: {% endif -%}Search client's details - {{config['SERVICE_NAME']}} - GOV.UK{% endblock %}
 {% block content %}
-<body class="govuk-template__body"></body>
-<a href="{{url_for ('receive_call')}}" class="govuk-back-link">Back</a>
 
 <!--Display the error message-->
 {% if search.error %}
@@ -30,6 +41,8 @@
               <li><a href="#{{ field_name }}">{{ message }}</a></li>
             {% endfor %}
           {% endfor %}
+        {% elif search.error_api %}
+          <li><a href="#search">{{ search.error_message or 'Search service unavailable. Try again.' }}</a></li>
         {% else %}
           <li><a href="#search">You must complete at least one search field</a></li>
         {% endif %}
@@ -52,43 +65,71 @@
       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="name">What's your name?</label>
       <input class="govuk-input moj-search__input govuk-input-long" value="{{ form.name.data or '' }}" id="name" name="name" type="search" aria-describedby="search-hint">
     </div>
+<h1 class="govuk-heading-xl">Search client's details</h1>
+<p class="govuk-body">If the client is calling on their own behalf, take their details and search for any existing records before starting a new case. Find a client using one or more of the search terms below.</p>
 
-    <div class="govuk-form-group">
-      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone">What's your phone number?</label>
-      <div id="search-hint" class="govuk-hint moj-search__hint govuk-input-long">
-        If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.
+  <div class="search-container search-client-box">
+    <form action="{{ url_for('search_client') }}" method="GET" id="search" novalidate>
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-!-font-weight-bold" for="full_name">What's your name?</label>
+        <input class="govuk-input govuk-!-width-two-thirds" value="{{ form.full_name.data or '' }}" id="full_name" name="full_name" type="search">
       </div>
-      <input class="govuk-input moj-search__input govuk-input-long" id="phone" name="phone" type="search" aria-describedby="search-hint" value="{{ form.phone.data or '' }}">
-    </div>
 
-    <div class="govuk-form-group">
-      <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="postcode">What's your postcode?</label>
-      <input class="govuk-input moj-search__input govuk-input-long" id="postcode" name="postcode" type="search"  value="{{ form.postcode.data or '' }}">
-    </div>
-
-    <!--Date of birth-->
-    <fieldset class="govuk-fieldset" role="group" aria-describedby="date_of_birth">
-    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-       <label class="govuk-label moj-search__label govuk-!-font-weight-bold" for="phone"> What's your date of birth?</label>
-    </legend>
-    <div id="date_of_birth-issued-hint" class="govuk-hint">
-      For example, 27 3 2007
-    </div>
-    <div class="govuk-date-input" id="date_of_birth-issued">
-      <div class="govuk-date-input__item">
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-date-input__label" for="date_of_birth">
-            Day
-          </label>
-          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-day" name="date_of_birth_day" type="text" inputmode="numeric" value="{{ form.date_of_birth_day.data or '' }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-!-font-weight-bold" for="phone">What's your phone number?</label>
+        <div id="search-hint" class="govuk-hint">
+          If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.
         </div>
+        <input class="govuk-input govuk-input--width-20" id="phone" name="phone" type="tel" aria-describedby="search-hint" value="{{ form.phone.data or '' }}">
       </div>
-      <div class="govuk-date-input__item">
-        <div class="govuk-form-group">
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-!-font-weight-bold" for="postcode">What's your postcode?</label>
+        <input class="govuk-input govuk-input--width-10" id="postcode" name="postcode" type="text" value="{{ form.postcode.data or '' }}">
+      </div>
+
+      <!--Date of birth-->
+      <fieldset class="govuk-fieldset" role="group" aria-describedby="date_of_birth-hint">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+        <label class="govuk-fieldset__heading" for="date_of_birth">What's your date of birth?</label>
+      </legend>
+      <div id="date_of_birth-hint" class="govuk-hint">
+        For example, 27 3 2007
+      </div>
+      <div class="govuk-date-input" id="date_of_birth">
+        <div class="govuk-date-input__item">
+          <div class="govuk-form-group">
+          <label class="govuk-label govuk-date-input__label" for="date_of_birth-day">
+              Day
+            </label>
+            <input
+              class="govuk-input govuk-date-input__input govuk-input--width-2"
+              id="date_of_birth-day"
+              name="date_of_birth_day"
+              type="text"
+              inputmode="numeric"
+              maxlength="2"
+              pattern="[0-9]*"
+              value="{{ form.date_of_birth_day.data or '' }}"
+            >
+          </div>
+        </div>
+        <div class="govuk-date-input__item">
+          <div class="govuk-form-group">
           <label class="govuk-label govuk-date-input__label" for="date_of_birth-month">
-            Month
-          </label>
-          <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="date_of_birth-issued-month" name="date_of_birth_month" type="text" inputmode="numeric" value="{{ form.date_of_birth_month.data or '' }}">
+              Month
+            </label>
+          <input
+            class="govuk-input govuk-date-input__input govuk-input--width-2"
+            id="date_of_birth-month"
+            name="date_of_birth_month"
+            type="text"
+            inputmode="numeric"
+            maxlength="2"
+            pattern="[0-9]*"
+            value="{{ form.date_of_birth_month.data or '' }}"
+          >
+          </div>
         </div>
       </div>
       <div class="govuk-date-input__item">
@@ -109,17 +150,46 @@
     </div>
   </form>
 </div>
+        <div class="govuk-date-input__item">
+          <div class="govuk-form-group">
+          <label class="govuk-label govuk-date-input__label" for="date_of_birth-year">
+              Year
+            </label>
+            <input
+              class="govuk-input govuk-date-input__input govuk-input--width-4"
+              id="date_of_birth-year"
+              name="date_of_birth_year"
+              type="text"
+              inputmode="numeric"
+              maxlength="4"
+              pattern="[0-9]*"
+              value="{{ form.date_of_birth_year.data or '' }}"
+            >
+          </div>
+        </div>
+      </div>
+      </fieldset>
 
-    <div class="moj-button-action">
-      <button type="submit" class="govuk-button govuk-button--secondary moj-add-another__add-button govuk-!-margin-bottom-4" data-module="govuk-button">
-        Start a new case using the details entered
-      </button>
-    </div>
+      <div class="govuk-button-group">
+        <button class="govuk-button" data-module="govuk-button" type="submit">Search</button>
+        <a class="govuk-link" href="{{ url_for('search_client') }}" id="clear-all-link">Clear all</a>
+      </div>
+    </form>
+  </div>
 
     <div class="search-result">
       {% if search.result %}
+      {% set search_result_count = search.pagination.total_records %}
       <table class="govuk-table" data-module="moj-sortable-table">
-        <caption class="govuk-table__caption">Client search results</caption>
+        <caption class="govuk-table__caption">
+            <span class="govuk-label--m">
+              {{ search_result_count }} search result{{ 's' if search_result_count != 1 else '' }}
+            </span>
+
+            <span class="govuk-body govuk-!-display-block govuk-!-margin-top-2">
+              Select a client’s name to display their case history.
+            </span>
+        </caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header" aria-sort="ascending">Name</th>
@@ -144,7 +214,7 @@
     <div class="govuk-pagination__prev">
       {% if search.pagination.page > 1 %}
       <a class="govuk-link govuk-pagination__link"
-         href="{{ url_for('search_client', page=search.pagination.page - 1, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data,date_of_birth_month=form.date_of_birth_month.data,date_of_birth_year=form.date_of_birth_year.data) }}"
+        href="{{ url_for('search_client', page=search.pagination.page - 1, submitted='true', full_name=form.full_name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data,date_of_birth_month=form.date_of_birth_month.data,date_of_birth_year=form.date_of_birth_year.data) }}"
          rel="prev">
         <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
           <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
@@ -158,7 +228,7 @@
       {% for p in range(1, search.pagination.total_pages + 1) %}
       <li class="govuk-pagination__item {% if p == search.pagination.page %}govuk-pagination__item--current{% endif %}">
         <a class="govuk-link govuk-pagination__link"
-           href="{{ url_for('search_client', page=p, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data,date_of_birth_month=form.date_of_birth_month.data,date_of_birth_year=form.date_of_birth_year.data) }}"
+           href="{{ url_for('search_client', page=p, submitted='true', full_name=form.full_name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data,date_of_birth_month=form.date_of_birth_month.data,date_of_birth_year=form.date_of_birth_year.data) }}"
            aria-label="Page {{ p }}"
            {% if p == search.pagination.page %}aria-current="page"{% endif %}>{{ p }}</a>
       </li>
@@ -169,7 +239,7 @@
       {% if search.pagination.page < search.pagination.total_pages %}
       <a class="govuk-link govuk-pagination__link"
 
-         href="{{ url_for('search_client', page=search.pagination.page + 1, submitted='true', name=form.name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data, date_of_birth_month=form.date_of_birth_month.data, date_of_birth_year=form.date_of_birth_year.data) }}"
+        href="{{ url_for('search_client', page=search.pagination.page + 1, submitted='true', full_name=form.full_name.data, phone=form.phone.data, postcode=form.postcode.data, date_of_birth_day=form.date_of_birth_day.data, date_of_birth_month=form.date_of_birth_month.data, date_of_birth_year=form.date_of_birth_year.data) }}"
          rel="next">
         <span class="govuk-pagination__link-title">Next</span>
         <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
@@ -185,7 +255,7 @@
 </div>
 
       {% else %}
-      <h3 class="govuk-heading-m">No result found</h3>
+      <h3 class="govuk-heading-m">No results found</h3>
       {% endif %}
     </div>
 

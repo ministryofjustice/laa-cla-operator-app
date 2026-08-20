@@ -6,8 +6,7 @@ from govuk_frontend_wtf.wtforms_widgets import (
 from app.main.utils.widgets import CustomRadioInput
 from flask_wtf import FlaskForm
 from wtforms import RadioField, StringField, SubmitField
-import random
-from datetime import date, timedelta, datetime
+from datetime import datetime
 from wtforms.validators import Optional, Regexp, InputRequired
 
 
@@ -46,7 +45,7 @@ class WhosCallingForm(FlaskForm):
 
 
 class SearchUser(FlaskForm):
-    name = StringField(
+    full_name = StringField(
         "What's your name?",
         widget=GovTextInput(),
         validators=[Optional()],
@@ -67,7 +66,7 @@ class SearchUser(FlaskForm):
         validators=[
             Optional(),
             Regexp(
-                r"^[A-Za-z]{1,2}\d[A-Za-z\d]?\s?\d[A-Za-z]{2}$",
+                r"^(?:[A-Za-z]{1,2}\d[A-Za-z\d]?)(?:\s?\d[A-Za-z]{2})?$",
                 message="Enter a valid UK postcode",
             ),
         ],

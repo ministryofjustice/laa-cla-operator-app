@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=requirements_dev.txt requirements_dev.in
 #
+annotated-types==0.8.0
+    # via pydantic
 ast-serialize==0.6.0
     # via mypy
 attrs==25.4.0
@@ -26,8 +28,6 @@ cachecontrol[filecache]==0.14.4
     #   pip-audit
 certifi==2026.1.4
     # via requests
-cffi==2.0.0
-    # via cryptography
 cfgv==3.5.0
     # via pre-commit
 charset-normalizer==3.4.4
@@ -41,8 +41,6 @@ click==8.4.2
     #   pur
 coverage[toml]==7.13.4
     # via pytest-cov
-cryptography==49.0.0
-    # via pyopenssl
 cssmin==0.2.0
     # via -r requirements.in
 cyclonedx-python-lib==11.6.0
@@ -191,8 +189,10 @@ py-serializable==2.1.0
     # via cyclonedx-python-lib
 pycodestyle==2.14.0
     # via flake8
-pycparser==3.0
-    # via cffi
+pydantic==2.13.4
+    # via -r requirements.in
+pydantic-core==2.46.4
+    # via pydantic
 pyee==13.0.1
     # via playwright
 pyflakes==3.4.0
@@ -201,8 +201,6 @@ pygments==2.19.2
     # via
     #   pytest
     #   rich
-pyopenssl==26.3.0
-    # via -r requirements.in
 pyparsing==3.3.2
     # via pip-requirements-parser
 pyproject-hooks==1.2.0
@@ -258,7 +256,12 @@ typing-extensions==4.15.0
     #   flask-limiter
     #   limits
     #   mypy
+    #   pydantic
+    #   pydantic-core
     #   pyee
+    #   typing-inspection
+typing-inspection==0.4.3
+    # via pydantic
 urllib3==2.7.0
     # via
     #   -r requirements.in
