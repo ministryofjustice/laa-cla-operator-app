@@ -1,11 +1,11 @@
-from flask import render_template, redirect, url_for, make_response, request
+from flask import render_template, redirect, url_for, make_response, request, session
 from urllib.parse import urlencode
 import requests
 import logging
 from cryptography import x509
 import jwt
 from datetime import datetime, timezone
-
+from functools import wraps
 from app.config import Config
 from app.authenication.constants import ROLES
 from app.helpers.applogging import applogs
@@ -18,7 +18,7 @@ class EntraLogin:
         self.redirect_uri = Config.REDIRECT_PATH
         self.scope = Config.SCOPE
         self.client_secret = Config.CLIENT_SECRET
-        self.tennat_id = Config.TENANT_ID
+        self.tenant_id = Config.TENANT_ID
         self.audience = Config.EXPECTED_AUDIENCE
         self.issuer = f"https://login.microsoftonline.com/{Config.TENANT_ID}/v2.0"
 
@@ -66,33 +66,49 @@ class EntraLogin:
             return None
 
     def validate_token(self, token):
-        decode_token = self.decode(token)
+        decoded_token = self.decode(token)
 
-        time = int(datetime.now(timezone.utc).timestamp())
-        exp = decode_token.get("exp", int)
+        now = int(datetime.now(timezone.utc).timestamp())
 
-        if exp and time > exp:
+        # 1. Check expiration
+        exp = decoded_token.get("exp")
+        if exp is not None and now > exp:
             return ValueError("Token has expired")
 
-        role = decode_token.get("APP_ROLES", [])
+        #2.  Check role
+        role = decoded_token.get("APP_ROLES")
+        role_config = ROLES.get(role)
 
-        if not role or not ROLES.get(role, {}):
+        if not role or not role_config:
             return ValueError("Role not in scope")
 
-        raw_accounts = decode_token.get("LAA_ACCOUNTS", [])
+        # 3. Check office codes
+        raw_accounts = decoded_token.get("LAA_ACCOUNTS", [])
         office_codes = (
-            raw_accounts if isinstance(raw_accounts, list) else [raw_accounts]
+            raw_accounts
+            if isinstance(raw_accounts, list)
+            else [raw_accounts]
         )
+
         if not office_codes:
-            return ValueError("Missing the offfice code")
+            return ValueError("Missing office code")
+
+        #4.  Check username
+        username = decoded_token.get("preferred_username")
+        if not username:
+            return ValueError("Missing username")
 
         user = {
-            "username": decode_token["preferred_username"],
+            "username": username,
             "roles": role,
-            "is_manager": ROLES.get(role, {}).get("is_manager", None),
+            "is_manager": role_config.get("is_manager"),
             "office_codes": office_codes,
         }
-        return user if user else None
+        #5 set the user details to be pass on 
+        session["user"] = user
+
+        #6 return the user
+        return user
 
     def login(self):
         """
@@ -142,30 +158,28 @@ class EntraLogin:
         auth_url = f"{self.authority}/oauth2/v2.0/authorize?{urlencode(params)}"
         return redirect(auth_url)
 
-    @applogs
     def logout(self):
-        """
-        Remove the authentication token cookie.
+      
+        session.clear()
 
-        Creates a response that deletes the ``token`` cookie from the
-        user's browser and redirects the user to the sign-in page.
+        post_logout_uri = url_for("sign_in", _external=True)
 
-        Returns:
-            Response: A redirect response with the authentication cookie
-            removed.
-        """
+        params = urlencode({
+            "post_logout_redirect_uri": post_logout_uri
+        })
 
-        response = make_response(redirect(url_for("sign_in")))
-        response.delete_cookie(
-            "token",
-            httponly=True,
-            secure=True,
-            samesite="Lax",
+        logout_url = (
+            f"https://login.microsoftonline.com/"
+            f"{self.tenant_id}/oauth2/v2.0/logout?{params}"
         )
+
+        response = redirect(logout_url)
+        response.delete_cookie("token")
+
         return response
 
     @applogs
-    def callback(self, payload: dict):
+    def callback(self, payload: dict = {}):
         if not payload:
             return redirect(url_for("sign_in"))
 
@@ -186,7 +200,7 @@ class EntraLogin:
         }
 
         token_url = (
-            f"https://login.microsoftonline.com/{self.tennat_id}/oauth2/v2.0/token"
+            f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
         )
         response = requests.post(
             token_url,
@@ -209,3 +223,26 @@ class EntraLogin:
         """param httponly: Disallow JavaScript access to the cookie."""
         response.set_cookie("token", token, httponly=True, secure=True, samesite="Lax")
         return response
+
+
+
+class LoginRequired:
+
+    @staticmethod
+    def auth_required(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            token = request.cookies.get("token")
+            login = EntraLogin()
+
+            if token:
+                validate = login.validate_token(token)
+
+                if validate:
+                    return func(*args, **kwargs)
+
+            return redirect(url_for("sign_in"))
+
+        return wrapper
+
+

@@ -1,6 +1,4 @@
 {% macro mojHeader(user=None) %}
-  {% set username = (user or {}).get("username") or "" %}
-
   <header class="moj-header" role="banner">
     <div class="moj-header__container">
 
@@ -18,14 +16,18 @@
           <ul class="moj-header__navigation-list">
 
             <li class="moj-header__navigation-item">
-              <a class="moj-header__navigation-link" href="#" aria-current="page">
-                {{ username }}
+              <a class="moj-header__navigation-link" aria-current="page">
+                {% if session.user %}
+                  {{ session.user.username }}
+                {% endif %}
               </a>
             </li>
 
             <li class="moj-header__navigation-item">
-              <a class="moj-header__navigation-link" href="#">
-                {{ 'Sign out' if user and user.username else '' }}
+              <a class="moj-header__navigation-link" href="{{url_for ('sign_out')}}">
+                {% if session.user %}
+                  Sign out
+                {% endif %}
               </a>
             </li>
 
