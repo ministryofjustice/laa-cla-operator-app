@@ -43,7 +43,7 @@ flask-talisman==1.1.0
     # via -r requirements.in
 flask-wtf==1.2.2
     # via govuk-frontend-wtf
-govuk-frontend-jinja==4.0.0
+govuk-frontend-jinja==4.1.0
     # via
     #   -r requirements.in
     #   govuk-frontend-wtf
@@ -78,7 +78,7 @@ pydantic==2.13.4
     # via -r requirements.in
 pydantic-core==2.46.4
     # via pydantic
-python-dotenv==1.2.2
+python-dotenv==1.2.3
     # via -r requirements.in
 pyyaml==6.0.3
     # via -r requirements.in
