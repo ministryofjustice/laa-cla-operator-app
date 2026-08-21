@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-# Allows .env to be used in project for local development.
 load_dotenv()
 
 
@@ -24,3 +23,12 @@ class Config(object):
     SESSION_COOKIE_SECURE = (
         os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
     )
+    CLIENT_ID = os.getenv("CLIENT_ID")
+    CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+    AUTHORITY = os.getenv("AUTHORITY")
+    REDIRECT_PATH = os.getenv("REDIRECT_PATH")
+    ENDPOINT = os.getenv("ENDPOINT")
+    SCOPE = os.getenv("SCOPE")
+    SESSION_TYPE = os.getenv("SESSION_TYPE")
+    TENANT_ID = os.getenv("TENANT_ID")
+    EXPECTED_AUDIENCE = os.getenv("EXPECTED_AUDIENCE")

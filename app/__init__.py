@@ -7,7 +7,6 @@ from flask_wtf.csrf import CSRFProtect
 from govuk_frontend_wtf.main import WTFormsHelpers
 from jinja2 import ChoiceLoader, PackageLoader, PrefixLoader
 from app.helpers.static_helpers import get_hashed_filename
-
 from app.config import Config
 
 compress = Compress()

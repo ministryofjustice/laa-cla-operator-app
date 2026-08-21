@@ -1,10 +1,12 @@
+import re
+
 from playwright.sync_api import Page, expect
 
 
 def test_sign_in(page: Page, base_url: str) -> None:
     page.goto("/sign-in")
 
-    # Check we're on the sign-in page (target only the main H1)
+    # Check we're on the sign-in page
     expect(
         page.get_by_role(
             "heading",
@@ -17,13 +19,5 @@ def test_sign_in(page: Page, base_url: str) -> None:
     # Click the Sign in button
     page.get_by_role("button", name="Sign in").click()
 
-    # Check we've landed on the index page (target only the main H1)
-    expect(page).to_have_url(f"{base_url}/")
-    expect(
-        page.get_by_role(
-            "heading",
-            level=1,
-            name="Taking calls from clients",
-            exact=True,
-        )
-    ).to_be_visible()
+    # Check we've been redirected to Microsoft Entra ID
+    expect(page).to_have_url(re.compile(r"https://login\.microsoftonline\.com/.*"))
