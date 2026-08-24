@@ -6,9 +6,11 @@ BASE_URL = "http://127.0.0.1:8030"
 def test_sign_in_page_loads(page: Page):
     page.goto(f"{BASE_URL}/sign-in")
 
-    expect(page.get_by_role(
-        "heading", name="Assess and refer for civil legal advice", level=1
-    )).to_be_visible()
+    expect(
+        page.get_by_role(
+            "heading", name="Assess and refer for civil legal advice", level=1
+        )
+    ).to_be_visible()
 
     expect(page.get_by_role("button", name="Sign in")).to_be_visible()
 
