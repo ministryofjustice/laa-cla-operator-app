@@ -1,9 +1,11 @@
 from playwright.sync_api import Page, expect
 
+BASE_URL = "http://127.0.0.1:8030"
+
 
 # Simple test to check that the receive call page is rendered correctly and the buttons work as expected
-def test_receive_call_page(page: Page, base_url: str) -> None:
-    page.goto("/")
+def test_receive_call_page(page: Page) -> None:
+    page.goto(f"{BASE_URL}/")
 
     expect(
         page.get_by_role(
@@ -39,8 +41,8 @@ def test_receive_call_page(page: Page, base_url: str) -> None:
     expect(continue_button).to_be_enabled()
 
 
-def test_receive_call_error_message(page: Page, base_url: str) -> None:
-    page.goto("/")
+def test_receive_call_error_message(page: Page) -> None:
+    page.goto(f"{BASE_URL}/")
 
     continue_button = page.get_by_role("button", name="Continue")
     continue_button.click()
