@@ -20,22 +20,22 @@ from app.authenication.constants import ROLES
 
 class EntraLogin:
     def __init__(self):
-        self.authority = Config.AUTHORITY + Config.TENANT_ID
-        self.client_id = Config.CLIENT_ID
-        self.redirect_uri = Config.REDIRECT_PATH
-        self.scope = Config.SCOPE
-        self.client_secret = Config.CLIENT_SECRET
-        self.tenant_id = Config.TENANT_ID
-        self.audience = Config.EXPECTED_AUDIENCE
-        self.issuer = f"https://login.microsoftonline.com/{Config.TENANT_ID}/v2.0"
+        self.authority = Config.ENTRA_AUTHORITY + Config.ENTRA_TENANT_ID
+        self.client_id = Config.ENTRA_CLIENT_ID
+        self.redirect_uri = Config.ENTRA_REDIRECT_PATH
+        self.scope = Config.ENTRA_SCOPE
+        self.client_secret = Config.ENTRA_CLIENT_SECRET
+        self.tenant_id = Config.ENTRA_TENANT_ID
+        self.audience = Config.ENTRA_EXPECTED_AUDIENCE
+        self.issuer = f"https://login.microsoftonline.com/{Config.ENTRA_TENANT_ID}/v2.0"
 
-    def _get_public_key(self):
+    def _fetch_public_keys(self):
         url = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
         response = requests.get(url, timeout=10)
         return response.json()
 
     def get_public_key(self, token):
-        keys = self._get_public_key()
+        keys = self._fetch_public_keys()
         keys = keys["keys"]
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get("kid")
@@ -142,7 +142,7 @@ class EntraLogin:
         and attempts to authenticate the user.
 
         On successful authentication:
-            Return the user to the dashboard.
+            Return the user to the auth pages.
 
         On authentication failure:
             Display an appropriate error message.

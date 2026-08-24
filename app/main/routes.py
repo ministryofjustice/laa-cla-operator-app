@@ -23,7 +23,7 @@ def _build_backend_date(year: str, month: str, day: str) -> str | None:
 
 
 def register_routes(app):
-    @app.route("/sign-in", methods=["GET", "POST"])
+    @app.route("/sign-in", methods=["GET"])
     def sign_in():
         """
         Initiate the sign-in flow using the configured Entra/Silas
@@ -49,7 +49,7 @@ def register_routes(app):
         return login
 
     @app.route("/auth/entra-callback")
-    def dashboard():
+    def entra_callback():
         """
         Handle the callback from Microsoft Entra after authentication.
 
