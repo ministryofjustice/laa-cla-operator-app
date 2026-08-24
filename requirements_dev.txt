@@ -26,6 +26,8 @@ cachecontrol[filecache]==0.14.4
     # via
     #   cachecontrol
     #   pip-audit
+cachetools==7.1.7
+    # via -r requirements.in
 certifi==2026.1.4
     # via requests
 cffi==2.1.1

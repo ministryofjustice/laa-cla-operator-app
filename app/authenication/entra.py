@@ -7,6 +7,8 @@ from flask import (
     session,
     flash,
 )
+from cachetools import TTLCache
+
 from urllib.parse import urlencode
 import requests
 import logging
@@ -16,6 +18,9 @@ from datetime import datetime, timezone
 from functools import wraps
 from app.config import Config
 from app.authenication.constants import ROLES
+
+
+public_keys_cache = TTLCache(maxsize=1, ttl=86400)
 
 
 class EntraLogin:
@@ -30,9 +35,22 @@ class EntraLogin:
         self.issuer = f"https://login.microsoftonline.com/{Config.ENTRA_TENANT_ID}/v2.0"
 
     def _fetch_public_keys(self):
+        if "microsoft_keys" in public_keys_cache:
+            logging.info(
+                "Microsoft public keys cache hit - returning cached keys without making a new request"
+            )
+            return public_keys_cache["microsoft_keys"]
+
         url = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+
         response = requests.get(url, timeout=10)
-        return response.json()
+        response.raise_for_status()
+
+        keys = response.json()
+
+        public_keys_cache["microsoft_keys"] = keys
+
+        return keys
 
     def get_public_key(self, token):
         keys = self._fetch_public_keys()
