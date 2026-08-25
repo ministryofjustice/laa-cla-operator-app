@@ -26,6 +26,14 @@ services:
       - SERVICE_NAME=[name of service]
       - SERVICE_PHASE=[phase]
       - SERVICE_URL=[url of service]
+      - ENTRA_CLIENT_ID
+      - ENTRA_CLIENT_SECRET
+      - ENTRA_TENANT_ID
+      - ENTRA_AUTHORITY
+      - ENTRA_SCOPE
+      - ENTRA_SESSION_TYPE
+      - ENTRA_EXPECTED_AUDIENCE
+
     ports:
       - "8000:8000"
     volumes:
