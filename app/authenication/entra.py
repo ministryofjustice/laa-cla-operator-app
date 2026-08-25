@@ -158,7 +158,7 @@ class EntraLogin:
             if user:
                 return redirect(url_for("search_client"))
             else:
-                flash(f"Error in try to login {e}", "error")
+                flash(f"Login failed: {e}", "error")
                 return render_template("auth/sign_in.html")
 
         return render_template("auth/sign_in.html")
