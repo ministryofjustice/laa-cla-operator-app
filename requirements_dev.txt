@@ -10,6 +10,8 @@ ast-serialize==0.6.0
     # via mypy
 attrs==25.4.0
     # via flake8-bugbear
+backports-zstd==1.7.0
+    # via flask-compress
 bandit==1.9.4
     # via -r requirements_dev.in
 black==26.5.1

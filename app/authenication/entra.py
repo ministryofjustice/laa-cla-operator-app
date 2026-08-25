@@ -161,6 +161,7 @@ class EntraLogin:
                 return render_template("auth/sign_in.html")
 
         return render_template("auth/sign_in.html")
+  
 
     def login_entra(self):
         """
