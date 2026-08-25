@@ -7,8 +7,7 @@ from flask import (
     session,
     flash,
 )
-from cachetools import TTLCache
-
+from app import cache
 from urllib.parse import urlencode
 import requests
 import logging
@@ -18,9 +17,6 @@ from datetime import datetime, timezone
 from functools import wraps
 from app.config import Config
 from app.authenication.constants import ROLES
-
-
-public_keys_cache = TTLCache(maxsize=1, ttl=86400)
 
 
 class EntraLogin:
@@ -35,11 +31,13 @@ class EntraLogin:
         self.issuer = f"https://login.microsoftonline.com/{Config.ENTRA_TENANT_ID}/v2.0"
 
     def _fetch_public_keys(self):
-        if "microsoft_keys" in public_keys_cache:
-            logging.info(
-                "Microsoft public keys cache hit - returning cached keys without making a new request"
-            )
-            return public_keys_cache["microsoft_keys"]
+        cache_key = "microsoft_keys"
+
+        cached_keys = cache.get(cache_key)
+
+        if cached_keys is not None:
+            logging.info("Microsoft public keys cache hit, no need for new request")
+            return cached_keys
 
         url = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
 
@@ -48,17 +46,27 @@ class EntraLogin:
 
         keys = response.json()
 
-        public_keys_cache["microsoft_keys"] = keys
+        cache.set(cache_key, keys, timeout=86400)
 
         return keys
 
     def get_public_key(self, token):
-        keys = self._fetch_public_keys()
-        keys = keys["keys"]
+        keys = self._fetch_public_keys()["keys"]
+
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get("kid")
 
         key_data = next((key for key in keys if key.get("kid") == kid), None)
+
+        if key_data is None:
+            cache.delete("microsoft_keys")
+            keys = self._fetch_public_keys()["keys"]
+
+            key_data = next((key for key in keys if key.get("kid") == kid), None)
+
+        if key_data is None:
+            return None
+
         return key_data["x5c"][0]
 
     def decode(self, token):

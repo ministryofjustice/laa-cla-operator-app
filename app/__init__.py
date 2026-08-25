@@ -6,24 +6,42 @@ from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from govuk_frontend_wtf.main import WTFormsHelpers
 from jinja2 import ChoiceLoader, PackageLoader, PrefixLoader
+from flask_caching import Cache
+
 from app.helpers.static_helpers import get_hashed_filename
 from app.config import Config
 
+
 compress = Compress()
 csrf = CSRFProtect()
+
 limiter = Limiter(
     get_remote_address,
     default_limits=["20 per second", "60 per minute"],
 )
+
 talisman = Talisman()
+cache = Cache()
 
 
 def create_app(config_class=Config):
-    app: Flask = Flask(__name__, static_url_path="/assets", static_folder="static/dist")
-    app.url_map.strict_slashes = False  # This allows www.host.gov.uk/category to be routed to www.host.gov.uk/category/
+    app: Flask = Flask(
+        __name__,
+        static_url_path="/assets",
+        static_folder="static/dist",
+    )
+
+    app.url_map.strict_slashes = False
+
+    # Load application configuration
     app.config.from_object(config_class)
+
+    # Flask-Caching configuration
+    app.config["CACHE_TYPE"] = "SimpleCache"
+
     app.jinja_env.lstrip_blocks = True
     app.jinja_env.trim_blocks = True
+
     app.jinja_loader = ChoiceLoader(
         [
             PackageLoader("app"),
@@ -48,7 +66,11 @@ def create_app(config_class=Config):
             "'self'",
             "*.google-analytics.com",
         ],
-        "img-src": ["'self'", "*.googletagmanager.com", "www.gov.uk"],
+        "img-src": [
+            "'self'",
+            "*.googletagmanager.com",
+            "www.gov.uk",
+        ],
     }
 
     # Set permissions policy
@@ -101,6 +123,10 @@ def create_app(config_class=Config):
     compress.init_app(app)
     csrf.init_app(app)
     limiter.init_app(app)
+
+    # Initialise Flask-Caching AFTER CACHE_TYPE has been configured
+    cache.init_app(app)
+
     talisman.init_app(
         app,
         content_security_policy=csp,
@@ -122,11 +148,7 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_hashed_filename():
         """
-        Adds the 'get_hashed_filename' function to the Jinja2 context.
-
-        This allows the 'get_hashed_filename' utility function to be used directly
-        in Jinja2 templates to dynamically retrieve the correct hashed filename
-        for static assets (e.g., CSS and JS files) based on the manifest file.
+        Adds the get_hashed_filename function to the Jinja2 context.
         """
         return {"get_hashed_filename": get_hashed_filename}
 
