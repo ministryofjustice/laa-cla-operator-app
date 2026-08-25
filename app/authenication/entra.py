@@ -93,7 +93,7 @@ class EntraLogin:
 
     def validate_token(self, token=None):
         if not token:
-            return
+            return None, False
         try:
             decoded_token = self.decode(token)
 
@@ -135,10 +135,10 @@ class EntraLogin:
             session["user"] = user
 
             # 6 return the user
-            return user if user else None
+            return (user, True) if user else (None, "No user to be login")
 
-        except Exception:
-            return
+        except Exception as e:
+            return None, e
 
     def login(self):
         """
@@ -153,11 +153,12 @@ class EntraLogin:
         token = request.cookies.get("token")
 
         if token:
-            user = self.validate_token(token)
+            user, e = self.validate_token(token)
 
             if user:
                 return redirect(url_for("search_client"))
             else:
+                flash(f"Error in logging {e}", "error")
                 return render_template("auth/sign_in.html")
 
         return render_template("auth/sign_in.html")
@@ -241,8 +242,9 @@ class EntraLogin:
             response = response.json()
             token = response.get("access_token")
 
-            user = self.validate_token(token)
+            user, _ = self.validate_token(token)
             if not user:
+                flash("Failed to login user", "error")
                 return redirect(url_for("sign_in"))
 
             response = make_response(redirect(url_for("search_client")))
@@ -267,7 +269,7 @@ class LoginRequired:
             login = EntraLogin()
 
             if token:
-                validate = login.validate_token(token)
+                validate, _ = login.validate_token(token)
 
                 if validate:
                     return func(*args, **kwargs)
