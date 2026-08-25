@@ -6,8 +6,6 @@
 #
 annotated-types==0.8.0
     # via pydantic
-backports-zstd==1.7.0
-    # via flask-compress
 blinker==1.9.0
     # via flask
 brotli==1.2.0
