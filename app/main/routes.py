@@ -36,7 +36,7 @@ def register_routes(app):
         login = auth.login()
         return login
 
-    @app.route("/sign-in-entra", methods=["GET", "POST"])
+    @app.route("/sign-in-entra", methods=["GET"])
     def sign_in_entra():
         """
         Initiate the Entra-specific sign-in flow.
