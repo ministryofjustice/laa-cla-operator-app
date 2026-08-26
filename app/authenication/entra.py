@@ -18,6 +18,9 @@ from functools import wraps
 from app.config import Config
 from app.authenication.constants import ROLES
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class EntraLogin:
     def __init__(self):
@@ -93,7 +96,8 @@ class EntraLogin:
 
     def validate_token(self, token=None):
         if not token:
-            return
+            return None, False
+
         try:
             decoded_token = self.decode(token)
 
@@ -102,43 +106,57 @@ class EntraLogin:
             # 1. Check expiration
             exp = decoded_token.get("exp")
             if exp is not None and now > exp:
-                return ValueError("Token has expired")
+                raise ValueError("Token has expired")
 
-            # 2.  Check role
-            role = decoded_token.get("APP_ROLES")
+            # 2. Check role
+            roles = decoded_token.get("APP_ROLES", [])
+
+            if isinstance(roles, str):
+                roles = [roles]
+
+            if len(roles) != 1:
+                raise ValueError(f"Token must contain exactly one role, got: {roles}")
+
+            role = roles[0]
+
+            # Get configuration for the role
             role_config = ROLES.get(role)
-
-            if not role or not role_config:
-                return ValueError("Role not in scope")
+            if role_config is None:
+                raise ValueError(f"Role not in scope: {role}")
 
             # 3. Check office codes
             raw_accounts = decoded_token.get("LAA_ACCOUNTS", [])
-            office_codes = (
-                raw_accounts if isinstance(raw_accounts, list) else [raw_accounts]
-            )
 
-            if not office_codes:
-                return ValueError("Missing office code")
+            if isinstance(raw_accounts, list):
+                office_codes = raw_accounts
+            else:
+                office_codes = [raw_accounts]
 
-            # 4.  Check username
+            if not office_codes or office_codes == [None]:
+                raise ValueError("No office codes found in token")
+
+            # 4. Check username
             username = decoded_token.get("preferred_username")
             if not username:
-                return ValueError("Missing username")
+                raise ValueError("Username not found in token")
 
+            # 5. Build user details
             user = {
                 "username": username,
                 "roles": role,
-                "is_manager": role_config.get("is_manager"),
+                "is_manager": role_config.get("is_manager", False),
                 "office_codes": office_codes,
             }
-            # 5 set the user details to be pass on
+
+            # 6. Set user details
             session["user"] = user
 
-            # 6 return the user
-            return user if user else None
+            # 7. Return user
+            return user, True
 
-        except Exception:
-            return
+        except Exception as e:
+            logging.info("Failed to validate token: %s", e)
+            return None, e
 
     def login(self):
         """
@@ -153,11 +171,11 @@ class EntraLogin:
         token = request.cookies.get("token")
 
         if token:
-            user = self.validate_token(token)
-
+            user, e = self.validate_token(token)
             if user:
                 return redirect(url_for("search_client"))
             else:
+                flash(f"Login failed: {e}", "error")
                 return render_template("auth/sign_in.html")
 
         return render_template("auth/sign_in.html")
@@ -241,8 +259,9 @@ class EntraLogin:
             response = response.json()
             token = response.get("access_token")
 
-            user = self.validate_token(token)
+            user, error = self.validate_token(token)
             if not user:
+                flash(f"Failed to login user {error}", "error")
                 return redirect(url_for("sign_in"))
 
             response = make_response(redirect(url_for("search_client")))
@@ -267,7 +286,7 @@ class LoginRequired:
             login = EntraLogin()
 
             if token:
-                validate = login.validate_token(token)
+                validate, _ = login.validate_token(token)
 
                 if validate:
                     return func(*args, **kwargs)

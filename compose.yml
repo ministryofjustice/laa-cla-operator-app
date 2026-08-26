@@ -29,10 +29,10 @@ services:
       - ENTRA_CLIENT_ID
       - ENTRA_CLIENT_SECRET
       - ENTRA_TENANT_ID
-      - ENTRA_AUTHORITY
       - ENTRA_SCOPE
-      - ENTRA_SESSION_TYPE
       - ENTRA_EXPECTED_AUDIENCE
+      - ENTRA_AUTHORITY
+      - ENTRA_REDIRECT_PATH
 
     ports:
       - "8000:8000"
