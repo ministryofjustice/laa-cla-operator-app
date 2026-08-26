@@ -70,7 +70,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           REGISTRY: ${{ secrets.ECR_REGISTRY_URL }}
           REPOSITORY: ${{ inputs.ECR_REPOSITORY }}
-          HELM_DIR: "helm_deploy/laa-cla-operator-app"
+          HELM_DIR: "legacy_python/helm_deploy/laa-cla-operator-app"
           SHARED_IP_RANGES_LAA: ${{ env.SHARED_IP_RANGES_LAA }}
         run: |
           helm upgrade laa-cla-operator-app \
