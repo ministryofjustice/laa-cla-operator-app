@@ -32,14 +32,14 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #7.0.1
         with:
           sparse-checkout: |
-            docs
+            legacy_python/docs
           sparse-checkout-cone-mode: false
       # We move the docs directory to the root so it is treated as if the docs directory was
       # the only thing in the repository.
       - name: Move directory to root
         run: |
-          mv docs/* .
-          rm -rf docs
+          mv legacy_python/docs/* .
+          rm -rf legacy_python/docs
       - name: Compile Markdown to HTML and create artifact
         run: |
           /scripts/deploy.sh

@@ -30,8 +30,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pre-commit pip-tools
         python -m pre_commit clean
-        pip-compile requirements.in
-        pip-compile requirements_dev.in
+        pip-compile legacy_python/requirements.in
+        pip-compile legacy_python/requirements_dev.in
 
     - name: Check command result
       if: steps.pip_compile.outcome != 'success'
