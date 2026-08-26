@@ -10,9 +10,12 @@ import { initializeI18nextSync } from '#src/scripts/helpers/index.js';
 import config from '#config.js';
 import indexRouter from '#routes/index.js';
 import livereload from 'connect-livereload';
+import { Forge } from '@ministryofjustice/hmpps-forge/core'
+import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components'
+import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
+import feedbackPackage from './journeys/feedback/index.js';
 
 const TRUST_FIRST_PROXY = 1;
-
 /**
  * Creates and configures an Express application.
  * Then starts the server listening on the configured port.
@@ -64,24 +67,21 @@ const createApp = (): express.Application => {
 	// Set up locale middleware for internationalization
 	app.use(setupLocaleMiddleware);
 
-	// Set up Nunjucks as the template engine
-	nunjucksSetup(app);
-
 	// Set up rate limiting
 	rateLimitSetUp(app, config);
 
-	// Set up application-specific configurations
-	setupConfig(app);
-
-	// Set up request logging based on environment
-	if (process.env.NODE_ENV === 'production') {
-		// Use combined format for production (more structured, less verbose)
-		app.use(morgan('combined'));
-	} else {
-		// Use dev format for development (colored, more readable)
-		app.use(morgan('dev'));
-	}
-
+	  // Set up application-specific configurations
+	  setupConfig(app);
+	  
+	  // Set up request logging based on environment
+	  if (process.env.NODE_ENV === 'production') {
+		  // Use combined format for production (more structured, less verbose)
+		  app.use(morgan('combined'));
+		} else {
+			// Use dev format for development (colored, more readable)
+			app.use(morgan('dev'));
+		}
+		
 	// Register the main router
 	app.use('/', indexRouter);
 
@@ -92,6 +92,18 @@ const createApp = (): express.Application => {
 
 	// Display ASCII Art banner
 	displayAsciiBanner(config);
+
+		// Set up Nunjucks as the template engine
+	const nunjucksEnv = nunjucksSetup(app);
+
+	const forge = new Forge({})
+	  .registerGlobalComponents(govukComponents)
+
+	forge.registerPackage(feedbackPackage);
+
+	app.use(express.urlencoded({ extended: true }));
+	app.use('/', createExpressRouter(forge, {nunjucksEnv}));
+
 
 	// Starts the Express server on the specified port
 	app.listen(config.app.port, () => {
