@@ -93,7 +93,7 @@ const createApp = (): express.Application => {
 	// Display ASCII Art banner
 	displayAsciiBanner(config);
 
-		// Set up Nunjucks as the template engine
+	// Set up Nunjucks as the template engine
 	const nunjucksEnv = nunjucksSetup(app);
 
 	const forge = new Forge({})
@@ -102,7 +102,7 @@ const createApp = (): express.Application => {
 	forge.registerPackage(feedbackPackage);
 
 	app.use(express.urlencoded({ extended: true }));
-	app.use('/', createExpressRouter(forge, {nunjucksEnv}));
+	app.use('/', createExpressRouter(forge, { nunjucksEnv }));
 
 
 	// Starts the Express server on the specified port

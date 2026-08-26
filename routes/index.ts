@@ -33,7 +33,8 @@ router.get('/users', async function (req: Request, res: Response, next: NextFunc
 // GET single user by ID (demonstrates BaseApiService pattern)
 router.get('/users/:id', async function (req: Request, res: Response, next: NextFunction) {
 	try {
-		const response = await exampleApiService.getUserById(req.axiosMiddleware, req.params.id);
+		const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+		const response = await exampleApiService.getUserById(req.axiosMiddleware, userId);
 
 		// Template users add their own response handling here
 		res.json(response.data);

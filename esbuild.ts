@@ -51,6 +51,7 @@ const copyAssets = async (): Promise<void> => {
  */
 const externalModules: string[] = [
 	...builtinModules,
+	'debug',
 	'express',
 	'nunjucks',
 	'dotenv',
