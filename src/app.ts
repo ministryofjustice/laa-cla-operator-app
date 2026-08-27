@@ -13,7 +13,7 @@ import livereload from 'connect-livereload';
 import { Forge } from '@ministryofjustice/hmpps-forge/core'
 import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
-import feedbackPackage from './journeys/feedback/index.js';
+import journeyPackages from './journeys/index.js';
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -99,7 +99,11 @@ const createApp = (): express.Application => {
 	const forge = new Forge({})
 	  .registerGlobalComponents(govukComponents)
 
-	forge.registerPackage(feedbackPackage);
+	// Everytime a new journey is added to the project,
+	// it'll be automatically registered with Forge here.
+	for (const journeyPackage of journeyPackages) {
+		forge.registerPackage(journeyPackage);
+	}
 
 	app.use(express.urlencoded({ extended: true }));
 	app.use('/', createExpressRouter(forge, { nunjucksEnv }));

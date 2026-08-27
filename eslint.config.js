@@ -28,8 +28,7 @@ export default [
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: ['./tsconfig.json', './tsconfig.test.json']
+        sourceType: 'module'
       },
       globals: {
         ...globals.browser,

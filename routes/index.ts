@@ -11,7 +11,7 @@ const UNSUCCESSFUL_REQUEST = 500;
 
 /* GET home page. */
 router.get('/', function (req: Request, res: Response): void {
-	res.render('main/index');
+	res.redirect('/receive-call');
 });
 
 // GET users from external API using BaseApiService pattern

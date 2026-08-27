@@ -1,9 +1,9 @@
 import { createForgePackage } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { feedbackJourney } from "./journey.js";
+import { inboundCallJourney } from "./journey.js";
 
-// Package entrypoint for the feedback journey.
+// Package entrypoint for the inbound call journey.
 // app.ts registers this package with forge.registerPackage(...).
 export default createForgePackage({
-  journey: feedbackJourney,
+  journey: inboundCallJourney,
 });
 // Add custom functions/components here later if this journey needs them.

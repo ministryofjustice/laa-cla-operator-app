@@ -39,7 +39,7 @@ function safeStringValue(value: unknown, defaultValue: string): string {
 function safeDateOfBirth(value: unknown): { day: string; month: string; year: string } {
   if (typeof value === 'object' && value !== null && 
       'day' in value && 'month' in value && 'year' in value) {
-    const dob = value as { day: unknown; month: unknown; year: unknown };
+    const dob = value;
     return {
       day: typeof dob.day === 'string' ? dob.day : DEFAULT_PERSON_DATA.dateOfBirth.day,
       month: typeof dob.month === 'string' ? dob.month : DEFAULT_PERSON_DATA.dateOfBirth.month,

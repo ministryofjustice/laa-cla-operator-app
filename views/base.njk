@@ -1,5 +1,7 @@
 {% extends "govuk/template.njk" %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "moj/components/header/macro.njk" import mojHeader %}
 
 {% set govukRebrand = true %}
 
@@ -19,11 +21,36 @@
 {% endblock %}
 
 {% block header %}
-  {{ govukHeader({
-    homepageUrl: "#",
+  {{ mojHeader({
+    organisationLabel: {
+      text: config.DEPARTMENT_NAME,
+      href: config.DEPARTMENT_URL
+    },
+    navigation: {
+      label: "Account navigation",
+      items: [
+        {
+          text: "Sign out",
+          href: "#"
+        }
+      ]
+    }
+  }) }}
+
+  {{ govukServiceNavigation({
     serviceName: config.SERVICE_NAME,
-    serviceUrl: "#",
-    rebrand: govukRebrand
+    serviceUrl: "/receive-call",
+    navigation: [
+      {
+        href: "/receive-call",
+        text: "Receive calls",
+        current: true
+      },
+      {
+        href: "#",
+        text: "Make calls"
+      }
+    ]
   }) }}
 {% endblock %}
 

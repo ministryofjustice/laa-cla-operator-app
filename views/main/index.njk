@@ -1,93 +1,38 @@
 {% extends "base.njk" %}
 
+
 {% block content %}
-    <h1 class="govuk-heading-xl">{{config.SERVICE_NAME}}</h1>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+            <h1 class="govuk-heading-xl">Taking calls from clients</h1>
 
-    <p class="govuk-body">{{ t('pages.home.defaultTemplate') }}</p>
+            <p class="govuk-body">
+                Introduce the caller to Civil Legal Advice and check if they are ringing on their own behalf,
+                or someone else's.
+            </p>
 
-    <div class="govuk-inset-text">
-      <p class="govuk-body">
-        <strong>Template Examples:</strong><br>
-        <a href="/change/person" class="govuk-link">Advanced form validation</a> - Demonstrates comprehensive schema validation with GOV.UK Design System components
-      </p>
+            <div class="govuk-inset-text taking-call-inset">
+                <p class="govuk-body">Thank you for calling the Civil Legal Advice helpline, my name is [agent name].</p>
+                <p class="govuk-body">I'm going to ask you some questions about your legal problem and your financial situation to check if you are eligible for legal aid.</p>
+                <p class="govuk-body">I am not trained to give legal advice. If you are likely to be eligible for legal aid, I'll refer you to a legal professional at the end of this call. Depending on your problem, they may need to complete further checks before they can help.</p>
+                <p class="govuk-body">If you are not eligible for legal aid, I'll try to direct you to someone else who can help you.</p>
+                <p class="govuk-body">As a first step, I'm going to take a few details from you. The information you give me will be stored on our system to help us assess your case.</p>
+            </div>
+
+            {% if fieldValidationErrors | length %}
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: fieldValidationErrors
+                }) }}
+            {% endif %}
+
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% for block in blocks %}
+                    {{ block | safe }}
+                {% endfor %}
+            </form>
+        </div>
     </div>
-    {%- from "govuk/components/table/macro.njk" import govukTable -%}
-
-    {{ govukTable({
-        attributes: {
-            "data-module": "moj-sortable-table"
-        },
-        caption: t('pages.home.mountainsOfTheWorld'),
-        head: [
-            {
-            text: t('pages.home.rowName.label'),
-            attributes: {
-                "aria-sort": "ascending"
-            }
-            },
-            {
-            text: t('pages.home.rowElevation.label'),
-            attributes: {
-                "aria-sort": "none"
-            }
-            },
-            {
-            text: t('pages.home.rowContinent.label'),
-            attributes: {
-                "aria-sort": "none"
-            }
-            },
-            {
-            text: t('pages.home.rowFirstSummit.label'),
-            attributes: {
-                "aria-sort": "none"
-            },
-            format: "numeric"
-            }
-        ],
-        rows: [
-            [
-            { text: t("pages.home.rowName.aconcagua") },
-            { text: t("pages.home.rowElevation.6961meters"), attributes: { "data-sort-value": "6961" } },
-            { text: t("pages.home.rowContinent.southAmerica") },
-            { text: t("pages.home.rowFirstSummit.1897"), format: "numeric", attributes: { "data-sort-value": "1897" } }
-            ],
-            [
-            { text: t("pages.home.rowName.denali") },
-            { text: t("pages.home.rowElevation.6194meters"), attributes: { "data-sort-value": "6194" } },
-            { text: t("pages.home.rowContinent.northAmerica") },
-            { text: t("pages.home.rowFirstSummit.1913"), format: "numeric", attributes: { "data-sort-value": "1913" } }
-            ],
-            [
-            { text: t("pages.home.rowName.elbrus") },
-            { text: t("pages.home.rowElevation.5642meters"), attributes: { "data-sort-value": "5642" } },
-            { text: t("pages.home.rowContinent.europe") },
-            { text: t("pages.home.rowFirstSummit.1874"), format: "numeric", attributes: { "data-sort-value": "1874" } }
-            ],
-            [
-            { text: t("pages.home.rowName.everest") },
-            { text: t("pages.home.rowElevation.8850meters"), attributes: { "data-sort-value": "8850" } },
-            { text: t("pages.home.rowContinent.asia") },
-            { text: t("pages.home.rowFirstSummit.1953"), format: "numeric", attributes: { "data-sort-value": "1953" } }
-            ],
-            [
-            { text: t("pages.home.rowName.kilimanjaro") },
-            { text: t("pages.home.rowElevation.5895meters"), attributes: { "data-sort-value": "5895" } },
-            { text: t("pages.home.rowContinent.africa") },
-            { text: t("pages.home.rowFirstSummit.1889"), format: "numeric", attributes: { "data-sort-value": "1889" } }
-            ],
-            [
-            { text: t("pages.home.rowName.puncakJaya") },
-            { text: t("pages.home.rowElevation.4884meters"), attributes: { "data-sort-value": "4884" } },
-            { text: t("pages.home.rowContinent.australia") },
-            { text: t("pages.home.rowFirstSummit.1962"), format: "numeric", attributes: { "data-sort-value": "1962" } }
-            ],
-            [
-            { text: t("pages.home.rowName.vinson") },
-            { text: t("pages.home.rowElevation.4897meters"), attributes: { "data-sort-value": "4897" } },
-            { text: t("pages.home.rowContinent.antarctica") },
-            { text: t("pages.home.rowFirstSummit.1966"), format: "numeric", attributes: { "data-sort-value": "1966" } }
-            ]
-        ]
-        }) }}
 {% endblock %}
