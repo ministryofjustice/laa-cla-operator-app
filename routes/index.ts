@@ -8,6 +8,7 @@ import { exampleApiService } from '#src/services/exampleApiService.js';
 const router = express.Router();
 const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;
+const FIRST_ITEM_INDEX = 0;
 
 /* GET home page. */
 router.get('/', function (req: Request, res: Response): void {
@@ -33,7 +34,7 @@ router.get('/users', async function (req: Request, res: Response, next: NextFunc
 // GET single user by ID (demonstrates BaseApiService pattern)
 router.get('/users/:id', async function (req: Request, res: Response, next: NextFunction) {
 	try {
-		const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+		const userId = Array.isArray(req.params.id) ? req.params.id[FIRST_ITEM_INDEX] : req.params.id;
 		const response = await exampleApiService.getUserById(req.axiosMiddleware, userId);
 
 		// Template users add their own response handling here

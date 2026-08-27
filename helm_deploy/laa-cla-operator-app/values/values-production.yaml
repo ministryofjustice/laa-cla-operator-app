@@ -39,3 +39,5 @@ envVars:
   BACKEND_BASE_URI:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-production.svc.cluster.local"
+  NODE_ENV:
+    value: "production"

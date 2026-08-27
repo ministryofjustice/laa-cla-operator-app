@@ -99,6 +99,7 @@ export default [
   // Ignore patterns
   {
     ignores: [
+      'legacy_python/**',
       'node_modules/*',
       'public/*',
       'tests/**/*.spec.ts', // Unit test specs (if any remain in tests/)
