@@ -28,17 +28,20 @@ const copyAssets = async (): Promise<void> => {
 			path.resolve('./node_modules/govuk-frontend/dist/govuk/assets'),
 			path.resolve('./public/assets')
 		);
-		// Copy GOVUK rebrand assets for brand refresh
-		await fs.copy(
-			path.resolve('./node_modules/govuk-frontend/dist/govuk/assets/rebrand'),
-			path.resolve('./public/assets/rebrand')
-		);
+		// Rebrand assets are optional and not present in every GOV.UK Frontend release.
+		const rebrandSourcePath = path.resolve('./node_modules/govuk-frontend/dist/govuk/assets/rebrand');
+		if (await fs.pathExists(rebrandSourcePath)) {
+			await fs.copy(
+				rebrandSourcePath,
+				path.resolve('./public/assets/rebrand')
+			);
+		}
 		// Copy MOJ Frontend assets
 		await fs.copy(
 			path.resolve('./node_modules/@ministryofjustice/frontend/moj/assets/images'),
 			path.resolve('./public/assets/images')
 		);
-		console.log('✅ GOV.UK assets (including rebrand) & MOJ Frontend assets copied successfully.');
+		console.log('✅ GOV.UK and MOJ Frontend assets copied successfully.');
 	} catch (error) {
 		console.error('❌ Failed to copy assets:', error);
 		process.exit(UNCAUGHT_FATAL_EXCEPTION);

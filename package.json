@@ -27,7 +27,7 @@
     "node": "24.10.0"
   },
   "dependencies": {
-    "@ministryofjustice/frontend": "^6.0.0",
+    "@ministryofjustice/frontend": "^9.0.0",
     "@ministryofjustice/hmpps-forge": "^0.4.1",
     "axios": "1.12.2",
     "body-parser": "^2.2.0",
@@ -43,7 +43,7 @@
     "express-validator": "^7.2.1",
     "figlet": "^1.9.3",
     "fs-extra": "^11.3.2",
-    "govuk-frontend": "^5.14.0",
+    "govuk-frontend": "^6.1.0",
     "helmet": "^8.1.0",
     "http-errors": "~2.0.0",
     "i18next": "^25.6.0",

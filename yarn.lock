@@ -801,13 +801,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ministryofjustice/frontend@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "@ministryofjustice/frontend@npm:6.0.0"
+"@ministryofjustice/frontend@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "@ministryofjustice/frontend@npm:9.0.0"
   peerDependencies:
-    govuk-frontend: ^5.11.2
+    govuk-frontend: ^6.0.0
     moment: 2.30.1
-  checksum: 10c0/9ab4040ec048d11f782e44d935f8e722432cee006c76675110c4871e09d4732e0cfea86afb0862991e3cff23f447ac02ed2394538293fd0fbdda801576d361a5
+  checksum: 10c0/6b08112f34a564c516692ae14de2422decefdc6b26963b3922c47442a3a3ee18b8e034c3f3bedc15b881e017b0a3e8465ace50aa7526a5a90d4d56adf1e623f5
   languageName: node
   linkType: hard
 
@@ -4033,10 +4033,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"govuk-frontend@npm:^5.14.0":
-  version: 5.14.0
-  resolution: "govuk-frontend@npm:5.14.0"
-  checksum: 10c0/dcb1116003bb4a8ff167434bb30a779d6deafecb10687d044d5c560c0a7ff2053b8666000831c18ad3bcf4aa310678bf3c0cc40d734570b2b81c44853ddd388a
+"govuk-frontend@npm:^6.1.0":
+  version: 6.4.0
+  resolution: "govuk-frontend@npm:6.4.0"
+  checksum: 10c0/0bbf3e9960e6759a9fc39a7b03d3730c35ea0fa612d83a335822b9813c725f05cab349e2ca23a3d188c2251db96a8ddb6b5b9499061fcda5cf3f8bb07dcb28b7
   languageName: node
   linkType: hard
 
@@ -4791,7 +4791,7 @@ __metadata:
   dependencies:
     "@axe-core/playwright": "npm:^4.10.2"
     "@eslint/js": "npm:^9.36.0"
-    "@ministryofjustice/frontend": "npm:^6.0.0"
+    "@ministryofjustice/frontend": "npm:^9.0.0"
     "@ministryofjustice/hmpps-forge": "npm:^0.4.1"
     "@playwright/test": "npm:^1.56.0"
     "@types/chai": "npm:^5.2.2"
@@ -4842,7 +4842,7 @@ __metadata:
     figlet: "npm:^1.9.3"
     fs-extra: "npm:^11.3.2"
     globals: "npm:^16.4.0"
-    govuk-frontend: "npm:^5.14.0"
+    govuk-frontend: "npm:^6.1.0"
     helmet: "npm:^8.1.0"
     http-errors: "npm:~2.0.0"
     husky: "npm:^9.1.7"
