@@ -10,10 +10,12 @@ ast-serialize==0.6.0
     # via mypy
 attrs==25.4.0
     # via flake8-bugbear
+backports-zstd==1.7.0
+    # via flask-compress
 bandit==1.9.4
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 black==26.5.1
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 blinker==1.9.0
     # via flask
 boolean-py==5.0
@@ -38,17 +40,17 @@ charset-normalizer==3.4.4
     # via requests
 click==8.4.2
     # via
-    #   -r requirements.in
+    #   -r legacy_python/requirements.in
     #   black
     #   flask
     #   pip-tools
     #   pur
 coverage[toml]==7.13.4
     # via pytest-cov
-cryptography==50.0.0
-    # via -r requirements.in
+cryptography==50.0.1
+    # via -r legacy_python/requirements.in
 cssmin==0.2.0
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 cyclonedx-python-lib==11.6.0
     # via pip-audit
 deepmerge==2.0
@@ -62,7 +64,7 @@ distlib==0.4.0
 dnspython==2.8.0
     # via email-validator
 email-validator==2.3.0
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 filelock==3.24.3
     # via
     #   cachecontrol
@@ -73,31 +75,31 @@ flake8==7.3.0
     #   flake8-bugbear
     #   pep8-naming
 flake8-bugbear==25.11.29
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 flask==3.1.3
     # via
-    #   -r requirements.in
+    #   -r legacy_python/requirements.in
     #   flask-caching
     #   flask-compress
     #   flask-limiter
     #   flask-wtf
     #   govuk-frontend-wtf
 flask-caching==2.5.0
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 flask-compress==1.24
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 flask-limiter==4.1.1
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 flask-talisman==1.1.0
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 flask-wtf==1.2.2
     # via govuk-frontend-wtf
 govuk-frontend-jinja==4.1.0
     # via
-    #   -r requirements.in
+    #   -r legacy_python/requirements.in
     #   govuk-frontend-wtf
 govuk-frontend-wtf==3.2.0
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 greenlet==3.3.1
     # via playwright
 identify==2.6.17
@@ -109,7 +111,7 @@ idna==3.11
 iniconfig==2.3.0
     # via pytest
 isort==8.0.1
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 itsdangerous==2.2.0
     # via
     #   flask
@@ -137,12 +139,12 @@ mccabe==0.7.0
     # via flake8
 mdurl==0.1.2
     # via markdown-it-py
-msgpack==1.2.1
+msgpack==1.2.2
     # via
-    #   -r requirements_dev.in
+    #   -r legacy_python/requirements_dev.in
     #   cachecontrol
 mypy==2.3.1
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 mypy-extensions==1.1.0
     # via
     #   black
@@ -167,15 +169,15 @@ pathspec==1.0.4
     #   black
     #   mypy
 pep8-naming==0.15.1
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 pip-api==0.0.34
     # via pip-audit
 pip-audit==2.10.1
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 pip-requirements-parser==32.0.1
     # via pip-audit
 pip-tools==7.6.1
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 platformdirs==4.9.2
     # via
     #   black
@@ -184,16 +186,16 @@ platformdirs==4.9.2
     #   virtualenv
 playwright==1.62.0
     # via
-    #   -r requirements_dev.in
+    #   -r legacy_python/requirements_dev.in
     #   pytest-playwright
 pluggy==1.6.0
     # via
     #   pytest
     #   pytest-cov
 pre-commit==4.6.2
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 pur==7.4.0
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 py-serializable==2.1.0
     # via cyclonedx-python-lib
 pycodestyle==2.14.0
@@ -201,7 +203,7 @@ pycodestyle==2.14.0
 pycparser==3.0
     # via cffi
 pydantic==2.13.4
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 pydantic-core==2.46.4
     # via pydantic
 pyee==13.0.1
@@ -213,7 +215,7 @@ pygments==2.19.2
     #   pytest
     #   rich
 pyjwt==2.13.0
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 pyparsing==3.3.2
     # via pip-requirements-parser
 pyproject-hooks==1.2.0
@@ -228,25 +230,25 @@ pytest==9.0.2
 pytest-base-url==2.1.0
     # via pytest-playwright
 pytest-cov==7.1.0
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 pytest-playwright==0.9.0
-    # via -r requirements_dev.in
+    # via -r legacy_python/requirements_dev.in
 python-discovery==1.1.3
     # via virtualenv
 python-dotenv==1.2.3
-    # via -r requirements.in
+    # via -r legacy_python/requirements.in
 python-slugify==8.0.4
     # via pytest-playwright
 pytokens==0.4.1
     # via black
 pyyaml==6.0.3
     # via
-    #   -r requirements.in
+    #   -r legacy_python/requirements.in
     #   bandit
     #   pre-commit
 requests==2.34.2
     # via
-    #   -r requirements.in
+    #   -r legacy_python/requirements.in
     #   cachecontrol
     #   pip-audit
     #   pytest-base-url
@@ -277,7 +279,7 @@ typing-inspection==0.4.3
     # via pydantic
 urllib3==2.7.0
     # via
-    #   -r requirements.in
+    #   -r legacy_python/requirements.in
     #   requests
 virtualenv==21.2.0
     # via pre-commit
