@@ -9,7 +9,7 @@ pip-audit
 pip-tools
 pre-commit
 pur
-msgpack>=1.2.1
+msgpack>=1.2.2
 pytest-cov
 pytest-playwright
 playwright
