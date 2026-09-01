@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   pullPolicy: Always
-  containerPort: 8000
+  containerPort: 3000
 
 ingress:
   enabled: true
@@ -28,3 +28,5 @@ envVars:
   BACKEND_BASE_URI:
       # Using service name instead of external domain name
       value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"
+  NODE_ENV:
+    value: "uat"

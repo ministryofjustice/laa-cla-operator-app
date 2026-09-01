@@ -1,55 +1,40 @@
-ARG BASE_IMAGE=python:3.14-slim
+# Use the official Node.js image as the base image
+FROM node:24.10.0-alpine
 
-FROM node:lts-krypton AS node_build
-WORKDIR /home/node
-COPY esbuild.config.js package.json package-lock.json ./
-COPY app/static/src app/static/src
-RUN npm install
-RUN npm run build
+# Set the working directory inside the container
+WORKDIR /app
 
+# Enable Corepack and prepare Yarn version
+RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-FROM $BASE_IMAGE AS base
-# Change this to your production requirments for production purposes.
-ARG REQUIREMENTS_FILE=requirements.txt
-ARG FLASK_RUN_PORT=8000
+# Copy package.json and yarn.lock to the working directory
+COPY package*.json yarn.lock .yarnrc.yml ./
 
-# Set environment variables
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=${FLASK_RUN_PORT}
-ENV PYTHONUNBUFFERED=1
+# Install dependencies
+RUN yarn install --immutable
 
 # Create a non-root user
-RUN adduser --disabled-password app -u 1000 && \
-    cp /usr/share/zoneinfo/Europe/London /etc/localtime
+RUN addgroup -g 1001 -S appuser && \
+    adduser -u 1001 -G appuser -S appuser
 
-RUN mkdir /home/app/flask
-WORKDIR /home/app/flask
+# Copy the rest of the application code to the working directory
+# and set ownership to the non-root user
+COPY --chown=1001:1001 . .
 
-COPY --from=node_build /home/node/app/static/dist/ app/static/dist/
+# Build the application
+RUN yarn build
 
-COPY $REQUIREMENTS_FILE requirements.txt
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Set ownership of all generated files to the non-root user
+RUN chown -R 1001:1001 /app
 
-COPY app ./app
+# Switch to the non-root user by ID (not name)
+USER 1001
 
-# Change ownership of the working directory to the non-root user
-RUN chown -R app:app /home/app
+# Set HOME environment variable to fix corepack cache issues
+ENV HOME=/app
 
-# Cleanup container
-RUN rm -rf /var/lib/apt/lists/*
+# Expose the port the app runs on
+EXPOSE 3000
 
-# Switch to the non-root user
-USER app
-
-# Expose the Flask port
-EXPOSE $FLASK_RUN_PORT
-
-# Run the Flask application for production
-FROM base AS production
-# TODO: Use a production ready WSGI
-CMD ["flask", "run"]
-
-# Run the Flask application for development
-FROM base AS development
-CMD ["flask", "run", "--debug"]
+# Define the command to run the application
+CMD ["node", "public/app.js"]

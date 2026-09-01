@@ -1,0 +1,30 @@
+# UAT Environment Values
+# Overrides for the UAT environment
+
+replicaCount: 1
+
+image:
+  pullPolicy: Always
+  containerPort: 8000
+
+ingress:
+  enabled: true
+  className: "modsec"
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: laa-cla-operator-app-laa-cla-operator-app-uat-green
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+  hosts:
+    - host: laa-cla-operator-app-uat.cloud-platform.service.justice.gov.uk
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  whitelist:
+    enabled: true
+
+resources: {}
+
+# Environment variables can be added here
+envVars:
+  BACKEND_BASE_URI:
+      # Using service name instead of external domain name
+      value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"

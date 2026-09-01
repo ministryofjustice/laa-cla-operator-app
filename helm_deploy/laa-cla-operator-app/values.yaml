@@ -12,7 +12,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
   # This sets the container port that the application listens on
-  containerPort: 8000
+  containerPort: 3000
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -135,14 +135,35 @@ tolerations: []
 
 affinity: {}
 
-# Environment variables to be passed to the container
-envVars: {}
-# Example:
-# envVars:
-#   DATABASE_URL:
-#     value: "postgresql://..."
-#   SECRET_KEY:
-#     valueFrom:
-#       secretKeyRef:
-#         name: app-secrets
-#         key: secret-key
+# Environment variables shared by all environments.
+# Per-environment files override only what differs, such as BACKEND_BASE_URI and NODE_ENV.
+envVars:
+  CONTACT_EMAIL:
+    value: "CONTACT_EMAIL"
+  CONTACT_PHONE:
+    value: "CONTACT_PHONE"
+  DEPARTMENT_NAME:
+    value: "Legal Aid Agency"
+  DEPARTMENT_URL:
+    value: "DEPARTMENT_URL"
+  RATELIMIT_HEADERS_ENABLED:
+    value: "True"
+  RATELIMIT_STORAGE_URI:
+    value: "DATA_BASE_URL"
+  RATE_LIMIT_MAX:
+    value: "100"
+  RATE_WINDOW_MS:
+    value: "900000"
+  SERVICE_NAME:
+    value: "Assess and refer for civil legal advice"
+  SERVICE_PHASE:
+    value: "Beta"
+  SERVICE_URL:
+    value: "SERVICE_URL"
+  SESSION_NAME:
+    value: "sessionId"
+  SESSION_SECRET:
+    valueFrom:
+      secretKeyRef:
+        name: laa-cla-operator-app-secrets
+        key: SESSION_SECRET
