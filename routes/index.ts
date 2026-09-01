@@ -31,6 +31,19 @@ router.get('/users', async function (req: Request, res: Response, next: NextFunc
 	}
 });
 
+//login page 
+router.route('/login')
+    .get(function (req: Request, res: Response) {
+        // GET /search
+        res.redirect('/sign-in');
+    })
+    .post(function (req: Request, res: Response) {
+        // POST /search
+        // Handle submitted search
+        res.json({ message: 'Search submitted' });
+    });
+
+
 // GET single user by ID (demonstrates BaseApiService pattern)
 router.get('/users/:id', async function (req: Request, res: Response, next: NextFunction) {
 	try {
