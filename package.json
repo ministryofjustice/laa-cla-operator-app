@@ -8,6 +8,24 @@
   "imports": {
     "#*": "./*"
   },
+  "resolutions": {
+    "brace-expansion": "2.1.4",
+    "minimatch": "9.0.9",
+    "path-to-regexp@npm:^8.0.0": "8.4.2",
+    "pacote": "21.5.1",
+    "picomatch": "4.0.7",
+    "sigstore": "4.1.1",
+    "tar": "7.5.22",
+    "ws": "8.21.3"
+  },
+  "overrides": {
+    "@ministryofjustice/hmpps-forge": {
+      "ws": "8.21.3"
+    },
+    "router": {
+      "path-to-regexp": "8.4.2"
+    }
+  },
   "scripts": {
     "start": "node public/app.js",
     "clean": "rimraf public",
