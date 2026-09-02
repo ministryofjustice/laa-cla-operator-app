@@ -3,8 +3,8 @@ import type { Request, Response, NextFunction } from 'express';
 import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { exampleApiService } from '#src/services/exampleApiService.js';
-import { callbackAction, loginAction } from '#src/controllers/silasController.js';
-import { requireAuth } from '#src/middleware/apiMiddleware.js';
+import { callbackAction, loginAction, logOut } from '#src/controllers/silasController.js';
+
 
 
 // Create a new router
@@ -23,14 +23,15 @@ router.get('/login', loginAction);
 // 2. Handle Callback
 router.get('/redirect', callbackAction);
 
+//log out the applicationn 
+router.get("/logout",logOut )
 
+
+//testing the endpoint can make sucessfull calls
 async function getCases(accessToken: string): Promise<unknown> {
 	
 	
 	const CASES_API_URL = `http://localhost:8010/call_centre/api/v1/case/?dashboard=1`;
-
-	
-
 	const response = await fetch(CASES_API_URL, {
 		method: 'GET',
 		headers: {
