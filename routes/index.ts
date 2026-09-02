@@ -36,7 +36,7 @@ router.get('/login', async (req, res) => {
     };
 	const msalClient = new ConfidentialClientApplication(msalConfig);
     // Get the URL to sign the user in and redirect them
-    const response = await msalClient.getAuthCodeUrl(authCodeUrlParameters);
+	const response = await msalClient.getAuthCodeUrl(authCodeUrlParameters);
     res.redirect(response);
 });
 
@@ -61,12 +61,79 @@ router.get('/redirect', async (req, res) => {
         // Success! We have a token for the user.
         // response.accessToken contains the 'scp' claim.
         console.log("User Token Acquired!");
-        res.send("Login Successful. Token: " + response.accessToken);
+		req.session.regenerate((regenErr) => {
+		if (regenErr !== null && regenErr !== undefined) {
+			console.error("Session regeneration failed: ", regenErr instanceof Error ? regenErr.message : String(regenErr));
+			return;
+		}
+
+		if (!response || !response.accessToken || !response.idToken || !response.account || !response.account.username || !response.account.name || !response.account.homeAccountId) {
+			console.error("Entra callback - Invalid response from Entra:", response);
+			return res.status(500).send("Invalid response from Entra");
+		}
+
+		// console.log("Response from Entra:", response);
+
+		req.session.silasAuth = {
+			accessToken: response.accessToken,
+			idToken: response.idToken,
+		};
+
+		req.session.user = {
+			email: response.account.username,
+			name: response.account.name,
+			oid: response.account.homeAccountId,
+		};
+
+		console.log("SILAS AUTH:", req.session.silasAuth);
+		req.session.save((saveErr) => {
+			if (saveErr !== null && saveErr !== undefined) {
+				console.error("Session save failed: ", saveErr instanceof Error ? saveErr.message : String(saveErr));
+				return;
+			}
+			return res.redirect('/receive-call');
+		});
+	});
     } catch (error) {
         console.error(error);
         res.status(500).send(error);
     }
 });
+
+router.get('/cases', async (req, res) => {
+	if (!req.session.silasAuth) {
+		console.error("No session data found for user");
+		return res.status(401).send("Unauthorized");
+	}
+
+	const { accessToken, idToken } = req.session.silasAuth;
+
+    if (!accessToken || !idToken) {
+        console.error("Missing access token or ID token in session");
+        return res.status(401).send("Unauthorized");
+    }	
+
+	console.log("Silas Auth Session Data:", req.session.silasAuth.idToken);
+
+	if (!req.session.silasAuth?.accessToken || !req.session.silasAuth?.idToken) {
+		console.error("Missing access token or ID token in session");
+		return res.status(401).send("Unauthorized");
+	}
+
+	console.log("The cases endpoint was called with access token:");
+});
+
+// router.get('/test', (req, res) => {
+// 	console.log("Session Data:", req.session);
+// 	// if (req.session.silasAuth) {
+// 	// 	res.json({
+// 	// 		accessToken: req.session.silasAuth.accessToken,
+// 	// 		idToken: req.session.silasAuth.idToken,
+// 	// 	});
+// 	// } else {
+// 	// 	res.status(404).send('No session data found');
+// 	// }
+// });
 
 
 /* GET home page. */

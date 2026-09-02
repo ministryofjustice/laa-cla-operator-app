@@ -28,7 +28,7 @@ export class ExampleApiService extends BaseApiService {
   constructor() {
     const EXAMPLE_TIMEOUT_MS = 10000;
     super({
-      baseUrl: process.env.EXAMPLE_API_URL ?? 'https://jsonplaceholder.typicode.com',
+      baseUrl: process.env.BACKEND_URL ?? 'https://jsonplaceholder.typicode.com',
       timeout: EXAMPLE_TIMEOUT_MS,
       apiPrefix: '', // JSONPlaceholder doesn't use a prefix
       enableLogging: true
@@ -76,6 +76,21 @@ export class ExampleApiService extends BaseApiService {
   ): Promise<AxiosResponse> {
     return await this.post(axiosMiddleware, '/users', userData);
   }
+
+  // This is the Get Cases endpoint for Search user data
+  // TODO: we need to add the accessToken to header
+  async getAllCases(
+      axiosMiddleware: AxiosInstanceWrapper,
+      searchParam: string | number,
+    ): Promise<AxiosResponse> {
+      return this.get(
+        axiosMiddleware,
+        `/call_centre/api/v1/case/${searchParam}`,
+        {
+            Authorization: `Bearer ${process.env.BACKEND_API_KEY}`,
+          },
+      );
+    }
 }
 
 // Export singleton instance
