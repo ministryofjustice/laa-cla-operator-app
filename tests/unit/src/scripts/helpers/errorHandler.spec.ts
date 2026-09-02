@@ -65,6 +65,47 @@ describe('errorHandler', () => {
       const result = extractErrorMessage(null);
       assert.strictEqual(result, 'An unexpected error occurred. Please try again.');
     });
+
+    it('returns fallback message for a standard Error instance', () => {
+      const result = extractErrorMessage(new Error('boom'));
+      assert.strictEqual(result, 'An unexpected error occurred. Please try again.');
+    });
+
+    it('returns null response message when data.message is not a string', () => {
+      const axiosError = { response: { status: 404, data: { message: 123 } } };
+      const result = extractErrorMessage(axiosError);
+      assert.strictEqual(result, 'The requested information could not be found.');
+    });
+
+    it('maps every known HTTP status code to its user-friendly message', () => {
+      const statusMessages: Array<[number, string]> = [
+        [400, 'Invalid request. Please check your input and try again.'],
+        [401, 'Authentication failed. Please log in again.'],
+        [408, 'Request timed out. Please try again.'],
+        [429, 'Too many requests. Please wait a moment and try again.'],
+        [502, 'Service temporarily unavailable. Please try again later.'],
+        [503, 'Service unavailable. Please try again later.'],
+        [504, 'Request timed out. Please try again later.'],
+        [418, 'Service error (418). Please try again later.'],
+      ];
+
+      for (const [status, message] of statusMessages) {
+        assert.strictEqual(extractErrorMessage({ response: { status } }), message);
+      }
+    });
+
+    it('maps every known network error code to its user-friendly message', () => {
+      const codeMessages: Array<[string, string]> = [
+        ['ENOTFOUND', 'Service not found. Please check your connection and try again.'],
+        ['ETIMEDOUT', 'Request timed out. Please try again.'],
+        ['ECONNRESET', 'Connection was reset. Please try again.'],
+        ['EUNKNOWN', 'Network error. Please check your connection and try again.'],
+      ];
+
+      for (const [code, message] of codeMessages) {
+        assert.strictEqual(extractErrorMessage({ code }), message);
+      }
+    });
   });
 
   describe('status code helpers', () => {
@@ -86,6 +127,12 @@ describe('errorHandler', () => {
     it('isServerError returns true for 500', () => {
       const error = { response: { status: 500 } };
       assert.strictEqual(isServerError(error), true);
+    });
+
+    it('returns false for non-matching or non-axios errors', () => {
+      assert.strictEqual(isAuthError({ response: { status: 404 } }), false);
+      assert.strictEqual(isServerError({ response: { status: 404 } }), false);
+      assert.strictEqual(isServerError('not an axios error'), false);
     });
   });
 

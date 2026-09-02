@@ -26,13 +26,21 @@
     "utils/rateLimitSetUp.ts",
     "utils/index.ts",
     "utils/axiosSetup.ts",
-    "utils/nunjucksSetup.ts" 
+    "utils/nunjucksSetup.ts",
+    "src/app.ts",
+    "routes/index.ts",
+    "src/controllers/**",
+    "src/journeys/**",
+    "src/middleware/apiMiddleware.ts",
+    "src/services/exampleApiService.ts",
+    "src/middlewares/personSchema.ts",
+    "utils/displayAsciiBanner.ts"
   ],
   "all": true,
   "sourceMap": true,
   "check-coverage": true,
-  "lines": 20,
-  "functions": 60,
-  "branches": 70,
-  "statements": 20
+  "lines": 100,
+  "functions": 100,
+  "branches": 100,
+  "statements": 100
 }
