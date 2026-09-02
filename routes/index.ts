@@ -4,11 +4,48 @@ import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { exampleApiService } from '#src/services/exampleApiService.js';
 
+import { ConfidentialClientApplication } from '@azure/msal-node';
+
+/**
+ * Returns a lazily initialized MSAL confidential client instance.
+ * @param {string} clientId - The client identifier for authentication.
+ * @returns {ConfidentialClientApplication} Configured MSAL client.
+ */
+function getMsalClient(clientId: string): ConfidentialClientApplication {
+  return new ConfidentialClientApplication({
+    auth: {
+      clientId: clientId,
+      authority: '',
+      clientSecret: '',
+    }
+  });
+}
+
+function getMsalAppClient(): ConfidentialClientApplication {
+  return getMsalClient("TENANT_ID");
+}
+
+
+async function getSilasLoginUrl(): Promise<string> {
+  return await getMsalAppClient().getAuthCodeUrl({
+    scopes: [],
+    redirectUri: "http://localhost:3000/redirect",
+  });
+}
+
+
 // Create a new router
 const router = express.Router();
 const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;
 const FIRST_ITEM_INDEX = 0;
+
+// 1. Trigger Login
+router.get('/login', async (req, res) => {
+	const loginUrl = '/' //await getSilasLoginUrl();
+    res.redirect(loginUrl);
+});
+
 
 /* GET home page. */
 router.get('/', function (req: Request, res: Response): void {
