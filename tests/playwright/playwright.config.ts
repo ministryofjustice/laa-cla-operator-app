@@ -12,7 +12,7 @@ export const MSW_CONFIG = {
  * Test configuration values
  */
 export const TEST_CONFIG = {
-  BASE_URL: process.env.BASE_URL || 'http://localhost:3000'
+  BASE_URL: process.env.BASE_URL || 'http://localhost:3001'
 };
 
 /**
@@ -36,8 +36,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'yarn tsx scripts/test-server-with-msw.js',
-    url: 'http://127.0.0.1:3000',
+    command: 'yarn exec tsx scripts/test-server-with-msw.js',
+    url: 'http://127.0.0.1:3001',
     reuseExistingServer: process.env.CI !== 'true',
     stdout: 'pipe',
     stderr: 'pipe',
@@ -45,10 +45,9 @@ export default defineConfig({
     cwd: '../..', // Run from project root since config is now in tests/playwright/ subdirectory
     env: {
       NODE_ENV: 'test',
-      PORT: '3000',
+      PORT: '3001',
       SESSION_SECRET: 'test-secret-key-for-playwright-tests',
-      SESSION_NAME: 'test-session',
-      SERVICE_NAME: 'Test Express Template'
+      SESSION_NAME: 'test-session'
     }
   },
 });

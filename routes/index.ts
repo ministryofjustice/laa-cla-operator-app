@@ -15,6 +15,10 @@ router.get('/', function (req: Request, res: Response): void {
 	res.redirect('/receive-call');
 });
 
+router.get('/privacy', function (req: Request, res: Response): void {
+	res.render('main/privacy.njk');
+});
+
 // GET users from external API using BaseApiService pattern
 router.get('/users', async function (req: Request, res: Response, next: NextFunction) {
 	try {
