@@ -11,7 +11,8 @@ jobs:
   test:
     name: Test
     uses: ./.github/workflows/test.yml
-    permissions: {}
+    permissions:
+      contents: read
 
   lint:
     name: Lint

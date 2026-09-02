@@ -34,7 +34,13 @@
     "src/middleware/apiMiddleware.ts",
     "src/services/exampleApiService.ts",
     "src/middlewares/personSchema.ts",
-    "utils/displayAsciiBanner.ts"
+    "utils/displayAsciiBanner.ts",
+    "src/services/baseApiService.ts",
+    "src/scripts/helpers/i18nLoader.ts",
+    "src/helpers/ValidationErrorHelpers.ts",
+    "src/helpers/dataTransformers.ts",
+    "src/scripts/helpers/dataTransformers.ts",
+    "src/scripts/helpers/errorHandler.ts"
   ],
   "all": true,
   "sourceMap": true,
