@@ -12,7 +12,7 @@ import { handlers } from '../tests/playwright/factories/handlers/index.js';
 const mswServer = setupServer(...handlers);
 
 // Constants for configuration
-const TEST_PORT = '3000';
+const TEST_PORT = process.env.PORT ?? '3001';
 const SUCCESS_EXIT_CODE = 0;
 const ERROR_EXIT_CODE = 1;
 
@@ -36,7 +36,6 @@ process.env.NODE_ENV = 'test';
 process.env.PORT = TEST_PORT;
 process.env.SESSION_SECRET ??= 'test-secret-key';
 process.env.SESSION_NAME ??= 'test-session';
-process.env.SERVICE_NAME ??= 'Test Express Template';
 
 // Now import and start the actual Express application
 const appModulePath = '../public/app.js';
