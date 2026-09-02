@@ -5,7 +5,8 @@ on: workflow_call
 permissions: {}
 
 env:
-  SECRET_KEY: "TEST_KEY"
+  SESSION_SECRET: "TEST_SESSION_SECRET"
+  SESSION_NAME: "TEST_SESSION_NAME"
 
 jobs:
   unit_test:
