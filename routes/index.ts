@@ -5,33 +5,20 @@ import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { exampleApiService } from '#src/services/exampleApiService.js';
 
 import { ConfidentialClientApplication } from '@azure/msal-node';
+import config from '#config.js'
 
-/**
- * Returns a lazily initialized MSAL confidential client instance.
- * @param {string} clientId - The client identifier for authentication.
- * @returns {ConfidentialClientApplication} Configured MSAL client.
- */
-function getMsalClient(clientId: string): ConfidentialClientApplication {
-  return new ConfidentialClientApplication({
+
+
+const msalConfig = {
     auth: {
-      clientId: clientId,
-      authority: '',
-      clientSecret: '',
+        clientId: config.silas.clientId,
+        authority: config.silas.authority,
+        clientSecret: config.silas.clientSecret, 
     }
-  });
-}
+};
+const SCOPES = config.silas.scopes
+const REDIRECT_URI = config.silas.redirectUri
 
-function getMsalAppClient(): ConfidentialClientApplication {
-  return getMsalClient("TENANT_ID");
-}
-
-
-async function getSilasLoginUrl(): Promise<string> {
-  return await getMsalAppClient().getAuthCodeUrl({
-    scopes: [],
-    redirectUri: "http://localhost:3000/redirect",
-  });
-}
 
 
 // Create a new router
@@ -40,10 +27,45 @@ const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;
 const FIRST_ITEM_INDEX = 0;
 
+
 // 1. Trigger Login
 router.get('/login', async (req, res) => {
-	const loginUrl = '/' //await getSilasLoginUrl();
-    res.redirect(loginUrl);
+    const authCodeUrlParameters = {
+        scopes: SCOPES,
+        redirectUri: REDIRECT_URI,
+    };
+	const msalClient = new ConfidentialClientApplication(msalConfig);
+    // Get the URL to sign the user in and redirect them
+    const response = await msalClient.getAuthCodeUrl(authCodeUrlParameters);
+    res.redirect(response);
+});
+
+// 2. Handle Callback
+router.get('/redirect', async (req, res) => {
+	const code = typeof req.query.code == "string" ? req.query.code : ""
+	console.log("Recieved code", code)
+	if (!code) {
+		console.error("Entra callback - Invalid code")
+		return res.status(500).send("")
+	}
+    const tokenRequest = {
+        code: code, // The Authorization Code from Entra
+        scopes: SCOPES,
+        redirectUri: REDIRECT_URI,
+    };
+
+    try {
+		const msalClient = new ConfidentialClientApplication(msalConfig)
+        const response = await msalClient.acquireTokenByCode(tokenRequest);
+
+        // Success! We have a token for the user.
+        // response.accessToken contains the 'scp' claim.
+        console.log("User Token Acquired!");
+        res.send("Login Successful. Token: " + response.accessToken);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send(error);
+    }
 });
 
 
