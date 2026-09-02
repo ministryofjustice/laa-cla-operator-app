@@ -829,14 +829,14 @@ __metadata:
   linkType: hard
 
 "@ministryofjustice/hmpps-forge@npm:^0.4.1":
-  version: 0.4.1
-  resolution: "@ministryofjustice/hmpps-forge@npm:0.4.1"
+  version: 0.4.2
+  resolution: "@ministryofjustice/hmpps-forge@npm:0.4.2"
   dependencies:
     express: "npm:^4.21.0 || ^5.0.0"
     nunjucks: "npm:^3.2.4"
     ws: "npm:^8.18.0"
-    zod: "npm:^4.4.3"
-  checksum: 10c0/fcb835dc45f49b3ef46456f1b66eac43e6604d07927b958cc310a5941989e2b0a1639288995b86e22b2f4238d5cc636a96f489d4550585b9a81374c5b71215ee
+    zod: "npm:^4.5.0"
+  checksum: 10c0/5a4b1a44cc40f9b8bd429803e173e26c446c3e64966f2a83b60b5bd765710d9da7619bd000cb26f57358e956cab8ebfa0f96cd10fbc070b64108a18a0618e080
   languageName: node
   linkType: hard
 
@@ -4926,7 +4926,6 @@ __metadata:
     tsx: "npm:^4.20.6"
     typescript: "npm:^5.9.3"
     validator: "npm:^13.15.22"
-    yarn: "npm:^1.22.22"
   languageName: unknown
   linkType: soft
 
@@ -5891,17 +5890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.14.0, qs@npm:^6.15.2":
-  version: 6.15.3
-  resolution: "qs@npm:6.15.3"
-  dependencies:
-    es-define-property: "npm:^1.0.1"
-    side-channel: "npm:^1.1.1"
-  checksum: 10c0/8f3f6e45ece255347d57696628401cde29e9ec649fff698b53bd3150dea7cefdf33036e1bc1826b9f110bfa7cb0ec4ab9f5297eca628ce216c55af82c304e08e
-  languageName: node
-  linkType: hard
-
-"qs@npm:^6.14.1":
+"qs@npm:^6.14.0, qs@npm:^6.14.1, qs@npm:^6.15.2":
   version: 6.16.0
   resolution: "qs@npm:6.16.0"
   dependencies:
@@ -7717,16 +7706,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yarn@npm:^1.22.22":
-  version: 1.22.22
-  resolution: "yarn@npm:1.22.22"
-  bin:
-    yarn: bin/yarn.js
-    yarnpkg: bin/yarn.js
-  checksum: 10c0/8c77198c93d7542e7f4e131c63b66de357b7076ecfbcfe709ec0d674115c2dd9edaa45196e5510e6e9366d368707a802579e3402071002e1c9d9a99d491478de
-  languageName: node
-  linkType: hard
-
 "yn@npm:3.1.1":
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
@@ -7741,9 +7720,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^4.4.3":
-  version: 4.4.3
-  resolution: "zod@npm:4.4.3"
-  checksum: 10c0/7ea31b558e88f9faf44f31dd185e2e1cbf51fed3081787fb96cc2534749b50c0acfc6da7f0922a7353ed092dd358c7d50c28ea96c94d04af64191bd33152eca3
+"zod@npm:^4.5.0":
+  version: 4.5.4
+  resolution: "zod@npm:4.5.4"
+  checksum: 10c0/511a2a4d1a6f875dfdd70a1586989a8b14ef126776cd6218a2c760b9f65f14ef389ec20d92ee1aa4fcb4566d4ff3fa012956044f9dc503510d82e4c756a8ba92
   languageName: node
   linkType: hard
