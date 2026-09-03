@@ -8,6 +8,7 @@ import { ConfidentialClientApplication } from '@azure/msal-node';
 import config from '#config.js'
 import type { AccessTokenClaims } from '#types/auth-types.js';
 import { request } from 'node:http';
+import { loginAction } from '#src/controllers/silasController.js';
 
 
 function decodeToken(token:string): AccessTokenClaims {
@@ -97,20 +98,7 @@ const FIRST_ITEM_INDEX = 0;
 
 
 // 1. Trigger Login
-router.get('/login', async (req, res) => {
-	const nonce = randomBytes(32).toString("base64url")
-    const authCodeUrlParameters = {
-        scopes: SCOPES,
-        redirectUri: REDIRECT_URI,
-		state: nonce,
-    };
-	req.session.auth_nonce = nonce
-	req.session.save()
-	const msalClient = new ConfidentialClientApplication(msalConfig);
-    // Get the URL to sign the user in and redirect them
-	const response = await msalClient.getAuthCodeUrl(authCodeUrlParameters);
-    res.redirect(response);
-});
+router.get('/login', loginAction);
 
 // 2. Handle Callback
 router.get('/redirect', async (req, res) => {
