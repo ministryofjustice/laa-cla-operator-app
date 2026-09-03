@@ -19,6 +19,30 @@ router.get('/login', loginAction);
 // 2. Handle Callback
 router.get('/redirect', callbackAction);
 
+
+async function getCases(accessToken: string): Promise<unknown> {
+	
+	
+	const CASES_API_URL = `http://localhost:8010/call_centre/api/v1/case/?dashboard=1`;
+
+	
+
+	const response = await fetch(CASES_API_URL, {
+		method: 'GET',
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: 'application/json',
+		},
+	});
+
+	if (!response.ok) {
+		const body = await response.text().catch(() => '');
+		throw new Error(`Cases API request failed with status ${response.status}: ${body}`);
+	}
+
+	return response.json();
+}
+
 router.get('/cases', async (req, res) => {
 	if (!req.session.silasAuth) {
 		console.error("No session data found for user");
@@ -27,34 +51,20 @@ router.get('/cases', async (req, res) => {
 
 	const { accessToken, idToken } = req.session.silasAuth;
 
-    if (!accessToken || !idToken) {
-        console.error("Missing access token or ID token in session");
-        return res.status(401).send("Unauthorized");
-    }	
-
-	console.log("Silas Auth Session Data:", req.session.silasAuth.idToken);
-
-	if (!req.session.silasAuth?.accessToken || !req.session.silasAuth?.idToken) {
+	if (!accessToken || !idToken) {
 		console.error("Missing access token or ID token in session");
 		return res.status(401).send("Unauthorized");
 	}
-	//making an call to the api
 
-
-	console.log("The cases endpoint was called with access token:");
+	try {
+		const cases = await getCases(accessToken);
+		return res.status(SUCCESSFUL_REQUEST).json(cases);
+	} catch (error) {
+		console.error("Failed to fetch cases:", error instanceof Error ? error.message : String(error));
+		return res.status(UNSUCCESSFUL_REQUEST).send("Failed to fetch cases");
+	}
 });
 
-// router.get('/test', (req, res) => {
-// 	console.log("Session Data:", req.session);
-// 	// if (req.session.silasAuth) {
-// 	// 	res.json({
-// 	// 		accessToken: req.session.silasAuth.accessToken,
-// 	// 		idToken: req.session.silasAuth.idToken,
-// 	// 	});
-// 	// } else {
-// 	// 	res.status(404).send('No session data found');
-// 	// }
-// });
 
 
 /* GET home page. */
