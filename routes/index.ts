@@ -4,10 +4,77 @@ import type { Request, Response, NextFunction } from 'express';
 import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { exampleApiService } from '#src/services/exampleApiService.js';
-
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import config from '#config.js'
+import type { AccessTokenClaims } from '#types/auth-types.js';
+import { request } from 'node:http';
 
+
+function decodeToken(token:string): AccessTokenClaims {
+	//decode the JWT Token 
+	const parts = token.split('.')
+
+	if (parts.length !== 3) {
+		throw new Error('Silas Token failed to decode, not 3 parts')
+	}
+
+	try {
+    const payloadBuffer = Buffer.from(parts[1], 'base64url');
+    const payload = JSON.parse(payloadBuffer.toString('utf8')) as AccessTokenClaims;
+    return payload;
+  } catch (error) {
+    throw new Error(`Failed to decode SILAS access token claims: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+
+}
+
+const OIDC_SCOPES = new Set(['openid', 'profile', 'offline_access']);
+
+function normalizeScope(scope: string): string {
+  if (!scope.includes('/')) {
+    return scope;
+  }
+  const segments = scope.split('/').filter(Boolean);
+  return segments[segments.length - 1] ?? scope;
+}
+
+function validateAccessTokenClaims(claims: AccessTokenClaims): void {
+
+	const expectedIss =  `https://login.microsoftonline.com/${config.silas.tenantId}/v2.0`;
+  	if (claims.iss !== expectedIss) {
+    	throw new Error(`Unexpected SILAS token issuer. Expected '${expectedIss}', got '${claims.iss ?? 'undefined'}'`);
+  	}
+
+  if (claims.aud !== config.silas.expectedAudience) {
+    throw new Error(`Unexpected SILAS token audience. Expected '${config.silas.expectedAudience}', got '${claims.aud ?? 'undefined'}'`);
+  }
+
+  const configuredApiScopes = config.silas.scopes
+    .filter((scope) => !OIDC_SCOPES.has(scope.toLowerCase()))
+    .map(normalizeScope);
+
+  if (configuredApiScopes.length === 0) {
+    return;
+  }
+
+    if (configuredApiScopes.length === 0) {
+    return;
+  }
+
+  const tokenScopeValues = typeof claims.scp === 'string'
+    ? claims.scp.split(' ').map((scope) => scope.trim()).filter(Boolean)
+    : [];
+
+  const hasConfiguredScope = configuredApiScopes.some((scope) => tokenScopeValues.includes(scope));
+
+  if (!hasConfiguredScope) {
+    throw new Error(
+      `SILAS token missing expected delegated scope. Expected one of: ${configuredApiScopes.join(', ')}`
+    );
+  }
+
+}
 
 
 const msalConfig = {
@@ -83,11 +150,17 @@ router.get('/redirect', async (req, res) => {
 			return res.status(500).send("Invalid response from Entra");
 		}
 
-		// console.log("Response from Entra:", response);
+		const payload = decodeToken(response.accessToken)
+		validateAccessTokenClaims(payload);
 
+		console.log("Response from Entra:", response);
+		
 		req.session.silasAuth = {
 			accessToken: response.accessToken,
 			idToken: response.idToken,
+			expiresAt: response.expiresOn?.getTime() ?? Date.now() + (30 * 60 * 1000),
+			email: payload.USER_EMAIL,
+			name: payload.name
 		};
 
 		req.session.user = {
@@ -97,6 +170,8 @@ router.get('/redirect', async (req, res) => {
 		};
 
 		console.log("SILAS AUTH:", req.session.silasAuth);
+
+		// decode the tome
 		req.session.save((saveErr) => {
 			if (saveErr !== null && saveErr !== undefined) {
 				console.error("Session save failed: ", saveErr instanceof Error ? saveErr.message : String(saveErr));
@@ -106,6 +181,7 @@ router.get('/redirect', async (req, res) => {
 		});
 	});
     } catch (error) {
+		console.log("This has run")
         console.error(error);
         res.status(500).send(error);
     }
@@ -130,6 +206,8 @@ router.get('/cases', async (req, res) => {
 		console.error("Missing access token or ID token in session");
 		return res.status(401).send("Unauthorized");
 	}
+	//making an call to the api
+
 
 	console.log("The cases endpoint was called with access token:");
 });

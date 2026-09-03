@@ -6,6 +6,8 @@ export interface SilasSessionAuth {
   oboExpiresAt?: number;
   refreshToken?: string;
   scopes?: string[];
+  email: string;
+  name:string;
 }
 
 export interface SilasUserInfo {
@@ -14,4 +16,15 @@ export interface SilasUserInfo {
   oid?: string;
   roles?: string[];
   providerId?: number;
+}
+
+export interface AccessTokenClaims {
+  iss?: string;
+  aud?: string;
+  scp?: string;
+  name:string,
+  USER_EMAIL:string,
+  preferred_username?: string;
+  oid?: string;
+  [key: string]: unknown;
 }
