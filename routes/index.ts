@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { validatePerson } from '#src/middlewares/personSchema.js';
@@ -30,10 +31,14 @@ const FIRST_ITEM_INDEX = 0;
 
 // 1. Trigger Login
 router.get('/login', async (req, res) => {
+	const nonce = randomBytes(32).toString("base64url")
     const authCodeUrlParameters = {
         scopes: SCOPES,
         redirectUri: REDIRECT_URI,
+		state: nonce,
     };
+	req.session.auth_nonce = nonce
+	req.session.save()
 	const msalClient = new ConfidentialClientApplication(msalConfig);
     // Get the URL to sign the user in and redirect them
 	const response = await msalClient.getAuthCodeUrl(authCodeUrlParameters);
@@ -43,9 +48,15 @@ router.get('/login', async (req, res) => {
 // 2. Handle Callback
 router.get('/redirect', async (req, res) => {
 	const code = typeof req.query.code == "string" ? req.query.code : ""
+	const state = typeof req.query.state == "string" ? req.query.state : ""
 	console.log("Recieved code", code)
+	console.log("Recieved state", state)
 	if (!code) {
 		console.error("Entra callback - Invalid code")
+		return res.status(500).send("")
+	}
+	if (!state) {
+		console.error("Entra callback - Invalid state")
 		return res.status(500).send("")
 	}
     const tokenRequest = {
