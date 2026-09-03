@@ -12,6 +12,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
 import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
 import { devLog, devError } from '#src/scripts/helpers/index.js';
+import { SilasSessionAuth } from '#types/auth-types.js';
 
 const DEFAULT_TIMEOUT = 5000;
 const HTTP_UNAUTHORIZED = 401;
@@ -159,8 +160,51 @@ export function createApiMiddleware(config: ApiMiddlewareConfig = {}) {
   };
 }
 
+
+/**
+ * Authentication middleware to check if user is logged in
+ * Redirects to Entra login page if no valid SiLAS session token is found or the token is expired
+ * @param {Request} req Express request object
+ * @param {Response} res Express response object
+ * @param {NextFunction} next Express next function
+ */
+export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  if (!hasValidSilasToken(req.session.silasAuth)) {
+    // User is not authenticated - redirect to Entra login
+    res.redirect('/sign-in');
+    return;
+  }
+  // User is authenticated - proceed to route handler
+  next();
+}
+
+export function hasValidSilasToken(silasAuth: SilasSessionAuth | null | undefined): boolean {
+  if(!silasAuth) {
+    return false
+  }
+  return silasAuth.expiresAt > Date.now();
+}
+
 /**
  * Default API middleware with standard configuration
  * Compatible with existing template usage
  */
 export const axiosMiddleware = createApiMiddleware();
+
+/**
+ * Middleware to set authentication status in response locals
+ * This makes isAuthenticated available to all templates
+ *
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ */
+export const setAuthStatus = (req: Request, res: Response, next: NextFunction): void => {
+  const silasAuth = req.session.silasAuth;
+  console.log("Silas auth said ", silasAuth)
+  res.locals.isAuthenticated = silasAuth !== undefined && silasAuth.expiresAt > Date.now();
+  console.log("res.locals.isAuthenticated", res.locals.isAuthenticated)
+  res.locals.userEmail = req.session.user?.email ?? null;
+  res.locals.userName = req.session.user?.name ?? null;
+  next();
+};

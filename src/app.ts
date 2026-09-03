@@ -15,6 +15,7 @@ import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components
 import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
 import journeyPackages from './journeys/index.js';
 import { buildSessionConfig } from '#utils/session.js';
+import { setAuthStatus } from './middleware/apiMiddleware.js';
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -61,6 +62,8 @@ const createApp = async (): Promise<express.Application> => {
 	// Set up cookie security for sessions
 	app.set('trust proxy', TRUST_FIRST_PROXY);
 	app.use(session(await buildSessionConfig(config)));
+
+	app.use(setAuthStatus);
 
 	// Set up Cross-Site Request Forgery (CSRF) protection
 	setupCsrf(app);

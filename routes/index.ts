@@ -4,6 +4,7 @@ import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { exampleApiService } from '#src/services/exampleApiService.js';
 import { callbackAction, loginAction } from '#src/controllers/silasController.js';
+import { requireAuth } from '#src/middleware/apiMiddleware.js';
 
 
 // Create a new router
@@ -14,6 +15,9 @@ const FIRST_ITEM_INDEX = 0;
 
 
 // 1. Trigger Login
+router.get('/sign-in', async (req, res) => {
+	return res.render("main/auth/sign-in.njk")
+});
 router.get('/login', loginAction);
 
 // 2. Handle Callback
@@ -69,7 +73,10 @@ router.get('/cases', async (req, res) => {
 
 /* GET home page. */
 router.get('/', function (req: Request, res: Response): void {
-	res.redirect('/receive-call');
+	if (!req.session.silasAuth) {
+		return res.redirect("/sign-in")
+	}
+	return res.redirect('/receive-call');
 });
 
 router.get('/privacy', function (req: Request, res: Response): void {

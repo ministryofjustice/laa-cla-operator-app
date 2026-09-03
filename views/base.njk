@@ -21,22 +21,8 @@
 {% endblock %}
 
 {% block header %}
-  {{ mojHeader({
-    organisationLabel: {
-      text: config.DEPARTMENT_NAME,
-      href: config.DEPARTMENT_URL
-    },
-    navigation: {
-      label: "Account navigation",
-      items: [
-        {
-          text: "Sign out",
-          href: "#"
-        }
-      ]
-    }
-  }) }}
 
+  {% include "header.njk" %}
   {{ govukServiceNavigation({
     serviceName: config.SERVICE_NAME,
     serviceUrl: "/receive-call",
