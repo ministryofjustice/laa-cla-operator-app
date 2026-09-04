@@ -1,11 +1,13 @@
 # Use the official Node.js image as the base image
-FROM node:24.10.0-alpine
+FROM node:26.8.1-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Enable Corepack and prepare Yarn version
-RUN corepack enable && corepack prepare yarn@4.9.2 --activate
+# Install Corepack, then prepare the required Yarn version
+RUN npm install --global corepack && \
+    corepack enable && \
+    corepack prepare yarn@4.9.2 --activate
 
 # Upgrade npm from the version bundled with the Node image
 RUN npm install --global npm@11.19.1

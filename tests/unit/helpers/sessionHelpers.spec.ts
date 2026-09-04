@@ -18,6 +18,7 @@ import {
   storeSessionData,
   getSessionData,
   clearSessionData,
+  clearAllOriginalFormData,
   storeOriginalFormData
 } from '../../../src/scripts/helpers/sessionHelpers.js';
 
@@ -67,6 +68,30 @@ describe('Session Helpers', () => {
       clearSessionData(req, 'testNamespace');
       
       expect(req.session.testNamespace).to.be.undefined;
+    });
+  });
+
+  describe('clearAllOriginalFormData()', () => {
+    it('clears every session key containing "Original"', () => {
+      const req = createMockRequest({
+        thirdPartyOriginal: { name: 'John' },
+        addressOriginal: { line1: '123 Test Street' },
+        unrelatedKey: { keep: 'me' }
+      });
+
+      clearAllOriginalFormData(req);
+
+      expect(req.session.thirdPartyOriginal).to.be.undefined;
+      expect(req.session.addressOriginal).to.be.undefined;
+      expect(req.session.unrelatedKey).to.deep.equal({ keep: 'me' });
+    });
+
+    it('does nothing when there are no matching keys', () => {
+      const req = createMockRequest({ unrelatedKey: 'value' });
+
+      clearAllOriginalFormData(req);
+
+      expect(req.session.unrelatedKey).to.equal('value');
     });
   });
 
