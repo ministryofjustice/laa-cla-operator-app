@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { formatDate } from '#src/scripts/helpers/dateFormatter.js';
+import { formatDate, dateStringFromThreeFields } from '#src/scripts/helpers/dateFormatter.js';
 
 describe('formatDate()', () => {
   it('formats a valid ISO date string correctly', () => {
@@ -18,5 +18,15 @@ describe('formatDate()', () => {
     it('handles invalid date strings by returning the original input', () => {
     expect(formatDate('invalid-date')).to.equal('invalid-date');
     expect(formatDate('')).to.equal('');
+  });
+});
+
+describe('dateStringFromThreeFields()', () => {
+  it('pads single-digit day and month values', () => {
+    expect(dateStringFromThreeFields('6', '1', '1986')).to.equal('1986-01-06');
+  });
+
+  it('leaves already double-digit day and month values unchanged', () => {
+    expect(dateStringFromThreeFields('28', '12', '2023')).to.equal('2023-12-28');
   });
 });
