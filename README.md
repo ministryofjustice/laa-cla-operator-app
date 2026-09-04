@@ -117,6 +117,15 @@ Prerequisites, Docker Desktop
 ### GitHub Actions
 - These have been disabled in this GitHub template repo. Make sure you enable them when setting up your project. 
 
+### Secret detection
+
+Gitleaks runs through the MoJ DevSecOps pre-commit hook. Install [prek](https://github.com/j178/prek), then enable and run the hook:
+
+```shell
+prek install
+prek run
+```
+
 ### Licence
 
 [Licence](./LICENSE)
