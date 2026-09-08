@@ -23,7 +23,7 @@ router.get('/login', loginAction);
 // 2. Handle Callback
 router.get('/redirect', callbackAction);
 
-//log out the applicationn 
+//log out the application
 router.get("/logout",logOut )
 
 
