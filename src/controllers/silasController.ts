@@ -128,15 +128,15 @@ export async function callbackAction(req: any, res: any) {
   }
 }
 
-
-
 export async function logOut(req: any, res: any) {
   try {
     await promisify(req.session.destroy).call(req.session);
   } catch {
   }
-  res.clearCookie("connect.sid"); 
+  res.clearCookie("connect.sid");
 
   const logoutUrl = new URL(`${config.silas.authority}/oauth2/v2.0/logout`);
+  logoutUrl.searchParams.set("post_logout_redirect_uri", "/");
+
   return res.redirect(logoutUrl.toString());
 }

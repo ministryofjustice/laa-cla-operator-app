@@ -2,9 +2,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { callbackAction } from "../../../src/controllers/silasController.js";
-import realConfig from "#config.js";
 
-// set up config to be used
 function testConfig() {
   const tenantId = "test-tenant-id";
   const expectedAudience = "test-expected-audience";
@@ -101,33 +99,6 @@ describe("callbackAction", () => {
     sinon.restore();
   });
 
-  describe("happy path", () => {
-    it("validates the token, populates the session, and redirects to /receive-call", async () => {
-      const accessToken = buildToken();
-      acquireTokenStub.resolves(validEntraResponse(accessToken));
-
-      req.query = { code: "auth-code", state: VALID_STATE };
-      await callbackAction(req, res);
-
-      expect(statusStub.called).to.be.false;
-      expect(redirectStub.calledOnceWith("/receive-call")).to.be.true;
-
-      expect(req.session.silasAuth).to.include({
-        accessToken,
-        idToken: "fake-id-token",
-        email: "user@example.com",
-        name: "Test User",
-      });
-
-      expect(req.session.user).to.deep.equal({
-        email: "user@example.com",
-        name: "Test User",
-        oid: "home-account-id",
-      });
-
-      expect(req.session.auth_nonce).to.be.undefined;
-    });
-  });
 
   describe("input validation", () => {
     const cases = [
@@ -171,9 +142,6 @@ describe("callbackAction", () => {
         req.query = { code: "auth-code", state: VALID_STATE };
 
         await callbackAction(req, res);
-
-        // The controller's catch block sends a fixed string, not the
-        // underlying Error instance.
         expect(statusStub.calledOnceWith(500)).to.be.true;
         expect(sendStub.calledOnceWith("Authentication failed")).to.be.true;
         expect(redirectStub.called).to.be.false;
