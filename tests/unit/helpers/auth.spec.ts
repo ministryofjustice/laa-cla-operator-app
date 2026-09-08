@@ -2,6 +2,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { callbackAction } from "../../../src/controllers/silasController.js";
+import realConfig from "#config.js";
 
 // set up config to be used
 function testConfig() {
@@ -13,7 +14,7 @@ function testConfig() {
     tenantId,
     clientId: "test-client-id",
     clientSecret: "test-client-secret",
-    redirectUri: "http://localhost:3000/auth/callback",
+    redirectUri: "http://localhost:3000/redirect",
     postLogoutRedirectUri: "/",
     scopes: ["openid", "profile", "email"],
     expectedAudience,
@@ -26,16 +27,15 @@ const config = testConfig();
 const VALID_STATE = "abc";
 const OIDC_SCOPES = new Set(["openid", "profile", "offline_access"]);
 
-
 function normalizeScope(scope: string): string {
   const segments = scope.split("/").filter(Boolean);
   return segments.at(-1) ?? scope;
 }
+
 const DEFAULT_SCP = config.silas.scopes
   .filter((scope) => !OIDC_SCOPES.has(scope.toLowerCase()))
   .map(normalizeScope)
   .join(" ");
-
 
 function buildToken(overrides: Record<string, any> = {}) {
   const header = { alg: "RS256", typ: "JWT", kid: "" };
@@ -99,6 +99,34 @@ describe("callbackAction", () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  describe("happy path", () => {
+    it("validates the token, populates the session, and redirects to /receive-call", async () => {
+      const accessToken = buildToken();
+      acquireTokenStub.resolves(validEntraResponse(accessToken));
+
+      req.query = { code: "auth-code", state: VALID_STATE };
+      await callbackAction(req, res);
+
+      expect(statusStub.called).to.be.false;
+      expect(redirectStub.calledOnceWith("/receive-call")).to.be.true;
+
+      expect(req.session.silasAuth).to.include({
+        accessToken,
+        idToken: "fake-id-token",
+        email: "user@example.com",
+        name: "Test User",
+      });
+
+      expect(req.session.user).to.deep.equal({
+        email: "user@example.com",
+        name: "Test User",
+        oid: "home-account-id",
+      });
+
+      expect(req.session.auth_nonce).to.be.undefined;
+    });
   });
 
   describe("input validation", () => {
