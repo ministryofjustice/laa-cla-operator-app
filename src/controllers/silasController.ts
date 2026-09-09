@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { promisify } from "node:util";
 import config from "#config.js";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { AccessTokenClaims } from "#types/auth-types.js";
+import { AccessTokenClaims, } from "#types/auth-types.js";
 
 const OIDC_SCOPES = new Set(["openid", "profile", "offline_access"]);
 
@@ -13,7 +13,6 @@ const msalClient = new ConfidentialClientApplication({
     clientSecret: config.silas.clientSecret,
   },
 });
-
 
 export async function loginAction(req: any, res: any) {
   const nonce = randomBytes(32).toString("base64url");
@@ -136,7 +135,6 @@ export async function logOut(req: any, res: any) {
   res.clearCookie("connect.sid");
 
   const logoutUrl = new URL(`${config.silas.authority}/oauth2/v2.0/logout`);
-  logoutUrl.searchParams.set("post_logout_redirect_uri", "/");
 
   return res.redirect(logoutUrl.toString());
 }

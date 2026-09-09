@@ -18,6 +18,8 @@ const FIRST_ITEM_INDEX = 0;
 router.get('/sign-in', async (req, res) => {
 	return res.render("main/auth/sign-in.njk")
 });
+
+//Login 
 router.get('/login', loginAction);
 
 // 2. Handle Callback
