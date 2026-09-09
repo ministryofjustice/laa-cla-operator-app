@@ -162,6 +162,36 @@ function sendAuthenticationFailure(res: Response): Response {
 }
 
 /**
+ * Determines whether an MSAL authentication response contains
+ * the information required to establish a session.
+ *
+ * @param {Awaited<ReturnType<ConfidentialClientApplication["acquireTokenByCode"]>>} response
+ * MSAL authentication response to validate.
+ * @returns {boolean} Whether the response contains valid authentication data.
+ */
+function hasValidAccountResponse(
+  response: Awaited<ReturnType<ConfidentialClientApplication["acquireTokenByCode"]>>,
+): response is typeof response & {
+  accessToken: string;
+  idToken: string;
+  account: {
+    username: string;
+    name: string;
+    homeAccountId: string;
+  };
+} {
+  return (
+    response.accessToken.length > EMPTY_LENGTH &&
+    response.idToken.length > EMPTY_LENGTH &&
+    response.account !== null &&
+    response.account.username.length > EMPTY_LENGTH &&
+    (response.account.name?.length ?? EMPTY_LENGTH) > EMPTY_LENGTH &&
+    response.account.homeAccountId.length > EMPTY_LENGTH
+  );
+}
+
+
+/**
  * Handles the OAuth callback from SILAS.
  *
  * @param {Request} req Express request containing the OAuth callback.
@@ -222,35 +252,6 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
   } catch {
     res.status(INTERNAL_SERVER_ERROR).send("Authentication failed");
   }
-}
-
-/**
- * Determines whether an MSAL authentication response contains
- * the information required to establish a session.
- *
- * @param {Awaited<ReturnType<ConfidentialClientApplication["acquireTokenByCode"]>>} response
- * MSAL authentication response to validate.
- * @returns {boolean} Whether the response contains valid authentication data.
- */
-function hasValidAccountResponse(
-  response: Awaited<ReturnType<ConfidentialClientApplication["acquireTokenByCode"]>>,
-): response is typeof response & {
-  accessToken: string;
-  idToken: string;
-  account: {
-    username: string;
-    name: string;
-    homeAccountId: string;
-  };
-} {
-  return (
-    response.accessToken.length > EMPTY_LENGTH &&
-    response.idToken.length > EMPTY_LENGTH &&
-    response.account !== null &&
-    response.account.username.length > EMPTY_LENGTH &&
-    (response.account.name?.length ?? EMPTY_LENGTH) > EMPTY_LENGTH &&
-    response.account.homeAccountId.length > EMPTY_LENGTH
-  );
 }
 
 /**

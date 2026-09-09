@@ -13,7 +13,7 @@ export const buildSessionConfig = (
 ): session.SessionOptions => {
   console.log(
     chalk.yellow(
-      '⚠️  Using in-memory session store (not suitable for production environments)',
+      'Using in-memory session store (not suitable for production environments)',
     ),
   );
 
