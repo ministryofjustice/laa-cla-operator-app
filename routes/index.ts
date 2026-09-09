@@ -59,7 +59,7 @@ router.get('/cases', async (req: Request, res: Response): Promise<Response> => {
     return res.status(UNAUTHORIZED_REQUEST).send('Unauthorized');
   	}
 
- 	const { accessToken, idToken } = req.session.silasAuth;
+ 	const { accessToken, idToken } = req.session.silasAuth ?? {};
 
 	if (accessToken === '' || idToken === '') {
 	console.error('Missing access token or ID token in session');
