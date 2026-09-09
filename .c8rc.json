@@ -40,7 +40,9 @@
     "src/helpers/ValidationErrorHelpers.ts",
     "src/helpers/dataTransformers.ts",
     "src/scripts/helpers/dataTransformers.ts",
-    "src/scripts/helpers/errorHandler.ts"
+    "src/scripts/helpers/errorHandler.ts",
+    "src/controllers/silasController.ts"
+
   ],
   "all": true,
   "sourceMap": true,
