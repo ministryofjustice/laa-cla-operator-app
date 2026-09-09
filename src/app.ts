@@ -22,9 +22,9 @@ const TRUST_FIRST_PROXY = 1;
  * Creates and configures an Express application.
  * Then starts the server listening on the configured port.
  *
- * @returns {Promise<import('express').Application>} The configured Express application
+ * @returns {import('express').Application} The configured Express application
  */
-const createApp = async (): Promise<express.Application> => {
+const createApp = (): express.Application => {
 	// Initialise i18next synchronously before setting up the app
 	initializeI18nextSync();
 
@@ -61,7 +61,7 @@ const createApp = async (): Promise<express.Application> => {
 
 	// Set up cookie security for sessions
 	app.set('trust proxy', TRUST_FIRST_PROXY);
-	app.use(session(await buildSessionConfig(config)));
+	app.use(session(buildSessionConfig(config)));
 
 	app.use(setAuthStatus);
 
@@ -122,7 +122,7 @@ const createApp = async (): Promise<express.Application> => {
 };
 
 // Self-execute the app directly to allow app.js to be executed directly
-void createApp();
+createApp();
 
 // Export the createApp function for testing/import purposes
 export default createApp;

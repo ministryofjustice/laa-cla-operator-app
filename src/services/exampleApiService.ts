@@ -1,10 +1,10 @@
 /**
  * Example API Service
- * 
+ *
  * Simple demonstration of how to use BaseApiService for basic HTTP operations.
  * This example shows the minimal pattern without domain-specific logic that
  * template users would need to remove.
- * 
+ *
  * Template users should:
  * - Replace this with their own API service
  * - Add their own response types and transformations
@@ -17,7 +17,7 @@ import type { AxiosResponse } from 'axios';
 
 /**
  * Simple API Service for JSONPlaceholder demo
- * 
+ *
  * Demonstrates basic usage of BaseApiService without complex domain logic.
  * Template users can use this as a starting point for their own API services.
  */
@@ -30,14 +30,14 @@ export class ExampleApiService extends BaseApiService {
     super({
       baseUrl: process.env.BACKEND_URL ?? 'https://jsonplaceholder.typicode.com',
       timeout: EXAMPLE_TIMEOUT_MS,
-      apiPrefix: '', // JSONPlaceholder doesn't use a prefix
+      apiPrefix: '',
       enableLogging: true
     });
   }
 
   /**
    * Get users from API - minimal example
-   * 
+   *
    * @param {AxiosInstanceWrapper} axiosMiddleware - Axios middleware from request
    * @param {Record<string, string | number | boolean>} params - Query parameters
    * @returns {Promise<AxiosResponse>} Promise resolving to raw axios response
@@ -51,7 +51,7 @@ export class ExampleApiService extends BaseApiService {
 
   /**
    * Get single user by ID - minimal example
-   * 
+   *
    * @param {AxiosInstanceWrapper} axiosMiddleware - Axios middleware from request
    * @param {string | number} userId - User ID to retrieve
    * @returns {Promise<AxiosResponse>} Promise resolving to raw axios response
@@ -65,7 +65,7 @@ export class ExampleApiService extends BaseApiService {
 
   /**
    * Create a new user - minimal example
-   * 
+   *
    * @param {AxiosInstanceWrapper} axiosMiddleware - Axios middleware from request
    * @param {unknown} userData - User data to create
    * @returns {Promise<AxiosResponse>} Promise resolving to raw axios response
@@ -79,18 +79,25 @@ export class ExampleApiService extends BaseApiService {
 
   // This is the Get Cases endpoint for Search user data
   // TODO: we need to add the accessToken to header
+  /**
+   * Get all cases matching the supplied search parameter.
+   *
+   * @param {AxiosInstanceWrapper} axiosMiddleware - Axios middleware from request
+   * @param {string | number} searchParam - Search parameter used to identify the cases
+   * @returns {Promise<AxiosResponse>} Promise resolving to raw axios response
+   */
   async getAllCases(
-      axiosMiddleware: AxiosInstanceWrapper,
-      searchParam: string | number,
-    ): Promise<AxiosResponse> {
-      return this.get(
-        axiosMiddleware,
-        `/call_centre/api/v1/case/${searchParam}`,
-        {
-            Authorization: `Bearer ${process.env.BACKEND_API_KEY}`,
-          },
-      );
-    }
+    axiosMiddleware: AxiosInstanceWrapper,
+    searchParam: string | number,
+  ): Promise<AxiosResponse> {
+    return await this.get(
+      axiosMiddleware,
+      `/call_centre/api/v1/case/${searchParam}`,
+      {
+        Authorization: `Bearer ${process.env.BACKEND_API_KEY}`,
+      },
+    );
+  }
 }
 
 // Export singleton instance

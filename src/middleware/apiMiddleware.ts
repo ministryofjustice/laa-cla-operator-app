@@ -1,41 +1,57 @@
 /**
  * Enhanced API Middleware
- * 
+ *
  * Generalized version of MCC's axios middleware pattern.
- * Creates configurable axios instances with authentication, logging, and error handling.
- * 
+ * Creates configurable axios instances with authentication, logging,
+ * and error handling.
+ *
  * Based on MCC's utils/axiosSetup.ts patterns.
  */
 
 import { create } from 'middleware-axios';
 import type { Request, Response, NextFunction } from 'express';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
+import type {
+  InternalAxiosRequestConfig,
+  AxiosError,
+} from 'axios';
 import { devLog, devError } from '#src/scripts/helpers/index.js';
-import { SilasSessionAuth } from '#types/auth-types.js';
+import type { SilasSessionAuth } from '#types/auth-types.js';
 
 const DEFAULT_TIMEOUT = 5000;
 const HTTP_UNAUTHORIZED = 401;
 
-// Configuration interface for API middleware
+/**
+ * Configuration options for the API middleware.
+ */
 export interface ApiMiddlewareConfig {
-  /** Default timeout for requests */
+  /** Default timeout for requests. */
   timeout?: number;
-  /** Default headers to include with all requests */
+
+  /** Default headers to include with all requests. */
   defaultHeaders?: Record<string, string>;
-  /** Whether to enable request/response logging */
+
+  /** Whether to enable request and response logging. */
   enableLogging?: boolean;
-  /** Optional auth service for JWT handling */
+
+  /** Optional authentication service for JWT handling. */
   authService?: AuthServiceInterface | null;
 }
 
-// Auth service interface - compatible with MCC's auth service
+/**
+ * Authentication service interface compatible with the MCC auth service.
+ */
 export interface AuthServiceInterface {
+  /** Retrieve the authentication header. */
   getAuthHeader: () => Promise<string>;
+
+  /** Clear stored authentication tokens. */
   clearTokens: () => void;
 }
 
-// Extend Express Request to include our axiosMiddleware
+/**
+ * Extend the Express Request interface with the Axios middleware wrapper.
+ */
 declare global {
   namespace Express {
     interface Request {
@@ -45,166 +61,254 @@ declare global {
 }
 
 /**
- * Convert unknown error to Error instance
- * @param {unknown} error Error to convert
- * @returns {Error} Error instance
+ * Convert an unknown error value into an Error instance.
+ *
+ * @param {unknown} error - The value to convert into an Error.
+ * @returns {Error} An Error instance.
  */
 function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
 }
 
 /**
- * Type guard for axios error with response
- * @param {unknown} error Error to check
- * @returns {boolean} True if error has response with status
+ * Check whether an unknown error is an Axios error with an HTTP response.
+ *
+ * @param {unknown} error - The error value to inspect.
+ * @returns {boolean} True when the error contains an Axios response with a numeric status.
  */
-function isAxiosErrorWithResponse(error: unknown): error is AxiosError & { response: { status: number } } {
-  return error !== null &&
-         typeof error === 'object' &&
-         'response' in error &&
-         error.response !== null &&
-         typeof error.response === 'object' &&
-         'status' in error.response &&
-         typeof (error.response).status === 'number';
+function isAxiosErrorWithResponse(
+  error: unknown
+): error is AxiosError & { response: { status: number } } {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'response' in error &&
+    error.response !== null &&
+    typeof error.response === 'object' &&
+    'status' in error.response &&
+    typeof error.response.status === 'number'
+  );
 }
 
 /**
- * Create API middleware with configuration
- * @param {ApiMiddlewareConfig} config Configuration for the API middleware
- * @returns {Function} Express middleware function
+ * Create API middleware with the supplied configuration.
+ *
+ * The middleware creates an Axios instance for each request and attaches
+ * it to `req.axiosMiddleware`. Optional request/response logging and JWT
+ * authentication are configured through the supplied options.
+ *
+ * @param {ApiMiddlewareConfig} config - Configuration for the API middleware.
+ * @returns {(req: Request, res: Response, next: NextFunction) => void} Express middleware function.
  */
-export function createApiMiddleware(config: ApiMiddlewareConfig = {}) {
+export function createApiMiddleware(
+  config: ApiMiddlewareConfig = {}
+): (req: Request, res: Response, next: NextFunction) => void {
   const {
     timeout = DEFAULT_TIMEOUT,
     defaultHeaders = {},
     enableLogging = true,
-    authService = null
+    authService = null,
   } = config;
 
-  return (req: Request, res: Response, next: NextFunction): void => {
-    // Create axios instance with default config (based on MCC pattern)
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    /**
+     * Create an Axios instance using the configured defaults.
+     */
     const axiosWrapper = create({
       timeout,
       headers: {
         'Content-Type': 'application/json',
-        ...defaultHeaders
+        ...defaultHeaders,
       },
     });
 
-    // Add request logging interceptor if enabled
+    /**
+     * Add request and response logging interceptors when logging is enabled.
+     */
     if (enableLogging) {
       axiosWrapper.axiosInstance.interceptors.request.use(
-        (config: InternalAxiosRequestConfig) => {
-          devLog(`API Request: ${config.method?.toUpperCase()} ${config.baseURL ?? ''}${config.url ?? ''}`);
-          return config;
+        (requestConfig: InternalAxiosRequestConfig) => {
+          devLog(
+            `API Request: ${requestConfig.method?.toUpperCase()} ` +
+              `${requestConfig.baseURL ?? ''}${requestConfig.url ?? ''}`
+          );
+
+          return requestConfig;
         },
         async (error: unknown) => {
-          devError(`API Request Error: ${toError(error).message}`);
-          return await Promise.reject(toError(error));
+          const requestError = toError(error);
+
+          devError(`API Request Error: ${requestError.message}`);
+
+          return await Promise.reject(requestError);
         }
       );
 
-      // Add response logging interceptor
       axiosWrapper.axiosInstance.interceptors.response.use(
         (response) => {
-          devLog(`API Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`);
+          devLog(
+            `API Response: ${response.status} ` +
+              `${response.config.method?.toUpperCase()} ` +
+              `${response.config.url}`
+          );
+
           return response;
         },
         async (error: unknown) => {
           if (isAxiosErrorWithResponse(error)) {
-            devError(`API Response Error: ${error.response.status} ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+            devError(
+              `API Response Error: ${error.response.status} ` +
+                `${error.config?.method?.toUpperCase()} ` +
+                `${error.config?.url}`
+            );
           } else {
-            devError(`API Network Error: ${toError(error).message}`);
+            const responseError = toError(error);
+
+            devError(`API Network Error: ${responseError.message}`);
           }
+
           return await Promise.reject(toError(error));
         }
       );
     }
 
-    // Add JWT authentication interceptor if auth service provided (based on MCC pattern)
+    /**
+     * Add JWT authentication interceptors when an authentication service
+     * has been configured.
+     */
     if (authService !== null) {
-      // Request interceptor for JWT auth
       axiosWrapper.axiosInstance.interceptors.request.use(
-        async (config: InternalAxiosRequestConfig) => {
+        async (requestConfig: InternalAxiosRequestConfig) => {
           try {
-            config.headers.Authorization = await authService.getAuthHeader();
+            requestConfig.headers.Authorization =
+              await authService.getAuthHeader();
+
             if (enableLogging) {
-              devLog('Added JWT authorization header to API request');
+              devLog(
+                'Added JWT authorization header to API request'
+              );
             }
           } catch (error) {
-            devError(`Failed to add JWT authorization header: ${toError(error).message}`);
-            // Continue without auth header - API will handle 401 response
+            const authError = toError(error);
+
+            devError(
+              `Failed to add JWT authorization header: ${authError.message}`
+            );
           }
-          return config;
+
+          return requestConfig;
         },
         async (error: unknown) => await Promise.reject(toError(error))
       );
 
-      // Response interceptor for 401 error handling (based on MCC pattern)
+      /**
+       * Clear cached authentication tokens when the API returns 401.
+       */
       axiosWrapper.axiosInstance.interceptors.response.use(
         (response) => response,
         async (error: unknown) => {
-          if (isAxiosErrorWithResponse(error) && error.response.status === HTTP_UNAUTHORIZED) {
+          if (
+            isAxiosErrorWithResponse(error) &&
+            error.response.status === HTTP_UNAUTHORIZED
+          ) {
             if (enableLogging) {
-              devError('API returned 401 Unauthorized - clearing cached tokens');
+              devError(
+                'API returned 401 Unauthorized - clearing cached tokens'
+              );
             }
+
             authService.clearTokens();
           }
+
           return await Promise.reject(toError(error));
         }
       );
     }
 
     req.axiosMiddleware = axiosWrapper;
+
     next();
   };
 }
 
-
 /**
- * Authentication middleware to check if user is logged in
- * Redirects to Entra login page if no valid SiLAS session token is found or the token is expired
- * @param {Request} req Express request object
- * @param {Response} res Express response object
- * @param {NextFunction} next Express next function
+ * Authentication middleware that checks whether the user is logged in.
+ *
+ * Redirects unauthenticated users to the Entra sign-in page.
+ * Authenticated users are passed to the next middleware.
+ *
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next function.
+ * @returns {void} Redirects unauthenticated users or calls the next middleware.
  */
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  if (!hasValidSilasToken(req.session.silasAuth)) {
-    // User is not authenticated - redirect to Entra login
+export function requireAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const { session } = req;
+  const { silasAuth } = session;
+
+  if (!hasValidSilasToken(silasAuth)) {
     res.redirect('/sign-in');
     return;
   }
-  // User is authenticated - proceed to route handler
+
   next();
 }
 
-export function hasValidSilasToken(silasAuth: SilasSessionAuth | null | undefined): boolean {
-  if(!silasAuth) {
-    return false
+/**
+ * Check whether a SiLAS authentication session is valid.
+ *
+ * A session is considered valid when it exists and its expiration
+ * timestamp is later than the current time.
+ *
+ * @param {SilasSessionAuth | undefined} silasAuth - SiLAS authentication session to validate.
+ * @returns {boolean} True when the authentication session exists and has not expired.
+ */
+export function hasValidSilasToken(
+  silasAuth: SilasSessionAuth | undefined
+): boolean {
+  if (silasAuth === undefined) {
+    return false;
   }
+
   return silasAuth.expiresAt > Date.now();
 }
 
 /**
- * Default API middleware with standard configuration
- * Compatible with existing template usage
+ * Default API middleware using the standard configuration.
+ *
+ * This is compatible with existing template usage.
  */
 export const axiosMiddleware = createApiMiddleware();
 
 /**
- * Middleware to set authentication status in response locals
- * This makes isAuthenticated available to all templates
+ * Middleware that exposes authentication status to response locals.
  *
- * @param {Request} req - Express request object
- * @param {Response} res - Express response object
- * @param {NextFunction} next - Express next function
+ * The middleware makes `isAuthenticated`, `userEmail`, and `userName`
+ * available to templates.
+ *
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next function.
+ * @returns {void} Sets authentication locals and calls the next middleware.
  */
-export const setAuthStatus = (req: Request, res: Response, next: NextFunction): void => {
-  const silasAuth = req.session.silasAuth;
-  console.log("Silas auth said ", silasAuth)
-  res.locals.isAuthenticated = silasAuth !== undefined && silasAuth.expiresAt > Date.now();
-  console.log("res.locals.isAuthenticated", res.locals.isAuthenticated)
-  res.locals.userEmail = req.session.user?.email ?? null;
-  res.locals.userName = req.session.user?.name ?? null;
+export const setAuthStatus = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { session } = req;
+  const { silasAuth, user } = session;
+
+  res.locals.isAuthenticated =
+    silasAuth !== undefined &&
+    silasAuth.expiresAt > Date.now();
+
+  res.locals.userEmail = user?.email ?? null;
+  res.locals.userName = user?.name ?? null;
+
   next();
 };
