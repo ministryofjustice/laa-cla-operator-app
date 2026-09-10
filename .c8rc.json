@@ -41,6 +41,7 @@
     "src/helpers/dataTransformers.ts",
     "src/scripts/helpers/dataTransformers.ts",
     "src/scripts/helpers/errorHandler.ts"
+
   ],
   "all": true,
   "sourceMap": true,

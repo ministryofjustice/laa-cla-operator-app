@@ -72,6 +72,7 @@ const externalModules: string[] = [
 	'figlet',
 	'csrf-sync',
 	'http-errors',
+	'@azure/msal-node',
 	'*.node'
 ];
 

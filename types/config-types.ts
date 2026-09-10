@@ -42,4 +42,16 @@ export interface Config {
 	csrf: CsrfConfig;
 	session: SessionConfig;
 	paths: PathsConfig;
+	silas: SilasConfig,
+}
+
+export interface SilasConfig {
+  authority: string;
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+  postLogoutRedirectUri: string;
+  scopes: string[];
+  expectedAudience: string;
 }

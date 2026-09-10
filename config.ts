@@ -47,6 +47,16 @@ const config: Config = {
   paths: {
     static: 'public',  // Path for serving static files
     views: 'src/views',  // Path for Nunjucks views
+  },
+  silas: {
+    authority: process.env.ENTRA_AUTHORITY?? '',
+    tenantId: process.env.ENTRA_TENANT_ID ?? '',
+    clientId: process.env.ENTRA_CLIENT_ID ?? '',
+    clientSecret: process.env.ENTRA_CLIENT_SECRET ?? '',
+    redirectUri: process.env.ENTRA_REDIRECT_URI ?? '',
+    postLogoutRedirectUri: process.env.ENTRA_POST_REDIRECT_URI ?? '/',
+    scopes: process.env.ENTRA_SCOPES?.split(",") ?? [],
+    expectedAudience: process.env.ENTRA_EXPECTED_AUDIENCE ?? ''
   }
 };
 
