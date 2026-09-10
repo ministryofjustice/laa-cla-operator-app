@@ -16,7 +16,7 @@ import {
 
 export const conditionRegistry = new ConditionRegistry()
 
-export const MyConditions = {
+export const AuthConditions = {
   /**
    * Checks that a numeric value meets the minimum score threshold.
    * @param minScore - The minimum value required for eligibility.
@@ -35,7 +35,7 @@ const whosCallingStep = step({
     reachability: { entryWhen: true },
     onAccess: [
         access({
-            when: Session("silasAuth").not.match(MyConditions.HasValidSilasToken()),
+            when: Session("silasAuth").not.match(AuthConditions.HasValidSilasToken()),
             next: [redirect({goto: "/login"})]
         })
     ],
