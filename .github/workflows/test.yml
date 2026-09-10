@@ -7,6 +7,14 @@ permissions: {}
 env:
   SESSION_SECRET: "TEST_SESSION_SECRET"
   SESSION_NAME: "TEST_SESSION_NAME"
+  ENTRA_AUTHORITY: "https://login.microsoftonline.com/test-tenant-id"
+  ENTRA_TENANT_ID: "test-tenant-id"
+  ENTRA_CLIENT_ID: "test-client-id"
+  ENTRA_CLIENT_SECRET: "test-client-secret"
+  ENTRA_REDIRECT_URI: "http://localhost:3000/redirect"
+  ENTRA_POST_REDIRECT_URI: "/"
+  ENTRA_SCOPES: "openid,profile,email"
+  ENTRA_EXPECTED_AUDIENCE: "test-expected-audience"
 
 jobs:
   unit_test:
