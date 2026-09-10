@@ -14,14 +14,14 @@ import {
 
 
 
-export const myConditions = new ConditionRegistry()
+export const conditionRegistry = new ConditionRegistry()
 
 export const MyConditions = {
   /**
    * Checks that a numeric value meets the minimum score threshold.
    * @param minScore - The minimum value required for eligibility.
    */
-  HasValidSilasToken: myConditions.register(
+  HasValidSilasToken: conditionRegistry.register(
     'HasValidSilasToken',
     (deps) => hasValidSilasToken
   )
