@@ -40,8 +40,7 @@
     "src/helpers/ValidationErrorHelpers.ts",
     "src/helpers/dataTransformers.ts",
     "src/scripts/helpers/dataTransformers.ts",
-    "src/scripts/helpers/errorHandler.ts",
-    "src/controllers/silasController.ts"
+    "src/scripts/helpers/errorHandler.ts"
 
   ],
   "all": true,
