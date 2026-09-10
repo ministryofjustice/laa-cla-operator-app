@@ -10,6 +10,7 @@ import {
   GovUKTextInput,
   GovUKDateInputFull,
   GovUKHeading,
+  GovUKBody,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 
 // Step 1: Who's calling
@@ -139,21 +140,29 @@ const addClientDetailsStep = step({
       },
       hint: {
         text: "When we call you back, our number will not display and your phone may show 'No Caller ID', 'Private number' or 'Number withheld'. Call screening settings mean some phones do not accept withheld numbers.",
+        classes: "govuk-!-margin-top-2",
       },
       items: [
         {
           value: "yes",
           text: "Yes",
-          hint: {
+          block: GovUKBody({
             text: "Prompt the client to add Civil Legal Advice as a contact using 0345 345 4345 'just in case'",
-          },
+            classes: "govuk-!-margin-top-2",
+          }),
         },
         {
           value: "no",
           text: "No",
-          hint: {
-            text: "We will try to call you back 3 times but if we can't get through you will have to contact us again to continue your case. Prompt the client to adjust the settings on their phone or add Civil Legal Advice as a contact using 0345 345 4345.",
-          },
+          block: [
+            GovUKBody({
+              text: "We will try to call you back 3 times but if we can't get through you will have to contact us again to continue your case.",
+            }),
+            GovUKBody({
+              text: "Prompt the client to adjust the settings on their phone or add Civil Legal Advice as a contact using 0345 345 4345.",
+              classes: "govuk-!-margin-top-2",
+            }),
+          ],
         },
       ],
     }),
@@ -166,6 +175,24 @@ const addClientDetailsStep = step({
 
     GovUKButton({ text: "Save and continue" }),
   ],
+  onSubmission: [
+    submit({
+      validate: false,
+      onValid: {
+        next: [redirect({ goto: "add-client-address" })],
+      },
+    }),
+  ],
+});
+
+// Step 4: Add client Address"
+const addClientAddressStep = step({
+  code: "add-client-address",
+  path: "/add-client-address",
+  title: "Search client's address",
+  reachability: { entryWhen: true },
+  view: { template: "main/add-client-address.njk" },
+  blocks: [GovUKButton({ text: "Find address" })],
   onSubmission: [
     submit({
       validate: false,
@@ -184,5 +211,10 @@ export const inboundCallJourney = journey({
   view: {
     template: "partials/form-step",
   },
-  steps: [whosCallingStep, searchClient, addClientDetailsStep],
+  steps: [
+    whosCallingStep,
+    searchClient,
+    addClientDetailsStep,
+    addClientAddressStep,
+  ],
 });
