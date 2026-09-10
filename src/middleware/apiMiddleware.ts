@@ -303,9 +303,7 @@ export const setAuthStatus = (
   const { session } = req;
   const { silasAuth, user } = session;
 
-  res.locals.isAuthenticated =
-    silasAuth !== undefined &&
-    silasAuth.expiresAt > Date.now();
+  res.locals.isAuthenticated = hasValidSilasToken(silasAuth);
 
   res.locals.userEmail = user?.email ?? null;
   res.locals.userName = user?.name ?? null;
