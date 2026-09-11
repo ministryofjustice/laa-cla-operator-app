@@ -5,3 +5,18 @@
 	border-left-color: govuk-functional-colour(brand);
 	background-color: govuk-functional-colour(template-background);
 }
+
+.search-client-box {
+  background-color: govuk-functional-colour("template-background");
+
+  padding:
+    govuk-spacing(2)
+    govuk-spacing(4)
+    govuk-spacing(3);
+
+  margin: govuk-spacing(6) 0;
+}
+
+.search-client-box .govuk-button-group {
+  margin-bottom: 0;
+}/* test-touch 1789038355 */

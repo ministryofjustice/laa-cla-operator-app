@@ -32,7 +32,6 @@
     "src/controllers/**",
     "src/journeys/**",
     "src/middleware/apiMiddleware.ts",
-    "src/services/exampleApiService.ts",
     "src/middlewares/personSchema.ts",
     "utils/displayAsciiBanner.ts",
     "src/services/baseApiService.ts",

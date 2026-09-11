@@ -1,5 +1,9 @@
 // Configuration type definitions
 
+export interface ApiConfig {
+	baseUrl: string;
+}
+
 export interface AppConfig {
 	port: number;
 	environment: string;
@@ -43,6 +47,7 @@ export interface Config {
 	session: SessionConfig;
 	paths: PathsConfig;
 	silas: SilasConfig,
+	api: ApiConfig;
 }
 
 export interface SilasConfig {

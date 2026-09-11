@@ -16,6 +16,9 @@ import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunj
 import journeyPackages from './journeys/index.js';
 import { buildSessionConfig } from '#utils/session.js';
 import { setAuthStatus } from './middleware/apiMiddleware.js';
+import type { Deps } from '#src/journeys/api.js';
+import { InboundCallEffectsWithDepsImpl } from './services/inboundCallWithDeps.js';
+import { apiService } from './services/api/index.js';
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -32,6 +35,10 @@ const createApp = (): express.Application => {
 
 	// Set up common middleware for handling cookies, body parsing, etc.
 	setupMiddlewares(app);
+
+	// Set up cookie security for sessions
+	app.set('trust proxy', TRUST_FIRST_PROXY);
+	app.use(session(buildSessionConfig(config)));
 
 	app.use(axiosMiddleware);
 
@@ -58,10 +65,6 @@ const createApp = (): express.Application => {
 
 	// Reducing fingerprinting by removing the 'x-powered-by' header
 	app.disable('x-powered-by');
-
-	// Set up cookie security for sessions
-	app.set('trust proxy', TRUST_FIRST_PROXY);
-	app.use(session(buildSessionConfig(config)));
 
 	app.use(setAuthStatus);
 
@@ -106,7 +109,9 @@ const createApp = (): express.Application => {
 	// Everytime a new journey is added to the project,
 	// it'll be automatically registered with Forge here.
 	for (const journeyPackage of journeyPackages) {
-		forge.registerPackage(journeyPackage);
+		forge.registerPackage<Deps>(journeyPackage, {
+			effectsWithDeps: new InboundCallEffectsWithDepsImpl(apiService)
+		});
 	}
 
 	app.use(express.urlencoded({ extended: true }));

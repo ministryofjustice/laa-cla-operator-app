@@ -176,56 +176,61 @@ export function createApiMiddleware(
      * Add JWT authentication interceptors when an authentication service
      * has been configured.
      */
-    if (authService !== null) {
-      axiosWrapper.axiosInstance.interceptors.request.use(
-        async (requestConfig: InternalAxiosRequestConfig) => {
-          try {
-            requestConfig.headers.Authorization =
-              await authService.getAuthHeader();
+    // if (authService !== null) {
+    //   axiosWrapper.axiosInstance.interceptors.request.use(
+    //     async (requestConfig: InternalAxiosRequestConfig) => {
+    //       try {
+    //         requestConfig.headers.Authorization =
+    //           await authService.getAuthHeader();
 
-            if (enableLogging) {
-              devLog(
-                'Added JWT authorization header to API request'
-              );
-            }
-          } catch (error) {
-            const authError = toError(error);
+    //         if (enableLogging) {
+    //           devLog(
+    //             'Added JWT authorization header to API request'
+    //           );
+    //         }
+    //       } catch (error) {
+    //         const authError = toError(error);
 
-            devError(
-              `Failed to add JWT authorization header: ${authError.message}`
-            );
-          }
+    //         devError(
+    //           `Failed to add JWT authorization header: ${authError.message}`
+    //         );
+    //       }
 
-          return requestConfig;
-        },
-        async (error: unknown) => await Promise.reject(toError(error))
-      );
+    //       return requestConfig;
+    //     },
+    //     async (error: unknown) => await Promise.reject(toError(error))
+    //   );
 
-      /**
-       * Clear cached authentication tokens when the API returns 401.
-       */
-      axiosWrapper.axiosInstance.interceptors.response.use(
-        (response) => response,
-        async (error: unknown) => {
-          if (
-            isAxiosErrorWithResponse(error) &&
-            error.response.status === HTTP_UNAUTHORIZED
-          ) {
-            if (enableLogging) {
-              devError(
-                'API returned 401 Unauthorized - clearing cached tokens'
-              );
-            }
+    //   /**
+    //    * Clear cached authentication tokens when the API returns 401.
+    //    */
+    //   axiosWrapper.axiosInstance.interceptors.response.use(
+    //     (response) => response,
+    //     async (error: unknown) => {
+    //       if (
+    //         isAxiosErrorWithResponse(error) &&
+    //         error.response.status === HTTP_UNAUTHORIZED
+    //       ) {
+    //         if (enableLogging) {
+    //           devError(
+    //             'API returned 401 Unauthorized - clearing cached tokens'
+    //           );
+    //         }
 
-            authService.clearTokens();
-          }
+    //         authService.clearTokens();
+    //       }
 
-          return await Promise.reject(toError(error));
-        }
-      );
-    }
+    //       return await Promise.reject(toError(error));
+    //     }
+    //   );
+    // }
 
     req.axiosMiddleware = axiosWrapper;
+
+    req.state = {
+      ...req.state,
+      authenticatedAxios: axiosWrapper,
+    };
 
     next();
   };
