@@ -3,6 +3,10 @@ import {
   step,
   submit,
   redirect,
+  Self,
+  Condition,
+  validation,
+  and,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
   GovUKButton,
@@ -93,6 +97,15 @@ const addClientDetailsStep = step({
         },
       },
       hint: { text: "For example, 27 3 2007" },
+      validWhen: [
+        validation({
+          condition: and(
+            Self().match(Condition.IsRequired()),
+            Self().match(Condition.Date.IsValid()),
+          ),
+          message: "You must enter a valid day, month, or year",
+        }),
+      ],
     }),
 
     GovUKHeading({ text: "Client's contact details", size: "m" }),
@@ -100,6 +113,15 @@ const addClientDetailsStep = step({
     GovUKTextInput({
       code: "phoneNumber",
       label: { text: "Phone number", classes: "govuk-label--s" },
+      validWhen: [
+        validation({
+          condition: and(
+            Self().match(Condition.IsRequired()),
+            Self().match(Condition.Phone.IsValidPhoneNumber()),
+          ),
+          message: "You must enter a valid phone number",
+        }),
+      ],
     }),
 
     GovUKRadioInput({
@@ -114,6 +136,12 @@ const addClientDetailsStep = step({
         { value: "yes", text: "Yes" },
         { value: "no", text: "No" },
       ],
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsRequired()),
+          message: "You must select an option",
+        }),
+      ],
     }),
 
     GovUKRadioInput({
@@ -127,6 +155,12 @@ const addClientDetailsStep = step({
       items: [
         { value: "yes", text: "Yes" },
         { value: "no", text: "No" },
+      ],
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsRequired()),
+          message: "You must select an option",
+        }),
       ],
     }),
 
@@ -165,6 +199,12 @@ const addClientDetailsStep = step({
           ],
         },
       ],
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsRequired()),
+          message: "You must select an option",
+        }),
+      ],
     }),
 
     GovUKTextInput({
@@ -177,7 +217,7 @@ const addClientDetailsStep = step({
   ],
   onSubmission: [
     submit({
-      validate: false,
+      validate: true,
       onValid: {
         next: [redirect({ goto: "add-client-address" })],
       },
