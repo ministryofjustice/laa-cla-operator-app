@@ -1,11 +1,7 @@
-import {
-  GovUKButton,
-  GovUKRadioInput,
-} from "@ministryofjustice/hmpps-forge/govuk-components";
 import { requireSilasAuth } from "#src/journeys/auth.js";
-import { step, submit, redirect, validation, Self, Answer, 
-    Condition, Transformer,and, or, not, } from '@ministryofjustice/hmpps-forge/core/authoring';
-import { SEARCH_CLIENT_STEP_CODE } from "./searchClientStep.js";
+import { step, submit, redirect } from '@ministryofjustice/hmpps-forge/core/authoring';
+import { whosCallingBlock } from "../blocks/whosCallingBlock.js";
+import { InboundCallEffects } from "#src/journeys/effects.js";
 
 const STEP_CODE = "whos-calling";
 
@@ -16,27 +12,13 @@ export const whosCallingStep = step({
     reachability: { entryWhen: true },
     onAccess: [requireSilasAuth],
     view: { template: "main/index.njk" },
-    blocks: [
-        GovUKRadioInput({
-            code: "whos-calling",
-            fieldset: { legend: { text: "Are you calling on behalf of yourself or another person?", classes: "govuk-fieldset__legend--m" } },
-            items: [
-                { value: "myself", text: "Myself" },
-                { value: "thirdParty", text: "Another person" },
-            ],
-            validWhen: [validation({
-                condition: Self().match(Condition.IsRequired()),
-                message: "Please select whether you are calling on behalf of yourself or another person."
-                }),
-            ], 
-        }),
-        GovUKButton({ text: "Continue" }),
-    ],
+    blocks: [whosCallingBlock],
     onSubmission: [
         submit({
             validate: true,
             onValid: {
-                next: [redirect({ goto: SEARCH_CLIENT_STEP_CODE })],
+                effects: [InboundCallEffects.GetAllCases()],
+                next: [redirect({ goto: "/" })],
             },
         }),
     ],

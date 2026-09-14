@@ -1,7 +1,7 @@
 import { create } from 'middleware-axios';
 import type { Request, Response, NextFunction } from 'express';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import type { InternalAxiosRequestConfig } from 'axios';
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { devLog, devError } from '#src/scripts/helpers/index.js';
 import '#src/scripts/helpers/sessionHelpers.js';
 
@@ -42,7 +42,7 @@ function isAxiosErrorWithResponse(error: unknown): error is { response: { status
     error.response !== null &&
     typeof error.response === 'object' &&
     'status' in error.response &&
-    typeof (error.response as { status: unknown }).status === 'number';
+    typeof (error.response).status === 'number';
 }
 
 /**
@@ -61,7 +61,7 @@ export const axiosMiddleware = (req: Request, res: Response, next: NextFunction)
     },
   });
 
-  const silasAuth = req.session.silasAuth;
+  const {silasAuth} = req.session;
   const userAccessToken = silasAuth?.accessToken;
 
   // Axios runs on every request, so this makes it less noisy by checking routes where SiLAS auth is needed
@@ -85,13 +85,23 @@ export const axiosMiddleware = (req: Request, res: Response, next: NextFunction)
 
   // Response interceptor for 401 error handling
   axiosWrapper.axiosInstance.interceptors.response.use(
-    (response) => response,
-    async (error: unknown) => {
-      if (isAxiosErrorWithResponse(error) && error.response.status === HTTP_UNAUTHORIZED) {
-        devError('API returned 401 Unauthorized');
-      }
-      return await Promise.reject(toError(error));
+  (response) => response,
+
+  async (error: unknown) => {
+    const axiosError = error as AxiosError;
+
+    if (
+      axiosError.response?.status === HTTP_UNAUTHORIZED
+    ) {
+      console.log('401 response:', {
+    data: axiosError.response.data,
+    wwwAuthenticate:
+      axiosError.response.headers?.['www-authenticate'],
+    });
     }
+
+    return await Promise.reject(toError(error));
+  },
   );
 
   req.axiosMiddleware = axiosWrapper;

@@ -1,6 +1,5 @@
 import {journey} from "@ministryofjustice/hmpps-forge/core/authoring";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
-import { searchClientStep } from "./steps/searchClientStep.js";
 
 // Define the journey
 export const inboundCallJourney = journey({
@@ -10,5 +9,5 @@ export const inboundCallJourney = journey({
     view: {
         template: "partials/form-step",
     },
-    steps: [whosCallingStep, searchClientStep],
+    steps: [whosCallingStep],
 });

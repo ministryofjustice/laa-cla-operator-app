@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
-import type { SearchClientDetailsResponse } from "#types/api-types.js";
+import type { GetAllCasesResponse } from "#types/api-types.js";
 import type { EffectFunctionContext } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 
@@ -8,9 +8,9 @@ export interface Deps {
 }
 
 export interface InboundCallEffectsWithDeps {
-    SearchClientDetails: (_deps: Deps, context: EffectFunctionContext) => Promise<void>;
+    GetAllCases: (_deps: Deps, context: EffectFunctionContext) => Promise<void>;
 }
 
 export interface InboundCallApiService {
-    searchClientDetails: (axiosMiddleware: AxiosInstanceWrapper, searchParam: string) => Promise<SearchClientDetailsResponse>;
+    GetAllCases: (axiosMiddleware: AxiosInstanceWrapper) => Promise<GetAllCasesResponse>;
 }
