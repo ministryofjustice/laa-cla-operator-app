@@ -16,6 +16,7 @@ import {
   GovUKHeading,
   GovUKBody,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { saveClientDetails, Answer } from "./effects.js";
 
 // Step 1: Who's calling
 const whosCallingStep = step({
@@ -219,6 +220,13 @@ const addClientDetailsStep = step({
     submit({
       validate: true,
       onValid: {
+        effects: [
+          saveClientDetails(
+            Answer("fullName"),
+            Answer("dateOfBirth"),
+            Answer("phoneNumber"),
+          ),
+        ],
         next: [redirect({ goto: "add-client-address" })],
       },
     }),
