@@ -13,9 +13,16 @@
             </div>
             
             {% if fieldValidationErrors | length %}
+                {% set errorList = [] %}
+                {% for error in fieldValidationErrors %}
+                    {% set errorList = (errorList.push({
+                        text: error.message,
+                        href: "#" + (error.anchor or error.blockCode)
+                    }), errorList) %}
+                {% endfor %}
                 {{ govukErrorSummary({
                     titleText: "There is a problem",
-                    errorList: fieldValidationErrors
+                    errorList: errorList
                 }) }}
             {% endif %}
 
