@@ -7,7 +7,9 @@ import {
   access,Session, ConditionRegistry,
   validation,
   Condition,
-  Self
+  Self,
+  Answer,
+  Post
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
   GovUKButton,
@@ -67,7 +69,7 @@ const whosCallingStep = step({
     ],
 })
 
-const addressLookup = step({
+const addressLookupStep1 = step({
     code: "address-lookup",
     path: "address-lookup",
     title: "Search client's address",
@@ -111,14 +113,36 @@ const addressLookup = step({
         }),
         GovUKButton({
             text: "Find address",
+            value: "step1"
         }),
         HtmlBlock({
             content: "<p class='govuk-body'><a href='#' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>",
         }),
     ],
     onSubmission: [
-        submit({validate: true})
+        submit({
+            validate: true,
+            onValid: {next: [redirect({goto: "address-lookup/select"})]}
+        }),
     ]
+})
+
+const addressLookupStep2 = step({
+    code: "address-lookup-select",
+    path: "address-lookup/select",
+    title: "Search client's address",
+    reachability: { entryWhen: true },
+    blocks: [
+        GovUKHeading({
+            text: "Find an address", size:"m"
+        }),
+        GovUKButton({
+            text: "Use this address",
+        }),
+        HtmlBlock({
+            content: "<p class='govuk-body'><a href='#' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>",
+        }),
+    ],
 })
 
 // Step 2: Placeholder for search-client step 
@@ -143,5 +167,5 @@ export const inboundCallJourney = journey({
     view: {
         template: "main/forms/form.njk",
     },
-    steps: [whosCallingStep, searchClient, addressLookup],
+    steps: [whosCallingStep, searchClient, addressLookupStep1, addressLookupStep2],
 });
