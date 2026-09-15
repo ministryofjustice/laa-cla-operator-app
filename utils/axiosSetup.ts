@@ -1,8 +1,8 @@
 import { create } from 'middleware-axios';
 import type { Request, Response, NextFunction } from 'express';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { devLog, devError } from '#src/scripts/helpers/index.js';
+import type { InternalAxiosRequestConfig } from 'axios';
+import { devLog } from '#src/scripts/helpers/index.js';
 import '#src/scripts/helpers/sessionHelpers.js';
 
 const DEFAULT_TIMEOUT = 5000;
@@ -33,9 +33,15 @@ function toError(error: unknown): Error {
 /**
  * Type guard for axios error with response
  * @param {unknown} error Error to check
- * @returns {boolean} True if error has response with status
+ * @returns {boolean} True if error has response details we use for logging
  */
-function isAxiosErrorWithResponse(error: unknown): error is { response: { status: number } } {
+function isAxiosErrorWithResponse(error: unknown): error is {
+  response: {
+    status: number;
+    data?: unknown;
+    headers?: Record<string, string | string[] | undefined>;
+  };
+} {
   return error !== null &&
     typeof error === 'object' &&
     'response' in error &&
@@ -61,11 +67,11 @@ export const axiosMiddleware = (req: Request, res: Response, next: NextFunction)
     },
   });
 
-  const {silasAuth} = req.session;
-  const userAccessToken = silasAuth?.accessToken;
+  const { silasAuth } = req.session;
+  const { accessToken } = silasAuth ?? {};
 
   // Axios runs on every request, so this makes it less noisy by checking routes where SiLAS auth is needed
-  const hasToken = Boolean(userAccessToken?.trim());
+  const hasToken = Boolean(accessToken?.trim());
   const needsSilasAuth = req.path.startsWith('/cases') || req.path.startsWith('/search');
 
   if (!hasToken && needsSilasAuth) {
@@ -75,7 +81,7 @@ export const axiosMiddleware = (req: Request, res: Response, next: NextFunction)
   if (hasToken) {
     axiosWrapper.axiosInstance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        config.headers.Authorization = `Bearer ${userAccessToken}`;
+        config.headers.Authorization = `Bearer ${accessToken}`;
         devLog('Added SILAS bearer token to API request');
         return config;
       },
@@ -88,15 +94,11 @@ export const axiosMiddleware = (req: Request, res: Response, next: NextFunction)
   (response) => response,
 
   async (error: unknown) => {
-    const axiosError = error as AxiosError;
-
-    if (
-      axiosError.response?.status === HTTP_UNAUTHORIZED
-    ) {
+    if (isAxiosErrorWithResponse(error) && error.response.status === HTTP_UNAUTHORIZED) {
       console.log('401 response:', {
-    data: axiosError.response.data,
+    data: error.response.data,
     wwwAuthenticate:
-      axiosError.response.headers?.['www-authenticate'],
+      error.response.headers?.['www-authenticate'],
     });
     }
 

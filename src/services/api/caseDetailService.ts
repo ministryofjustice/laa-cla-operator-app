@@ -5,7 +5,8 @@ import { configureAxiosInstance } from "./baseApiService.js"
 
 /**
  *
- * @param axiosMiddleware
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @returns {Promise<GetAllCasesResponse>} The response containing all cases.
  */
 export async function getAllCases(axiosMiddleware: AxiosInstanceWrapper): Promise<GetAllCasesResponse> {
     const configuredAxios = configureAxiosInstance(axiosMiddleware);

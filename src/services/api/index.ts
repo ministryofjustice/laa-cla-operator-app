@@ -1,7 +1,7 @@
-import { getAllCases } from './clientDetailsService.js';
+import { getAllCases } from './caseDetailService.js';
 
 export * from './baseApiService.js'
-export * from './clientDetailsService.js'
+export * from './caseDetailService.js'
 
 export const apiService = {
     getAllCases,

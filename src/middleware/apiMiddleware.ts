@@ -19,7 +19,6 @@ import { devLog, devError } from '#src/scripts/helpers/index.js';
 import type { SilasSessionAuth } from '#types/auth-types.js';
 
 const DEFAULT_TIMEOUT = 5000;
-const HTTP_UNAUTHORIZED = 401;
 
 /**
  * Configuration options for the API middleware.
@@ -107,7 +106,6 @@ export function createApiMiddleware(
     timeout = DEFAULT_TIMEOUT,
     defaultHeaders = {},
     enableLogging = true,
-    authService = null,
   } = config;
 
   return (req: Request, _res: Response, next: NextFunction): void => {

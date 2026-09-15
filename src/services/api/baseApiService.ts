@@ -4,7 +4,7 @@
  */
 
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import { extractAndLogError, devLog } from '#src/scripts/helpers/index.js';
+import { extractAndLogError } from '#src/scripts/helpers/index.js';
 import config from '../../../config.js';
 
 /**
