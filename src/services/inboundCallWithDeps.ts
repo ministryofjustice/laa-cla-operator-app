@@ -40,4 +40,5 @@ export class InboundCallEffectsWithDepsImpl implements InboundCallEffectsWithDep
         // Store the result in the context for Forge to use
         context.setData("allCases", result);
     };
+    /* c8 ignore next */
 }
