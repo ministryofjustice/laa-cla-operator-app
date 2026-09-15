@@ -57,6 +57,9 @@ const config: Config = {
     postLogoutRedirectUri: process.env.ENTRA_POST_REDIRECT_URI ?? '/',
     scopes: process.env.ENTRA_SCOPES?.split(",") ?? [],
     expectedAudience: process.env.ENTRA_EXPECTED_AUDIENCE ?? ''
+  },
+  api: {
+    baseUrl: process.env.BACKEND_BASE_URL ?? ''
   }
 };
 
