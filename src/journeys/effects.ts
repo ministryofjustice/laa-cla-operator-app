@@ -11,6 +11,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
 
     /**
      *
+     * Implementation of the effect for retrieving all cases.
      * @param deps {Deps} - The dependencies required for the effect.
      * @param context {EffectFunctionContext} - The context in which the effect is executed.
      * @returns {Promise<void>} A promise that resolves when the effect has been executed.

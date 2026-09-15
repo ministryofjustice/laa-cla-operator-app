@@ -248,7 +248,7 @@ export function requireAuth(
   next: NextFunction
 ): void {
   const { session } = req;
-  const { silasAuth } = session;
+  const { silasAuth } = session ?? {};
 
   if (!hasValidSilasToken(silasAuth)) {
     res.redirect('/sign-in');
@@ -301,7 +301,7 @@ export const setAuthStatus = (
   next: NextFunction
 ): void => {
   const { session } = req;
-  const { silasAuth, user } = session;
+  const { silasAuth, user } = session ?? {};
 
   res.locals.isAuthenticated = hasValidSilasToken(silasAuth);
 
