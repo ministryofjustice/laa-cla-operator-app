@@ -4,7 +4,10 @@ import {
   step,
   submit,
   redirect,
-  access,Session, ConditionRegistry
+  access,Session, ConditionRegistry,
+  validation,
+  Condition,
+  Self
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
   GovUKButton,
@@ -20,10 +23,9 @@ import { HtmlBlock } from '@ministryofjustice/hmpps-forge/core/components'
 
 export const conditionRegistry = new ConditionRegistry()
 
-export const AuthConditions = {
+export const CustomConditions = {
   /**
-   * Checks that a numeric value meets the minimum score threshold.
-   * @param minScore - The minimum value required for eligibility.
+   * Check user has a valid silas token.
    */
   HasValidSilasToken: conditionRegistry.register(
     'HasValidSilasToken',
@@ -39,7 +41,7 @@ const whosCallingStep = step({
     reachability: { entryWhen: true },
     onAccess: [
         access({
-            when: Session("silasAuth").not.match(AuthConditions.HasValidSilasToken()),
+            when: Session("silasAuth").not.match(CustomConditions.HasValidSilasToken()),
             next: [redirect({goto: "/login"})]
         })
     ],
@@ -81,7 +83,17 @@ const addressLookup = step({
             "label" : {
                 "text": "Postcode",
                 "classes": GovUKUtilityClasses.Label.Small,
-            }
+            },
+            validWhen: [
+                validation({
+                    condition: Self().match(Condition.IsRequired()),
+                    message: "You must enter a valid postcode"
+                }),
+                validation({
+                    condition: Self().match(Condition.String.HasMaxLength(12)),
+                    message: "You must enter a valid postcode",
+                })
+            ],
         }),
         GovUKTextInput( {
             code: "building ",
@@ -89,14 +101,23 @@ const addressLookup = step({
             "label" : {
                 "text": "Building number or name",
                 "classes": GovUKUtilityClasses.Label.Small,
-            }
+            },
+            validWhen: [
+                validation({
+                    condition: Self().match(Condition.IsRequired()),
+                    message: "You must enter a valid building number or name"
+                }),
+            ]
         }),
         GovUKButton({
-            text: "Continue",
+            text: "Find address",
         }),
         HtmlBlock({
             content: "<p class='govuk-body'><a href='#' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>",
         }),
+    ],
+    onSubmission: [
+        submit({validate: true})
     ]
 })
 
