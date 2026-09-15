@@ -88,6 +88,11 @@ router.get('/privacy', function (req: Request, res: Response): void {
   res.render('main/privacy.njk');
 });
 
+//Cookies page
+router.get('/cookies', function (req: Request, res: Response): void {
+  res.render('main/cookies.njk');
+});
+
 // GET users from external API using BaseApiService pattern
 router.get('/users', async function (req: Request, res: Response, next: NextFunction) {
   try {
