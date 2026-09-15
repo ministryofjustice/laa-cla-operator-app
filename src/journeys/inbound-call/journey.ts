@@ -9,8 +9,12 @@ import {
 import {
   GovUKButton,
   GovUKRadioInput,
-    GovUKPanel,
+  GovUKPanel,
+  GovUKTextInput,
+  GovUKUtilityClasses,
+  GovUKHeading,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { HtmlBlock } from '@ministryofjustice/hmpps-forge/core/components'
 
 
 
@@ -61,6 +65,41 @@ const whosCallingStep = step({
     ],
 })
 
+const addressLookup = step({
+    code: "address-lookup",
+    path: "address-lookup",
+    title: "Search client's address",
+    reachability: { entryWhen: true },
+    blocks: [
+        GovUKHeading({
+            text: "Find an address", size:"m"
+        }),
+        GovUKTextInput( {
+            code: "postcode",
+            hint: "For example, AA3 1AB.",
+            autocomplete: "postal-code",
+            "label" : {
+                "text": "Postcode",
+                "classes": GovUKUtilityClasses.Label.Small,
+            }
+        }),
+        GovUKTextInput( {
+            code: "building ",
+            hint: "For example, 15 or Prospect Cottage",
+            "label" : {
+                "text": "Building number or name",
+                "classes": GovUKUtilityClasses.Label.Small,
+            }
+        }),
+        GovUKButton({
+            text: "Continue",
+        }),
+        HtmlBlock({
+            content: "<p class='govuk-body'><a href='#' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>",
+        }),
+    ]
+})
+
 // Step 2: Placeholder for search-client step 
 const searchClient = step({
     code: "search-client",
@@ -81,7 +120,7 @@ export const inboundCallJourney = journey({
     title: "Inbound Call Journey",
     path: "/receive-call",
     view: {
-        template: "partials/form-step",
+        template: "main/forms/form.njk",
     },
-    steps: [whosCallingStep, searchClient],
+    steps: [whosCallingStep, searchClient, addressLookup],
 });
