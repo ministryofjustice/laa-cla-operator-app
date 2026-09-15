@@ -135,8 +135,8 @@ describe('apiMiddleware', () => {
 });
 
 describe('requireAuth', () => {
-  it('redirects to sign-in when session is missing', () => {
-    const req = {} as Request;
+  it('redirects to sign-in when silasAuth is missing from session', () => {
+    const req = { session: {} } as unknown as Request;
     let redirectedTo = '';
     let nextCalled = false;
 
@@ -212,8 +212,8 @@ describe('hasValidSilasToken', () => {
 });
 
 describe('setAuthStatus', () => {
-  it('sets locals for unauthenticated users without session', () => {
-    const req = {} as Request;
+  it('sets locals for unauthenticated users without silasAuth in session', () => {
+    const req = { session: {} } as unknown as Request;
     const res = { locals: {} as Record<string, unknown> } as Response;
 
     let nextCalled = false;
