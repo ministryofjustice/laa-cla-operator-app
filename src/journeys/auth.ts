@@ -1,6 +1,7 @@
 import { ConditionRegistry, access, Session, redirect } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { Deps } from "./api.js";
 import { hasValidSilasToken } from "#src/middleware/apiMiddleware.js";
+import type { SilasSessionAuth } from "#types/auth-types.js";
 
 export const conditionRegistry = new ConditionRegistry<Deps>()
 
@@ -13,7 +14,7 @@ export const AuthConditions = {
    */
   HasValidSilasToken: conditionRegistry.register(
     'HasValidSilasToken',
-    (_deps) => (silasAuth) => hasValidSilasToken(silasAuth)
+    (_deps) => (silasAuth: SilasSessionAuth | undefined) => hasValidSilasToken(silasAuth)
   )
 }
 

@@ -67,8 +67,7 @@ export const axiosMiddleware = (req: Request, res: Response, next: NextFunction)
     },
   });
 
-  const { silasAuth } = req.session;
-  const { accessToken } = silasAuth ?? {};
+  const { accessToken } = req.session.silasAuth ?? {};
 
   // Axios runs on every request, so this makes it less noisy by checking routes where SiLAS auth is needed
   const hasToken = Boolean(accessToken?.trim());

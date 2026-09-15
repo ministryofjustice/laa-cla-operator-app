@@ -1,5 +1,5 @@
 import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { callbackAction, loginAction, logOut } from '#src/controllers/silasController.js';
@@ -9,8 +9,6 @@ const router = express.Router();
 
 const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;
-const UNAUTHORIZED_REQUEST = 401;
-const FIRST_ITEM_INDEX = 0;
 
 // 1. Trigger Login
 router.get('/sign-in', (req: Request, res: Response): void => {
@@ -25,32 +23,6 @@ router.get('/redirect', callbackAction);
 
 // Log out of the application
 router.get('/logout', logOut);
-
-/**
- * Fetches call-centre cases from the downstream API on behalf of the user.
- *
- * @param {string} accessToken Bearer token used to authenticate the request.
- * @returns {Promise<unknown>} The parsed JSON response body.
- * @throws {Error} When the downstream API responds with a non-OK status.
- */
-async function getCases(accessToken: string): Promise<unknown> {
-  const CASES_API_URL = 'http://localhost:8010/call_centre/api/v1/case/?dashboard=1';
-
-  const response = await fetch(CASES_API_URL, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => '');
-    throw new Error(`Cases API request failed with status ${response.status}: ${body}`);
-  }
-
-  return await response.json();
-}
 
 /* GET home page. */
 router.get('/', function (req: Request, res: Response): void {

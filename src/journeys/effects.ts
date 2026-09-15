@@ -10,11 +10,9 @@ type InboundCallEffectsImplementation = (deps: Deps) => (context: EffectFunction
 export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
 
     /**
-     *
      * Implementation of the effect for retrieving all cases.
-     * @param deps {Deps} - The dependencies required for the effect.
-     * @param context {EffectFunctionContext} - The context in which the effect is executed.
-     * @returns {Promise<void>} A promise that resolves when the effect has been executed.
+     * @param {Deps} deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     GetAllCases: (deps: Deps) => async (context: EffectFunctionContext) => {
        await deps.effectsWithDeps.GetAllCases(deps, context);

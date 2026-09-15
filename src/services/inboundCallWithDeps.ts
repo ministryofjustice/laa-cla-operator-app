@@ -1,20 +1,24 @@
 import type { EffectFunctionContext } from "@ministryofjustice/hmpps-forge/core";
-import type { AxiosInstanceWrapper } from "#node_modules/middleware-axios/dist/esm/index.js";
+import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import type { Deps, InboundCallEffectsWithDeps } from "#src/journeys/api.js"
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
+
+interface InboundCallApiService {
+    getAllCases: (axiosMiddleware: AxiosInstanceWrapper) => Promise<unknown>;
+}
 
 /**
  * Implementation of the InboundCallEffectsWithDeps interface that interacts with the API service using Axios middleware.
  */
 export class InboundCallEffectsWithDepsImpl implements InboundCallEffectsWithDeps {
-    private readonly apiService: Record<string, CallableFunction>;
+    private readonly apiService: InboundCallApiService;
 
     /**
      * Creates an instance of InboundCallEffectsWithDepsImpl.
-     * @param apiService {Record<string, CallableFunction>} The API service containing the callable functions.
+     * @param {InboundCallApiService} apiService The API service containing callable functions.
      * @throws {Error} If the API service is not provided.
      */
-    constructor(apiService: Record<string, CallableFunction>)
+    constructor(apiService: InboundCallApiService)
     {
         this.apiService = apiService;
     }
@@ -22,8 +26,8 @@ export class InboundCallEffectsWithDepsImpl implements InboundCallEffectsWithDep
     /**
      *
      * Executes the effect to retrieve all cases from the API service.
-     * @param _deps {Deps} The dependencies required to execute the effect.
-     * @param context {EffectFunctionContext} The context in which the effect is executed.
+     * @param {Deps} _deps The dependencies required to execute the effect.
+     * @param {EffectFunctionContext} context The context in which the effect is executed.
      * @returns {Promise<void>} A promise that resolves when the effect has been executed.
      */
     GetAllCases = async (_deps: Deps, context: EffectFunctionContext): Promise<void> => {
