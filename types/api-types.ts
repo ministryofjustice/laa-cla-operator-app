@@ -11,13 +11,13 @@ export interface CaseDetails {
   modified: string;
   full_name: string;
   laa_reference: number;
-  eligibility_state: string;
+  eligibility_state: string | null;
   personal_details: string;
   requires_action_by: string | null;
   postcode: string;
   rejected: boolean;
   date_of_birth: string;
-  category: string;
+  category: string | null;
   outcome_code: string;
   outcome_description: string;
   case_count: number;
