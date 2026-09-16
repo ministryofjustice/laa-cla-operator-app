@@ -1,5 +1,4 @@
 import { test, expect } from "../fixtures/index.js";
-const EXPECTED_REQUIRED_OPTION_MESSAGES = 3;
 
 test.describe("Add new client page", () => {
   test("renders heading and back link", async ({ pages }) => {
@@ -39,16 +38,20 @@ test.describe("Add new client page", () => {
       "There is a problem",
     );
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "You must enter a valid day, month, or year",
+      "Enter the client’s name",
     );
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "You must enter a valid phone number",
+      "Enter a valid day",
     );
-
-    const requiredOptionMessages = await addClientDetailsPage.errorSummary
-      .getByText("You must select an option")
-      .count();
-    expect(requiredOptionMessages).toBe(EXPECTED_REQUIRED_OPTION_MESSAGES);
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid year",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid phone number",
+    );
   });
 
   test("invalid date of birth shows date error only", async ({ pages }) => {
@@ -74,10 +77,16 @@ test.describe("Add new client page", () => {
     await addClientDetailsPage.submit();
 
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "You must enter a valid day, month, or year",
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid month",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "You must enter a valid phone number",
+      "Enter a valid year",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid phone number",
     );
   });
 
@@ -104,10 +113,16 @@ test.describe("Add new client page", () => {
     await addClientDetailsPage.submit();
 
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "You must enter a valid phone number",
+      "Enter a valid phone number",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "You must enter a valid day, month, or year",
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid year",
     );
   });
 

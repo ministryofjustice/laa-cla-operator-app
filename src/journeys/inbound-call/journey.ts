@@ -7,6 +7,9 @@ import {
   Condition,
   validation,
   and,
+  or,
+  Generator,
+  Transformer,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
   GovUKButton,
@@ -87,6 +90,12 @@ const addClientDetailsStep = step({
     GovUKTextInput({
       code: "fullName",
       label: { text: "Name", classes: "govuk-label--s" },
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsRequired()),
+          message: "Enter the client’s name",
+        }),
+      ],
     }),
 
     GovUKDateInputFull({
@@ -100,11 +109,66 @@ const addClientDetailsStep = step({
       hint: { text: "For example, 27 3 2007" },
       validWhen: [
         validation({
-          condition: and(
-            Self().match(Condition.IsRequired()),
-            Self().match(Condition.Date.IsValid()),
+          condition: Self().match(Condition.Object.PropertyHasValue("day")),
+          message: "Enter a valid day",
+          details: { field: "day" },
+        }),
+        validation({
+          condition: Self().match(Condition.Object.PropertyHasValue("month")),
+          message: "Enter a valid month",
+          details: { field: "month" },
+        }),
+        validation({
+          condition: Self().match(Condition.Object.PropertyHasValue("year")),
+          message: "Enter a valid year",
+          details: { field: "year" },
+        }),
+        validation({
+          condition: or(
+            Self().not.match(Condition.Object.PropertyHasValue("day")),
+            Self().match(Condition.Date.IsValidDay()),
           ),
-          message: "You must enter a valid day, month, or year",
+          message: "Enter a valid day",
+          details: { field: "day" },
+        }),
+        validation({
+          condition: or(
+            Self().not.match(Condition.Object.PropertyHasValue("month")),
+            Self().match(Condition.Date.IsValidMonth()),
+          ),
+          message: "Enter a valid month",
+          details: { field: "month" },
+        }),
+        validation({
+          condition: or(
+            Self().not.match(Condition.Object.PropertyHasValue("year")),
+            Self().match(Condition.Date.IsValidYear()),
+          ),
+          message: "Enter a valid year",
+          details: { field: "year" },
+        }),
+        validation({
+          condition: or(
+            Self().not.match(Condition.Date.IsValid()),
+            Self().not.match(Condition.Date.IsFutureDate()),
+          ),
+          message: "Year cannot be in the future",
+          details: { field: "year" },
+        }),
+        validation({
+          condition: or(
+            Self().not.match(Condition.Date.IsValid()),
+            Self().not.match(
+              Condition.Date.IsBefore(
+                Generator.Date.Today().pipe(
+                  Transformer.Date.AddYears(-120),
+                  Transformer.Date.Format("YYYY-MM-DD"),
+                ),
+              ),
+            ),
+          ),
+          message: "Year cannot be more than 120 years ago",
+          details: { field: "year" },
         }),
       ],
     }),
@@ -120,7 +184,7 @@ const addClientDetailsStep = step({
             Self().match(Condition.IsRequired()),
             Self().match(Condition.Phone.IsValidPhoneNumber()),
           ),
-          message: "You must enter a valid phone number",
+          message: "Enter a valid phone number",
         }),
       ],
     }),
@@ -137,12 +201,6 @@ const addClientDetailsStep = step({
         { value: "yes", text: "Yes" },
         { value: "no", text: "No" },
       ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "You must select an option",
-        }),
-      ],
     }),
 
     GovUKRadioInput({
@@ -156,12 +214,6 @@ const addClientDetailsStep = step({
       items: [
         { value: "yes", text: "Yes" },
         { value: "no", text: "No" },
-      ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "You must select an option",
-        }),
       ],
     }),
 
@@ -199,12 +251,6 @@ const addClientDetailsStep = step({
             }),
           ],
         },
-      ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "You must select an option",
-        }),
       ],
     }),
 
