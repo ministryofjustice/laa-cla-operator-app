@@ -1,5 +1,6 @@
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
 import { getAllCases } from '#src/services/api/caseDetailsService.js';
+import { strict as assert } from 'assert';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -97,6 +98,23 @@ describe('caseDetailsService', () => {
             // Assert
             expect(result).to.deep.equal(mockResponse.data);
             expect(result.results).to.deep.equal(mockResponse.data.results);
+        });
+
+        it('wraps API failures with a user-friendly message and preserves cause', async () => {
+            // Arrange
+            const originalError = new Error('backend unavailable');
+            getStub.rejects(originalError);
+
+            // Act / Assert
+            await assert.rejects(
+                () => getAllCases(axiosMiddlewareStub),
+                (error: unknown) => {
+                    assert(error instanceof Error);
+                    assert.equal(error.message, 'An unexpected error occurred. Please try again.');
+                    assert.equal(error.cause, originalError);
+                    return true;
+                }
+            );
         });
     });
 });

@@ -37,6 +37,8 @@ describe('apiMiddleware', () => {
     assert.equal(nextCalled, true);
     assert.ok(req.axiosMiddleware);
     assert.equal(typeof req.axiosMiddleware.get, 'function');
+    assert.ok(req.state);
+    assert.strictEqual(req.state.authenticatedAxios, req.axiosMiddleware);
   });
 
   it('adds authorization header from authService', async () => {

@@ -36,6 +36,9 @@ export interface ApiMiddlewareConfig {
 
   /** Optional authentication service for JWT handling. */
   authService?: AuthServiceInterface | null;
+
+  /** Whether to attach SILAS session bearer tokens when present. */
+  useSessionSilasAuth?: boolean;
 }
 
 /**
@@ -54,7 +57,12 @@ export interface AuthServiceInterface {
  */
 declare global {
   namespace Express {
+    interface RequestState {
+      authenticatedAxios: AxiosInstanceWrapper;
+    }
+
     interface Request {
+      state: RequestState;
       axiosMiddleware: AxiosInstanceWrapper;
     }
   }
@@ -108,6 +116,7 @@ export function createApiMiddleware(
     defaultHeaders = {},
     enableLogging = true,
     authService = null,
+    useSessionSilasAuth = true,
   } = config;
 
   return (req: Request, _res: Response, next: NextFunction): void => {
@@ -225,7 +234,34 @@ export function createApiMiddleware(
       );
     }
 
+    if (useSessionSilasAuth) {
+      const accessToken = req.session?.silasAuth?.accessToken;
+      const hasToken = typeof accessToken === 'string' && accessToken.trim() !== '';
+      const requestPath = req.path ?? '';
+      const needsSilasAuth = requestPath.startsWith('/cases') || requestPath.startsWith('/search');
+
+      if (!hasToken && needsSilasAuth && enableLogging) {
+        devLog('No SILAS access token found in session - request will proceed without Authorization header');
+      }
+
+      if (hasToken) {
+        axiosWrapper.axiosInstance.interceptors.request.use(
+          (requestConfig: InternalAxiosRequestConfig) => {
+            requestConfig.headers.Authorization = `Bearer ${accessToken}`;
+
+            if (enableLogging) {
+              devLog('Added SILAS bearer token to API request');
+            }
+
+            return requestConfig;
+          },
+          async (error: unknown) => await Promise.reject(toError(error))
+        );
+      }
+    }
+
     req.axiosMiddleware = axiosWrapper;
+    req.state = { authenticatedAxios: axiosWrapper };
 
     next();
   };
