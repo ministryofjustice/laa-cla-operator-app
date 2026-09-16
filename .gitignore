@@ -1,6 +1,10 @@
 # Dependency directories
 node_modules/
 
+# This project uses Yarn (see packageManager/.yarnrc.yml); npm's lockfile
+# must never be committed alongside yarn.lock.
+package-lock.json
+
 # Yarn cache (when using corepack)
 .yarn/cache/
 .yarn/install-state.gz

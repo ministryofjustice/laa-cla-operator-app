@@ -43,6 +43,7 @@
     "node": "26.8.1"
   },
   "dependencies": {
+    "@azure/msal-node": "^6.0.0",
     "@ministryofjustice/frontend": "^9.0.0",
     "@ministryofjustice/hmpps-forge": "^0.4.1",
     "axios": "1.16.0",
@@ -112,7 +113,7 @@
     "lint-staged": "^16.2.4",
     "livereload": "^0.10.2",
     "middleware-axios": "^3.0.0",
-    "mocha": "^11.7.3",
+    "mocha": "^12.0.0",
     "msw": "^2.11.3",
     "nodemon": "^3.1.9",
     "playwright-core": "^1.56.0",

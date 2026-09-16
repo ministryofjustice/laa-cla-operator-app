@@ -1,3 +1,4 @@
+import { hasValidSilasToken } from "#src/middleware/apiMiddleware.js";
 import {
   journey,
   step,
@@ -10,6 +11,9 @@ import {
   or,
   Generator,
   Transformer,
+  access,
+  Session,
+  ConditionRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
   GovUKButton,
@@ -24,12 +28,31 @@ import { saveClientDetails, Answer } from "./effects.js";
 
 const MAX_CLIENT_AGE_YEARS = 120;
 
+export const conditionRegistry = new ConditionRegistry();
+
+export const AuthConditions = {
+  /**
+   * Checks that a numeric value meets the minimum score threshold.
+   * @param minScore - The minimum value required for eligibility.
+   */
+  HasValidSilasToken: conditionRegistry.register(
+    "HasValidSilasToken",
+    (deps) => hasValidSilasToken,
+  ),
+};
+
 // Step 1: Who's calling
 const whosCallingStep = step({
   code: "whos-calling",
   path: "/",
   title: "Taking calls from clients",
   reachability: { entryWhen: true },
+  onAccess: [
+    access({
+      when: Session("silasAuth").not.match(AuthConditions.HasValidSilasToken()),
+      next: [redirect({ goto: "/login" })],
+    }),
+  ],
   view: { template: "main/index.njk" },
   blocks: [
     GovUKRadioInput({
