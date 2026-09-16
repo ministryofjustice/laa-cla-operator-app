@@ -21,6 +21,8 @@ import {
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { saveClientDetails, Answer } from "./effects.js";
 
+const MAX_CLIENT_AGE_YEARS = 120;
+
 // Step 1: Who's calling
 const whosCallingStep = step({
   code: "whos-calling",
@@ -161,7 +163,7 @@ const addClientDetailsStep = step({
             Self().not.match(
               Condition.Date.IsBefore(
                 Generator.Date.Today().pipe(
-                  Transformer.Date.AddYears(-120),
+                  Transformer.Date.AddYears(-MAX_CLIENT_AGE_YEARS),
                   Transformer.Date.Format("YYYY-MM-DD"),
                 ),
               ),

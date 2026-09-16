@@ -126,6 +126,40 @@ test.describe("Add new client page", () => {
     );
   });
 
+  test("date of birth more than 120 years ago shows the year error", async ({
+    pages,
+  }) => {
+    const { addClientDetailsPage } = pages;
+    await addClientDetailsPage.navigate();
+
+    await addClientDetailsPage.fillValidForm();
+    await addClientDetailsPage.dateOfBirthYearInput.fill(
+      String(new Date().getFullYear() - 121),
+    );
+    await addClientDetailsPage.submit();
+
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Year cannot be more than 120 years ago",
+    );
+  });
+
+  test("future date of birth shows the year error", async ({ pages }) => {
+    const { addClientDetailsPage } = pages;
+    await addClientDetailsPage.navigate();
+
+    await addClientDetailsPage.fillValidForm();
+    await addClientDetailsPage.dateOfBirthDayInput.fill("1");
+    await addClientDetailsPage.dateOfBirthMonthInput.fill("1");
+    await addClientDetailsPage.dateOfBirthYearInput.fill(
+      String(new Date().getFullYear() + 1),
+    );
+    await addClientDetailsPage.submit();
+
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Year cannot be in the future",
+    );
+  });
+
   test("email is optional and does not block submission when blank", async ({
     page,
     pages,
