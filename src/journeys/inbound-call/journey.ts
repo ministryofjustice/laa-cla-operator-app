@@ -18,6 +18,7 @@ import {
   GovUKDateInputFull,
   GovUKHeading,
   GovUKBody,
+  GovUKUtilityClasses,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { saveClientDetails, Answer } from "./effects.js";
 
@@ -91,7 +92,7 @@ const addClientDetailsStep = step({
 
     GovUKTextInput({
       code: "fullName",
-      label: { text: "Name", classes: "govuk-label--s" },
+      label: { text: "Name", classes: GovUKUtilityClasses.Label.Small },
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
@@ -179,7 +180,10 @@ const addClientDetailsStep = step({
 
     GovUKTextInput({
       code: "phoneNumber",
-      label: { text: "Phone number", classes: "govuk-label--s" },
+      label: {
+        text: "Phone number",
+        classes: GovUKUtilityClasses.Label.Small,
+      },
       validWhen: [
         validation({
           condition: and(
@@ -258,7 +262,10 @@ const addClientDetailsStep = step({
 
     GovUKTextInput({
       code: "email",
-      label: { text: "Email (optional)", classes: "govuk-label--s" },
+      label: {
+        text: "Email (optional)",
+        classes: GovUKUtilityClasses.Label.Small,
+      },
       inputType: "email",
     }),
 
