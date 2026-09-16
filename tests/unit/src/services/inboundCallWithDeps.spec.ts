@@ -1,9 +1,9 @@
 import { strict as assert } from 'assert';
 import sinon from 'sinon';
-import { InboundCallEffectsWithDepsImpl } from '#src/services/inboundCallWithDeps.js';
+import { InboundCallEffectsImplementation } from '#src/journeys/effects.js';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
 
-describe('InboundCallEffectsWithDepsImpl', () => {
+describe('InboundCallEffectsImplementation.GetAllCases', () => {
   function makeAxiosWrapper(): AxiosInstanceWrapper {
     const get = sinon.stub();
 
@@ -30,7 +30,9 @@ describe('InboundCallEffectsWithDepsImpl', () => {
     const expected = { count: 1, results: [{ reference: 'FA-1' }] };
     const getAllCases = sinon.stub().resolves(expected);
 
-    const service = new InboundCallEffectsWithDepsImpl({ getAllCases });
+    const effect = InboundCallEffectsImplementation.GetAllCases({
+      caseApi: { getAllCases },
+    });
 
     const setData = sinon.stub();
     const context = {
@@ -38,15 +40,15 @@ describe('InboundCallEffectsWithDepsImpl', () => {
       setData,
     };
 
-    await service.GetAllCases({} as any, context as any);
+    await effect(context as any);
 
     assert.equal(getAllCases.calledOnceWithExactly(axiosWrapper), true);
     assert.equal(setData.calledOnceWithExactly('allCases', expected), true);
   });
 
   it('throws when authenticatedAxios is missing or invalid', async () => {
-    const service = new InboundCallEffectsWithDepsImpl({
-      getAllCases: sinon.stub(),
+    const effect = InboundCallEffectsImplementation.GetAllCases({
+      caseApi: { getAllCases: sinon.stub() },
     });
 
     const context = {
@@ -55,7 +57,7 @@ describe('InboundCallEffectsWithDepsImpl', () => {
     };
 
     await assert.rejects(
-      () => service.GetAllCases({} as any, context as any),
+      () => effect(context as any),
       (error: unknown) => {
         assert(error instanceof Error);
         assert.equal(error.message, 'Axios middleware is not available in the context.');

@@ -1,5 +1,6 @@
 import type { Deps } from "#src/journeys/api.js";
 import { type EffectFunctionExpr, type EffectFunctionContext, EffectRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 
 export interface InboundCallEffectShape {
     GetAllCases: () => EffectFunctionExpr;
@@ -15,7 +16,14 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     GetAllCases: (deps: Deps) => async (context: EffectFunctionContext) => {
-       await deps.effectsWithDeps.GetAllCases(deps, context);
+       const authenticatedAxiosState = context.getState("authenticatedAxios");
+
+       if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
+           throw new Error("Axios middleware is not available in the context.");
+       }
+
+       const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
+       context.setData("allCases", result);
     },
 };
 

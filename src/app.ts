@@ -12,7 +12,6 @@ import indexRouter from '#routes/index.js';
 import livereload from 'connect-livereload';
 import { Forge } from '@ministryofjustice/hmpps-forge/core'
 import type { Deps } from './journeys/api.js'
-import { InboundCallEffectsWithDepsImpl } from './services/inboundCallWithDeps.js'
 import { apiService } from './services/api/index.js';
 import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
@@ -110,7 +109,7 @@ const createApp = (): express.Application => {
 	// it'll be automatically registered with Forge here.
 	for (const journeyPackage of journeyPackages) {
 		forge.registerPackage<Deps>(journeyPackage, {
-			effectsWithDeps: new InboundCallEffectsWithDepsImpl(apiService)
+			caseApi: apiService
 		});
 	}
 
