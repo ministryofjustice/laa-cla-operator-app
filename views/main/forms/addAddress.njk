@@ -1,8 +1,52 @@
 {% extends "base.njk" %}
 
 {% block content %}
+    <a href="#" class="govuk-back-link">Back</a>
+  
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h1 class="govuk-fieldset__heading">
+           Enter client’s address
+            </h1>
+        </legend>
+
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <p class="govuk-fieldset__heading">
+           Enter address manually
+            </p>
+        </legend>
+        <div class="govuk-form-group">
+            <label class="govuk-label" for="address-line-1">
+            Address line 1
+            </label>
+            <input class="govuk-input" id="address-line-1" name="addressLine1" type="text" autocomplete="address-line1">
+        </div>
+        <div class="govuk-form-group">
+            <label class="govuk-label" for="address-line-2">
+            Address line 2 (optional)
+            </label>
+            <input class="govuk-input" id="address-line-2" name="addressLine2" type="text" autocomplete="address-line2">
+        </div>
+        <div class="govuk-form-group">
+            <label class="govuk-label" for="address-town">
+            Town or city
+            </label>
+            <input class="govuk-input govuk-!-width-two-thirds" id="address-town" name="addressTown" type="text" autocomplete="address-level2">
+        </div>
+        <div class="govuk-form-group">
+            <label class="govuk-label" for="address-postcode">
+            Postcode
+            </label>
+            <input class="govuk-input govuk-input--width-10" id="address-postcode" name="addressPostcode" type="text" autocomplete="postal-code">
+        </div>
+        </fieldset>
 
 
-
+    <button type="submit" class="govuk-button" data-module="govuk-button">
+   Use this address
+    </button>
+    <br>
+   <a class="govuk-link govuk-task-list__link" href="#" aria-describedby="company-details-1-status">
+       Search for an address
+      </a>
 
 {% endblock %}

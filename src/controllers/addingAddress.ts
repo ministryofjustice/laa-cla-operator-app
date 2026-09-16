@@ -1,22 +1,23 @@
+import type { Request, Response } from 'express';
 
 /**
- * @param
- * 
- * 
+ * Saves a user's address.
+ * @param req - Express request object; expects address fields in req.body
+ * @param res - Express response object; used to send a JSON response
  */
-
 export function saveAddress(req: Request, res: Response) {
-    console.log(req, res);
+    res.json({
+        success: true,
+        message: 'Address saved successfully',
+        data: req.body,
+    });
 }
 
-
-
 /**
- * @param
- * 
- * 
+ * Returns data needed to render the address form.
+ * @param req - Express request object; may contain query/params for pre-filling the form
+ * @param res - Express response object; used to send a JSON response
  */
-
 export function showAddressForm(req: Request, res: Response) {
-    console.log(req, res); 
+    res.render("main/forms/addAddress.njk")
 }
