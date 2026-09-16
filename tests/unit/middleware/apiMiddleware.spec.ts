@@ -26,7 +26,7 @@ describe('apiMiddleware', () => {
 
   it('attaches axios middleware to request and calls next', () => {
     const middleware = createApiMiddleware({ enableLogging: false });
-    const req = {} as Request;
+    const req = { session: {} } as unknown as Request;
     const res = {} as Response;
     let nextCalled = false;
 
@@ -50,7 +50,7 @@ describe('apiMiddleware', () => {
       },
     });
 
-    const req = {} as Request;
+    const req = { session: {} } as unknown as Request;
     const res = {} as Response;
 
     middleware(req, res, (() => undefined) as NextFunction);
@@ -86,7 +86,7 @@ describe('apiMiddleware', () => {
       },
     });
 
-    const req = {} as Request;
+    const req = { session: {} } as unknown as Request;
     const res = {} as Response;
 
     middleware(req, res, (() => undefined) as NextFunction);
@@ -118,7 +118,7 @@ describe('apiMiddleware', () => {
       },
     });
 
-    const req = {} as Request;
+    const req = { session: {} } as unknown as Request;
     const res = {} as Response;
 
     middleware(req, res, (() => undefined) as NextFunction);

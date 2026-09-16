@@ -5,6 +5,7 @@ const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 /**
  * Registers global error middleware to normalize runtime and API errors.
+ * @param {Application} app - Express application used to register the global error middleware.
  */
 export function setupGlobalErrorHandler(app: Application): void {
   app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {

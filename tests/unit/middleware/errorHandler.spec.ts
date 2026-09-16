@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
 import sinon from 'sinon';
 import type { Application, NextFunction, Request, Response } from 'express';
-import { setupGlobalErrorHandler } from '#src/middleware/errorHandler.js';
+import { setupGlobalErrorHandler } from '#src/middleware/globalErrorHandler.js';
 
 describe('setupGlobalErrorHandler', () => {
   beforeEach(() => {

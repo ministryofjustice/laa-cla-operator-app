@@ -11,15 +11,15 @@
 import { create } from 'middleware-axios';
 import type { Request, Response, NextFunction } from 'express';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import type {
-  InternalAxiosRequestConfig,
-  AxiosError,
-} from 'axios';
-import { devLog, devError } from '#src/scripts/helpers/index.js';
 import type { SilasSessionAuth } from '#types/auth-types.js';
+import {
+  addLoggingInterceptors,
+  addAuthServiceInterceptors,
+  addSessionSilasTokenInterceptor,
+  type ApiAuthService,
+} from './apiInterceptors.js';
 
 const DEFAULT_TIMEOUT = 5000;
-const HTTP_UNAUTHORIZED = 401;
 
 /**
  * Configuration options for the API middleware.
@@ -44,7 +44,7 @@ export interface ApiMiddlewareConfig {
 /**
  * Authentication service interface compatible with the MCC auth service.
  */
-export interface AuthServiceInterface {
+export interface AuthServiceInterface extends ApiAuthService {
   /** Retrieve the authentication header. */
   getAuthHeader: () => Promise<string>;
 
@@ -66,36 +66,6 @@ declare global {
       axiosMiddleware: AxiosInstanceWrapper;
     }
   }
-}
-
-/**
- * Convert an unknown error value into an Error instance.
- *
- * @param {unknown} error - The value to convert into an Error.
- * @returns {Error} An Error instance.
- */
-function toError(error: unknown): Error {
-  return error instanceof Error ? error : new Error(String(error));
-}
-
-/**
- * Check whether an unknown error is an Axios error with an HTTP response.
- *
- * @param {unknown} error - The error value to inspect.
- * @returns {boolean} True when the error contains an Axios response with a numeric status.
- */
-function isAxiosErrorWithResponse(
-  error: unknown
-): error is AxiosError & { response: { status: number } } {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'response' in error &&
-    error.response !== null &&
-    typeof error.response === 'object' &&
-    'status' in error.response &&
-    typeof error.response.status === 'number'
-  );
 }
 
 /**
@@ -135,50 +105,7 @@ export function createApiMiddleware(
      * Add request and response logging interceptors when logging is enabled.
      */
     if (enableLogging) {
-      axiosWrapper.axiosInstance.interceptors.request.use(
-        (requestConfig: InternalAxiosRequestConfig) => {
-          devLog(
-            `API Request: ${requestConfig.method?.toUpperCase()} ` +
-              `${requestConfig.baseURL ?? ''}${requestConfig.url ?? ''}`
-          );
-
-          return requestConfig;
-        },
-        async (error: unknown) => {
-          const requestError = toError(error);
-
-          devError(`API Request Error: ${requestError.message}`);
-
-          return await Promise.reject(requestError);
-        }
-      );
-
-      axiosWrapper.axiosInstance.interceptors.response.use(
-        (response) => {
-          devLog(
-            `API Response: ${response.status} ` +
-              `${response.config.method?.toUpperCase()} ` +
-              `${response.config.url}`
-          );
-
-          return response;
-        },
-        async (error: unknown) => {
-          if (isAxiosErrorWithResponse(error)) {
-            devError(
-              `API Response Error: ${error.response.status} ` +
-                `${error.config?.method?.toUpperCase()} ` +
-                `${error.config?.url}`
-            );
-          } else {
-            const responseError = toError(error);
-
-            devError(`API Network Error: ${responseError.message}`);
-          }
-
-          return await Promise.reject(toError(error));
-        }
-      );
+      addLoggingInterceptors(axiosWrapper);
     }
 
     /**
@@ -186,76 +113,18 @@ export function createApiMiddleware(
      * has been configured.
      */
     if (authService !== null) {
-      axiosWrapper.axiosInstance.interceptors.request.use(
-        async (requestConfig: InternalAxiosRequestConfig) => {
-          try {
-            requestConfig.headers.Authorization =
-              await authService.getAuthHeader();
-
-            if (enableLogging) {
-              devLog(
-                'Added JWT authorization header to API request'
-              );
-            }
-          } catch (error) {
-            const authError = toError(error);
-
-            devError(
-              `Failed to add JWT authorization header: ${authError.message}`
-            );
-          }
-
-          return requestConfig;
-        },
-        async (error: unknown) => await Promise.reject(toError(error))
-      );
-
-      /**
-       * Clear cached authentication tokens when the API returns 401.
-       */
-      axiosWrapper.axiosInstance.interceptors.response.use(
-        (response) => response,
-        async (error: unknown) => {
-          if (
-            isAxiosErrorWithResponse(error) &&
-            error.response.status === HTTP_UNAUTHORIZED
-          ) {
-            if (enableLogging) {
-              devError(
-                'API returned 401 Unauthorized - clearing cached tokens'
-              );
-            }
-
-            authService.clearTokens();
-          }
-
-          return await Promise.reject(toError(error));
-        }
-      );
+      addAuthServiceInterceptors(axiosWrapper, authService, enableLogging);
     }
 
     if (useSessionSilasAuth) {
-      const accessToken = req.session?.silasAuth?.accessToken;
+      const accessToken = req.session.silasAuth?.accessToken;
       const hasToken = typeof accessToken === 'string' && accessToken.trim() !== '';
-      const requestPath = req.path ?? '';
-      const needsSilasAuth = requestPath.startsWith('/cases') || requestPath.startsWith('/search');
-
-      if (!hasToken && needsSilasAuth && enableLogging) {
-        devLog('No SILAS access token found in session - request will proceed without Authorization header');
-      }
 
       if (hasToken) {
-        axiosWrapper.axiosInstance.interceptors.request.use(
-          (requestConfig: InternalAxiosRequestConfig) => {
-            requestConfig.headers.Authorization = `Bearer ${accessToken}`;
-
-            if (enableLogging) {
-              devLog('Added SILAS bearer token to API request');
-            }
-
-            return requestConfig;
-          },
-          async (error: unknown) => await Promise.reject(toError(error))
+        addSessionSilasTokenInterceptor(
+          axiosWrapper,
+          accessToken,
+          enableLogging
         );
       }
     }
