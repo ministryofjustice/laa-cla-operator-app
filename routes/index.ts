@@ -4,6 +4,8 @@ import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
 import { exampleApiService } from '#src/services/exampleApiService.js';
 import { callbackAction, loginAction, logOut } from '#src/controllers/silasController.js';
+import { saveAddress,  showAddressForm} from '#src/controllers/addingAddress.js';
+
 
 // Create a new router
 const router = express.Router();
@@ -26,6 +28,15 @@ router.get('/redirect', callbackAction);
 
 // Log out of the application
 router.get('/logout', logOut);
+
+//adding address manually
+router.route('/add-address')
+  .get(function (req: Request, res: Response) {
+    showAddressForm(req, res);
+  })
+  .post(function (req: Request, res: Response) {
+    saveAddress(req, res);
+  });
 
 /**
  * Fetches call-centre cases from the downstream API on behalf of the user.
