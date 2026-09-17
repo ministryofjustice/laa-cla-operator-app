@@ -167,3 +167,27 @@ envVars:
       secretKeyRef:
         name: laa-cla-operator-app-secrets
         key: SESSION_SECRET
+  ENTRA_CLIENT_ID:
+    secret:
+      name: sso
+      key: client_id
+  ENTRA_TENANT_ID:
+    secret:
+      name: sso
+      key: tenant_id
+  ENTRA_CLIENT_SECRET:
+    secret:
+      name: sso
+      key: client_secret
+  ENTRA_SCOPES:
+    secret:
+      name: sso
+      key: backend_scope
+  ENTRA_AUTHORITY:
+    secret:
+      name: sso
+      key: authority
+  ENTRA_EXPECTED_AUDIENCE:
+    secret:
+      name: sso
+      key: expected_audience

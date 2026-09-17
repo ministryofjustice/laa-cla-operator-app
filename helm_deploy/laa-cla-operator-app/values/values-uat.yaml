@@ -30,3 +30,5 @@ envVars:
       value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"
   NODE_ENV:
     value: "uat"
+  ENTRA_REDIRECT_URI:
+    value: ""
