@@ -6,11 +6,9 @@ import {
   Condition,
   Self,
   Data,
-  EffectRegistry,
   access,
   Item,
-  Iterator,
-  Session
+  Iterator
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import {
@@ -18,12 +16,11 @@ import {
   GovUKRadioInput,
   GovUKTextInput,
   GovUKUtilityClasses,
-  GovUKHeading,
-
+  GovUKHeading
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 
 import { HtmlBlock } from '@ministryofjustice/hmpps-forge/core/components'
-import { InboundCallEffects, InboundCallEffectsImplementation } from "#src/journeys/effects.js";
+import { InboundCallEffects } from "#src/journeys/effects.js";
 import { requireSilasAuth } from "#src/journeys/auth.js";
 
 export const addressLookupStep1 = step({
