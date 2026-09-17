@@ -31,4 +31,4 @@ envVars:
   NODE_ENV:
     value: "uat"
   ENTRA_REDIRECT_URI:
-    value: ""
+    value: "add-silas-environment-variab-laa-cla-operator-app.cloud-platform.service.justice.gov.uk"
