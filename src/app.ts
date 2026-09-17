@@ -18,6 +18,7 @@ import { buildSessionConfig } from '#utils/session.js';
 import { setAuthStatus } from './middleware/apiMiddleware.js';
 
 const TRUST_FIRST_PROXY = 1;
+
 /**
  * Creates and configures an Express application.
  * Then starts the server listening on the configured port.
@@ -106,7 +107,9 @@ const createApp = (): express.Application => {
 	// Everytime a new journey is added to the project,
 	// it'll be automatically registered with Forge here.
 	for (const journeyPackage of journeyPackages) {
-		forge.registerPackage(journeyPackage);
+		forge.registerPackage(journeyPackage, {
+			
+		});
 	}
 
 	app.use(express.urlencoded({ extended: true }));
