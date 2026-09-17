@@ -9,7 +9,7 @@ export const whosCallingStep = step({
     path: "/",
     title: "Taking calls from clients",
     reachability: { entryWhen: true },
-    // onAccess: [requireSilasAuth],
+    onAccess: [requireSilasAuth],
     view: { template: "main/index.njk" },
     blocks: [whosCallingBlock],
     onSubmission: [
