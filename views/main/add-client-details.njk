@@ -1,0 +1,43 @@
+{% extends "base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+    <a href="/receive-call/search-client" class="govuk-back-link govuk-!-margin-bottom-6">Back</a>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+
+            {% if fieldValidationErrors | length %}
+                {% set errorList = [] %}
+
+                {% for error in fieldValidationErrors %}
+                    {% set errorList = (errorList.push({
+                        text: error.message,
+                        href: "#" + (error.anchor or error.blockCode)
+                    }), errorList) %}
+                {% endfor %}
+
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: errorList
+                }) }}
+            {% endif %}
+
+            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
+
+            <div class="govuk-inset-text taking-call-inset">
+                <p class="govuk-body">
+                    I'm now going to take some personal details and information about how you would like us to contact you in the future
+                </p>
+            </div>
+
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% for block in blocks %}
+                    {{ block | safe }}
+                {% endfor %}
+            </form>
+    </div>
+    </div>
+{% endblock %}
