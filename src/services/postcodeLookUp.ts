@@ -37,7 +37,7 @@ class Address {
     }
 }
 
-export async function postcodeLookup(postcode: string): Promise<{ address: string }[] | null> {
+export const  postcodeLookup = async (building: string, postcode: string): Promise<{ address: string }[] | null>  =>{
     if(!config.OS_PLACES_API_KEY) {
         console.error("config.OS_PLACES_API_KEY is missing")
         return null;
@@ -46,13 +46,13 @@ export async function postcodeLookup(postcode: string): Promise<{ address: strin
         return null;
     }
     const params = new URLSearchParams({
-        postcode: postcode,
+        query: `${building} ${postcode}`,
         key: config.OS_PLACES_API_KEY,
         output_srs: "WGS84",
         dataset: "DPA",
     });
-
-    const response = await fetch(`https://api.os.uk/search/places/v1/postcode?${params}`, {
+    console.log(`REQuEST https://api.os.uk/search/places/v1/find?${params}`);
+    const response = await fetch(`https://api.os.uk/search/places/v1/find?${params}`, {
         headers: {
             'Content-Type': 'application/json',
         },

@@ -5,7 +5,7 @@ import {
 import {
     GovUKPanel,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { addressLookupStep1, addressLookupStep2 } from "./postcode-lookup-steps.js";
+import { addressLookupStep1, addressLookupStep2 } from "./steps/postcode-lookup-steps.js";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
 
 
