@@ -7,6 +7,14 @@ permissions: {}
 env:
   SESSION_SECRET: "TEST_SESSION_SECRET"
   SESSION_NAME: "TEST_SESSION_NAME"
+  # TODO(LGA-4295): static content vars, see TODO in config.ts to stop reading these from env
+  CONTACT_EMAIL: "test@example.com"
+  CONTACT_PHONE: "0300 200 2020"
+  DEPARTMENT_NAME: "Legal Aid Agency"
+  DEPARTMENT_URL: "https://www.gov.uk/government/organisations/legal-aid-agency"
+  SERVICE_NAME: "Assess and refer for civil legal advice"
+  SERVICE_PHASE: "Beta"
+  SERVICE_URL: "https://example.com"
   ENTRA_AUTHORITY: "https://login.microsoftonline.com/test-tenant-id"
   ENTRA_TENANT_ID: "test-tenant-id"
   ENTRA_CLIENT_ID: "test-client-id"

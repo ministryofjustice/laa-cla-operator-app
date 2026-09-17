@@ -15,12 +15,9 @@ test('homepage should display LAA header', async ({ page }) => {
 	const header = page.getByRole('banner');
 	await expect(header).toBeVisible();
 
-	// Check for GOV.UK branding which is typically in the header
-  // Service is not on GovUK so we dont show this branding
-	// await expect(page.getByRole('link', { name: 'GOV.UK' })).toBeVisible();
 });
 
-test('home page displays service name and mountains table', async ({ pages, checkAccessibility }) => {
+test('home page displays service name', async ({ pages, checkAccessibility }) => {
   const homePage = pages.homePage;
   
   // Navigate to home page
@@ -31,24 +28,6 @@ test('home page displays service name and mountains table', async ({ pages, chec
   await expect(homePage.heading).toBeVisible();
   const serviceName = await homePage.getServiceName();
   expect(serviceName).toBeTruthy();
-  
-  // Test the mountains table is displayed
-  // await expect(homePage.mountainsTable).toBeVisible();
-  // await expect(homePage.tableCaption).toContainText('Mountains of the world');
-  
-  // Test specific mountains are in the table
-  // const mountains = await homePage.getMountainNames();
-  // expect(mountains).toContain('Everest');
-  // expect(mountains).toContain('Kilimanjaro');
-  // expect(mountains).toContain('Aconcagua');
-  // expect(mountains).toContain('Denali');
-  
-  // Test individual mountain row
-  // const everestRow = homePage.getMountainRow('Everest');
-  // await expect(everestRow).toBeVisible();
-  // await expect(everestRow).toContainText('8,850 meters');
-  // await expect(everestRow).toContainText('Asia');
-  // await expect(everestRow).toContainText('1953');
   
   // Run accessibility check
   await checkAccessibility();
