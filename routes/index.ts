@@ -1,8 +1,7 @@
 import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import { validatePerson } from '#src/middlewares/personSchema.js';
 import { getPerson, postPerson } from '#src/controllers/personController.js';
-import { exampleApiService } from '#src/services/exampleApiService.js';
 import { callbackAction, loginAction, logOut } from '#src/controllers/silasController.js';
 
 // Create a new router
@@ -10,8 +9,6 @@ const router = express.Router();
 
 const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;
-const UNAUTHORIZED_REQUEST = 401;
-const FIRST_ITEM_INDEX = 0;
 
 // 1. Trigger Login
 router.get('/sign-in', (req: Request, res: Response): void => {
@@ -27,54 +24,6 @@ router.get('/redirect', callbackAction);
 // Log out of the application
 router.get('/logout', logOut);
 
-/**
- * Fetches call-centre cases from the downstream API on behalf of the user.
- *
- * @param {string} accessToken Bearer token used to authenticate the request.
- * @returns {Promise<unknown>} The parsed JSON response body.
- * @throws {Error} When the downstream API responds with a non-OK status.
- */
-async function getCases(accessToken: string): Promise<unknown> {
-  const CASES_API_URL = 'http://localhost:8010/call_centre/api/v1/case/?dashboard=1';
-
-  const response = await fetch(CASES_API_URL, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => '');
-    throw new Error(`Cases API request failed with status ${response.status}: ${body}`);
-  }
-
-  return await response.json();
-}
-
-router.get('/cases', async (req: Request, res: Response): Promise<Response> => {
-  if (req.session.silasAuth === undefined) {
-    console.error('No session data found for user');
-    return res.status(UNAUTHORIZED_REQUEST).send('Unauthorized');
-  	}
-
- 	const { accessToken, idToken } = req.session.silasAuth ?? {};
-
-	if (accessToken === '' || idToken === '') {
-	console.error('Missing access token or ID token in session');
-	return res.status(UNAUTHORIZED_REQUEST).send('Unauthorized');
-	}
-
-  try {
-    const cases = await getCases(accessToken);
-    return res.status(SUCCESSFUL_REQUEST).json(cases);
-  } catch (error) {
-    console.error('Failed to fetch cases:', error instanceof Error ? error.message : String(error));
-    return res.status(UNSUCCESSFUL_REQUEST).send('Failed to fetch cases');
-  }
-});
-
 /* GET home page. */
 router.get('/', function (req: Request, res: Response): void {
   if (req.session.silasAuth === undefined) {
@@ -86,35 +35,6 @@ router.get('/', function (req: Request, res: Response): void {
 
 router.get('/privacy', function (req: Request, res: Response): void {
   res.render('main/privacy.njk');
-});
-
-// GET users from external API using BaseApiService pattern
-router.get('/users', async function (req: Request, res: Response, next: NextFunction) {
-  try {
-    // Use the BaseApiService - returns raw axios response (no domain transformation)
-    const response = await exampleApiService.getUsers(req.axiosMiddleware, {
-      _page: typeof req.query.page === 'string' ? req.query.page : '1',
-      _limit: typeof req.query.limit === 'string' ? req.query.limit : '10',
-    });
-
-    // Template users add their own response handling here
-    res.json(response.data);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET single user by ID (demonstrates BaseApiService pattern)
-router.get('/users/:id', async function (req: Request, res: Response, next: NextFunction) {
-  try {
-    const userId = Array.isArray(req.params.id) ? req.params.id[FIRST_ITEM_INDEX] : req.params.id;
-    const response = await exampleApiService.getUserById(req.axiosMiddleware, userId);
-
-    // Template users add their own response handling here
-    res.json(response.data);
-  } catch (error) {
-    next(error);
-  }
 });
 
 // Liveness and readiness probes for Helm deployments
