@@ -17,45 +17,8 @@ test('homepage should display LAA header', async ({ page }) => {
 
 });
 
-test('home page displays service name', async ({ pages, checkAccessibility }) => {
-  const homePage = pages.homePage;
-  
-  // Navigate to home page
-  await homePage.navigate();
-  await homePage.waitForLoad();
-  
-  // Test the service name heading is present
-  await expect(homePage.heading).toBeVisible();
-  const serviceName = await homePage.getServiceName();
-  expect(serviceName).toBeTruthy();
-  
-  // Run accessibility check
-  await checkAccessibility();
-});
+test('unauthenticated visitors are redirected to sign in', async ({ page }) => {
+  await page.goto('/');
 
-test('home page table has correct structure', async ({ page, pages }) => {
-  const homePage = pages.homePage;
-  
-  await homePage.navigate();
-  await homePage.waitForLoad();
-  
-  // Check table headers
-  // const table = homePage.mountainsTable;
-  // await expect(table.locator('thead th').nth(0)).toHaveText('Name');
-  // await expect(table.locator('thead th').nth(1)).toHaveText('Elevation');
-  // await expect(table.locator('thead th').nth(2)).toHaveText('Continent');
-  // await expect(table.locator('thead th').nth(3)).toHaveText('First summit');
-  
-  // // Check that all expected mountains are present
-  // const expectedMountains = [
-  //   'Aconcagua', 'Denali', 'Elbrus', 'Everest', 
-  //   'Kilimanjaro', 'Puncak Jaya', 'Vinson'
-  // ];
-  
-  // const actualMountains = await homePage.getMountainNames();
-  // expect(actualMountains).toHaveLength(expectedMountains.length);
-  
-  // for (const mountain of expectedMountains) {
-  //   expect(actualMountains).toContain(mountain);
-  // }
+  await expect(page).toHaveURL(/\/sign-in$/);
 });
