@@ -40,3 +40,5 @@ envVars:
     value: "http://cla-backend-app.laa-cla-backend-staging.svc.cluster.local"
   NODE_ENV:
     value: "staging"
+  ENTRA_REDIRECT_URI:
+    value: ""

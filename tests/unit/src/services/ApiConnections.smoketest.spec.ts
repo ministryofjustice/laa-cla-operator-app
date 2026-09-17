@@ -1,76 +1,69 @@
 /**
  * API Connections Smoke Test
- * 
- * Simple test to verify that our API connection patterns work with MSW.
- * Tests the core functionality: making HTTP requests through BaseApiService
- * and getting mocked responses back.
+ *
+ * Verifies that real API service functions can execute HTTP requests through
+ * middleware-axios and receive MSW responses.
  */
 
-import { expect } from 'chai';
+import { strict as assert } from 'assert';
+import { create } from 'middleware-axios';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
-import { create } from 'middleware-axios';
-import { ExampleApiService } from '#src/services/exampleApiService.js';
+import config from '#config.js';
+import { getAllCases } from '#src/services/api/caseDetailsService.js';
+import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
 
-describe('API Connections Smoke Test', function() {
-  let server: ReturnType<typeof setupServer>;
-  let axiosWrapper: any;
-  let exampleApiService: ExampleApiService;
+describe('API Connections Smoke Test', () => {
+  const apiConfig = config.api as { baseUrl: unknown };
+  let originalBaseUrl: unknown;
 
-  before(function() {
-    // Set up MSW server with simple handlers
-    server = setupServer(
-      // Mock the JSONPlaceholder API that ExampleApiService uses
-      http.get('https://jsonplaceholder.typicode.com/users', () => {
-        return HttpResponse.json([
-          { id: 1, name: 'Test User 1', email: 'test1@example.com' },
-          { id: 2, name: 'Test User 2', email: 'test2@example.com' }
-        ]);
-      }),
+  const server = setupServer(
+    http.get('http://api.test/call_centre/api/v1/case/', () => {
+      return HttpResponse.json({
+        count: 2,
+        results: [
+          { reference: 'FA-1111-1111', full_name: 'Test User One' },
+          { reference: 'FA-2222-2222', full_name: 'Test User Two' },
+        ],
+      });
+    }),
+    http.get('http://api.test/call_centre/api/v1/case/error', () => {
+      return new HttpResponse(null, { status: 500 });
+    })
+  );
 
-      http.get('https://jsonplaceholder.typicode.com/users/1', () => {
-        return HttpResponse.json({ 
-          id: 1, 
-          name: 'Test User 1', 
-          email: 'test1@example.com' 
-        });
-      })
-    );
-
-    // Start MSW server
-    server.listen();
-
-    // Create axios wrapper (simulating req.axiosMiddleware)
-    axiosWrapper = create({
-      baseURL: 'https://jsonplaceholder.typicode.com',
-      timeout: 5000
-    });
-
-    // Create service instance
-    exampleApiService = new ExampleApiService();
+  before(() => {
+    server.listen({ onUnhandledRequest: 'error' });
   });
 
-  after(function() {
+  beforeEach(() => {
+    originalBaseUrl = apiConfig.baseUrl;
+    apiConfig.baseUrl = 'http://api.test';
+  });
+
+  afterEach(() => {
+    apiConfig.baseUrl = originalBaseUrl;
+  });
+
+  after(() => {
     server.close();
   });
 
-  it('should successfully make API calls through BaseApiService patterns', async function() {
-    // Test: BaseApiService can make HTTP requests and get responses
-    const response = await exampleApiService.getUsers(axiosWrapper);
+  it('returns mocked data through getAllCases', async () => {
+    const axiosWrapper = create({ timeout: 5000 }) as AxiosInstanceWrapper;
 
-    expect(response).to.exist;
-    expect(response.data).to.be.an('array');
-    expect(response.data).to.have.length(2);
-    expect(response.data[0]).to.have.property('name', 'Test User 1');
+    const result = await getAllCases(axiosWrapper);
+
+    assert.equal(result.count, 2);
+    assert.equal(result.results.length, 2);
+    assert.equal(result.results[0].reference, 'FA-1111-1111');
   });
 
-  it('should handle single resource requests', async function() {
-    // Test: BaseApiService can make parameterized requests
-    const response = await exampleApiService.getUserById(axiosWrapper, '1');
+  it('surfaces transport errors from middleware-axios request', async () => {
+    const axiosWrapper = create({ timeout: 5000 }) as AxiosInstanceWrapper;
 
-    expect(response).to.exist;
-    expect(response.data).to.be.an('object');
-    expect(response.data).to.have.property('id', 1);
-    expect(response.data).to.have.property('name', 'Test User 1');
+    await assert.rejects(async () => {
+      await axiosWrapper.get('/call_centre/api/v1/case/error');
+    });
   });
 });
