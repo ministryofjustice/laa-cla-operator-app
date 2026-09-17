@@ -6,6 +6,7 @@ import {
     GovUKPanel,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
+import { addAddressStep } from "./steps/addAddressStep.js";
 
 
 // Step 2: Placeholder for search-client step 
@@ -30,5 +31,5 @@ export const inboundCallJourney = journey({
     view: {
         template: "partials/form-step",
     },
-    steps: [whosCallingStep, searchClient],
+    steps: [whosCallingStep, searchClient,addAddressStep],
 });
