@@ -168,9 +168,10 @@ envVars:
         name: laa-cla-operator-app-secrets
         key: SESSION_SECRET
   ENTRA_CLIENT_ID:
-    secret:
-      name: sso
-      key: client_id
+    valueFrom:
+      secretKeyRef:
+        name: sso
+        key: client_id
   ENTRA_TENANT_ID:
     valueFrom:
       secretKeyRef:
