@@ -37,7 +37,7 @@ class Address {
     }
 }
 
-export async function postcodeLookUp(postcode: string): Promise<{ address: string }[] | null> {
+export async function postcodeLookup(postcode: string): Promise<{ address: string }[] | null> {
     if(!config.OS_PLACES_API_KEY) {
         console.error("config.OS_PLACES_API_KEY is missing")
         return null;

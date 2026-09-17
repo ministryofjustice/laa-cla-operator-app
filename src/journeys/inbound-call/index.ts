@@ -1,6 +1,6 @@
 import { createForgePackage } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { inboundCallJourney,conditionRegistry } from "./journey.js";
-import { myEffects } from "./address-lookup-steps.js";
+import { myEffects } from "./postcode-lookup-steps.js";
 
 // Package entrypoint for the inbound call journey.
 // app.ts registers this package with forge.registerPackage(...).
