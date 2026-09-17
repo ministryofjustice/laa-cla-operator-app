@@ -31,14 +31,11 @@ export const myEffects = new EffectRegistry()
 export const MyEffects = {
     postcodeLookup: myEffects.register("postcodeLookup", (deps) => async (context) => {
         const session = context.getSession();
-        console.log(session)
         if(!session.forms || !session.forms.addressLookup || !session.forms.addressLookup.postcode) {
-            console.error("No postcode found")
             context.setData("addresses", []);
             return;
         }
 
-        console.log(session.forms.addressLookup.postcode)
         const addresses = await postcodeLookUp(session.forms.addressLookup.postcode)
         context.setData("availableSlots", addresses)
     }),
@@ -56,7 +53,7 @@ export const addressLookupStep1 = step({
     code: "address-lookup",
     path: "address-lookup",
     title: "Search client's address",
-    // reachability: { entryWhen: true },
+    reachability: { entryWhen: true },
 
     blocks: [
         GovUKHeading({

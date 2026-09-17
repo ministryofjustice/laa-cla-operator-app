@@ -43,7 +43,6 @@ export async function postcodeLookUp(postcode: string): Promise<{ address: strin
         return null;
     }
     if(!postcode) {
-        console.error("postcode is missing")
         return null;
     }
     const params = new URLSearchParams({
