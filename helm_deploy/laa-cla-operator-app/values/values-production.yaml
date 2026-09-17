@@ -41,3 +41,5 @@ envVars:
     value: "http://cla-backend-app.laa-cla-backend-production.svc.cluster.local"
   NODE_ENV:
     value: "production"
+  ENTRA_REDIRECT_URI:
+    value: ""
