@@ -32,13 +32,20 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
         const session = context.getSession() as Session;
         const postcode = session.forms?.postcodeLookup?.postcode
         const building = session.forms?.postcodeLookup?.building
+        const data = {
+            building,
+            postcode,
+            count: 0,
+            result: [] as { address: string }[] | null
+        }
         if(!postcode || !building) {
-            context.setData("addresses", []);
+            context.setData("lookup", data);
             return;
         }
 
-        const addresses = await deps.postcodeapi.lookup(building, postcode)
-        context.setData("availableSlots", addresses)
+        data.result = await deps.postcodeapi.lookup(building, postcode)
+        data.count = data.result?.length ?? 0
+        context.setData("lookup", data)
     },
 
     saveFormData: (deps: Deps) => async (context: EffectFunctionContext) => {

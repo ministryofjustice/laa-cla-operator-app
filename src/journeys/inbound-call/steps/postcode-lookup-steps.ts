@@ -8,7 +8,8 @@ import {
   Data,
   access,
   Item,
-  Iterator
+  Iterator,
+  Session
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import {
@@ -27,7 +28,7 @@ export const addressLookupStep1 = step({
     code: "address-lookup",
     path: "address-lookup",
     title: "Search client's address",
-    onAccess: [requireSilasAuth],
+    // onAccess: [requireSilasAuth],
     reachability: { entryWhen: true },
 
     blocks: [
@@ -91,22 +92,28 @@ export const addressLookupStep2 = step({
     path: "address-lookup/select",
     title: "Search client's address",
     reachability: { entryWhen: true},
+    view: {
+        template: "main/forms/lookup-address-select-form.njk"
+    },
     onAccess: [
-        requireSilasAuth,
+        // requireSilasAuth,
         access({
             effects: [InboundCallEffects.postcodeLookup()]
         })
     ],
     blocks: [
-        GovUKHeading({
-            text: "Select an address", size:"m"
-        }),
+        // GovUKHeading({
+        //     text: "Select an address", size:"m"
+        // }),
+        // HtmlBlock({
+        //     content: `${Data('count')} addresses found for ${Session('session.forms.postcodeLookup.postcode')} and 1.`
+        // }),
         GovUKRadioInput({
             code: 'address',
-            label: 'Choose a time',
+            label: '',
             // items is declared as items: (GovUKRadioInputItem | GovUKRadioInputDivider)[];
             // but forge does not export the definition GovUKRadioInputItem and GovUKRadioInputDivider
-            items: Data('availableSlots').each(
+            items: Data('lookup.result').each(
                 Iterator.Map({
                     value: Item().path('address'),
                     text: Item().path('address'),
