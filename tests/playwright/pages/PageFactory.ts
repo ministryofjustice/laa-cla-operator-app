@@ -1,5 +1,4 @@
 import type { Page } from '@playwright/test';
-import { HomePage } from './HomePage.js';
 import { ReceiveCallPage } from './ReceiveCallPage.js';
 
 /**
@@ -14,14 +13,6 @@ export class PageFactory {
    */
   constructor(page: Page) {
     this.page = page;
-  }
-
-  /**
-   * Gets an instance of the home page
-   * @returns {HomePage} The home page object
-   */
-  get homePage(): HomePage {
-    return new HomePage(this.page);
   }
 
   /**
