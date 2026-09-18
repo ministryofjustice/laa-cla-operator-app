@@ -2,16 +2,14 @@ import { requireSilasAuth } from "#src/journeys/auth.js";
 import { step, submit, redirect } from '@ministryofjustice/hmpps-forge/core/authoring';
 import { addAddress } from "../blocks/addAddressBlock.js";
 
-
-
 export const addAddressStep = step({
-    code: "/", 
-    path: "/add-address", 
+    code: "add-address", 
     title: "Enter client’s address", 
+    path: "/add-address", 
     reachability: { entryWhen: true },
     onAccess: [requireSilasAuth],
-    view: { template: "main/forms/form.njk" },
-       blocks: [addAddress],
+    view: { template: "main/forms/addAddress.njk" },
+    blocks: [addAddress],
     onSubmission: [
         submit({
             validate: true,
