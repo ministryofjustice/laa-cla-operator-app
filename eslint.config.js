@@ -46,6 +46,7 @@ export default [
       'no-console': 'off', // Stops complaining about putting messages in the console
       'no-param-reassign': ['error', { props: false }], // Allow modifying properties of function parameters (common in Express middleware and reducers)
       'no-negated-condition': 'off', // Allow negated conditions as they can improve readability in certain contexts
+      'require-unicode-regexp': ['error', { requireFlag: 'u' }],
       'jsdoc/check-alignment': 'error',
       'jsdoc/check-param-names': 'error',
       'jsdoc/check-tag-names': 'error',
