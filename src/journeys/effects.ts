@@ -25,8 +25,15 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
        const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
        context.setData("allCases", result);
     },
+    // 
+
+    //PostAddress: ()
+
+    // TO fetch Forge data you use `context`, for forms you'd use `context.getAnswer('{code}')`
 };
 
+
+// REGISTRATION
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();
 
 export const InboundCallEffects: InboundCallEffectShape = {

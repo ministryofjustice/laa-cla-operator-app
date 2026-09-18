@@ -16,6 +16,7 @@ export const whosCallingStep = step({
         submit({
             validate: true,
             onValid: {
+                effects: [],
                 next: [redirect({ goto: "/" })],
             },
         }),
