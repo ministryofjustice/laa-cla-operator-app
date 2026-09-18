@@ -1,4 +1,4 @@
-import { postcodeLookup } from '../postcodeLookup.js';
+import { postcodeLookup } from '#src/services/postcodeLookup.js';
 import { getAllCases } from './caseDetailsService.js';
 
 export * from './baseApiService.js'
