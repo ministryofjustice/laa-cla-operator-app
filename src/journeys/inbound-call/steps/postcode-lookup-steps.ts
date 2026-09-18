@@ -96,18 +96,12 @@ export const addressLookupStep2 = step({
         template: "main/forms/lookup-address-select-form.njk"
     },
     onAccess: [
-        // requireSilasAuth,
+        requireSilasAuth,
         access({
             effects: [InboundCallEffects.postcodeLookup()]
         })
     ],
     blocks: [
-        // GovUKHeading({
-        //     text: "Select an address", size:"m"
-        // }),
-        // HtmlBlock({
-        //     content: `${Data('count')} addresses found for ${Session('session.forms.postcodeLookup.postcode')} and 1.`
-        // }),
         GovUKRadioInput({
             code: 'address',
             label: '',
