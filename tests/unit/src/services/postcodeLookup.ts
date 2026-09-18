@@ -29,7 +29,7 @@ describe("Postcode lookup", ()=>{
         fetchStub = sinon.stub(globalThis, "fetch")
 
         configStub = sinon.stub(config, "OS_PLACES_API_KEY")
-        configStub("THIS+IS+TEST+KEY")
+        configStub.value("THIS+IS+TEST+KEY")
     })
 
     afterEach(()=>{
