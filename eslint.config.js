@@ -46,6 +46,7 @@ export default [
       'no-console': 'off', // Stops complaining about putting messages in the console
       'no-param-reassign': ['error', { props: false }], // Allow modifying properties of function parameters (common in Express middleware and reducers)
       'no-negated-condition': 'off', // Allow negated conditions as they can improve readability in certain contexts
+      'require-unicode-regexp': ['error', { requireFlag: 'u' }],
       'jsdoc/check-alignment': 'error',
       'jsdoc/check-param-names': 'error',
       'jsdoc/check-tag-names': 'error',
@@ -113,7 +114,9 @@ export default [
       'docs/source/javascripts/govuk_frontend.js', // Documentation JavaScript file, not part of main TypeScript project
       'eslint.config.js', // Parsing error this file was not found by the project service. Consider either including it in the `tsconfig.json` or including it in `allowDefaultProject`,
       'coverage', // Ignore the code coverage output from linter
-      'scripts/e2e_coverage/*' // Route coverage analysis scripts
+        'scripts/e2e_coverage/*', // Route coverage analysis scripts
+        '.venv/*', // Ignore local Python environments
+        'playwright/*' // Ignore local Playwright output
     ]
   },
 ];
