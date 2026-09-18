@@ -1,13 +1,12 @@
 import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import { GovUKPagination } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { Data, Item, Iterator, Generator, validation, Self, Condition, or, match, Format, Answer, Loop } from "@ministryofjustice/hmpps-forge/core/authoring";
-import {
+import { GovUKPagination ,
   GovUKButton,
   GovUKDateInputFull,
   GovUKTextInput,
   GovUKTable,
   GovUKButtonGroup,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { Data, Item, Iterator, Generator, validation, Self, Condition, or, match, Format, Answer, Loop } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 export const searchClientBlock = CollectionBlock({
     classes: "search-client-box",
