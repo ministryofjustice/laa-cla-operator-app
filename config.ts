@@ -14,6 +14,8 @@ if (process.env.SESSION_SECRET == null || process.env.SESSION_SECRET === '' ||
 }
 
 // Get environment variables
+// TODO(LGA-4295): CONTACT_*, DEPARTMENT_*, SERVICE_* are static content, not per-environment
+// config — move to locales/constants and stop reading them from env vars.
 const config: Config = {
   CONTACT_EMAIL: process.env.CONTACT_EMAIL,
   CONTACT_PHONE: process.env.CONTACT_PHONE,
@@ -57,6 +59,9 @@ const config: Config = {
     postLogoutRedirectUri: process.env.ENTRA_POST_REDIRECT_URI ?? '/',
     scopes: process.env.ENTRA_SCOPES?.split(",") ?? [],
     expectedAudience: process.env.ENTRA_EXPECTED_AUDIENCE ?? ''
+  },
+  api: {
+    baseUrl: process.env.BACKEND_BASE_URL ?? ''
   }
 };
 

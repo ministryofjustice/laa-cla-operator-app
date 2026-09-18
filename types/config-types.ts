@@ -43,6 +43,7 @@ export interface Config {
 	session: SessionConfig;
 	paths: PathsConfig;
 	silas: SilasConfig,
+	api: ApiConfig;
 }
 
 export interface SilasConfig {
@@ -54,4 +55,8 @@ export interface SilasConfig {
   postLogoutRedirectUri: string;
   scopes: string[];
   expectedAudience: string;
+}
+
+export interface ApiConfig {
+	baseUrl: string;
 }
