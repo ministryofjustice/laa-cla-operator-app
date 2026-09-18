@@ -2,6 +2,9 @@ import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import type { GetAllCasesResponse, SearchCasesParams } from "#types/api-types.js";
 import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
 
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_NUMBER = 1;
+
 /**
  * Retrieves all cases from the API.
  *
@@ -40,14 +43,14 @@ export async function updatePersonalDetails(
  * Searches for cases matching the given query.
  *
  * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
- * @param {string} query The search query string.
+ * @param {SearchCasesParams} params The search query and pagination parameters.
  * @returns {Promise<GetAllCasesResponse>} The response containing the matching cases.
  */
 export async function searchCases(axiosMiddleware: AxiosInstanceWrapper, params: SearchCasesParams): Promise<GetAllCasesResponse> {
     return await handleApiCall(async () => {
         const configuredAxios = configureAxiosInstance(axiosMiddleware);
         const response = await configuredAxios.get<GetAllCasesResponse>(
-            `/call_centre/api/v1/case/?search=${encodeURIComponent(params.query)}&page_size=${params.pageSize ?? 10}&page=${params.pageNumber ?? 1}`
+            `/call_centre/api/v1/case/?search=${encodeURIComponent(params.query)}&page_size=${params.pageSize ?? DEFAULT_PAGE_SIZE}&page=${params.pageNumber ?? DEFAULT_PAGE_NUMBER}`
         );
 
         return response.data;

@@ -4,14 +4,13 @@
  * Utility functions for safely transforming and validating data from form inputs
  */
 
-import { GetAllCasesResponse } from "#types/api-types.js";
+import type { GetAllCasesResponse } from "#types/api-types.js";
 
-export type DobAnswer = {
+export interface DobAnswer {
   day?: string;
-  date?: string; // if your payload sometimes uses "date"
   month?: string;
   year?: string;
-};
+}
 
 /**
  * Type guard to check if value is a record object
@@ -61,6 +60,7 @@ export function capitaliseFirst(str: string): string {
 // Constants for date formatting
 const DATE_PADDING_WIDTH = 2;
 const DATE_PADDING_CHAR = '0';
+const DATE_PARTS_LENGTH = 3;
 
 /**
  * Constructs a date string in the format 'YYYY-MM-DD' from separate day, month, and year fields.
@@ -78,25 +78,24 @@ export function dateStringFromThreeFields(day: string, month: string, year: stri
 }
 
 /**
- * Maps the date of birth from the first result in a GetAllCasesResponse to a human-readable 'DD/MM/YYYY' format.
- * @param {GetAllCasesResponse} result - The response object containing case results.
- * @returns {string} The formatted date of birth in 'DD/MM/YYYY' format.
+ * Maps result dates of birth to a human-readable 'DD/MM/YYYY' format.
+ * @param {GetAllCasesResponse} results - The response object containing case results.
+ * @returns {GetAllCasesResponse} Updated response with transformed date_of_birth values.
  */
 export function mapResultsToFormatDob(results: GetAllCasesResponse): GetAllCasesResponse {
   return {
     ...results,
-    results: results.results.map(r => {
-      const dob = r.date_of_birth;
+    results: results.results.map(({ date_of_birth: dob, ...rest }) => {
       if (typeof dob !== "string" || dob.trim() === "") {
-        return r;
+        return { ...rest, date_of_birth: dob };
       }
       const parts = dob.split('-');
-      if (parts.length !== 3) {
-        return r;
+      if (parts.length !== DATE_PARTS_LENGTH) {
+        return { ...rest, date_of_birth: dob };
       }
       const [year, month, day] = parts;
       return {
-        ...r,
+        ...rest,
         date_of_birth: `${day}/${month}/${year}`
       };
     })

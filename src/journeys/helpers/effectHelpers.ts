@@ -6,7 +6,38 @@ import { dateStringFromThreeFields, mapResultsToFormatDob, type DobAnswer } from
 
 
 export const SEARCH_PAGE_SIZE = 10;
+export const FIRST_PAGE = 1;
+const DECIMAL_RADIX = 10;
+const ZERO = 0;
+const SINGLE_STEP = 1;
 
+/**
+ * Type guard to check if a value is a DobAnswer object.
+ * @param {unknown} value - The value to check.
+ * @returns {boolean} True if the value is a DobAnswer object.
+ */
+function isDobAnswer(value: unknown): value is DobAnswer {
+    return typeof value === "object" && value !== null;
+}
+
+/**
+ * Normalises an answer value by trimming whitespace and converting non-string values to an empty string.
+ * @param {unknown} value - The value to normalise.
+ * @returns {string} The normalised string.
+ */
+function normaliseAnswerValue(value: unknown): string {
+    if (typeof value === "string") {
+        return value.trim();
+    }
+
+    return "";
+}
+
+/**
+ * Returns the authenticated Axios wrapper from request state.
+ * @param {EffectFunctionContext} context - Effect runtime context.
+ * @returns {AxiosInstanceWrapper} The authenticated Axios wrapper.
+ */
 export function getAuthenticatedAxios(context: EffectFunctionContext): AxiosInstanceWrapper {
     const authenticatedAxiosState = context.getState("authenticatedAxios");
 
@@ -17,44 +48,62 @@ export function getAuthenticatedAxios(context: EffectFunctionContext): AxiosInst
     return authenticatedAxiosState;
 }
 
+/**
+ * Parses the requested page number from the query string.
+ * @param {EffectFunctionContext} context - Effect runtime context.
+ * @returns {number} The parsed page number clamped to a minimum of 1.
+ */
 export function getPageNumberFromQuery(context: EffectFunctionContext): number {
     const rawPage = context.getQueryParam("page");
+    const page = Number.parseInt(Array.isArray(rawPage) ? rawPage[ZERO] : rawPage ?? String(FIRST_PAGE), DECIMAL_RADIX);
+
     return Math.max(
-        1,
-        Number.parseInt(Array.isArray(rawPage) ? rawPage[0] : rawPage ?? "1", 10) || 1
+        FIRST_PAGE,
+        Number.isNaN(page) ? FIRST_PAGE : page
     );
 }
 
-// Helper method to make it easier to extract the search parameter from the response.
+/**
+ * Picks the first non-empty search answer to be used as the API search term.
+ * @param {EffectFunctionContext} context - Effect runtime context.
+ * @returns {string} The first non-empty search term, otherwise an empty string.
+ */
 export function getSearchParamFromAnswers(context: EffectFunctionContext): string {
     const fullName = context.getAnswer("fullName");
     const phone = context.getAnswer("phone");
-    const dateOfBirth = context.getAnswer("dateOfBirth") as DobAnswer;
+    const dateOfBirthRaw = context.getAnswer("dateOfBirth");
     const postcode = context.getAnswer("postcode");
+    const dateOfBirth = isDobAnswer(dateOfBirthRaw) ? dateOfBirthRaw : {};
 
     const formattedDob = dateStringFromThreeFields(
-        dateOfBirth?.day ?? "",
-        dateOfBirth?.month ?? "",
-        dateOfBirth?.year ?? ""
+        normaliseAnswerValue(dateOfBirth.day),
+        normaliseAnswerValue(dateOfBirth.month),
+        normaliseAnswerValue(dateOfBirth.year)
     );
 
     return [fullName, phone, postcode, formattedDob]
-        .map(value => String(value ?? "").trim())
-        .find(value => value.length > 0) ?? "";
+        .map(value => normaliseAnswerValue(value))
+        .find(value => value.length > ZERO) ?? "";
 }
 
-// Sets the paginated search data in the context based on the result and requested page.
+/**
+ * Stores paginated search data in the effect context.
+ * @param {EffectFunctionContext} context - Effect runtime context.
+ * @param {GetAllCasesResponse} result - Search API response.
+ * @param {number} requestedPage - Requested page number.
+ * @returns {void}
+ */
 export function setPaginatedSearchData(context: EffectFunctionContext, result: GetAllCasesResponse, requestedPage: number): void {
     const mapped = mapResultsToFormatDob(result);
-    const totalPages = Math.max(1, Math.ceil((result.count ?? 0) / SEARCH_PAGE_SIZE));
-    const currentPage = Math.min(Math.max(1, requestedPage), totalPages);
+    const totalPages = Math.max(FIRST_PAGE, Math.ceil(result.count / SEARCH_PAGE_SIZE));
+    const currentPage = Math.min(Math.max(FIRST_PAGE, requestedPage), totalPages);
 
     context.setData("searchResults", mapped);
     context.setData("searchCurrentPage", currentPage);
     context.setData("searchHasNext", currentPage < totalPages);
-    context.setData("searchHasPrevious", currentPage > 1);
-    context.setData("searchNextPage", Math.min(totalPages, currentPage + 1));
-    context.setData("searchPreviousPage", Math.max(1, currentPage - 1));
+    context.setData("searchHasPrevious", currentPage > FIRST_PAGE);
+    context.setData("searchNextPage", Math.min(totalPages, currentPage + SINGLE_STEP));
+    context.setData("searchPreviousPage", Math.max(FIRST_PAGE, currentPage - SINGLE_STEP));
     context.setData("searchTotalPages", totalPages);
-    context.setData("searchPages", Array(totalPages).fill(0));
+    context.setData("searchPages", Array(totalPages).fill(ZERO));
 }
