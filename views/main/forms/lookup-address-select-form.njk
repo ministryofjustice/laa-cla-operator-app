@@ -1,0 +1,29 @@
+{% extends "base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
+            
+            {% if fieldValidationErrors | length %}
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: fieldValidationErrors
+                }) }}
+            {% endif %}
+
+            <form method="post" novalidate>
+                <h2 class="govuk-heading-m">Select an address</h2>
+                {% if data.lookup.postcode and data.lookup.building %}
+                <p class="govuk-body-s">{{ data.lookup.count }} addresses found for <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>.</p>
+                {% endif %}
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% for block in blocks %}
+                    {{ block | safe }}
+                {% endfor %}
+            </form>
+        </div>
+    </div>
+{% endblock %}
