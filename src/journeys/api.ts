@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
-import type { GetAllCasesResponse } from "#types/api-types.js";
+import type { GetAllCasesResponse, SearchCasesParams } from "#types/api-types.js";
 
 
 export interface Deps {
@@ -8,4 +8,5 @@ export interface Deps {
 
 export interface CaseApiService {
     getAllCases: (axiosMiddleware: AxiosInstanceWrapper) => Promise<GetAllCasesResponse>;
+    searchCases: (axiosMiddleware: AxiosInstanceWrapper, params: SearchCasesParams) => Promise<GetAllCasesResponse>;
 }
