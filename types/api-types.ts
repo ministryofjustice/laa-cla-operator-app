@@ -35,3 +35,9 @@ export interface GetAllCasesResponse {
   previous: string | null;
   results: CaseDetails[];
 }
+
+export interface SearchCasesParams {
+  query: string;
+  pageSize?: number;
+  pageNumber?: number;
+}

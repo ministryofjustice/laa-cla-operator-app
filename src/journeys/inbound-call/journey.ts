@@ -1,9 +1,11 @@
 import {
   journey,
-  step,
   submit,
   redirect,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { whosCallingStep } from "./whos-calling/whosCallingStep.js";
+import { searchClientStep } from "./search-client/searchClientStep.js";
+    
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
 import { addClientDetailsStep } from "./steps/clientDetailsStep.js";
@@ -59,7 +61,7 @@ export const inboundCallJourney = journey({
   },
   steps: [
     whosCallingStep,
-    searchClient,
+    searchClientStep,
     addClientDetailsStep,
     addClientAddressStep,
   ],
