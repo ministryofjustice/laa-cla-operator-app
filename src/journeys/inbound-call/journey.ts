@@ -5,6 +5,7 @@ import {
 import {
     GovUKPanel,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { addressLookupStep1, addressLookupStep2 } from "./steps/postcode-lookup-steps.js";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
 
 
@@ -13,7 +14,6 @@ const searchClient = step({
     code: "search-client",
     path: "/search-client",
     title: "Search client's details",
-    view: { template: "main/search-client.njk" },
     blocks: [
         GovUKPanel({
             titleText: "Call details recorded",
@@ -28,7 +28,7 @@ export const inboundCallJourney = journey({
     title: "Inbound Call Journey",
     path: "/receive-call",
     view: {
-        template: "partials/form-step",
+        template: "main/forms/form.njk",
     },
-    steps: [whosCallingStep, searchClient],
+    steps: [whosCallingStep, searchClient, addressLookupStep1, addressLookupStep2],
 });

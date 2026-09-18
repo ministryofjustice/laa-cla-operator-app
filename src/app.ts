@@ -12,7 +12,7 @@ import indexRouter from '#routes/index.js';
 import livereload from 'connect-livereload';
 import { Forge } from '@ministryofjustice/hmpps-forge/core'
 import type { Deps } from './journeys/api.js'
-import { apiService } from './services/api/index.js';
+import { apiPostcodeService, apiService } from './services/api/index.js';
 import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
 import journeyPackages from './journeys/index.js';
@@ -20,6 +20,7 @@ import { buildSessionConfig } from '#utils/session.js';
 import { axiosMiddleware, setAuthStatus } from './middleware/apiMiddleware.js';
 
 const TRUST_FIRST_PROXY = 1;
+
 /**
  * Creates and configures an Express application.
  * Then starts the server listening on the configured port.
@@ -109,7 +110,8 @@ const createApp = (): express.Application => {
 	// it'll be automatically registered with Forge here.
 	for (const journeyPackage of journeyPackages) {
 		forge.registerPackage<Deps>(journeyPackage, {
-			caseApi: apiService
+			caseApi: apiService,
+			postcodeapi: apiPostcodeService
 		});
 	}
 

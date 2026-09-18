@@ -14,6 +14,10 @@
             {% endif %}
 
             <form method="post" novalidate>
+                <h2 class="govuk-heading-m">Select an address</h2>
+                {% if data.lookup.postcode and data.lookup.building %}
+                <p class="govuk-body-s">{{ data.lookup.count }} addresses found for <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>.</p>
+                {% endif %}
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
                 {% for block in blocks %}
