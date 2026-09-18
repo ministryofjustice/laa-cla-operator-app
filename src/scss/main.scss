@@ -1,7 +1,20 @@
 @import "govuk-frontend/dist/govuk/index";
 @import "@ministryofjustice/frontend/moj/all";
 
+// who's-calling step styling
 .taking-call-inset {
 	border-left-color: govuk-functional-colour(brand);
 	background-color: govuk-functional-colour(template-background);
+}
+
+// search-client step styling
+.search-client-box {
+	border-left-color: govuk-functional-colour(brand);
+	background-color: govuk-functional-colour(template-background);
+	padding:
+		govuk-spacing(2)
+		govuk-spacing(4)
+		govuk-spacing(3);
+
+	margin: govuk-spacing(6) 0;
 }

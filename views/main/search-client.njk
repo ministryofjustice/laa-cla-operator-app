@@ -1,0 +1,96 @@
+{% extends "base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
+
+            <p class="govuk-body">
+                If the client is calling on their own behalf, take their details and search for any existing records before starting a new case.
+            </p>
+
+            <h2 class="govuk-heading-s">Find a client using one or more of the search terms below.</h2>
+
+            {% if fieldValidationErrors | length %}
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: fieldValidationErrors
+                }) }}
+            {% endif %}
+
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% if blocks[0] %}
+                    {{ blocks[0] | safe }}
+                {% endif %}
+            </form>
+
+                {% if blocks[1] %}
+                    {{ blocks[1] | safe }}
+                {% endif %}
+
+            <script nonce="{{ cspNonce }}">
+                // This script binds numeric input limits to the date of birth fields
+                const bindNumericLimit = (id, maxLen, nextId) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+
+                    el.setAttribute("inputmode", "numeric");
+                    el.setAttribute("pattern", "\\d*");
+                    el.setAttribute("maxlength", String(maxLen));
+
+                    el.addEventListener("input", () => {
+                    const start = el.selectionStart ?? 0;
+                    const before = el.value;
+
+                    el.value = el.value.replace(/\D/g, "").slice(0, maxLen);
+
+                    const delta = before.length - el.value.length;
+                    const pos = Math.max(0, start - Math.max(0, delta));
+                    el.setSelectionRange(pos, pos);
+
+                    if (nextId && el.value.length === maxLen) {
+                        const next = document.getElementById(nextId);
+                        if (next) {
+                        next.focus();
+                        next.select?.();
+                        }
+                    }
+                    });
+
+                    // This event will move focus to the previous field when backspace is pressed on an empty input
+                    el.addEventListener("keydown", (e) => {
+                    if (e.key === "Backspace" && el.value.length === 0) {
+                        const prevId =
+                        id === "dateOfBirth-month" ? "dateOfBirth-day" :
+                        id === "dateOfBirth-year" ? "dateOfBirth-month" :
+                        null;
+
+                        if (prevId) {
+                        const prev = document.getElementById(prevId);
+                        prev?.focus();
+                        }
+                    }
+                    });
+                };
+
+                bindNumericLimit("dateOfBirth-day", 2, "dateOfBirth-month");
+                bindNumericLimit("dateOfBirth-month", 2, "dateOfBirth-year");
+                bindNumericLimit("dateOfBirth-year", 4, null);
+            </script>
+
+            {% if data.searchResults and blocks[2] %}
+                {% if data.searchResults.results and data.searchResults.results | length %}
+                <h2 class="govuk-heading-m">{{ data.searchResults.count }} search result{% if data.searchResults.count != 1 %}s{% endif %}</h2>
+                <p class="govuk-body">Select a  client’s name to display their case history.</p>
+                    {{ blocks[2] | safe }}
+                {% else %}
+                <h2 class="govuk-heading-m">No results found</h2>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

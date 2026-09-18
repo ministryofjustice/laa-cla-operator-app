@@ -4,6 +4,14 @@
  * Utility functions for safely transforming and validating data from form inputs
  */
 
+import type { GetAllCasesResponse } from "#types/api-types.js";
+
+export interface DobAnswer {
+  day?: string;
+  month?: string;
+  year?: string;
+}
+
 /**
  * Type guard to check if value is a record object
  * @param {unknown} value Value to check
@@ -35,6 +43,7 @@ export function capitaliseFirst(str: string): string {
 // Constants for date formatting
 const DATE_PADDING_WIDTH = 2;
 const DATE_PADDING_CHAR = '0';
+const DATE_PARTS_LENGTH = 3;
 
 /**
  * Constructs a date string in the format 'YYYY-MM-DD' from separate day, month, and year fields.
@@ -49,6 +58,31 @@ export function dateStringFromThreeFields(day: string, month: string, year: stri
   const paddedMonth = month.padStart(DATE_PADDING_WIDTH, DATE_PADDING_CHAR);
   const paddedDay = day.padStart(DATE_PADDING_WIDTH, DATE_PADDING_CHAR);
   return `${year}-${paddedMonth}-${paddedDay}`;
+}
+
+/**
+ * Maps result dates of birth to a human-readable 'DD/MM/YYYY' format.
+ * @param {GetAllCasesResponse} results - The response object containing case results.
+ * @returns {GetAllCasesResponse} Updated response with transformed date_of_birth values.
+ */
+export function mapResultsToFormatDob(results: GetAllCasesResponse): GetAllCasesResponse {
+  return {
+    ...results,
+    results: results.results.map(({ date_of_birth: dob, ...rest }) => {
+      if (typeof dob !== "string" || dob.trim() === "") {
+        return { ...rest, date_of_birth: dob };
+      }
+      const parts = dob.split('-');
+      if (parts.length !== DATE_PARTS_LENGTH) {
+        return { ...rest, date_of_birth: dob };
+      }
+      const [year, month, day] = parts;
+      return {
+        ...rest,
+        date_of_birth: `${day}/${month}/${year}`
+      };
+    })
+  };
 }
 
 /**
