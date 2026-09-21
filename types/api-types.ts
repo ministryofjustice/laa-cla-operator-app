@@ -35,14 +35,3 @@ export interface GetAllCasesResponse {
   previous: string | null;
   results: CaseDetails[];
 }
-
-
-export interface saveAddress {
-
-}
-
-
-export interface saveAddressReturn {
-
-  
-}

@@ -110,6 +110,7 @@ const createApp = (): express.Application => {
 	for (const journeyPackage of journeyPackages) {
 		forge.registerPackage<Deps>(journeyPackage, {
 			caseApi: apiService
+			
 		});
 	}
 

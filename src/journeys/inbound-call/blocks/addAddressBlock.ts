@@ -63,7 +63,6 @@ export const addAddress = CollectionBlock({
             }),
         ],
     }),
-
         GovUKButton({ text: "Use this address" })
     ]
 });
