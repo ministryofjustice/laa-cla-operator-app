@@ -109,7 +109,7 @@ export const addressLookupStep2 = step({
             // but forge does not export the definition GovUKRadioInputItem and GovUKRadioInputDivider
             items: Data('lookup.result').each(
                 Iterator.Map({
-                    value: Item().path('address'),
+                    value: Item().path('uprn'),
                     text: Item().path('address'),
                 }),
             ) as any

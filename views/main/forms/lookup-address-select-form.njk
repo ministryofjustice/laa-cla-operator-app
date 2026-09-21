@@ -4,8 +4,16 @@
 {% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
+            {% if data.lookup.count == 0 %}
+            <h1 class="govuk-heading-xl">Address not found</h1>
+            <h3 class="govuk-heading-m">No address found</h3>
+            {% if data.lookup.postcode and data.lookup.building %}
+            <p class="govuk-body-s">We could not find an address that matches <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>. You can search again or enter the address manually.</p>
+            {% endif %}
+            <p class="govuk-body-s"><a href="{{forgeReverse('inboundCallJourney.address-lookup')}}">Search again</a></p>
+            <p class="govuk-body-s"><a href="#">Enter address manually</a></p>
+            {% else %}
             <h1 class="govuk-heading-xl">{{ step.title }}</h1>
-            
             {% if fieldValidationErrors | length %}
                 {{ govukErrorSummary({
                     titleText: "There is a problem",
@@ -15,15 +23,19 @@
 
             <form method="post" novalidate>
                 <h2 class="govuk-heading-m">Select an address</h2>
-                {% if data.lookup.postcode and data.lookup.building %}
-                <p class="govuk-body-s">{{ data.lookup.count }} addresses found for <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>.</p>
-                {% endif %}
+                <p class="govuk-body-s">
+                {{ data.lookup.count }} addresses found for <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>.
+                <a href="{{forgeReverse('inboundCallJourney.address-lookup')}}">Search again</a>
+                </p>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
                 {% for block in blocks %}
                     {{ block | safe }}
                 {% endfor %}
             </form>
+
+            {% endif %}
+
         </div>
     </div>
 {% endblock %}

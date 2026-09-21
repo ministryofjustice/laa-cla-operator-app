@@ -2,6 +2,7 @@ import type { Deps } from "#src/journeys/api.js";
 import { type EffectFunctionExpr, type EffectFunctionContext, EffectRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 import {SessionData, Session} from "express-session"
+import { Address } from "#src/services/postcodeLookup.js";
 
 export interface InboundCallEffectShape {
     GetAllCases: () => EffectFunctionExpr;
@@ -43,7 +44,10 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
             return;
         }
 
-        data.result = await deps.postcodeapi.lookup(building, postcode)
+        const addresses = await deps.postcodeapi.byPostcode(building, postcode) || []
+        data.result = addresses.map((address: Address) => {
+            return {address: address.address, uprn: address.uprn}
+        })
         data.count = data.result?.length ?? 0
         context.setData("lookup", data)
     },

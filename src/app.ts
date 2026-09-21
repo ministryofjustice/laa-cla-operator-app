@@ -12,12 +12,13 @@ import indexRouter from '#routes/index.js';
 import livereload from 'connect-livereload';
 import { Forge } from '@ministryofjustice/hmpps-forge/core'
 import type { Deps } from './journeys/api.js'
-import { apiPostcodeService, apiService } from './services/api/index.js';
+import { apiService } from './services/api/index.js';
 import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
 import journeyPackages from './journeys/index.js';
 import { buildSessionConfig } from '#utils/session.js';
 import { axiosMiddleware, setAuthStatus } from './middleware/apiMiddleware.js';
+import { PostcodeLookupService } from './services/postcodeLookup.js';
 
 const TRUST_FIRST_PROXY = 1;
 
@@ -120,7 +121,7 @@ const createApp = (): express.Application => {
 		}
 		forge.registerPackage<Deps>(journeyPackage, {
 			caseApi: apiService,
-			postcodeapi: apiPostcodeService
+			postcodeapi: new PostcodeLookupService()
 		});
 	}
 

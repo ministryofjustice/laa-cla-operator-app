@@ -2,6 +2,7 @@ import { strict as assert } from 'assert';
 import sinon from 'sinon';
 import { InboundCallEffectsImplementation } from '#src/journeys/effects.js';
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
+import { PostcodeLookupService } from '#src/services/postcodeLookup.js';
 
 async function mokcPostcodeLookupService(building: string, postcode: string): Promise<{ address: string; }[] | null> {
   return null
@@ -37,7 +38,7 @@ describe('InboundCallEffectsImplementation.GetAllCases', () => {
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: { getAllCases },
-      postcodeapi: {lookup: mokcPostcodeLookupService}
+      postcodeapi: new PostcodeLookupService()
     });
 
     const setData = sinon.stub();
@@ -55,7 +56,7 @@ describe('InboundCallEffectsImplementation.GetAllCases', () => {
   it('throws when authenticatedAxios is missing or invalid', async () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: { getAllCases: sinon.stub() },
-      postcodeapi: {lookup: mokcPostcodeLookupService},
+      postcodeapi: new PostcodeLookupService(),
     });
 
     const context = {
