@@ -107,11 +107,33 @@ const createApp = (): express.Application => {
 
 	// Everytime a new journey is added to the project,
 	// it'll be automatically registered with Forge here.
+	const pathLookup: Record<string, string> = {}
 	for (const journeyPackage of journeyPackages) {
+		const steps = journeyPackage.journey.steps ?? []
+		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/g, "");
+		pathLookup[journeyPackage.journey.code] = journeyPackage.journey.path; // eslint-disable-line @typescript-eslint/prefer-destructuring -- Don't want to introduce `code` and `path` variables here as their use is ambiguous at this point.
+		for(const step of  steps) {
+			const code = `${journeyPackage.journey.code}.${step.code}`
+			const stepPath = step.path.replace(/^\/+|\/+$/g, "");
+			pathLookup[code] = `/${journeyPath}/${stepPath}`;
+		}
 		forge.registerPackage<Deps>(journeyPackage, {
 			caseApi: apiService
 			
 		});
+	}
+
+	/**
+	 * Create a function to go from forge code to path
+	 *
+	 * @param {string} code - The full forge code, if it's a step then include the parent journey code separated by a dot i.e <journey.code>.<step.code>
+	 * @returns {string} path - The forge path
+	 */
+	app.locals.forgeReverse = (code: string): string => {
+		if(!(code in pathLookup)) {
+			throw new Error(`Could not find path for ${code}`)
+		}
+		return pathLookup[code]
 	}
 
 	app.use(express.urlencoded({ extended: true }));
