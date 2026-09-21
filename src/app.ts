@@ -111,10 +111,11 @@ const createApp = (): express.Application => {
 	for (const journeyPackage of journeyPackages) {
 		const steps = journeyPackage.journey.steps ?? []
 		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/g, "");
+		pathLookup[journeyPackage.journey.code] = journeyPackage.journey.path;
 		for(const step of  steps) {
 			const code = `${journeyPackage.journey.code}.${step.code}`
 			const stepPath = step.path.replace(/^\/+|\/+$/g, "");
-			pathLookup[code] = `/${journeyPath}/${stepPath}`
+			pathLookup[code] = `/${journeyPath}/${stepPath}`;
 		}
 		forge.registerPackage<Deps>(journeyPackage, {
 			caseApi: apiService
