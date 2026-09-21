@@ -107,10 +107,26 @@ const createApp = (): express.Application => {
 
 	// Everytime a new journey is added to the project,
 	// it'll be automatically registered with Forge here.
+	const pathLookup: Record<string, string> = {}
 	for (const journeyPackage of journeyPackages) {
+		const steps = journeyPackage.journey.steps ?? []
+		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/g, "");
+		for(const step of  steps) {
+			const code = `${journeyPackage.journey.code}.${step.code}`
+			const stepPath = step.path.replace(/^\/+|\/+$/g, "");
+			pathLookup[code] = `/${journeyPath}/${stepPath}`
+		}
 		forge.registerPackage<Deps>(journeyPackage, {
 			caseApi: apiService
 		});
+	}
+
+	app.locals.forgePaths = pathLookup
+	app.locals.forgeReverse = (code: string) => {
+		if(!(code in pathLookup)) {
+			throw new Error(`Could not find path for ${code}`)
+		}
+		return pathLookup[code]
 	}
 
 	app.use(express.urlencoded({ extended: true }));
