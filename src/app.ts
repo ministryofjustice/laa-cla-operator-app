@@ -123,10 +123,12 @@ const createApp = (): express.Application => {
 	}
 
 	/**
+	 * Create a function to go from forge code to path
 	 *
 	 * @param {string} code - The full forge code, if it's a step then include the parent journey code separated by a dot i.e <journey.code>.<step.code>
+	 * @returns {string} path - The forge path
 	 */
-	app.locals.forgeReverse = (code: string) => {
+	app.locals.forgeReverse = (code: string): string => {
 		if(!(code in pathLookup)) {
 			throw new Error(`Could not find path for ${code}`)
 		}
