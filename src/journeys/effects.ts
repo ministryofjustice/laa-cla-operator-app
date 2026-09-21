@@ -1,7 +1,7 @@
 import type { Deps } from "#src/journeys/api.js";
 import { type EffectFunctionExpr, type EffectFunctionContext, EffectRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
-import {Session} from "express-session"
+import type {Session} from "express-session"
 import type { Address } from "#src/services/postcodeLookup.js";
 
 export interface InboundCallEffectShape {
@@ -35,14 +35,16 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     postcodeLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge context returns a session compatible with express-session
+        // See https://forge-developer-guide-dev.hmpps.service.justice.gov.uk/forge-developer-guide/authoring-language/session#how-it-works for more details
         const session = context.getSession() as Session;
         const postcode = session.forms?.postcodeLookup?.postcode
         const building = session.forms?.postcodeLookup?.building
         const data = {
             building,
             postcode,
-            count: 0,
-            result: [] as { address: string }[] | null
+            count: 0, // eslint-disable-line no-magic-numbers -- counter starts at zero
+            result: [] as { address: string, uprn: string }[] | null
         }
         if(!postcode || !building) {
             context.setData("lookup", data);
