@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import { getAllCases, updatePersonalDetails } from '#src/services/api/caseDetailsService.js';
+import { createCase, getAllCases, updatePersonalDetails, searchCasesWithContactDetails } from '#src/services/api/caseDetailsService.js';
 import { strict as assert } from 'assert';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -154,4 +154,106 @@ describe('caseDetailsService', () => {
             );
         });
     });
+
+    describe('searchCasesWithContactDetails', () => {
+        it('should search cases with contact details', async () => {
+            // Arrange
+            const mockResponse = {
+                data: {
+                    results: [
+                    {
+                        reference: 'FA-3465-9114',
+                        created: '2022-03-29T18:13:50.596Z',
+                        modified: '2022-03-29T18:15:56.782Z',
+                        full_name: 'Jo Smith',
+                        laa_reference: 3000003,
+                        eligibility_state: null,
+                        personal_details: '95e85bc7406c429e8fd655562406f6b2',
+                        requires_action_by: '1_provider_review',
+                        postcode: 'OX2 0LD',
+                        rejected: false,
+                        date_of_birth: '2003-02-01',
+                        category: null,
+                        outcome_code: 'MANALC',
+                        outcome_description: 'Manually allocated to Specialist',
+                        case_count: 1,
+                        source: 'PHONE',
+                        requires_action_at: null,
+                        callback_time_string: null,
+                        flagged_with_eod: false,
+                        is_urgent: false,
+                        organisation_name: null
+                    }],
+                    count: 1
+                }
+            };
+
+            getStub.resolves(mockResponse);
+
+            // Act
+            const result = await searchCasesWithContactDetails(axiosMiddlewareStub, { query: 'Jo Smith' });
+
+            // Assert
+            expect(result).to.deep.equal(mockResponse.data);
+            expect(result.count).to.equal(mockResponse.data.count);
+            expect(result.results).to.deep.equal(mockResponse.data.results);
+            expect(result.results[0].reference).to.equal(mockResponse.data.results[0].reference);
+        });
+
+        it('should return friendly API error message', async () => {
+            // Arrange
+            const originalError = new Error('Original error');
+            getStub.rejects(originalError);
+
+            // Act & Assert
+            await assert.rejects(
+                () => searchCasesWithContactDetails(axiosMiddlewareStub, { query: 'Jo Smith' }),
+                (error: unknown) => {
+                    assert(error instanceof Error);
+                    assert.equal(error.message, 'An unexpected error occurred. Please try again.');
+                    assert.equal(error.cause, originalError);
+                    return true;
+                }
+            );
+        });
+    });
+    
+    describe('createCase', () => {
+        it('create a new case', async () => {
+            // Arrange
+            const mockResponse = {
+                data: {
+                    reference: 'CASE123',
+                    full_name: '',
+                    laa_reference: 3000003,
+                    eligibility_state: null,
+                    personal_details: '',
+                    requires_action_by: '',
+                    postcode: '',
+                    rejected: false,
+                    date_of_birth: '',
+                    category: null,
+                    outcome_code: '',
+                    outcome_description: '',
+                    case_count: 1,
+                    source: 'PHONE',
+                    requires_action_at: null,
+                    callback_time_string: null,
+                    flagged_with_eod: false,
+                    is_urgent: false,
+                    organisation_name: null
+                }
+            };
+
+            postStub.resolves(mockResponse);
+
+            // Act
+            const result = await createCase(axiosMiddlewareStub);
+
+            // Assert
+            expect(result).to.deep.equal(mockResponse.data);
+            expect(result.reference).to.equal(mockResponse.data.reference);
+            expect(result.full_name).to.equal(mockResponse.data.full_name);
+        });
+    })
 });

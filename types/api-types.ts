@@ -37,7 +37,7 @@ export interface GetAllCasesResponse {
 }
 
 export interface CaseWithContactDetails {
-  case_reference: string;
+  reference: string;
   personal_details: string;
   full_name: string;
   date_of_birth: string | null;
