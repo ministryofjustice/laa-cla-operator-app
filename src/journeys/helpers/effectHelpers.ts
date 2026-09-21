@@ -1,8 +1,8 @@
 import type { EffectFunctionContext } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
-import type { SearchCasesWithContactDetailsResponse } from "#types/api-types.js";
+import type { SearchCasesResponse } from "#types/api-types.js";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
-import { dateStringFromThreeFields, mapResultsToFormatDob, type DobAnswer } from "#src/helpers/dataTransformers.js";
+import { mapResultsToFormatDob } from "#src/helpers/dataTransformers.js";
 
 
 export const SEARCH_PAGE_SIZE = 10;
@@ -11,14 +11,6 @@ const DECIMAL_RADIX = 10;
 const ZERO = 0;
 const SINGLE_STEP = 1;
 
-/**
- * Type guard to check if a value is a DobAnswer object.
- * @param {unknown} value - The value to check.
- * @returns {boolean} True if the value is a DobAnswer object.
- */
-function isDobAnswer(value: unknown): value is DobAnswer {
-    return typeof value === "object" && value !== null;
-}
 
 /**
  * Normalises an answer value by trimming whitespace and converting non-string values to an empty string.
@@ -71,29 +63,24 @@ export function getPageNumberFromQuery(context: EffectFunctionContext): number {
 export function getSearchParamFromAnswers(context: EffectFunctionContext): string {
     const fullName = context.getAnswer("fullName");
     const phone = context.getAnswer("phone");
-    const dateOfBirthRaw = context.getAnswer("dateOfBirth");
+    const dateOfBirth = context.getAnswer("dateOfBirth");
     const postcode = context.getAnswer("postcode");
-    const dateOfBirth = isDobAnswer(dateOfBirthRaw) ? dateOfBirthRaw : {};
 
-    const formattedDob = dateStringFromThreeFields(
-        normaliseAnswerValue(dateOfBirth.day),
-        normaliseAnswerValue(dateOfBirth.month),
-        normaliseAnswerValue(dateOfBirth.year)
-    );
-
-    return [fullName, phone, postcode, formattedDob]
+    
+    return [fullName, phone, postcode, dateOfBirth]
         .map(value => normaliseAnswerValue(value))
-        .find(value => value.length > ZERO) ?? "";
+        .filter(value => value.length > ZERO)
+        .join(" ");
 }
 
 /**
  * Stores paginated search data in the effect context.
  * @param {EffectFunctionContext} context - Effect runtime context.
- * @param {SearchCasesWithContactDetailsResponse} result - Search API response.
+ * @param {SearchCasesResponse} result - Search API response.
  * @param {number} requestedPage - Requested page number.
  * @returns {void}
  */
-export function setPaginatedSearchData(context: EffectFunctionContext, result: SearchCasesWithContactDetailsResponse, requestedPage: number): void {
+export function setPaginatedSearchData(context: EffectFunctionContext, result: SearchCasesResponse, requestedPage: number): void {
     const mapped = mapResultsToFormatDob(result);
     const totalPages = Math.max(FIRST_PAGE, Math.ceil(result.count / SEARCH_PAGE_SIZE));
     const currentPage = Math.min(Math.max(FIRST_PAGE, requestedPage), totalPages);

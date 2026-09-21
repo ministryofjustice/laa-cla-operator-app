@@ -6,7 +6,7 @@ import { GovUKPagination ,
   GovUKTable,
   GovUKButtonGroup,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { Data, Item, Iterator, Generator, validation, Self, Condition, or, match, Format, Answer, Loop } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { Data, Item, Iterator, Generator, validation, Self, Condition, or, match, Format, Answer, Loop, and } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 export const searchClientBlock = CollectionBlock({
     classes: "search-client-box",
@@ -73,6 +73,20 @@ export const searchClientBlock = CollectionBlock({
         hint: {
             text: "For example, 27 3 2007",
         },
+        validWhen: [
+            validation({
+                condition: or(
+                    and(
+                        Self().match(Condition.Object.IsObject()),
+                        Self().not.match(Condition.Object.PropertyHasValue('day')),
+                        Self().not.match(Condition.Object.PropertyHasValue('month')),
+                        Self().not.match(Condition.Object.PropertyHasValue('year')),
+                    ),
+                    Self().match(Condition.Date.IsValid()),
+                ),
+                message: "Date of birth must be valid",
+            }),
+        ]
         }),
         GovUKButtonGroup({
             buttons: [
@@ -117,7 +131,7 @@ export const displaySearchClientBlock = CollectionBlock({
                 Iterator.Map([
                 // TODO: The full href for cases needs to be adjusted once its build
                     {html: Generator.FormatString(
-                    '<a class="govuk-link" href="/case/ref=%1">%2</a>',
+                    '<a class="govuk-link" href="/case/%1">%2</a>',
                     Item().path("reference"),
                     Item().path("full_name"),
                     )},
@@ -129,17 +143,17 @@ export const displaySearchClientBlock = CollectionBlock({
         }),
         GovUKPagination({
             previous: {
-                href: Generator.FormatString('/receive-call/search-client?page=%1', Data('searchPreviousPage')),
+                href: Generator.FormatString('/receive-call/search-client?page=%1&q=%2', Data('searchPreviousPage'), Data('searchParam')),
                 visibleWhen: Data('searchHasPrevious'),
             },
             next: {
-                href: Generator.FormatString('/receive-call/search-client?page=%1', Data('searchNextPage')),
+                href: Generator.FormatString('/receive-call/search-client?page=%1&q=%2', Data('searchNextPage'), Data('searchParam')),
                 visibleWhen: Data('searchHasNext'),
             },
             items: Data('searchPages').each(
                 Iterator.Map({
                     number: Loop.Index(),
-                    href: Generator.FormatString('/receive-call/search-client?page=%1', Loop.Index()),
+                    href: Generator.FormatString('/receive-call/search-client?page=%1&q=%2', Loop.Index(), Data('searchParam')),
                     current: Loop.Index().match(Condition.Equals(Data('searchCurrentPage'))),
                     visuallyHiddenText: Generator.FormatString('Page %1', Loop.Index())
                 }),

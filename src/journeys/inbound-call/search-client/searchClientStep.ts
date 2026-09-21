@@ -13,7 +13,7 @@ export const searchClientStep = step({
         requireSilasAuth,
         access({
             when: Query("page").match(Condition.IsRequired()),
-            effects: [InboundCallEffects.SearchCasesWithContactDetailsPagination()]
+            effects: [InboundCallEffects.SearchCasesPagination()]
         })
     ],
     reachability: { entryWhen: true },
@@ -24,7 +24,7 @@ export const searchClientStep = step({
             when: Post("action").match(Condition.Equals("search")),
             validate: true,
             onValid: {
-                effects: [InboundCallEffects.SearchCasesWithContactDetails()]
+                effects: [InboundCallEffects.SearchCases()]
             },
         }),
         submit({

@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import { createCase, getAllCases, updatePersonalDetails, searchCasesWithContactDetails } from '#src/services/api/caseDetailsService.js';
+import { createCase, getAllCases, updatePersonalDetails, searchCases } from '#src/services/api/caseDetailsService.js';
 import { strict as assert } from 'assert';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -191,7 +191,7 @@ describe('caseDetailsService', () => {
             getStub.resolves(mockResponse);
 
             // Act
-            const result = await searchCasesWithContactDetails(axiosMiddlewareStub, { query: 'Jo Smith' });
+            const result = await searchCases(axiosMiddlewareStub, { query: 'Jo Smith' });
 
             // Assert
             expect(result).to.deep.equal(mockResponse.data);
@@ -207,7 +207,7 @@ describe('caseDetailsService', () => {
 
             // Act & Assert
             await assert.rejects(
-                () => searchCasesWithContactDetails(axiosMiddlewareStub, { query: 'Jo Smith' }),
+                () => searchCases(axiosMiddlewareStub, { query: 'Jo Smith' }),
                 (error: unknown) => {
                     assert(error instanceof Error);
                     assert.equal(error.message, 'An unexpected error occurred. Please try again.');

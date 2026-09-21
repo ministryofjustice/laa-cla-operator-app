@@ -36,21 +36,11 @@ export interface GetAllCasesResponse {
   results: CaseDetails[];
 }
 
-export interface CaseWithContactDetails {
-  reference: string;
-  personal_details: string;
-  full_name: string;
-  date_of_birth: string | null;
-  postcode: string | null;
-  mobile_phone: string | null;
-  home_phone: string | null;
-}
-
-export interface SearchCasesWithContactDetailsResponse {
+export interface SearchCasesResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: CaseWithContactDetails[];
+  results: CaseDetails[];
 }
 
 export interface SearchCasesParams {
