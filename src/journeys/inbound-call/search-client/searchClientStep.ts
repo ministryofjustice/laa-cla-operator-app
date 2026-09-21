@@ -13,7 +13,7 @@ export const searchClientStep = step({
         requireSilasAuth,
         access({
             when: Query("page").match(Condition.IsRequired()),
-            effects: [InboundCallEffects.SearchCasePagination()]
+            effects: [InboundCallEffects.SearchCasesWithContactDetailsPagination()]
         })
     ],
     reachability: { entryWhen: true },
@@ -24,7 +24,7 @@ export const searchClientStep = step({
             when: Post("action").match(Condition.Equals("search")),
             validate: true,
             onValid: {
-                effects: [InboundCallEffects.SearchCase()]
+                effects: [InboundCallEffects.SearchCasesWithContactDetails()]
             },
         }),
         submit({
@@ -32,6 +32,7 @@ export const searchClientStep = step({
             validate: false,
             onValid: {
                 effects: [InboundCallEffects.CreateCase()],
+                // TODO: this is a temporary redirect until the case creation flow is fully implemented
                 next: [redirect({ goto: Format("cases/%1", Data("createdCaseRef")) })]
             },
         })

@@ -4,15 +4,15 @@ import {
   type EffectFunctionContext,
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, getCreateCasePayloadFromAnswers } from "#src/journeys/helpers/effectHelpers.js";
+import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE } from "#src/journeys/helpers/effectHelpers.js";
 
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
-    SearchCase: () => EffectFunctionExpr;
-    SearchCasePagination: () => EffectFunctionExpr;
+    SearchCasesWithContactDetails: () => EffectFunctionExpr;
+    SearchCasesWithContactDetailsPagination: () => EffectFunctionExpr;
     CreateCase: () => EffectFunctionExpr;
 }
 
@@ -77,12 +77,12 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @param {Deps} deps - The dependencies required for the effect.
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
-    SearchCase: (deps: Deps) => async (context: EffectFunctionContext) => {
+    SearchCasesWithContactDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
        const authenticatedAxiosState = getAuthenticatedAxios(context);
        const searchParam = getSearchParamFromAnswers(context);
 
         context.setData("searchParam", searchParam);
-        const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
+        const result = await deps.caseApi.searchCasesWithContactDetails(authenticatedAxiosState, {
            query: searchParam,
            pageSize: SEARCH_PAGE_SIZE,
            pageNumber: FIRST_PAGE,
@@ -96,11 +96,11 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @param {Deps} deps - The dependencies required for the effect.
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
-    SearchCasePagination: (deps: Deps) => async (context: EffectFunctionContext) => {
+    SearchCasesWithContactDetailsPagination: (deps: Deps) => async (context: EffectFunctionContext) => {
        const authenticatedAxiosState = getAuthenticatedAxios(context);
        const searchParam = String(context.getData("searchParam"));
        const pageNumber = getPageNumberFromQuery(context);
-       const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
+       const result = await deps.caseApi.searchCasesWithContactDetails(authenticatedAxiosState, {
            query: searchParam,
            pageSize: SEARCH_PAGE_SIZE,
            pageNumber,
@@ -115,13 +115,9 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     CreateCase: (deps: Deps) => async (context: EffectFunctionContext) => {
-        console.log("Creating case with payload:", getCreateCasePayloadFromAnswers(context));
        const authenticatedAxiosState = getAuthenticatedAxios(context);
-       const payload = getCreateCasePayloadFromAnswers(context);
-
-       const result = await deps.caseApi.createCase(authenticatedAxiosState, payload);
-       context.setData("createdCase", result);
-       context.setData("createdCaseRef", result?.reference ?? "");
+       const { reference } = await deps.caseApi.createCase(authenticatedAxiosState);
+       context.setData("createdCaseRef", reference);
     },
 };
 
@@ -136,7 +132,7 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "saveClientDetails",
     InboundCallEffectsImplementation.saveClientDetails,
   ),
-    SearchCase: InboundCallEffectsRegistry.register("SearchCase", InboundCallEffectsImplementation.SearchCase),
-    SearchCasePagination: InboundCallEffectsRegistry.register("SearchCasePagination", InboundCallEffectsImplementation.SearchCasePagination),
+    SearchCasesWithContactDetails: InboundCallEffectsRegistry.register("SearchCasesWithContactDetails", InboundCallEffectsImplementation.SearchCasesWithContactDetails),
+    SearchCasesWithContactDetailsPagination: InboundCallEffectsRegistry.register("SearchCasesWithContactDetailsPagination", InboundCallEffectsImplementation.SearchCasesWithContactDetailsPagination),
     CreateCase: InboundCallEffectsRegistry.register("CreateCase", InboundCallEffectsImplementation.CreateCase),
 };

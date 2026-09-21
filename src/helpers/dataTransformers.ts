@@ -4,7 +4,7 @@
  * Utility functions for safely transforming and validating data from form inputs
  */
 
-import type { GetAllCasesResponse } from "#types/api-types.js";
+import type { SearchCasesWithContactDetailsResponse } from "#types/api-types.js";
 
 export interface DobAnswer {
   day?: string;
@@ -79,10 +79,10 @@ export function dateStringFromThreeFields(day: string, month: string, year: stri
 
 /**
  * Maps result dates of birth to a human-readable 'DD/MM/YYYY' format.
- * @param {GetAllCasesResponse} results - The response object containing case results.
- * @returns {GetAllCasesResponse} Updated response with transformed date_of_birth values.
+ * @param {SearchCasesWithContactDetailsResponse} results - The response object containing case results.
+ * @returns {SearchCasesWithContactDetailsResponse} Updated response with transformed date_of_birth values.
  */
-export function mapResultsToFormatDob(results: GetAllCasesResponse): GetAllCasesResponse {
+export function mapResultsToFormatDob(results: SearchCasesWithContactDetailsResponse): SearchCasesWithContactDetailsResponse {
   return {
     ...results,
     results: results.results.map(({ date_of_birth: dob, ...rest }) => {

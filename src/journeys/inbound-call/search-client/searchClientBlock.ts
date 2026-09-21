@@ -121,7 +121,7 @@ export const displaySearchClientBlock = CollectionBlock({
                     Item().path("reference"),
                     Item().path("full_name"),
                     )},
-                    { text: Item().path('phone') },
+                    { text: Item().path('mobile_phone') },
                     { text: Item().path('postcode') },
                     { text: Item().path('date_of_birth') },
                 ]),
