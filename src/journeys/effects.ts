@@ -51,10 +51,8 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
             return;
         }
 
-        const addresses = await deps.postcodeapi.byPostcode(building, postcode) || []
-        data.result = addresses.map((address: Address) => {
-            return {address: address.address, uprn: address.uprn}
-        })
+        const addresses = await deps.postcodeapi.byPostcode(building, postcode) ?? []
+        data.result = addresses.map((address: Address) => ({address: address.address, uprn: address.uprn}))
         data.count = data.result?.length ?? 0
         context.setData("lookup", data)
     },
