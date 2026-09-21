@@ -80,43 +80,9 @@ const addClientDetailsStep = step({
       hint: { text: "For example, 27 3 2007" },
       validWhen: [
         validation({
-          condition: Self().match(Condition.Object.PropertyHasValue("day")),
+          condition: Self().match(Condition.Date.IsValid()),
           message: "Enter a valid day, month, or year",
           details: { field: "day" },
-        }),
-        validation({
-          condition: Self().match(Condition.Object.PropertyHasValue("month")),
-          message: "Enter a valid day, month, or year",
-          details: { field: "month" },
-        }),
-        validation({
-          condition: Self().match(Condition.Object.PropertyHasValue("year")),
-          message: "Enter a valid day, month, or year",
-          details: { field: "year" },
-        }),
-        validation({
-          condition: or(
-            Self().not.match(Condition.Object.PropertyHasValue("day")),
-            Self().match(Condition.Date.IsValidDay()),
-          ),
-          message: "Enter a valid day, month, or year",
-          details: { field: "day" },
-        }),
-        validation({
-          condition: or(
-            Self().not.match(Condition.Object.PropertyHasValue("month")),
-            Self().match(Condition.Date.IsValidMonth()),
-          ),
-          message: "Enter a valid day, month, or year",
-          details: { field: "month" },
-        }),
-        validation({
-          condition: or(
-            Self().not.match(Condition.Object.PropertyHasValue("year")),
-            Self().match(Condition.Date.IsValidYear()),
-          ),
-          message: "Enter a valid day, month, or year",
-          details: { field: "year" },
         }),
         validation({
           condition: or(

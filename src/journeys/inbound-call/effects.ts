@@ -7,6 +7,11 @@ import type { Deps } from "../api.js";
 export const effects = new EffectRegistry<Deps>();
 
 // TODO: replace with a real backend call once the API contract is confirmed
+/**
+ * Creates the effect that saves client details.
+ * @param {Deps} _deps - Journey dependencies.
+ * @returns {(context: unknown, fullName: string, dateOfBirth: string, phoneNumber: string) => void} The save effect.
+ */
 export const saveClientDetailsImplementation =
   (_deps: Deps) =>
   (

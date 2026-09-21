@@ -13,8 +13,8 @@ export const conditionRegistry = new ConditionRegistry<Deps>();
 export const AuthConditionsImplementation = {
   /**
    * Creates the SILAS token condition evaluator.
-   * @param _deps - Journey dependencies.
-   * @returns The token validation function.
+   * @param {Deps} _deps - Journey dependencies.
+   * @returns {(silasAuth: SilasSessionAuth | undefined) => boolean} The token validation function.
    */
   HasValidSilasToken:
     (_deps: Deps) => (silasAuth: SilasSessionAuth | undefined) =>
