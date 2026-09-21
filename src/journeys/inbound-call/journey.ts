@@ -1,4 +1,3 @@
-import { hasValidSilasToken } from "#src/middleware/apiMiddleware.js";
 import {
   journey,
   step,
@@ -11,9 +10,6 @@ import {
   or,
   Generator,
   Transformer,
-  access,
-  Session,
-  ConditionRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
   GovUKButton,
@@ -25,60 +21,9 @@ import {
   GovUKUtilityClasses,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { saveClientDetails, Answer } from "./effects.js";
+import { whosCallingStep } from "./steps/whosCallingStep.js";
 
 const MAX_CLIENT_AGE_YEARS = 120;
-
-export const conditionRegistry = new ConditionRegistry();
-
-export const AuthConditions = {
-  /**
-   * Checks that a numeric value meets the minimum score threshold.
-   * @param minScore - The minimum value required for eligibility.
-   */
-  HasValidSilasToken: conditionRegistry.register(
-    "HasValidSilasToken",
-    (deps) => hasValidSilasToken,
-  ),
-};
-
-// Step 1: Who's calling
-const whosCallingStep = step({
-  code: "whos-calling",
-  path: "/",
-  title: "Taking calls from clients",
-  reachability: { entryWhen: true },
-  onAccess: [
-    access({
-      when: Session("silasAuth").not.match(AuthConditions.HasValidSilasToken()),
-      next: [redirect({ goto: "/login" })],
-    }),
-  ],
-  view: { template: "main/index.njk" },
-  blocks: [
-    GovUKRadioInput({
-      code: "whos-calling",
-      fieldset: {
-        legend: {
-          text: "Are you calling on behalf of yourself or another person?",
-          classes: "govuk-fieldset__legend--m",
-        },
-      },
-      items: [
-        { value: "myself", text: "Myself" },
-        { value: "thirdParty", text: "Another person" },
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-  onSubmission: [
-    submit({
-      validate: true,
-      onValid: {
-        next: [redirect({ goto: "search-client" })],
-      },
-    }),
-  ],
-});
 
 // Step 2: Placeholder for search-client step
 const searchClient = step({
@@ -136,17 +81,17 @@ const addClientDetailsStep = step({
       validWhen: [
         validation({
           condition: Self().match(Condition.Object.PropertyHasValue("day")),
-          message: "Enter a valid day",
+          message: "Enter a valid day, month, or year",
           details: { field: "day" },
         }),
         validation({
           condition: Self().match(Condition.Object.PropertyHasValue("month")),
-          message: "Enter a valid month",
+          message: "Enter a valid day, month, or year",
           details: { field: "month" },
         }),
         validation({
           condition: Self().match(Condition.Object.PropertyHasValue("year")),
-          message: "Enter a valid year",
+          message: "Enter a valid day, month, or year",
           details: { field: "year" },
         }),
         validation({
@@ -154,7 +99,7 @@ const addClientDetailsStep = step({
             Self().not.match(Condition.Object.PropertyHasValue("day")),
             Self().match(Condition.Date.IsValidDay()),
           ),
-          message: "Enter a valid day",
+          message: "Enter a valid day, month, or year",
           details: { field: "day" },
         }),
         validation({
@@ -162,7 +107,7 @@ const addClientDetailsStep = step({
             Self().not.match(Condition.Object.PropertyHasValue("month")),
             Self().match(Condition.Date.IsValidMonth()),
           ),
-          message: "Enter a valid month",
+          message: "Enter a valid day, month, or year",
           details: { field: "month" },
         }),
         validation({
@@ -170,7 +115,7 @@ const addClientDetailsStep = step({
             Self().not.match(Condition.Object.PropertyHasValue("year")),
             Self().match(Condition.Date.IsValidYear()),
           ),
-          message: "Enter a valid year",
+          message: "Enter a valid day, month, or year",
           details: { field: "year" },
         }),
         validation({

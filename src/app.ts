@@ -3,19 +3,21 @@ import express from 'express';
 import chalk from 'chalk';
 import morgan from 'morgan';
 import compression from 'compression';
-import { setupCsrf, setupMiddlewares, setupConfig, setupLocaleMiddleware } from '#middleware/index.js';
+import { setupCsrf, setupMiddlewares, setupConfig, setupLocaleMiddleware, setupGlobalErrorHandler } from '#middleware/index.js';
 import session from 'express-session';
-import { nunjucksSetup, rateLimitSetUp, helmetSetup, axiosMiddleware, displayAsciiBanner } from '#utils/index.js';
+import { nunjucksSetup, rateLimitSetUp, helmetSetup, displayAsciiBanner } from '#utils/index.js';
 import { initializeI18nextSync } from '#src/scripts/helpers/index.js';
 import config from '#config.js';
 import indexRouter from '#routes/index.js';
 import livereload from 'connect-livereload';
 import { Forge } from '@ministryofjustice/hmpps-forge/core'
+import type { Deps } from './journeys/api.js'
+import { apiService } from './services/api/index.js';
 import { govukComponents } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { createExpressRouter } from '@ministryofjustice/hmpps-forge/express-nunjucks'
 import journeyPackages from './journeys/index.js';
 import { buildSessionConfig } from '#utils/session.js';
-import { setAuthStatus } from './middleware/apiMiddleware.js';
+import { axiosMiddleware, setAuthStatus } from './middleware/apiMiddleware.js';
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -32,6 +34,10 @@ const createApp = (): express.Application => {
 
 	// Set up common middleware for handling cookies, body parsing, etc.
 	setupMiddlewares(app);
+
+	// Set up cookie security for sessions
+	app.set('trust proxy', TRUST_FIRST_PROXY);
+	app.use(session(buildSessionConfig(config)));
 
 	app.use(axiosMiddleware);
 
@@ -58,10 +64,6 @@ const createApp = (): express.Application => {
 
 	// Reducing fingerprinting by removing the 'x-powered-by' header
 	app.disable('x-powered-by');
-
-	// Set up cookie security for sessions
-	app.set('trust proxy', TRUST_FIRST_PROXY);
-	app.use(session(buildSessionConfig(config)));
 
 	app.use(setAuthStatus);
 
@@ -105,12 +107,39 @@ const createApp = (): express.Application => {
 
 	// Everytime a new journey is added to the project,
 	// it'll be automatically registered with Forge here.
+	const pathLookup: Record<string, string> = {}
 	for (const journeyPackage of journeyPackages) {
-		forge.registerPackage(journeyPackage);
+		const steps = journeyPackage.journey.steps ?? []
+		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/g, "");
+		pathLookup[journeyPackage.journey.code] = journeyPackage.journey.path; // eslint-disable-line @typescript-eslint/prefer-destructuring -- Don't want to introduce `code` and `path` variables here as their use is ambiguous at this point.
+		for(const step of  steps) {
+			const code = `${journeyPackage.journey.code}.${step.code}`
+			const stepPath = step.path.replace(/^\/+|\/+$/g, "");
+			pathLookup[code] = `/${journeyPath}/${stepPath}`;
+		}
+		forge.registerPackage<Deps>(journeyPackage, {
+			caseApi: apiService
+		});
+	}
+
+	/**
+	 * Create a function to go from forge code to path
+	 *
+	 * @param {string} code - The full forge code, if it's a step then include the parent journey code separated by a dot i.e <journey.code>.<step.code>
+	 * @returns {string} path - The forge path
+	 */
+	app.locals.forgeReverse = (code: string): string => {
+		if(!(code in pathLookup)) {
+			throw new Error(`Could not find path for ${code}`)
+		}
+		return pathLookup[code]
 	}
 
 	app.use(express.urlencoded({ extended: true }));
 	app.use('/', createExpressRouter(forge, { nunjucksEnv }));
+
+	// Register last to catch errors from routes, controllers, and services.
+	setupGlobalErrorHandler(app);
 
 
 	// Starts the Express server on the specified port

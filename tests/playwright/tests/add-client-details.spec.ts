@@ -41,13 +41,7 @@ test.describe("Add new client page", () => {
       "Enter the client’s name",
     );
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid day",
-    );
-    await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid month",
-    );
-    await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid year",
+      "Enter a valid day, month, or year",
     );
     await expect(addClientDetailsPage.errorSummary).toContainText(
       "Enter a valid phone number",
@@ -77,13 +71,7 @@ test.describe("Add new client page", () => {
     await addClientDetailsPage.submit();
 
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid day",
-    );
-    await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid month",
-    );
-    await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "Enter a valid year",
+      "Enter a valid day, month, or year",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(
       "Enter a valid phone number",
@@ -116,13 +104,7 @@ test.describe("Add new client page", () => {
       "Enter a valid phone number",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "Enter a valid day",
-    );
-    await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "Enter a valid month",
-    );
-    await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "Enter a valid year",
+      "Enter a valid day, month, or year",
     );
   });
 
