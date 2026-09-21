@@ -1,8 +1,8 @@
 import type { Deps } from "#src/journeys/api.js";
 import { type EffectFunctionExpr, type EffectFunctionContext, EffectRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
-import {SessionData, Session} from "express-session"
-import { Address } from "#src/services/postcodeLookup.js";
+import {Session} from "express-session"
+import type { Address } from "#src/services/postcodeLookup.js";
 
 export interface InboundCallEffectShape {
     GetAllCases: () => EffectFunctionExpr;
@@ -29,6 +29,11 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
        const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
        context.setData("allCases", result);
     },
+    /**
+     * Implementation of the effect for looking a postcode
+     * @param {Deps} deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+     */
     postcodeLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
         const session = context.getSession() as Session;
         const postcode = session.forms?.postcodeLookup?.postcode
@@ -51,7 +56,11 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
         data.count = data.result?.length ?? 0
         context.setData("lookup", data)
     },
-
+    /**
+     * Implementation of the effect for saving form data
+     * @param {Deps} deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+     */
     saveFormData: (deps: Deps) => async (context: EffectFunctionContext) => {
         const session = context.getSession() as Session;
         if(!session.forms) {

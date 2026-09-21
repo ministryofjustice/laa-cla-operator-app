@@ -1,6 +1,6 @@
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import type { GetAllCasesResponse } from "#types/api-types.js";
-import { PostcodeLookupService } from "#src/services/postcodeLookup.js";
+import type { PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
 export interface Deps {
     caseApi: CaseApiService;
