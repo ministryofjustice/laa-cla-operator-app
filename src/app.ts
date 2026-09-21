@@ -111,7 +111,8 @@ const createApp = (): express.Application => {
 	for (const journeyPackage of journeyPackages) {
 		const steps = journeyPackage.journey.steps ?? []
 		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/g, "");
-		pathLookup[journeyPackage.journey.code] = journeyPackage.journey.path;
+		// disable @typescript-eslint/prefer-destructuring - Don't want to introduce `code` and `path` variables here as their use is ambiguous at this point.
+		pathLookup[journeyPackage.journey.code] = journeyPackage.journey.path; // eslint-disable-line @typescript-eslint/prefer-destructuring
 		for(const step of  steps) {
 			const code = `${journeyPackage.journey.code}.${step.code}`
 			const stepPath = step.path.replace(/^\/+|\/+$/g, "");
