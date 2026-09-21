@@ -41,3 +41,10 @@ export interface SearchCasesParams {
   pageSize?: number;
   pageNumber?: number;
 }
+
+export interface CreateCasePayload {
+  full_name?: string;
+  postcode?: string;
+  date_of_birth?: string;
+  phone?: string | null;
+}

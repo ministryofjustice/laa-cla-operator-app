@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
-import type { GetAllCasesResponse, SearchCasesParams } from "#types/api-types.js";
+import type { CaseDetails, GetAllCasesResponse, SearchCasesParams, CreateCasePayload } from "#types/api-types.js";
 import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -55,4 +55,19 @@ export async function searchCases(axiosMiddleware: AxiosInstanceWrapper, params:
 
         return response.data;
     }, 'Error searching cases');
+}
+
+/**
+ * Creates a new case with the given details.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {CaseDetails} payload The details of the case to create.
+ * @returns {Promise<CaseDetails>} The response containing the created case.
+ */
+export async function createCase(axiosMiddleware: AxiosInstanceWrapper, payload: CreateCasePayload): Promise<CaseDetails> {
+    return await handleApiCall(async () => {
+        const configuredAxios = configureAxiosInstance(axiosMiddleware);
+        const response = await configuredAxios.post<CaseDetails>('/call_centre/api/v1/case/', payload);
+        return response.data;
+    }, 'Error creating case');
 }

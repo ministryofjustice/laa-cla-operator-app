@@ -1,6 +1,6 @@
 import type { EffectFunctionContext } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
-import type { GetAllCasesResponse } from "#types/api-types.js";
+import type { CreateCasePayload, GetAllCasesResponse } from "#types/api-types.js";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 import { dateStringFromThreeFields, mapResultsToFormatDob, type DobAnswer } from "#src/helpers/dataTransformers.js";
 
@@ -106,4 +106,30 @@ export function setPaginatedSearchData(context: EffectFunctionContext, result: G
     context.setData("searchPreviousPage", Math.max(FIRST_PAGE, currentPage - SINGLE_STEP));
     context.setData("searchTotalPages", totalPages);
     context.setData("searchPages", Array(totalPages).fill(ZERO));
+}
+
+/**
+ * Extracts case details from the effect context based on user answers.
+ * @param {EffectFunctionContext} context - Effect runtime context.
+ * @returns {Record<string, unknown>} Case details formatted for API submission.
+ */
+export function getCreateCasePayloadFromAnswers(context: EffectFunctionContext): CreateCasePayload {
+    const fullName = context.getAnswer("fullName");
+    const phone = context.getAnswer("phone");
+    const dateOfBirthRaw = context.getAnswer("dateOfBirth");
+    const postcode = context.getAnswer("postcode");
+    const dateOfBirth = isDobAnswer(dateOfBirthRaw) ? dateOfBirthRaw : {};
+
+    const formattedDob = dateStringFromThreeFields(
+        normaliseAnswerValue(dateOfBirth.day),
+        normaliseAnswerValue(dateOfBirth.month),
+        normaliseAnswerValue(dateOfBirth.year)
+    );
+
+    return {
+        full_name: normaliseAnswerValue(fullName),
+        phone: normaliseAnswerValue(phone),
+        postcode: normaliseAnswerValue(postcode),
+        date_of_birth: formattedDob,
+    };
 }

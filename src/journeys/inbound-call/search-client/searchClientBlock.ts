@@ -78,6 +78,8 @@ export const searchClientBlock = CollectionBlock({
             buttons: [
                 GovUKButton({
                 text: "Search",
+                name: "action",
+                value: "search",
             }),
                 HtmlBlock({
                         tag: 'a',
@@ -102,6 +104,8 @@ export const createCaseButtonBlock = GovUKButton({
     )
     .otherwise("Start a new case"),
   classes: "govuk-button--secondary",
+  name: "action",
+  value: "createCase",
 });
 
 

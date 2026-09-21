@@ -1,4 +1,4 @@
-import { step, submit, access, Query, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { step, submit, access, Query, Condition, Post, Format, redirect, Data } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { requireSilasAuth } from "#src/journeys/auth.js";
 import { displaySearchClientBlock, searchClientBlock, createCaseButtonBlock } from "./searchClientBlock.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
@@ -21,10 +21,19 @@ export const searchClientStep = step({
     blocks: [searchClientBlock, createCaseButtonBlock, displaySearchClientBlock],
     onSubmission: [
         submit({
+            when: Post("action").match(Condition.Equals("search")),
             validate: true,
             onValid: {
                 effects: [InboundCallEffects.SearchCase()]
             },
         }),
+        submit({
+            when: Post("action").match(Condition.Equals("createCase")),
+            validate: false,
+            onValid: {
+                effects: [InboundCallEffects.CreateCase()],
+                next: [redirect({ goto: Format("cases/%1", Data("createdCaseRef")) })]
+            },
+        })
     ],
 })
