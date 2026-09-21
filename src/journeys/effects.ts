@@ -40,12 +40,8 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
 
     const address = {
       addressLine1: context.getAnswer("address-line-1"),
-      addressLine2: context.getAnswer("address-line-2"),
-      townOrCity: context.getAnswer("town-or-city"),
-      country: context.getAnswer("country"),
       postcode: context.getAnswer("postcode"),
     };
-    
     // TODO: replace hardcoded case ID
     const caseId = "ED-0001-0001";
 

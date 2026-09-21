@@ -9,11 +9,11 @@ import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
  * @returns {Promise<GetAllCasesResponse>} The response containing all cases.
  */
 export async function getAllCases(axiosMiddleware: AxiosInstanceWrapper): Promise<GetAllCasesResponse> {
-    return await handleApiCall(async () => {
-        const configuredAxios = configureAxiosInstance(axiosMiddleware);
-        const response = await configuredAxios.get<GetAllCasesResponse>('/call_centre/api/v1/case/');
-        return response.data;
-    }, 'Error fetching all cases');
+  return await handleApiCall(async () => {
+    const configuredAxios = configureAxiosInstance(axiosMiddleware);
+    const response = await configuredAxios.get<GetAllCasesResponse>("/call_centre/api/v1/case/");
+    return response.data;
+  }, "Error fetching all cases");
 }
 
 /**
@@ -32,6 +32,6 @@ export async function updatePersonalDetails(
 ): Promise<void> {
   await handleApiCall(async () => {
     const configuredAxios = configureAxiosInstance(axiosMiddleware);
-    await configuredAxios.put(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`, body);
+    await configuredAxios.post(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`, body);
   }, "Error updating personal details");
 }

@@ -1,13 +1,13 @@
 import { Condition, Self, validation } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components"
-import { GovUKButton, GovUKTextInput } from "@ministryofjustice/hmpps-forge/govuk-components"
+import { GovUKButton, GovUKTextInput,GovUKTextareaInput } from "@ministryofjustice/hmpps-forge/govuk-components"
 
 export const addAddress = CollectionBlock({
     collection: [
 
-        GovUKTextInput({
-            code: 'address-line-1',
-            label: { text: 'Address line 1' },
+        GovUKTextareaInput({
+            code: "address-line-1",
+            rows: '4',
             classes: 'govuk-input--width-20',
             validWhen: [
                 validation({
