@@ -13,7 +13,7 @@ interface RequestWithCSRF extends Request {
 const HTTP_STATUS_BAD_REQUEST = 400;
 
 /* c8 ignore start */
-// TODO(LGA-4308): Replace this template fallback data with real person data from
+// TODO: Replace this template fallback data with real person data from
 // the case API, or render empty values when no person data exists. Hard-coded
 // names, addresses, and dates of birth must not be displayed in production.
 const DEFAULT_PERSON_DATA = {

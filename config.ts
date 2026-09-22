@@ -15,7 +15,7 @@ if (isBlankString(sessionSecret) || isBlankString(sessionName)) {
 }
 
 // Get environment variables
-// TODO(LGA-4295): CONTACT_*, DEPARTMENT_*, SERVICE_* are static content, not per-environment
+// TODO: CONTACT_*, DEPARTMENT_*, SERVICE_* are static content, not per-environment
 // config — move to locales/constants and stop reading them from env vars.
 const config: Config = {
   CONTACT_EMAIL: process.env.CONTACT_EMAIL,
