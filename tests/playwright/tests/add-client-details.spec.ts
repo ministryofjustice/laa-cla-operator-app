@@ -1,11 +1,13 @@
 import { test, expect } from "../fixtures/index.js";
 
-test.describe("Add new client page", () => {
-  test("renders heading and back link", async ({ pages }) => {
+test.describe("Client's details page", () => {
+  test("renders revised content and back link", async ({ pages }) => {
     const { addClientDetailsPage } = pages;
     await addClientDetailsPage.navigate();
 
     await expect(addClientDetailsPage.heading).toBeVisible();
+    await expect(addClientDetailsPage.personalDetailsHeading).toBeVisible();
+    await expect(addClientDetailsPage.dateOfBirthFieldset).toBeVisible();
     await expect(addClientDetailsPage.backLink).toHaveAttribute(
       "href",
       "/receive-call/search-client",

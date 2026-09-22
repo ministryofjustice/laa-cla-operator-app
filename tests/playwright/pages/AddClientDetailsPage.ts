@@ -3,7 +3,7 @@ import { TEST_CONFIG } from "../playwright.config.js";
 const MAIN_HEADING_LEVEL = 1;
 
 /**
- * Page object for the "Add new client" page (/receive-call/add-client-details)
+ * Page object for the "Client's details" page (/receive-call/add-client-details)
  */
 export class AddClientDetailsPage {
   private readonly page: Page;
@@ -24,9 +24,28 @@ export class AddClientDetailsPage {
    */
   get heading(): Locator {
     return this.page.getByRole("heading", {
-      name: "Add new client",
+      name: "Client's details",
       level: MAIN_HEADING_LEVEL,
     });
+  }
+
+  /**
+   * Gets the personal details section heading
+   * @returns {Locator} The section heading locator
+   */
+  get personalDetailsHeading(): Locator {
+    return this.page.getByRole("heading", {
+      name: "Client's personal details",
+      level: MAIN_HEADING_LEVEL + 1,
+    });
+  }
+
+  /**
+   * Gets the date of birth fieldset
+   * @returns {Locator} The date of birth fieldset locator
+   */
+  get dateOfBirthFieldset(): Locator {
+    return this.page.getByRole("group", { name: "Date of birth" });
   }
 
   /**
@@ -165,7 +184,7 @@ export class AddClientDetailsPage {
   }
 
   /**
-   * Navigates directly to the add new client page
+   * Navigates directly to the client's details page
    */
   async navigate(): Promise<void> {
     await this.page.goto(this.url);

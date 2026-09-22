@@ -52,11 +52,11 @@ const searchClient = step({
 const addClientDetailsStep = step({
   code: "add-client-details",
   path: "/add-client-details",
-  title: "Add new client",
+  title: "Client's details",
   reachability: { entryWhen: true },
   view: { template: "main/add-client-details.njk" },
   blocks: [
-    GovUKHeading({ text: "Client's details", size: "m" }),
+    GovUKHeading({ text: "Client's personal details", size: "m" }),
 
     GovUKTextInput({
       code: "fullName",
@@ -73,7 +73,7 @@ const addClientDetailsStep = step({
       code: "dateOfBirth",
       fieldset: {
         legend: {
-          text: "What's your date of birth?",
+          text: "Date of birth",
           classes: "govuk-fieldset__legend--s",
         },
       },
@@ -110,7 +110,7 @@ const addClientDetailsStep = step({
       ],
     }),
 
-    GovUKHeading({ text: "Client's contact details", size: "m" }),
+    GovUKHeading({ text: "Client's contact preferences", size: "m" }),
 
     GovUKTextInput({
       code: "phoneNumber",
