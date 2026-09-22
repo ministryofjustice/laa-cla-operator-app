@@ -24,6 +24,23 @@ export function hasProperty(obj: unknown, key: string): obj is Record<string, un
 }
 
 /**
+ * Checks whether a nullable string is missing or empty.
+ * Use this in guard clauses instead of truthiness checks such as
+ * `if (!postcode || !building)` so nullable and empty values are handled explicitly.
+ *
+ * @example
+ * if (isBlankString(postcode) || isBlankString(building)) {
+ *   return;
+ * }
+ *
+ * @param {string | null | undefined} value - Nullable string value to check.
+ * @returns {boolean} True when the value is undefined, null, or an empty string.
+ */
+export function isBlankString(value: string | null | undefined): boolean {
+  return value === undefined || value === null || value === '';
+}
+
+/**
  * Capitalises the first letter of each word in a string
  * @param {string} str - The string to capitalise
  * @returns {string} The capitalised string
