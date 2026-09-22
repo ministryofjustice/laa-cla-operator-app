@@ -64,7 +64,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @param {Deps} deps - The dependencies required for the effect.
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
-    saveToSession: (deps: Deps) => async (context: EffectFunctionContext) => {
+    saveToSession: (deps: Deps) => (context: EffectFunctionContext) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge context returns a session compatible with express-session
         const session = context.getSession() as Session;
         session.forms ??= {};

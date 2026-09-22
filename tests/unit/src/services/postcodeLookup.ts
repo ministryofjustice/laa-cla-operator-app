@@ -23,8 +23,8 @@ const TEST_POSTCODE_LOOKUP_RESPONSE = {
 }
 
 describe("Postcode lookup", ()=>{
-    let configStub: sinon.SinonStub;
-    let fetchStub: sinon.SinonStub;
+    let configStub: sinon.SinonStub = sinon.stub();
+    let fetchStub: sinon.SinonStub = sinon.stub();
     const postcodeLookupService = new PostcodeLookupService()
 
     beforeEach(() => {
@@ -43,14 +43,18 @@ describe("Postcode lookup", ()=>{
         fetchStub.resolves({
             ok: true,
             /**
-             *
+             * Override what fetch.json returns
+             * @returns {Record<any: any>} - A json object  
              */
+            // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
             json: async () => (TEST_POSTCODE_LOOKUP_RESPONSE)
         })
 
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1H 9AJ")
         assert(Array.isArray(addresses))
-        assert(addresses.length == 1)
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- We are checking atleast one result is returned
+        assert(addresses.length === 1)
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- Get the first address returned
         const { address, postcode, uprn } = addresses[0];
         assert.deepEqual({ address, postcode, uprn }, {address: "MINISTRY OF JUSTICE SEVENTH FLOOR 102 PETTY FRANCE LONDON SW1H 9AJ", postcode: "SW1H 9AJ", uprn: "00000000000"})
     })
@@ -59,8 +63,10 @@ describe("Postcode lookup", ()=>{
         fetchStub.resolves({
             ok: true,
             /**
-             *
+             * Override what fetch.json returns
+             * @returns {Record<any: any>} - A json object  
              */
+            // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
             json: async () => ({})
         })
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1 1AA")
@@ -73,8 +79,10 @@ describe("Postcode lookup", ()=>{
         fetchStub.resolves({
             ok: true,
             /**
-             *
+             * Override what fetch.json returns
+             * @returns {Record<any: any>} - A json object  
              */
+            // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
             json: async () => (TEST_POSTCODE_LOOKUP_RESPONSE)
         })
         const result = await postcodeLookupService.byUPRN("00000000000")

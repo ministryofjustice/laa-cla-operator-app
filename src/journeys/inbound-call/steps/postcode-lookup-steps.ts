@@ -8,8 +8,7 @@ import {
   Data,
   access,
   Item,
-  Iterator,
-  Session
+  Iterator
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import {
@@ -23,6 +22,8 @@ import {
 import { HtmlBlock } from '@ministryofjustice/hmpps-forge/core/components'
 import { InboundCallEffects } from "#src/journeys/effects.js";
 import { requireSilasAuth } from "#src/journeys/auth.js";
+
+const MAXIMUM_POSTCODE_LENGTH = 12
 
 export const addressLookupStep1 = step({
     code: "address-lookup",
@@ -49,7 +50,7 @@ export const addressLookupStep1 = step({
                     message: "You must enter a valid postcode"
                 }),
                 validation({
-                    condition: Self().match(Condition.String.HasMaxLength(12)),
+                    condition: Self().match(Condition.String.HasMaxLength(MAXIMUM_POSTCODE_LENGTH)),
                     message: "You must enter a valid postcode",
                 })
             ],
@@ -96,7 +97,7 @@ export const addressLookupStep2 = step({
         template: "main/forms/lookup-address-select-form.njk"
     },
     onAccess: [
-        // requireSilasAuth,
+        requireSilasAuth,
         access({
             effects: [InboundCallEffects.postcodeLookup()]
         })
