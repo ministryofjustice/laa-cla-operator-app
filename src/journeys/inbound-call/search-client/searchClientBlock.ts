@@ -23,7 +23,7 @@ export const searchClientBlock = CollectionBlock({
                     Self().not.match(Condition.IsRequired()),
                     Self().match(Condition.String.LettersWithSpaceDashApostrophe())
                 ),
-                message: "Full name must only contain letters, spaces, hyphens and apostrophes",
+                message: "Full name must be valid",
             }),
         ]
         }),

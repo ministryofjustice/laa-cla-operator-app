@@ -1,10 +1,15 @@
 {% extends "base.njk" %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 
 {% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
+                {{ govukBackLink({
+                text: "Back",
+                href: "/receive-call"
+                }) }}
             <h1 class="govuk-heading-xl">{{ step.title }}</h1>
 
             <p class="govuk-body">
@@ -14,9 +19,18 @@
             <h2 class="govuk-heading-s">Find a client using one or more of the search terms below.</h2>
 
             {% if fieldValidationErrors | length %}
+                {% set errorList = [] %}
+
+                {% for error in fieldValidationErrors %}
+                    {% set errorList = (errorList.push({
+                        text: error.message,
+                        href: "#" + (error.anchor or error.blockCode)
+                    }), errorList) %}
+                {% endfor %}
+
                 {{ govukErrorSummary({
                     titleText: "There is a problem",
-                    errorList: fieldValidationErrors
+                    errorList: errorList
                 }) }}
             {% endif %}
 

@@ -15,6 +15,7 @@ export interface CaseDetails {
   personal_details: string;
   requires_action_by: string | null;
   postcode: string;
+  mobile_phone: string;
   rejected: boolean;
   date_of_birth: string;
   category: string | null;

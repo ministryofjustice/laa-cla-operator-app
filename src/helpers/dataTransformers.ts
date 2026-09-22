@@ -73,27 +73,36 @@ export function dateStringFromThreeFields(day: string, month: string, year: stri
 }
 
 /**
+ * Formats a date of birth string from 'YYYY-MM-DD' to 'DD/MM/YYYY'.
+ * @param {string} dob - The date of birth value to format.
+ * @returns {string} The formatted date string or the original value if invalid.
+ */
+export function formatDob(dob: string): string {
+  if (typeof dob !== "string" || dob.trim() === "") {
+    return dob;
+  }
+  const parts = dob.split('-');
+  if (parts.length !== DATE_PARTS_LENGTH) {
+    return dob;
+  }
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year}`;
+}
+
+/**
  * Maps result dates of birth to a human-readable 'DD/MM/YYYY' format.
  * @param {SearchCasesResponse} results - The response object containing case results.
  * @returns {SearchCasesResponse} Updated response with transformed date_of_birth values.
  */
-export function mapResultsToFormatDob(results: SearchCasesResponse): SearchCasesResponse {
+export function mapResultsToFormatDob(
+  results: SearchCasesResponse
+): SearchCasesResponse {
   return {
     ...results,
-    results: results.results.map(({ date_of_birth: dob, ...rest }) => {
-      if (typeof dob !== "string" || dob.trim() === "") {
-        return { ...rest, date_of_birth: dob };
-      }
-      const parts = dob.split('-');
-      if (parts.length !== DATE_PARTS_LENGTH) {
-        return { ...rest, date_of_birth: dob };
-      }
-      const [year, month, day] = parts;
-      return {
-        ...rest,
-        date_of_birth: `${day}/${month}/${year}`
-      };
-    })
+    results: results.results.map(result => ({
+      ...result,
+      date_of_birth: formatDob(result.date_of_birth),
+    })),
   };
 }
 

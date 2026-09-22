@@ -9,7 +9,7 @@ export const searchClientStep = step({
     code: SEARCH_CLIENT_STEP_CODE,
     path: "/search-client",
     title: "Search client's details",
-    onAccess: [
+        onAccess: [
         requireSilasAuth,
         access({
             when: Query("page").match(Condition.IsRequired()),
