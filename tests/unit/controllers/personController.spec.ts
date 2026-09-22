@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import type { Request } from 'express';
+import type { NextFunction, Request } from 'express';
 import { validationResult } from 'express-validator';
 import { before, describe, it } from 'mocha';
 import sinon from 'sinon';
@@ -28,6 +28,10 @@ function createResponse() {
   return res;
 }
 
+function createNext(): sinon.SinonStub<[unknown?], void> & NextFunction {
+  return sinon.stub() as sinon.SinonStub<[unknown?], void> & NextFunction;
+}
+
 async function runPersonValidation(req: Request): Promise<void> {
   const schema = validatePerson();
   await Promise.all(schema.map(async validation => validation.run(req)));
@@ -42,7 +46,7 @@ describe('personController', () => {
     it('renders the person form with default values and stores original form data', () => {
       const req = createRequest({ csrfToken: () => 'csrf-token' });
       const res = createResponse();
-      const next = sinon.stub();
+      const next = createNext();
 
       getPerson(req as Request & { csrfToken: () => string }, res as any, next);
 
@@ -82,7 +86,7 @@ describe('personController', () => {
       });
       const res = createResponse();
 
-      getPerson(req, res as any, sinon.stub());
+      getPerson(req, res as any, createNext());
 
       expect(res.render.calledOnceWith('change-person.njk', sinon.match({
         currentName: 'Jane Doe',
@@ -97,7 +101,7 @@ describe('personController', () => {
       const renderError = new Error('render failed');
       const req = createRequest();
       const res = createResponse();
-      const next = sinon.stub();
+      const next = createNext();
       res.render.throws(renderError);
 
       getPerson(req, res as any, next);
@@ -123,7 +127,7 @@ describe('personController', () => {
       const res = createResponse();
 
       await runPersonValidation(req);
-      postPerson(req as Request & { csrfToken: () => string }, res as any, sinon.stub());
+      postPerson(req as Request & { csrfToken: () => string }, res as any, createNext());
 
       const formattedErrors = validationResult(req).formatWith(formatValidationError);
 
@@ -161,7 +165,7 @@ describe('personController', () => {
       });
       const res = createResponse();
 
-      postPerson(req, res as any, sinon.stub());
+      postPerson(req, res as any, createNext());
 
       expect(req.session.currentPerson).to.deep.equal({
         fullName: 'Updated Name',
@@ -196,7 +200,7 @@ describe('personController', () => {
         }
       });
       const res = createResponse();
-      const next = sinon.stub();
+      const next = createNext();
       res.render.throws(renderError);
 
       postPerson(req, res as any, next);
