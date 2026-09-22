@@ -81,8 +81,18 @@ const addClientDetailsStep = step({
       validWhen: [
         validation({
           condition: Self().match(Condition.Date.IsValid()),
-          message: "Enter a valid day, month, or year",
+          message: "Enter a valid day",
           details: { field: "day" },
+        }),
+        validation({
+          condition: Self().match(Condition.Date.IsValid()),
+          message: "Enter a valid month",
+          details: { field: "month" },
+        }),
+        validation({
+          condition: Self().match(Condition.Date.IsValid()),
+          message: "Enter a valid year",
+          details: { field: "year" },
         }),
         validation({
           condition: or(

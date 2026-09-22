@@ -43,7 +43,13 @@ test.describe("Client's details page", () => {
       "Enter the client’s name",
     );
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid day, month, or year",
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid year",
     );
     await expect(addClientDetailsPage.errorSummary).toContainText(
       "Enter a valid phone number",
@@ -73,7 +79,13 @@ test.describe("Client's details page", () => {
     await addClientDetailsPage.submit();
 
     await expect(addClientDetailsPage.errorSummary).toContainText(
-      "Enter a valid day, month, or year",
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).toContainText(
+      "Enter a valid year",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(
       "Enter a valid phone number",
@@ -106,7 +118,13 @@ test.describe("Client's details page", () => {
       "Enter a valid phone number",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(
-      "Enter a valid day, month, or year",
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid year",
     );
   });
 
@@ -125,6 +143,15 @@ test.describe("Client's details page", () => {
     await expect(addClientDetailsPage.errorSummary).toContainText(
       "Year cannot be more than 120 years ago",
     );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid year",
+    );
   });
 
   test("future date of birth shows the year error", async ({ pages }) => {
@@ -141,6 +168,15 @@ test.describe("Client's details page", () => {
 
     await expect(addClientDetailsPage.errorSummary).toContainText(
       "Year cannot be in the future",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid day",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid month",
+    );
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
+      "Enter a valid year",
     );
   });
 
