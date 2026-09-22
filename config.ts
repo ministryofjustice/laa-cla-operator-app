@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { isBlankString } from '#src/helpers/dataTransformers.js';
 import type { Config } from '#types/config-types.js';
 dotenv.config();
 
@@ -6,11 +7,10 @@ const DEFAULT_RATE_LIMIT_MAX = 100;
 const DEFAULT_RATE_WINDOW_MS_MINUTE = 15;
 const MILLISECONDS_IN_A_MINUTE = 60000;
 const DEFAULT_PORT = 3000;
+const sessionSecret = process.env.SESSION_SECRET;
+const sessionName = process.env.SESSION_NAME;
 
-// Validate required session env vars
-// SESSION_SECRET and SESSION_NAME can never be null so we check for undefined
-if (process.env.SESSION_SECRET === undefined || process.env.SESSION_SECRET === '' ||
-  process.env.SESSION_NAME === undefined || process.env.SESSION_NAME === '') {
+if (isBlankString(sessionSecret) || isBlankString(sessionName)) {
   throw new Error('SESSION_SECRET and SESSION_NAME must be defined in environment variables.');
 }
 
@@ -31,8 +31,8 @@ const config: Config = {
   SERVICE_PHASE: process.env.SERVICE_PHASE,
   SERVICE_URL: process.env.SERVICE_URL,
   session: {
-    secret: process.env.SESSION_SECRET,
-    name: process.env.SESSION_NAME,
+    secret: sessionSecret,
+    name: sessionName,
     resave: false,
     saveUninitialized: false
   },

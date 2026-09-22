@@ -36,7 +36,7 @@ export function hasProperty(obj: unknown, key: string): obj is Record<string, un
  * @param {string | null | undefined} value - Nullable string value to check.
  * @returns {boolean} True when the value is undefined, null, or an empty string.
  */
-export function isBlankString(value: string | null | undefined): boolean {
+export function isBlankString(value: string | null | undefined): value is '' | null | undefined {
   return value === undefined || value === null || value === '';
 }
 
