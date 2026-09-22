@@ -35,10 +35,11 @@ describe('InboundCallEffectsImplementation.GetAllCases', () => {
     const axiosWrapper = makeAxiosWrapper();
     const expected = { count: 1, results: [{ reference: 'FA-1' }] };
     const getAllCases = sinon.stub().resolves(expected);
+    const updatePersonalDetails = sinon.stub().resolves({});
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      caseApi: { getAllCases },
       postcodeapi: new PostcodeLookupService()
+      caseApi: { getAllCases, updatePersonalDetails },
     });
 
     const setData = sinon.stub();
@@ -55,8 +56,8 @@ describe('InboundCallEffectsImplementation.GetAllCases', () => {
 
   it('throws when authenticatedAxios is missing or invalid', async () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      caseApi: { getAllCases: sinon.stub() },
       postcodeapi: new PostcodeLookupService(),
+      caseApi: { getAllCases: sinon.stub(), updatePersonalDetails: sinon.stub() },
     });
 
     const context = {
