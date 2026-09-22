@@ -79,7 +79,9 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      */
     SearchCases: (deps: Deps) => async (context: EffectFunctionContext) => {
        const authenticatedAxiosState = getAuthenticatedAxios(context);
-       const searchParam = getSearchParamFromAnswers(context);
+       const searchParam = getSearchParamFromAnswers(context).trim();
+
+       if (!searchParam) return;
 
         context.setData("searchParam", searchParam);
         const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
@@ -98,7 +100,11 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      */
     SearchCasesPagination: (deps: Deps) => async (context: EffectFunctionContext) => {
        const authenticatedAxiosState = getAuthenticatedAxios(context);
-       const searchParam = String(context.getQueryParam("q"));
+       const rawQ = context.getQueryParam("q");
+        const queryFromUrl = Array.isArray(rawQ) ? rawQ[0] : rawQ;
+        const searchParam = (queryFromUrl ?? "").trim();
+
+        if (!searchParam) return;
 
        context.setData("searchParam", searchParam);
     
