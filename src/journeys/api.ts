@@ -12,6 +12,6 @@ export interface CaseApiService {
   updatePersonalDetails: (
     axiosMiddleware: AxiosInstanceWrapper,
     caseId: string,
-    body: { address: Record<string, unknown> },
+    body: Record<string, unknown>,
   ) => Promise<void>;
 }
