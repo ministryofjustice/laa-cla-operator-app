@@ -7,10 +7,10 @@ const DEFAULT_RATE_LIMIT_MAX = 100;
 const DEFAULT_RATE_WINDOW_MS_MINUTE = 15;
 const MILLISECONDS_IN_A_MINUTE = 60000;
 const DEFAULT_PORT = 3000;
-const sessionSecret = process.env.SESSION_SECRET;
-const sessionName = process.env.SESSION_NAME;
+const { env } = process;
+const { SESSION_SECRET, SESSION_NAME } = env;
 
-if (isBlankString(sessionSecret) || isBlankString(sessionName)) {
+if (isBlankString(SESSION_SECRET) || isBlankString(SESSION_NAME)) {
   throw new Error('SESSION_SECRET and SESSION_NAME must be defined in environment variables.');
 }
 
@@ -31,8 +31,8 @@ const config: Config = {
   SERVICE_PHASE: process.env.SERVICE_PHASE,
   SERVICE_URL: process.env.SERVICE_URL,
   session: {
-    secret: sessionSecret,
-    name: sessionName,
+    secret: SESSION_SECRET,
+    name: SESSION_NAME,
     resave: false,
     saveUninitialized: false
   },
