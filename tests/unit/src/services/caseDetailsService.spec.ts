@@ -9,8 +9,8 @@ describe('caseDetailsService', () => {
     let axiosMiddlewareStub: AxiosInstanceWrapper;
     let getStub: sinon.SinonStub;
     let postStub: sinon.SinonStub;
-    let patchStub: sinon.SinonStub;
     let putStub: sinon.SinonStub;
+    let patchStub: sinon.SinonStub;
     
     beforeEach(() => {
         getStub = sinon.stub();
@@ -124,7 +124,7 @@ describe('caseDetailsService', () => {
     describe('updatePersonalDetails', () => {
         it('should update personal details for a case', async () => {
             // Arrange
-            const caseId = '12345';
+            const caseId = 'case/id 123';
             const body = { address: { line1: '123 Main St', city: 'Anytown' } };
             putStub.resolves();
 
@@ -135,6 +135,23 @@ describe('caseDetailsService', () => {
             expect(putStub.calledOnce).to.be.true;
             expect(putStub.firstCall.args[0]).to.equal(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`);
             expect(putStub.firstCall.args[1]).to.deep.equal(body);
+        });
+
+        it('wraps update failures with a user-friendly message and preserves cause', async () => {
+            // Arrange
+            const originalError = new Error('update unavailable');
+            putStub.rejects(originalError);
+
+            // Act / Assert
+            await assert.rejects(
+                () => updatePersonalDetails(axiosMiddlewareStub, 'case-id', { address: {} }),
+                (error: unknown) => {
+                    assert(error instanceof Error);
+                    assert.equal(error.message, 'An unexpected error occurred. Please try again.');
+                    assert.equal(error.cause, originalError);
+                    return true;
+                }
+            );
         });
     });
 });
