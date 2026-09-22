@@ -155,10 +155,10 @@ function validateAccessTokenClaims(claims: AccessTokenClaims): void {
  * Sends an authentication failure response.
  *
  * @param {Response} res Express response used to send the failure status.
- * @returns {Response} The Express response.
+ * @returns {void} Sends the authentication failure response.
  */
-function sendAuthenticationFailure(res: Response): Response {
-  return res.status(INTERNAL_SERVER_ERROR).send("");
+function sendAuthenticationFailure(res: Response): void {
+  res.status(INTERNAL_SERVER_ERROR).send("");
 }
 
 /**
@@ -230,9 +230,11 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
 
     await promisify(req.session.regenerate.bind(req.session))();
 
-    req.session.auth_nonce = undefined;
+    const { session } = req;
 
-    req.session.silasAuth = {
+    session.auth_nonce = undefined;
+
+    session.silasAuth = {
       accessToken: response.accessToken,
       idToken: response.idToken,
       expiresAt: response.expiresOn?.getTime() ?? Date.now() + TOKEN_EXPIRY_OFFSET_MS,
@@ -240,7 +242,7 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
       name: claims.name,
     };
 
-    req.session.user = {
+    session.user = {
       email: response.account.username,
       name: response.account.name,
       oid: response.account.homeAccountId,
