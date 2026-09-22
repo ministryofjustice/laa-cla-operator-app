@@ -92,6 +92,5 @@ export class PostcodeLookupService {
         });
         const addresses = await this.lookup("uprn", params, false)
         return addresses[0]
-
     }
 }

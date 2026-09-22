@@ -2,13 +2,14 @@ import { describe, it } from "mocha";
 import sinon from "sinon"
 import assert from "node:assert/strict";
 import config from "#config.js";
-import { PostcodeLookupService } from "#src/services/postcodeLookup.js";
+import { Address, PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
 
 const TEST_POSTCODE_LOOKUP_RESPONSE = {
     results: [
         {
             DPA: {
+                UPRN: '00000000000',
                 ADDRESS: 'MINISTRY OF JUSTICE, SEVENTH FLOOR, 102, PETTY FRANCE, LONDON, SW1H 9AJ',
                 ORGANISATION_NAME: 'MINISTRY OF JUSTICE',
                 SUB_BUILDING_NAME: 'SEVENTH FLOOR',
@@ -47,7 +48,8 @@ describe("Postcode lookup", ()=>{
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1H 9AJ")
         assert(Array.isArray(addresses))
         assert(addresses.length == 1)
-        assert.equal(addresses[0].address, "MINISTRY OF JUSTICE SEVENTH FLOOR 102 PETTY FRANCE LONDON SW1H 9AJ")
+        const { address, postcode, uprn } = addresses[0];
+        assert.deepEqual({ address, postcode, uprn }, {address: "MINISTRY OF JUSTICE SEVENTH FLOOR 102 PETTY FRANCE LONDON SW1H 9AJ", postcode: "SW1H 9AJ", uprn: "00000000000"})
     })
 
     it("lookup invalid postcode", async () => {
@@ -57,6 +59,19 @@ describe("Postcode lookup", ()=>{
         } as Response)
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1 1AA")
         assert.deepEqual(addresses, [])
+        
+    })
+
+
+    it("lookup address by uprn", async () => {
+        fetchStub.resolves({
+            ok: true,
+            json: async () => (TEST_POSTCODE_LOOKUP_RESPONSE)
+        } as Response)
+        const result = await postcodeLookupService.byUPRN("00000000000")
+        assert(result instanceof Address)
+        const { address, postcode, uprn } = result;
+        assert.deepEqual({address, postcode, uprn}, {address: "MINISTRY OF JUSTICE SEVENTH FLOOR 102 PETTY FRANCE LONDON", postcode: "SW1H 9AJ", uprn: "00000000000"})
     })
 
     it("Missing os places key", async () => {
@@ -64,5 +79,4 @@ describe("Postcode lookup", ()=>{
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1H 9AJ")
         assert.equal(addresses, null)
     })
-
 })

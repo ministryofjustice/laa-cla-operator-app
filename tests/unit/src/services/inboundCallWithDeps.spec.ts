@@ -38,7 +38,7 @@ describe('InboundCallEffectsImplementation.GetAllCases', () => {
     const updatePersonalDetails = sinon.stub().resolves({});
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      postcodeapi: new PostcodeLookupService()
+      postcodeapi: new PostcodeLookupService(),
       caseApi: { getAllCases, updatePersonalDetails },
     });
 
