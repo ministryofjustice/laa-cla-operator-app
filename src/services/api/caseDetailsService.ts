@@ -9,11 +9,11 @@ import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
  * @returns {Promise<GetAllCasesResponse>} The response containing all cases.
  */
 export async function getAllCases(axiosMiddleware: AxiosInstanceWrapper): Promise<GetAllCasesResponse> {
-  return await handleApiCall(async () => {
-    const configuredAxios = configureAxiosInstance(axiosMiddleware);
-    const response = await configuredAxios.get<GetAllCasesResponse>("/call_centre/api/v1/case/");
-    return response.data;
-  }, "Error fetching all cases");
+    return await handleApiCall(async () => {
+        const configuredAxios = configureAxiosInstance(axiosMiddleware);
+        const response = await configuredAxios.get<GetAllCasesResponse>('/call_centre/api/v1/case/');
+        return response.data;
+    }, 'Error fetching all cases');
 }
 
 /**
