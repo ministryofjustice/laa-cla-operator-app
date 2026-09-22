@@ -8,8 +8,8 @@ import { mapResultsToFormatDob } from "#src/helpers/dataTransformers.js";
 export const SEARCH_PAGE_SIZE = 10;
 export const FIRST_PAGE = 1;
 const DECIMAL_RADIX = 10;
-const ZERO = 0;
-const SINGLE_STEP = 1;
+export const ZERO = 0;
+export const SINGLE_STEP = 1;
 
 
 /**
