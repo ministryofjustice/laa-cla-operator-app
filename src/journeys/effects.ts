@@ -44,17 +44,19 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
         const data = {
             building,
             postcode,
-            count: 0, // eslint-disable-line @typescript-eslint/no-magic-numbers -- counter starts at zero
+            //eslint-disable-next-line  @typescript-eslint/no-magic-numbers -- counter starts at zero
+            count: 0,
             result: [] as Array<{ address: string, uprn: string }> | null
         }
-        if(!postcode || !building) {
+        if(postcode == null || building == null) {
             context.setData("lookup", data);
             return;
         }
 
         const addresses = await deps.postcodeapi.byPostcode(building, postcode) ?? []
         data.result = addresses.map((address: Address) => ({address: address.address, uprn: address.uprn}))
-        data.count = data.result?.length ?? 0
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+        data.count = data.result.length
         context.setData("lookup", data)
     },
     /**
@@ -63,8 +65,9 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     saveToSession: (deps: Deps) => async (context: EffectFunctionContext) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge context returns a session compatible with express-session
         const session = context.getSession() as Session;
-        session.forms ||= {};
+        session.forms ??= {};
         session.forms.postcodeLookup = { 
             building: context.getPostData("building"),
             postcode: context.getPostData("postcode")
@@ -84,14 +87,9 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
            throw new Error("Axios middleware is not available in the context.");
        }
 
-
-
-        const uprn = context.getPostData("address") as string
-        if(!uprn) {
-            throw new Error("Could not find selected address");
-        }
-        const address = await deps.postcodeapi.byUPRN(uprn)
-        deps.caseApi.updatePersonalDetails(authenticatedAxiosState, "ED-0001-0002", {
+        const uprn = context.getPostData("address")
+        const address = await deps.postcodeapi.byUPRN(String(uprn))
+        await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, "ED-0001-0002", {
             postcode: address?.postcode,
             street: address?.address  
         })

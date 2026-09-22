@@ -18,7 +18,7 @@ interface AddressLookUpResult {
 }
 
 interface AddressLookUpResponse {
-    results: AddressLookUpResult[];
+    results?: AddressLookUpResult[];
 }
 
 /**
@@ -30,7 +30,7 @@ export class Address {
     postcode: string
 
     /**
-     *
+     * Address constructor
      * @param {AddressLookupDPAResponse} data - The address lookup result
      * @param {boolean} includePostcodeInAddess - Whether to include the postcode in the formatted address
      */
@@ -45,7 +45,9 @@ export class Address {
             data.POST_TOWN,
             includePostcodeInAddess ? data.POSTCODE : null
         ].filter(Boolean).join(" ");
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
         this.uprn = data.UPRN
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
         this.postcode = data.POSTCODE
     }
 }
@@ -55,19 +57,22 @@ export class Address {
  */
 export class PostcodeLookupService {
     /**
-     *
+     * Utility lookup method that is used by other lookup methods in this class
      * @param {"find" | "uprn"} endpoint - OS Places endpoint to use for address lookup
      * @param {URLSearchParams} params - Parameters to pass to the address lookup endpoint
      * @param {boolean} includePostcodeInAddess - Whether to include the postcode in the formatted address
+     * @returns {Address[]} - Returns list of addresses found
      */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Utility method
     async lookup(endpoint: "find" | "uprn", params: URLSearchParams, includePostcodeInAddess = true): Promise<Address[]> {
         const response = await fetch(`https://api.os.uk/search/places/v1/${endpoint}?${params}`, {
             headers: {
                 'Content-Type': 'application/json',
             },
         })
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- OS Places API response is expected to match AddressLookUpResponse
         const data = (await response.json()) as AddressLookUpResponse;
-        if(!data.results) {
+        if(data.results === undefined) {
             return [];
         }
         const addresses = data.results.map(
@@ -79,15 +84,17 @@ export class PostcodeLookupService {
     }
 
     /**
-     *
+     * Lookup an address by postcode and building name/number
      * @param {string} building - The building for postcode lookup
      * @param {string} postcode - The postcode to lookup
+     * @returns {Address[] | null} - A list of matched addresses
      */
     async byPostcode (building: string, postcode: string): Promise<Address[] | null>{
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
         if(!config.OS_PLACES_API_KEY) {
             return null;
         }
-        if(!postcode) {
+        if(postcode === "") {
             return null;
         }
         const params = new URLSearchParams({
@@ -100,14 +107,16 @@ export class PostcodeLookupService {
     }
 
     /**
-     *
+     * Lookup an address by a given unique property reference number
      * @param {string} uprn - The unique property reference
+     * @returns {Address | null} - The matched address
      */
     async byUPRN(uprn: string): Promise<Address | null> {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
         if(!config.OS_PLACES_API_KEY) {
             return null;
         }
-        if(!uprn) {
+        if(uprn === "") {
             return null;
         }
         const params = new URLSearchParams({
@@ -117,6 +126,7 @@ export class PostcodeLookupService {
             dataset: "DPA",
         });
         const addresses = await this.lookup("uprn", params, false)
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- return the first address found
         return addresses[0]
     }
 }
