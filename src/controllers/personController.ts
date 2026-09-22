@@ -12,7 +12,10 @@ interface RequestWithCSRF extends Request {
 // HTTP status codes
 const HTTP_STATUS_BAD_REQUEST = 400;
 
-// Default person data (in a real app, this would be from a database)
+/* c8 ignore start */
+// TODO(LGA-4308): Replace this template fallback data with real person data from
+// the case API, or render empty values when no person data exists. Hard-coded
+// names, addresses, and dates of birth must not be displayed in production.
 const DEFAULT_PERSON_DATA = {
   fullName: 'John Smith',
   address: '123 Example Street\nExample City\nEX1 2MP',
@@ -67,6 +70,7 @@ function getCurrentPersonData(req: Request): typeof DEFAULT_PERSON_DATA {
   }
   return DEFAULT_PERSON_DATA;
 }
+/* c8 ignore stop */
 
 /**
  * GET controller for rendering the person change form

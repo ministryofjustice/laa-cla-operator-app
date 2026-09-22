@@ -115,7 +115,6 @@ export default [
       'eslint.config.js', // Parsing error this file was not found by the project service. Consider either including it in the `tsconfig.json` or including it in `allowDefaultProject`,
       'coverage', // Ignore the code coverage output from linter
         'scripts/e2e_coverage/*', // Route coverage analysis scripts
-        '.venv/*', // Ignore local Python environments
         'playwright/*' // Ignore local Playwright output
     ]
   },

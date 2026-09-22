@@ -124,7 +124,7 @@ describe('caseDetailsService', () => {
     describe('updatePersonalDetails', () => {
         it('should update personal details for a case', async () => {
             // Arrange
-            const caseId = 'case/id 123';
+            const caseId = 'case/id TX-123-FR5';
             const body = { address: { line1: '123 Main St', city: 'Anytown' } };
             putStub.resolves();
 

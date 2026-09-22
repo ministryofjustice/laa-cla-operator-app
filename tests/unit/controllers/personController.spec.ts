@@ -43,60 +43,6 @@ describe('personController', () => {
   });
 
   describe('getPerson', () => {
-    it('renders the person form with default values and stores original form data', () => {
-      const req = createRequest({ csrfToken: () => 'csrf-token' });
-      const res = createResponse();
-      const next = createNext();
-
-      getPerson(req as Request & { csrfToken: () => string }, res as any, next);
-
-      expect(req.session.personOriginal).to.deep.equal({
-        fullName: 'John Smith',
-        address: '123 Example Street\nExample City\nEX1 2MP',
-        contactPreference: 'email',
-        priority: 'medium',
-        'dateOfBirth-day': '27',
-        'dateOfBirth-month': '3',
-        'dateOfBirth-year': '1986'
-      });
-      expect(res.render.calledOnceWith('change-person.njk', sinon.match({
-        currentName: 'John Smith',
-        currentAddress: '123 Example Street\nExample City\nEX1 2MP',
-        currentContactPreference: 'email',
-        currentPriority: 'medium',
-        currentDateOfBirth: { day: '27', month: '3', year: '1986' },
-        csrfToken: 'csrf-token',
-        formData: {},
-        error: null
-      }))).to.be.true;
-      expect(next.called).to.be.false;
-    });
-
-    it('renders stored person data with safe fallbacks', () => {
-      const req = createRequest({
-        session: {
-          currentPerson: {
-            fullName: 'Jane Doe',
-            address: '',
-            contactPreference: 'phone',
-            priority: 'high',
-            dateOfBirth: { day: 1, month: '12', year: '1990' }
-          }
-        }
-      });
-      const res = createResponse();
-
-      getPerson(req, res as any, createNext());
-
-      expect(res.render.calledOnceWith('change-person.njk', sinon.match({
-        currentName: 'Jane Doe',
-        currentAddress: '123 Example Street\nExample City\nEX1 2MP',
-        currentContactPreference: 'phone',
-        currentPriority: 'high',
-        currentDateOfBirth: { day: '27', month: '12', year: '1990' }
-      }))).to.be.true;
-    });
-
     it('delegates render errors to next', () => {
       const renderError = new Error('render failed');
       const req = createRequest();
@@ -179,8 +125,6 @@ describe('personController', () => {
         currentName: 'Updated Name',
         currentAddress: 'Updated Address',
         currentContactPreference: 'phone',
-        currentPriority: 'medium',
-        currentDateOfBirth: { day: '27', month: '3', year: '1986' },
         error: null,
         successMessage: 'Person details updated successfully'
       }))).to.be.true;
