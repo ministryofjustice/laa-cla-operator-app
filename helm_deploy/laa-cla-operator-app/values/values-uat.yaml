@@ -31,4 +31,4 @@ envVars:
   NODE_ENV:
     value: "uat"
   ENTRA_REDIRECT_URI:
-    value: "https://laa-cla-operator-app-uat.cloud-platform.service.justice.gov.uk/redirect"
+    value: "https://lga-4310-search-client-laa-cla-operator-app.cloud-platform.service.justice.gov.uk/redirect"
