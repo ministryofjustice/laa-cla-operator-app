@@ -37,14 +37,14 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      */
     postcodeLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
          
-        // See https://forge-developer-guide-dev.hmpps.service.justice.gov.uk/forge-developer-guide/authoring-language/session#how-it-works for more details
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge context returns a session compatible with express-session
         const session = context.getSession() as Session;
         const postcode = session.forms?.postcodeLookup?.postcode
         const building = session.forms?.postcodeLookup?.building
         const data = {
             building,
             postcode,
-            count: 0, // eslint-disable-line no-magic-numbers -- counter starts at zero
+            count: 0, // eslint-disable-line @typescript-eslint/no-magic-numbers -- counter starts at zero
             result: [] as Array<{ address: string, uprn: string }> | null
         }
         if(!postcode || !building) {
