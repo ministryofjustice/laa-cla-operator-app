@@ -56,14 +56,14 @@ test.describe("Client's details page", () => {
     );
   });
 
-  test("invalid date of birth shows date error only", async ({ pages }) => {
+  test("invalid day shows only the day error", async ({ pages }) => {
     const { addClientDetailsPage } = pages;
     await addClientDetailsPage.navigate();
 
     await addClientDetailsPage.fullNameInput.fill("Jane Doe");
-    await addClientDetailsPage.dateOfBirthDayInput.fill("32");
-    await addClientDetailsPage.dateOfBirthMonthInput.fill("13");
-    await addClientDetailsPage.dateOfBirthYearInput.fill("1990");
+    await addClientDetailsPage.dateOfBirthDayInput.fill("43");
+    await addClientDetailsPage.dateOfBirthMonthInput.fill("05");
+    await addClientDetailsPage.dateOfBirthYearInput.fill("2001");
     await addClientDetailsPage.phoneNumberInput.fill("07123456789");
     await addClientDetailsPage
       .radioYes("Is it safe to call this number?")
@@ -81,10 +81,10 @@ test.describe("Client's details page", () => {
     await expect(addClientDetailsPage.errorSummary).toContainText(
       "Enter a valid day",
     );
-    await expect(addClientDetailsPage.errorSummary).toContainText(
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
       "Enter a valid month",
     );
-    await expect(addClientDetailsPage.errorSummary).toContainText(
+    await expect(addClientDetailsPage.errorSummary).not.toContainText(
       "Enter a valid year",
     );
     await expect(addClientDetailsPage.errorSummary).not.toContainText(

@@ -80,17 +80,25 @@ const addClientDetailsStep = step({
       hint: { text: "For example, 27 3 2007" },
       validWhen: [
         validation({
-          condition: Self().match(Condition.Date.IsValid()),
+          condition: Self()
+            .path("day")
+            .match(
+              Condition.String.MatchesRegex("^(0?[1-9]|[12][0-9]|3[01])$"),
+            ),
           message: "Enter a valid day",
           details: { field: "day" },
         }),
         validation({
-          condition: Self().match(Condition.Date.IsValid()),
+          condition: Self()
+            .path("month")
+            .match(Condition.String.MatchesRegex("^(0?[1-9]|1[0-2])$")),
           message: "Enter a valid month",
           details: { field: "month" },
         }),
         validation({
-          condition: Self().match(Condition.Date.IsValid()),
+          condition: Self()
+            .path("year")
+            .match(Condition.String.MatchesRegex("^[1-9][0-9]{3}$")),
           message: "Enter a valid year",
           details: { field: "year" },
         }),
