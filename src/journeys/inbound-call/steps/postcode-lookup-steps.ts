@@ -80,7 +80,7 @@ export const addressLookupStep1 = step({
         submit({
             validate: true,
             onValid: {
-                effects: [InboundCallEffects.saveFormData()],
+                effects: [InboundCallEffects.saveToSession()],
                 next: [redirect({goto: "address-lookup/select"})]
             }
         }),
@@ -96,7 +96,7 @@ export const addressLookupStep2 = step({
         template: "main/forms/lookup-address-select-form.njk"
     },
     onAccess: [
-        requireSilasAuth,
+        // requireSilasAuth,
         access({
             effects: [InboundCallEffects.postcodeLookup()]
         })
@@ -116,6 +116,7 @@ export const addressLookupStep2 = step({
         }),
         GovUKButton({
             text: "Use this address",
+            value: "step2"
         }),
         HtmlBlock({
             content: `
@@ -124,4 +125,13 @@ export const addressLookupStep2 = step({
             `
         }),
     ],
+    onSubmission: [
+        submit({
+            validate: true,
+            onValid: {
+                effects: [InboundCallEffects.saveAddressLookup()],
+                // next: [redirect({goto: "address-lookup/select"})]
+            }
+        })
+    ]
 })

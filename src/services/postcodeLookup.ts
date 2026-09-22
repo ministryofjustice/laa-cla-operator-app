@@ -43,7 +43,7 @@ export class Address {
 }
 
 export class PostcodeLookupService {
-    async lookup(endpoint: "find" | "uprn", params: URLSearchParams): Promise<Address[]> {
+    async lookup(endpoint: "find" | "uprn", params: URLSearchParams, includePostcodeInAddess: boolean = true): Promise<Address[]> {
         const response = await fetch(`https://api.os.uk/search/places/v1/${endpoint}?${params}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export class PostcodeLookupService {
         }
         const addresses = data.results.map(
             result => { 
-                const address = new Address(result.DPA);
+                const address = new Address(result.DPA, includePostcodeInAddess);
                 return address
             })
         return addresses
@@ -90,7 +90,7 @@ export class PostcodeLookupService {
             output_srs: "WGS84",
             dataset: "DPA",
         });
-        const addresses = await this.lookup("find", params)
+        const addresses = await this.lookup("uprn", params, false)
         return addresses[0]
 
     }

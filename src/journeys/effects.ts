@@ -7,7 +7,8 @@ import type { Address } from "#src/services/postcodeLookup.js";
 export interface InboundCallEffectShape {
     GetAllCases: () => EffectFunctionExpr;
     postcodeLookup: () => EffectFunctionExpr;
-    saveFormData: () => EffectFunctionExpr;
+    saveToSession: () => EffectFunctionExpr;
+    saveAddressLookup: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (deps: Deps) => (context: EffectFunctionContext) => Promise<void>;
@@ -57,11 +58,11 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
         context.setData("lookup", data)
     },
     /**
-     * Implementation of the effect for saving form data
+     * Implementation of the effect for saving form data to session
      * @param {Deps} deps - The dependencies required for the effect.
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
-    saveFormData: (deps: Deps) => async (context: EffectFunctionContext) => {
+    saveToSession: (deps: Deps) => async (context: EffectFunctionContext) => {
         const session = context.getSession() as Session;
         if(!session.forms) {
             session.forms = {}
@@ -71,6 +72,18 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
             postcode: context.getPostData("postcode")
         }
         session.save()
+    },
+
+    /**
+     * Implementation of the effect for saving form data to the api
+     * @param {Deps} deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+     */
+    saveAddressLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
+        console.log("saveAddressLookup")
+        const uprn = context.getPostData("address") as string
+        const address = await deps.postcodeapi.byUPRN(uprn)
+        // Todo: save address to backend
     }
 
 };
@@ -80,5 +93,6 @@ export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();
 export const InboundCallEffects: InboundCallEffectShape = {
     GetAllCases: InboundCallEffectsRegistry.register("GetAllCases", InboundCallEffectsImplementation.GetAllCases),
     postcodeLookup: InboundCallEffectsRegistry.register("postcodeLookup", InboundCallEffectsImplementation.postcodeLookup),
-    saveFormData: InboundCallEffectsRegistry.register("saveFormData", InboundCallEffectsImplementation.saveFormData)
+    saveToSession: InboundCallEffectsRegistry.register("saveToSession", InboundCallEffectsImplementation.saveToSession),
+    saveAddressLookup: InboundCallEffectsRegistry.register("saveAddressLookup", InboundCallEffectsImplementation.saveAddressLookup)
 }
