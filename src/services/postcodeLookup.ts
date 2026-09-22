@@ -21,12 +21,20 @@ interface AddressLookUpResponse {
     results: AddressLookUpResult[];
 }
 
+/**
+ * An instance of this class is returned from search results
+ */
 export class Address {
     address: string;
     uprn: string;
     postcode: string
 
-    constructor(data: AddressLookupDPAResponse, includePostcodeInAddess: boolean = true) {
+    /**
+     *
+     * @param {AddressLookupDPAResponse} data - The address lookup result
+     * @param {boolean} includePostcodeInAddess - Whether to include the postcode in the formatted address
+     */
+    constructor(data: AddressLookupDPAResponse, includePostcodeInAddess = true) {
         this.address = [
             data.ORGANISATION_NAME,
             data.SUB_BUILDING_NAME,
@@ -42,8 +50,17 @@ export class Address {
     }
 }
 
+/**
+ * Postcode lookup service
+ */
 export class PostcodeLookupService {
-    async lookup(endpoint: "find" | "uprn", params: URLSearchParams, includePostcodeInAddess: boolean = true): Promise<Address[]> {
+    /**
+     *
+     * @param {"find" | "uprn"} endpoint - OS Places endpoint to use for address lookup
+     * @param {URLSearchParams} params - Parameters to pass to the address lookup endpoint
+     * @param {boolean} includePostcodeInAddess - Whether to include the postcode in the formatted address
+     */
+    async lookup(endpoint: "find" | "uprn", params: URLSearchParams, includePostcodeInAddess = true): Promise<Address[]> {
         const response = await fetch(`https://api.os.uk/search/places/v1/${endpoint}?${params}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -61,6 +78,11 @@ export class PostcodeLookupService {
         return addresses
     }
 
+    /**
+     *
+     * @param {string} building - The building for postcode lookup
+     * @param {string} postcode - The postcode to lookup
+     */
     async byPostcode (building: string, postcode: string): Promise<Address[] | null>{
         if(!config.OS_PLACES_API_KEY) {
             return null;
@@ -77,6 +99,10 @@ export class PostcodeLookupService {
         return await this.lookup("find", params)
     }
 
+    /**
+     *
+     * @param {string} uprn - The unique property reference
+     */
     async byUPRN(uprn: string): Promise<Address | null> {
         if(!config.OS_PLACES_API_KEY) {
             return null;

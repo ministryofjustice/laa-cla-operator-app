@@ -42,8 +42,11 @@ describe("Postcode lookup", ()=>{
     it("lookup valid postcode", async () => {
         fetchStub.resolves({
             ok: true,
+            /**
+             *
+             */
             json: async () => (TEST_POSTCODE_LOOKUP_RESPONSE)
-        } as Response)
+        })
 
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1H 9AJ")
         assert(Array.isArray(addresses))
@@ -55,8 +58,11 @@ describe("Postcode lookup", ()=>{
     it("lookup invalid postcode", async () => {
         fetchStub.resolves({
             ok: true,
+            /**
+             *
+             */
             json: async () => ({})
-        } as Response)
+        })
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1 1AA")
         assert.deepEqual(addresses, [])
         
@@ -66,8 +72,11 @@ describe("Postcode lookup", ()=>{
     it("lookup address by uprn", async () => {
         fetchStub.resolves({
             ok: true,
+            /**
+             *
+             */
             json: async () => (TEST_POSTCODE_LOOKUP_RESPONSE)
-        } as Response)
+        })
         const result = await postcodeLookupService.byUPRN("00000000000")
         assert(result instanceof Address)
         const { address, postcode, uprn } = result;
