@@ -28,7 +28,7 @@ export async function getAllCases(axiosMiddleware: AxiosInstanceWrapper): Promis
 export async function updatePersonalDetails(
   axiosMiddleware: AxiosInstanceWrapper,
   caseId: string,
-  body: { address: Record<string, unknown> },
+  body: Record<string, unknown>,
 ): Promise<void> {
   await handleApiCall(async () => {
     const configuredAxios = configureAxiosInstance(axiosMiddleware);
