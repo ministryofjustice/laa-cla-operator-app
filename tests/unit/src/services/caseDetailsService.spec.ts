@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import { getAllCases } from '#src/services/api/caseDetailsService.js';
+import { getAllCases, updatePersonalDetails } from '#src/services/api/caseDetailsService.js';
 import { strict as assert } from 'assert';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -10,10 +10,12 @@ describe('caseDetailsService', () => {
     let getStub: sinon.SinonStub;
     let postStub: sinon.SinonStub;
     let patchStub: sinon.SinonStub;
+    let putStub: sinon.SinonStub;
     
     beforeEach(() => {
         getStub = sinon.stub();
         postStub = sinon.stub();
+        putStub = sinon.stub();
         patchStub = sinon.stub();
 
 
@@ -31,14 +33,14 @@ describe('caseDetailsService', () => {
             },
             get: getStub,
             post: postStub,
-            put: sinon.stub(),
+            put: putStub,
             delete: sinon.stub(),
             patch: patchStub
             },
         // Direct methods that AxiosInstanceWrapper should have
         get: getStub,
         post: postStub,
-        put: sinon.stub(),
+        put: putStub,
         delete: sinon.stub(),
         request: sinon.stub(),
         head: sinon.stub(),
@@ -53,6 +55,7 @@ describe('caseDetailsService', () => {
 
         getStub.reset();
         postStub.reset();
+        putStub.reset();
         patchStub.reset();
     });
 
@@ -115,6 +118,23 @@ describe('caseDetailsService', () => {
                     return true;
                 }
             );
+        });
+    });
+
+    describe('updatePersonalDetails', () => {
+        it('should update personal details for a case', async () => {
+            // Arrange
+            const caseId = '12345';
+            const body = { address: { line1: '123 Main St', city: 'Anytown' } };
+            putStub.resolves();
+
+            // Act
+            await updatePersonalDetails(axiosMiddlewareStub, caseId, body);
+
+            // Assert
+            expect(putStub.calledOnce).to.be.true;
+            expect(putStub.firstCall.args[0]).to.equal(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`);
+            expect(putStub.firstCall.args[1]).to.deep.equal(body);
         });
     });
 });
