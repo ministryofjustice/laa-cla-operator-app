@@ -42,7 +42,7 @@ jobs:
   build-and-push:
     name: Build
     uses: ./.github/workflows/build.yml
-    needs: [lint, test]
+    needs: [test]
     permissions:
       contents: read
       id-token: write
