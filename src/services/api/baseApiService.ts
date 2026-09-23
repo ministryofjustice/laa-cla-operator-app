@@ -36,7 +36,8 @@ export function configureAxiosInstance(axiosMiddleware: AxiosInstanceWrapper): A
   const { axiosInstance } = axiosMiddleware;
   const { defaults } = axiosInstance;
   const { api: { baseUrl } } = config;
-
+  console.info("Configured backend base URL", { baseUrl });
+  
   // Safely configure axios defaults
   if (typeof baseUrl === 'string') {
     defaults.baseURL = baseUrl;
