@@ -54,7 +54,7 @@ describe("Postcode lookup", ()=>{
         assert(Array.isArray(addresses))
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- We are checking atleast one result is returned
         assert(addresses.length === 1)
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- Get the first address returned
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers, @typescript-eslint/prefer-destructuring -- Get the first address returned
         const { address, postcode, uprn } = addresses[0];
         assert.deepEqual({ address, postcode, uprn }, {address: "MINISTRY OF JUSTICE SEVENTH FLOOR 102 PETTY FRANCE LONDON SW1H 9AJ", postcode: "SW1H 9AJ", uprn: "00000000000"})
     })
