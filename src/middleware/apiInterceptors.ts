@@ -49,12 +49,6 @@ export function addLoggingInterceptors(
 ): void {
   axiosWrapper.axiosInstance.interceptors.request.use(
     (requestConfig: InternalAxiosRequestConfig) => {
-      console.info("API request", {
-        method: requestConfig.method,
-        baseURL: requestConfig.baseURL,
-        url: requestConfig.url,
-      });
-
       devLog(
         `API Request: ${requestConfig.method?.toUpperCase()} ` +
           `${requestConfig.baseURL ?? ''}${requestConfig.url ?? ''}`

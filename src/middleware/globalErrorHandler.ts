@@ -12,13 +12,7 @@ export function setupGlobalErrorHandler(app: Application): void {
     const message = extractErrorMessage(error);
 
     devError(`Unhandled request error: ${message}`);
-    const errorObj = error instanceof Error ? error : new Error(String(error));
-      console.error("Unhandled request error", {
-      message: errorObj.message,
-      stack: errorObj.stack,
-      cause: errorObj.cause,
-    });
-    
+
     if (res.headersSent) {
       next(error);
       return;
