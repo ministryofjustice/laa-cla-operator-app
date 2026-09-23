@@ -1,6 +1,6 @@
 import { step, submit, access, Query, Condition, Post, Format, redirect, Data } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { requireSilasAuth } from "#src/journeys/auth.js";
-import { displaySearchClientBlock, searchClientBlock, createCaseButtonBlock } from "./searchClientBlock.js";
+import { displaySearchClientBlock, searchClientBlock, createCaseButtonBlock } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 
 export const SEARCH_CLIENT_STEP_CODE = "search-client";
