@@ -2,7 +2,8 @@ import { describe, it } from "mocha";
 import sinon from "sinon"
 import assert from "node:assert/strict";
 import config from "#config.js";
-import { Address, PostcodeLookupService } from "#src/services/postcodeLookup.js";
+import { PostcodeLookupService } from "#src/services/postcodeLookup.js";
+import { Address } from "#types/postcode-lookup-types.js";
 
 
 const TEST_POSTCODE_LOOKUP_RESPONSE = {
@@ -74,7 +75,6 @@ describe("Postcode lookup", ()=>{
         
     })
 
-
     it("lookup address by uprn", async () => {
         fetchStub.resolves({
             ok: true,
@@ -90,6 +90,20 @@ describe("Postcode lookup", ()=>{
         const { address, postcode, uprn } = result;
         assert.deepEqual({address, postcode, uprn}, {address: "MINISTRY OF JUSTICE SEVENTH FLOOR 102 PETTY FRANCE LONDON", postcode: "SW1H 9AJ", uprn: "00000000000"})
     })
+
+    it("lookup address by invalid uprn", async () => {
+    fetchStub.resolves({
+        ok: true,
+        /**
+         * Override what fetch.json returns
+         * @returns {Record<any: any>} - A json object  
+         */
+        // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
+        json: async () => ([])
+    })
+    const result = await postcodeLookupService.byUPRN("10000000000")
+    assert(result == null)
+})
 
     it("Missing os places key", async () => {
         configStub.value(null)
