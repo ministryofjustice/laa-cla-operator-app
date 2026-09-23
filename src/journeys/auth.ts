@@ -1,25 +1,9 @@
-import {
-  ConditionRegistry,
-  access,
-  Session,
-  redirect,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
+import { ConditionRegistry, access, Session, redirect } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { Deps } from "./api.js";
 import { hasValidSilasToken } from "#src/middleware/apiMiddleware.js";
 import type { SilasSessionAuth } from "#types/auth-types.js";
 
-export const conditionRegistry = new ConditionRegistry<Deps>();
-
-export const AuthConditionsImplementation = {
-  /**
-   * Creates the SILAS token condition evaluator.
-   * @param {Deps} _deps - Journey dependencies.
-   * @returns {(silasAuth: SilasSessionAuth | undefined) => boolean} The token validation function.
-   */
-  HasValidSilasToken:
-    (_deps: Deps) => (silasAuth: SilasSessionAuth | undefined) =>
-      hasValidSilasToken(silasAuth),
-};
+export const conditionRegistry = new ConditionRegistry<Deps>()
 
 export const AuthConditions = {
   /**
@@ -29,13 +13,15 @@ export const AuthConditions = {
    * @returns {boolean} A boolean indicating whether the Silas authentication token is valid.
    */
   HasValidSilasToken: conditionRegistry.register(
-    "HasValidSilasToken",
-    AuthConditionsImplementation.HasValidSilasToken,
-  ),
-};
+    'HasValidSilasToken',
+    (_deps) => (silasAuth: SilasSessionAuth | undefined) => hasValidSilasToken(silasAuth)
+  )
+}
 
 export const requireSilasAuth = access({
-  when: Session("silasAuth").not.match(AuthConditions.HasValidSilasToken()),
+  when: Session("silasAuth")
+    .not
+    .match(AuthConditions.HasValidSilasToken()),
   next: [
     redirect({
       goto: "/login",
