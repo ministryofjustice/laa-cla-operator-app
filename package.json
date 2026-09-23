@@ -45,7 +45,7 @@
   "dependencies": {
     "@azure/msal-node": "^6.0.1",
     "@ministryofjustice/frontend": "^10.0.1",
-    "@ministryofjustice/hmpps-forge": "^0.4.3",
+    "@ministryofjustice/hmpps-forge": "^0.4.4",
     "axios": "1.20.0",
     "body-parser": "^2.2.0",
     "chalk": "^6.0.0",

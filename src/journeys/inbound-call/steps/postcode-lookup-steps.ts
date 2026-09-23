@@ -29,7 +29,7 @@ export const addressLookupStep1 = step({
     code: "address-lookup",
     path: "address-lookup",
     title: "Search client's address",
-    // onAccess: [requireSilasAuth],
+    onAccess: [requireSilasAuth],
     reachability: { entryWhen: true },
 
     blocks: [
@@ -113,7 +113,7 @@ export const addressLookupStep2 = step({
                     value: Item().path('uprn'),
                     text: Item().path('address'),
                 }),
-            ) as any
+            )
         }),
         GovUKButton({
             text: "Use this address",
