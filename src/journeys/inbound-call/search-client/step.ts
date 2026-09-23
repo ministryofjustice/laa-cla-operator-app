@@ -1,4 +1,4 @@
-import { step, submit, access, Query, Condition, Post, Format, redirect, Data } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { step, submit, access, Query, Condition, Post, Format, redirect, Data, validation, Answer, or } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { requireSilasAuth } from "#src/journeys/auth.js";
 import { displaySearchClientBlock, searchClientBlock, createCaseButtonBlock } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
@@ -9,6 +9,19 @@ export const searchClientStep = step({
     code: SEARCH_CLIENT_STEP_CODE,
     path: "/search-client",
     title: "Search client's details",
+    validWhen: [
+        validation({
+            condition: or(
+                Answer("fullName").match(Condition.IsRequired()),
+                Answer("phone").match(Condition.IsRequired()),
+                Answer("postcode").match(Condition.IsRequired()),
+                Post("dateOfBirth").match(Condition.Object.PropertyHasValue("day")),
+                Post("dateOfBirth").match(Condition.Object.PropertyHasValue("month")),
+                Post("dateOfBirth").match(Condition.Object.PropertyHasValue("year")),
+            ),
+            message: "Enter at least one search term",
+        }),
+    ],
         onAccess: [
         requireSilasAuth,
         access({

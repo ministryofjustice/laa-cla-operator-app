@@ -18,13 +18,20 @@
 
             <h2 class="govuk-heading-s">Find a client using one or more of the search terms below.</h2>
 
-            {% if fieldValidationErrors | length %}
+            {% if fieldValidationErrors | length or domainValidationErrors | length %}
                 {% set errorList = [] %}
 
                 {% for error in fieldValidationErrors %}
                     {% set errorList = (errorList.push({
                         text: error.message,
                         href: "#" + (error.anchor or error.blockCode)
+                    }), errorList) %}
+                {% endfor %}
+
+                {% for error in domainValidationErrors %}
+                    {% set errorList = (errorList.push({
+                        text: error.message,
+                        href: "#fullName"
                     }), errorList) %}
                 {% endfor %}
 
