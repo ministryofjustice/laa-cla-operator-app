@@ -1,5 +1,5 @@
 import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import { getAllCases } from '#src/services/api/caseDetailsService.js';
+import { getAllCases, updatePersonalDetails } from '#src/services/api/caseDetailsService.js';
 import { strict as assert } from 'assert';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -9,11 +9,13 @@ describe('caseDetailsService', () => {
     let axiosMiddlewareStub: AxiosInstanceWrapper;
     let getStub: sinon.SinonStub;
     let postStub: sinon.SinonStub;
+    let putStub: sinon.SinonStub;
     let patchStub: sinon.SinonStub;
     
     beforeEach(() => {
         getStub = sinon.stub();
         postStub = sinon.stub();
+        putStub = sinon.stub();
         patchStub = sinon.stub();
 
 
@@ -31,14 +33,14 @@ describe('caseDetailsService', () => {
             },
             get: getStub,
             post: postStub,
-            put: sinon.stub(),
+            put: putStub,
             delete: sinon.stub(),
             patch: patchStub
             },
         // Direct methods that AxiosInstanceWrapper should have
         get: getStub,
         post: postStub,
-        put: sinon.stub(),
+        put: putStub,
         delete: sinon.stub(),
         request: sinon.stub(),
         head: sinon.stub(),
@@ -53,6 +55,7 @@ describe('caseDetailsService', () => {
 
         getStub.reset();
         postStub.reset();
+        putStub.reset();
         patchStub.reset();
     });
 
@@ -108,6 +111,40 @@ describe('caseDetailsService', () => {
             // Act / Assert
             await assert.rejects(
                 () => getAllCases(axiosMiddlewareStub),
+                (error: unknown) => {
+                    assert(error instanceof Error);
+                    assert.equal(error.message, 'An unexpected error occurred. Please try again.');
+                    assert.equal(error.cause, originalError);
+                    return true;
+                }
+            );
+        });
+    });
+
+    describe('updatePersonalDetails', () => {
+        it('should update personal details for a case', async () => {
+            // Arrange
+            const caseId = 'case/id TX-123-FR5';
+            const body = { address: { line1: '123 Main St', city: 'Anytown' } };
+            putStub.resolves();
+
+            // Act
+            await updatePersonalDetails(axiosMiddlewareStub, caseId, body);
+
+            // Assert
+            expect(putStub.calledOnce).to.be.true;
+            expect(putStub.firstCall.args[0]).to.equal(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`);
+            expect(putStub.firstCall.args[1]).to.deep.equal(body);
+        });
+
+        it('wraps update failures with a user-friendly message and preserves cause', async () => {
+            // Arrange
+            const originalError = new Error('update unavailable');
+            putStub.rejects(originalError);
+
+            // Act / Assert
+            await assert.rejects(
+                () => updatePersonalDetails(axiosMiddlewareStub, 'case-id', { address: {} }),
                 (error: unknown) => {
                     assert(error instanceof Error);
                     assert.equal(error.message, 'An unexpected error occurred. Please try again.');

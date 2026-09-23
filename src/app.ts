@@ -110,11 +110,11 @@ const createApp = (): express.Application => {
 	const pathLookup: Record<string, string> = {}
 	for (const journeyPackage of journeyPackages) {
 		const steps = journeyPackage.journey.steps ?? []
-		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/g, "");
+		const journeyPath = journeyPackage.journey.path.replace(/^\/+|\/+$/gu, "");
 		pathLookup[journeyPackage.journey.code] = journeyPackage.journey.path; // eslint-disable-line @typescript-eslint/prefer-destructuring -- Don't want to introduce `code` and `path` variables here as their use is ambiguous at this point.
 		for(const step of  steps) {
 			const code = `${journeyPackage.journey.code}.${step.code}`
-			const stepPath = step.path.replace(/^\/+|\/+$/g, "");
+			const stepPath = step.path.replace(/^\/+|\/+$/gu, "");
 			pathLookup[code] = `/${journeyPath}/${stepPath}`;
 		}
 		forge.registerPackage<Deps>(journeyPackage, {
