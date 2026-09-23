@@ -3595,7 +3595,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"figlet@npm:^1.9.3":
+"figlet@npm:^1.11.4":
   version: 1.11.4
   resolution: "figlet@npm:1.11.4"
   dependencies:
@@ -4859,7 +4859,7 @@ __metadata:
     express-rate-limit: "npm:^8.1.1"
     express-session: "npm:^1.19.0"
     express-validator: "npm:^7.3.0"
-    figlet: "npm:^1.9.3"
+    figlet: "npm:^1.11.4"
     fs-extra: "npm:^11.3.2"
     globals: "npm:^16.4.0"
     govuk-frontend: "npm:^6.1.0"
