@@ -37,29 +37,32 @@ export const InboundCallEffectsImplementation: Record<
   },
   /**
    * Implementation of the effect for retrieving all cases.
-   * @param {Deps} _deps - The dependencies required for the effect.
+   * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  saveClientDetails:
-    (_deps: Deps) => async (context: EffectFunctionContext) => {
-      const authenticatedAxiosState = context.getState("authenticatedAxios");
+  saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = context.getState("authenticatedAxios");
 
-      if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
-        throw new Error("Axios middleware is not available in the context.");
-      }
-      const personalDetails = {
-        full_name: context.getPostData("fullName"),
-        date_of_birth: context.getPostData("dateOfBirth"),
-        mobile_phone: context.getPostData("phoneNumber"),
-        safe_to_contact:
-          context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
-        email: context.getPostData("email"),
-      };
+    if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
+      throw new Error("Axios middleware is not available in the context.");
+    }
+    const personalDetails = {
+      full_name: context.getPostData("fullName"),
+      date_of_birth: context.getPostData("dateOfBirth"),
+      mobile_phone: context.getPostData("phoneNumber"),
+      safe_to_contact:
+        context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
+      email: context.getPostData("email"),
+    };
 
-      context.setData("personalDetails", personalDetails);
+    context.setData("personalDetails", personalDetails);
 
-      await Promise.resolve();
-    },
+    await deps.caseApi.updatePersonalDetails(
+      authenticatedAxiosState,
+      "ED-0001-0002",
+      personalDetails,
+    );
+  },
 };
 
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();

@@ -20,8 +20,8 @@ import {
   GovUKBody,
   GovUKUtilityClasses,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { saveClientDetails, Answer } from "./effects.js";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
+import { InboundCallEffects } from "#src/journeys/effects.js";
 
 const MAX_CLIENT_AGE_YEARS = 120;
 
@@ -85,8 +85,8 @@ const addClientDetailsStep = step({
         }),
         validation({
           condition: or(
-          Self().not.match(Condition.Date.IsValid()),
-          Self().not.match(Condition.Date.IsFutureDate()),
+            Self().not.match(Condition.Date.IsValid()),
+            Self().not.match(Condition.Date.IsFutureDate()),
           ),
           message: "Year cannot be in the future",
           details: { field: "year" },
@@ -208,13 +208,7 @@ const addClientDetailsStep = step({
     submit({
       validate: true,
       onValid: {
-        effects: [
-          saveClientDetails(
-            Answer("fullName"),
-            Answer("dateOfBirth"),
-            Answer("phoneNumber"),
-          ),
-        ],
+        effects: [InboundCallEffects.saveClientDetails()],
         next: [redirect({ goto: "add-client-address" })],
       },
     }),
