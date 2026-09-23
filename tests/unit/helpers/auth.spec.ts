@@ -49,6 +49,18 @@ function buildToken(overrides: Record<string, any> = {}) {
   return `${encode(header)}.${encode(payload)}.fakesignature`;
 }
 
+function buildTokenWithMalformedPayload(): string {
+  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid: "" })).toString("base64url");
+  const payload = Buffer.from("{").toString("base64url");
+  return `${header}.${payload}.fakesignature`;
+}
+
+function buildTokenWithNonObjectPayload(): string {
+  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid: "" })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify(null)).toString("base64url");
+  return `${header}.${payload}.fakesignature`;
+}
+
 describe("callbackAction", () => {
   // These variables are replaced with fresh Sinon stubs before each test.
   // `any` keeps the Express request/response doubles small: each test supplies
@@ -150,6 +162,8 @@ describe("callbackAction", () => {
       { desc: "issuer doesn't match", token: buildToken({ iss: "https://not-microsoft.example.com" }) },
       { desc: "audience doesn't match", token: buildToken({ aud: "wrong-audience" }) },
       { desc: "required scope is missing", token: buildToken({ scp: "unrelated-scope" }) },
+      { desc: "payload isn't an object", token: buildTokenWithNonObjectPayload() },
+      { desc: "payload isn't valid JSON", token: buildTokenWithMalformedPayload() },
       { desc: "malformed token can't be decoded", token: "not.a.validtoken.reallyattall" },
     ];
 
@@ -219,6 +233,21 @@ describe("callbackAction", () => {
     expect(req.session.regenerate.calledOnce).to.be.true;
     expect(req.session.save.calledOnce).to.be.true;
     expect(redirectStub.calledOnceWith("/receive-call")).to.be.true;
+  });
+
+  it("allows authentication when only OIDC scopes are configured", async () => {
+    const originalScopes = config.silas.scopes;
+    config.silas.scopes = ["openid", "profile", "offline_access"];
+
+    try {
+      configureValidCallback();
+
+      await callbackAction(req, res);
+
+      expect(redirectStub.calledOnceWith("/receive-call")).to.be.true;
+    } finally {
+      config.silas.scopes = originalScopes;
+    }
   });
 
   describe("session handling", () => {

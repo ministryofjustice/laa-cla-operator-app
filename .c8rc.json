@@ -29,7 +29,6 @@
     "utils/nunjucksSetup.ts",
     "src/app.ts",
     "routes/index.ts",
-    "src/controllers/**",
     "src/journeys/**",
     "src/middleware/apiMiddleware.ts",
     "src/services/exampleApiService.ts",
