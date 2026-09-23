@@ -46,9 +46,10 @@ export const InboundCallEffectsImplementation: Record<
     if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
       throw new Error("Axios middleware is not available in the context.");
     }
+
     const personalDetails = {
       full_name: context.getPostData("fullName"),
-      date_of_birth: context.getPostData("dateOfBirth"),
+      dob: context.getPostData("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
       safe_to_contact:
         context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
