@@ -25,7 +25,7 @@ router.get('/redirect', callbackAction);
 router.get('/logout', logOut);
 
 /* GET home page. */
-router.get('/', function (req: Request, res: Response): void {
+router.get('/', (req: Request, res: Response): void => {
   if (req.session.silasAuth === undefined) {
     res.redirect('/sign-in');
     return;
@@ -33,20 +33,20 @@ router.get('/', function (req: Request, res: Response): void {
   res.redirect('/receive-call');
 });
 
-router.get('/privacy', function (req: Request, res: Response): void {
+router.get('/privacy', (req: Request, res: Response): void => {
   res.render('main/privacy.njk');
 });
 
 // Liveness and readiness probes for Helm deployments
-router.get('/status', function (req: Request, res: Response): void {
+router.get('/status', (req: Request, res: Response): void => {
   res.status(SUCCESSFUL_REQUEST).send('OK');
 });
 
-router.get('/health', function (req: Request, res: Response): void {
+router.get('/health', (req: Request, res: Response): void => {
   res.status(SUCCESSFUL_REQUEST).send('Healthy');
 });
 
-router.get('/error', function (req: Request, res: Response): void {
+router.get('/error', (req: Request, res: Response): void => {
   // Simulate an error
   res.set('X-Error-Tag', 'TEST_500_ALERT').status(UNSUCCESSFUL_REQUEST).send('Internal Server Error');
 });
