@@ -49,11 +49,19 @@ export const InboundCallEffectsImplementation: Record<
 
     const personalDetails = {
       full_name: context.getPostData("fullName"),
-      dob: context.getPostData("dateOfBirth"),
+      date_of_birth: context.getPostData("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
       safe_to_contact:
         context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
       email: context.getPostData("email"),
+    };
+
+    const apiPersonalDetails = {
+      full_name: personalDetails.full_name,
+      dob: personalDetails.date_of_birth,
+      mobile_phone: personalDetails.mobile_phone,
+      safe_to_contact: personalDetails.safe_to_contact,
+      email: personalDetails.email,
     };
 
     context.setData("personalDetails", personalDetails);
@@ -61,7 +69,7 @@ export const InboundCallEffectsImplementation: Record<
     await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,
       "ED-0001-0002",
-      personalDetails,
+      apiPersonalDetails,
     );
   },
 };

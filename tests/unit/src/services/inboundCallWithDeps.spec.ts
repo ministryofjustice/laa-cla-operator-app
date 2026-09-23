@@ -110,8 +110,9 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
 
   it("sets personalDetails data with SAFE when safeToCall is yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
+    const deps = makeDeps();
     const effect = InboundCallEffectsImplementation.saveClientDetails(
-      makeDeps() as any,
+      deps as any,
     );
 
     const setData = sinon.stub();
@@ -143,12 +144,28 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
       }),
       true,
     );
+
+    assert.equal(
+      deps.caseApi.updatePersonalDetails.calledOnceWithExactly(
+        axiosWrapper,
+        "ED-0001-0002",
+        {
+          full_name: "Jane Doe",
+          dob: "2001-05-12",
+          mobile_phone: "07123456789",
+          safe_to_contact: "SAFE",
+          email: "jane@example.com",
+        },
+      ),
+      true,
+    );
   });
 
   it("sets personalDetails data with DONT_CALL when safeToCall is not yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
+    const deps = makeDeps();
     const effect = InboundCallEffectsImplementation.saveClientDetails(
-      makeDeps() as any,
+      deps as any,
     );
 
     const setData = sinon.stub();
@@ -178,6 +195,21 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         safe_to_contact: "DONT_CALL",
         email: "jane@example.com",
       }),
+      true,
+    );
+
+    assert.equal(
+      deps.caseApi.updatePersonalDetails.calledOnceWithExactly(
+        axiosWrapper,
+        "ED-0001-0002",
+        {
+          full_name: "Jane Doe",
+          dob: "2001-05-12",
+          mobile_phone: "07123456789",
+          safe_to_contact: "DONT_CALL",
+          email: "jane@example.com",
+        },
+      ),
       true,
     );
   });
