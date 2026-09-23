@@ -48,12 +48,13 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
             count: 0,
             result: [] as Array<{ address: string, uprn: string }> | null
         }
-        if(postcode == null || building == null) {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
+        if(!postcode || !building) {
             context.setData("lookup", data);
             return;
         }
 
-        const addresses = await deps.postcodeapi.byPostcode(building, postcode) ?? []
+        const addresses = await deps.postcodeapi.byPostcode(building, postcode)
         data.result = addresses.map((address: Address) => ({address: address.address, uprn: address.uprn}))
         // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
         data.count = data.result.length
