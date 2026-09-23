@@ -197,3 +197,8 @@ envVars:
       secretKeyRef:
         name: sso
         key: expected_audience
+  OS_PLACES_API_KEY:
+    valueFrom:
+      secretKeyRef:
+        name: os-places
+        key: api_key
