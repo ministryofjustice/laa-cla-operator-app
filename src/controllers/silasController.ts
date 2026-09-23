@@ -41,7 +41,7 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
   const nonce = randomBytes(NONCE_BYTES).toString("base64url");
 
   req.session.auth_nonce = nonce;
-  await promisify(req.session.save.bind(req.session))();
+  await saveSession(req);
 
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
@@ -155,10 +155,52 @@ function validateAccessTokenClaims(claims: AccessTokenClaims): void {
  * Sends an authentication failure response.
  *
  * @param {Response} res Express response used to send the failure status.
- * @returns {Response} The Express response.
+ * @returns {void} Sends the authentication failure response.
  */
-function sendAuthenticationFailure(res: Response): Response {
-  return res.status(INTERNAL_SERVER_ERROR).send("");
+function sendAuthenticationFailure(res: Response): void {
+  res.status(INTERNAL_SERVER_ERROR).send("");
+}
+
+/**
+ * Saves the current request session.
+ *
+ * @param {Request} req Express request containing the session to save.
+ * @returns {Promise<void>} A promise resolving after the session is saved.
+ */
+async function saveSession(req: Request): Promise<void> {
+  const save = promisify((callback: (error?: unknown) => void): void => {
+    req.session.save(callback);
+  });
+
+  await save();
+}
+
+/**
+ * Regenerates the current request session.
+ *
+ * @param {Request} req Express request containing the session to regenerate.
+ * @returns {Promise<void>} A promise resolving after the session is regenerated.
+ */
+async function regenerateSession(req: Request): Promise<void> {
+  const regenerate = promisify((callback: (error?: unknown) => void): void => {
+    req.session.regenerate(callback);
+  });
+
+  await regenerate();
+}
+
+/**
+ * Destroys the current request session.
+ *
+ * @param {Request} req Express request containing the session to destroy.
+ * @returns {Promise<void>} A promise resolving after the session is destroyed.
+ */
+async function destroySession(req: Request): Promise<void> {
+  const destroy = promisify((callback: (error?: unknown) => void): void => {
+    req.session.destroy(callback);
+  });
+
+  await destroy();
 }
 
 /**
@@ -228,11 +270,13 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
 
     validateAccessTokenClaims(claims);
 
-    await promisify(req.session.regenerate.bind(req.session))();
+    await regenerateSession(req);
 
-    req.session.auth_nonce = undefined;
+    const { session } = req;
 
-    req.session.silasAuth = {
+    session.auth_nonce = undefined;
+
+    session.silasAuth = {
       accessToken: response.accessToken,
       idToken: response.idToken,
       expiresAt: response.expiresOn?.getTime() ?? Date.now() + TOKEN_EXPIRY_OFFSET_MS,
@@ -240,13 +284,13 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
       name: claims.name,
     };
 
-    req.session.user = {
+    session.user = {
       email: response.account.username,
       name: response.account.name,
       oid: response.account.homeAccountId,
     };
 
-    await promisify(req.session.save.bind(req.session))();
+    await saveSession(req);
 
     res.redirect("/receive-call");
   } catch {
@@ -264,7 +308,7 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
  */
 export async function logOut(req: Request, res: Response): Promise<void> {
   try {
-    await promisify(req.session.destroy.bind(req.session))();
+    await destroySession(req);
   } catch {
     // Local session cleanup failure should not prevent provider logout.
   }
