@@ -65,6 +65,12 @@ export class PostcodeLookupService {
      */
     // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Utility method
     async lookup(endpoint: "find" | "uprn", params: URLSearchParams, includePostcodeInAddess = true): Promise<Address[]> {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
+        if(!config.OS_PLACES_API_KEY) {
+            return [];
+        }
+        params.append("key", config.OS_PLACES_API_KEY)
+
         const response = await fetch(`https://api.os.uk/search/places/v1/${endpoint}?${params}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -90,16 +96,8 @@ export class PostcodeLookupService {
      * @returns {Address[] | null} - A list of matched addresses
      */
     async byPostcode (building: string, postcode: string): Promise<Address[] | null>{
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
-        if(!config.OS_PLACES_API_KEY) {
-            return null;
-        }
-        if(postcode === "") {
-            return null;
-        }
         const params = new URLSearchParams({
             query: `${building} ${postcode}`,
-            key: config.OS_PLACES_API_KEY,
             output_srs: "WGS84",
             dataset: "DPA",
         });
@@ -112,21 +110,13 @@ export class PostcodeLookupService {
      * @returns {Address | null} - The matched address
      */
     async byUPRN(uprn: string): Promise<Address | null> {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
-        if(!config.OS_PLACES_API_KEY) {
-            return null;
-        }
-        if(uprn === "") {
-            return null;
-        }
         const params = new URLSearchParams({
             uprn,
-            key: config.OS_PLACES_API_KEY,
             output_srs: "WGS84",
             dataset: "DPA",
         });
         const addresses = await this.lookup("uprn", params, false)
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- return the first address found
-        return addresses[0]
+        return addresses.length > 0 ? addresses[0] : null
     }
 }

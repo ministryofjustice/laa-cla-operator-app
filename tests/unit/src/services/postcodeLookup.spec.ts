@@ -94,6 +94,6 @@ describe("Postcode lookup", ()=>{
     it("Missing os places key", async () => {
         configStub.value(null)
         const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1H 9AJ")
-        assert.equal(addresses, null)
+        assert.deepEqual(addresses, [])
     })
 })
