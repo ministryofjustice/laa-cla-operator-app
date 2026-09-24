@@ -262,8 +262,12 @@ function hasValidAccountResponse(
 export async function callbackAction(req: Request, res: Response): Promise<void> {
   // ON UAT we might need to proxy to an ephemeral environment
   if(config.app.environment.toLocaleLowerCase() == "uat" && req.session.return_to) {
-    console.log(`Proxing auth to ${req.session.return_to}`)
-    return res.redirect(String(req.session.return_to))
+    const queryString = new URLSearchParams(
+      req.query as Record<string, string>
+    ).toString();
+    const redirect = `${req.session.return_to}?=${queryString}`
+    console.log(`Proxing auth to ${redirect}`)
+    return res.redirect(redirect)
   }
 
   const code = typeof req.query.code === "string" ? req.query.code : "";
