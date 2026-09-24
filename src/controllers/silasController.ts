@@ -30,6 +30,25 @@ const msalClient = new ConfidentialClientApplication({
   },
 });
 
+function processUATRedirect(req: Request, res: Response) {
+  console.log(`Environment is ${config.app.environment}`)
+  if(config.app.environment.toLocaleLowerCase() == "ephemeral") {
+    const hostname = process.env.HOST_NAME;
+    console.log(`HOST_NAME is ${hostname}`)
+    if(hostname) {
+      const domain = new URL(config.silas.redirectUri).origin
+      console.log(`Redirecting log in request to ${domain}/login?redirect_to=${hostname}`)
+      return res.redirect(`${domain}/login?redirect_to=${hostname}`)
+    }
+  }
+  if(config.app.environment.toLocaleLowerCase() == "uat") {
+    console.log(`return_to is ${req.query.return_to}`)
+    if(req.query.return_to) {
+      req.session.return_to = String(req.query.return_to)
+      req.session.save()
+    }
+  }
+}
 /**
  * Handles the initial SILAS login request and redirects the user to Microsoft.
  *
@@ -42,7 +61,7 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
 
   req.session.auth_nonce = nonce;
   await saveSession(req);
-
+  processUATRedirect(req, res);
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
     redirectUri: config.silas.redirectUri,
@@ -241,6 +260,12 @@ function hasValidAccountResponse(
  * @returns {Promise<void>} A promise resolving after the response is sent.
  */
 export async function callbackAction(req: Request, res: Response): Promise<void> {
+  // ON UAT we might need to proxy to an ephemeral environment
+  if(config.app.environment.toLocaleLowerCase() == "uat" && req.session.return_to) {
+    console.log(`Proxing auth to ${req.session.return_to}`)
+    return res.redirect(String(req.session.return_to))
+  }
+
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
 

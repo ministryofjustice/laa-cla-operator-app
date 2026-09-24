@@ -88,7 +88,7 @@ jobs:
           --set-string ingress.annotations."external-dns\.alpha\.kubernetes\.io/aws-weight"="100" \
           --set sharedIPRangesLAA=$SHARED_IP_RANGES_LAA \
           --set pingdomIPs=$PINGDOM_IPS \
-          --set envVars.ENTRA_ID_SKIP_AUTH.value=True \
+          --set envVars.HOST_NAME.value=${HOST_NAME} \
           --force \
           --install
 

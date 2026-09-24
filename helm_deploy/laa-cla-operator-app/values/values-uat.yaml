@@ -3,6 +3,7 @@
 
 replicaCount: 1
 
+
 image:
   pullPolicy: Always
   containerPort: 3000

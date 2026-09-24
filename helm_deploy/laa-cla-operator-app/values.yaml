@@ -138,6 +138,8 @@ affinity: {}
 # Environment variables shared by all environments.
 # Per-environment files override only what differs, such as BACKEND_BASE_URL and NODE_ENV.
 envVars:
+  NODE_ENV:
+    value: "production"
   CONTACT_EMAIL:
     value: "CONTACT_EMAIL"
   CONTACT_PHONE:
