@@ -10,7 +10,7 @@ RUN npm install --global corepack && \
     corepack prepare yarn@4.9.2 --activate
 
 # Upgrade npm from the version bundled with the Node image
-RUN npm install --global npm@11.19.1
+RUN npm install --global npm@12.0.0
 
 # Copy package.json and yarn.lock to the working directory
 COPY package*.json yarn.lock .yarnrc.yml ./
