@@ -81,7 +81,7 @@ async function getAuthNonce(req: Request): Promise<String> {
 export async function loginAction(req: Request, res: Response): Promise<void> {
   processUATRedirect(req, res);
 
-  const auth_nonce = getAuthNonce(req)
+  const auth_nonce = await getAuthNonce(req)
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
     redirectUri: config.silas.redirectUri,
