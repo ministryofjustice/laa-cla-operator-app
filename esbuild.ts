@@ -1,12 +1,12 @@
-import esbuild from 'esbuild';
-import { sassPlugin } from 'esbuild-sass-plugin';
-import { builtinModules } from 'node:module';
-import dotenv from 'dotenv';
-import fs from 'fs-extra';
-import path from 'node:path';
-import chokidar from 'chokidar';
-import { getBuildNumber } from './utils/buildHelper.js';
-import type { SassPluginOptions } from './types/sass-plugin-types.js';
+import esbuild from "esbuild";
+import { sassPlugin } from "esbuild-sass-plugin";
+import { builtinModules } from "node:module";
+import dotenv from "dotenv";
+import fs from "fs-extra";
+import path from "node:path";
+import chokidar from "chokidar";
+import { getBuildNumber } from "./utils/buildHelper.js";
+import type { SassPluginOptions } from "./types/sass-plugin-types.js";
 
 // Load environment variables
 dotenv.config();
@@ -22,30 +22,31 @@ const SECOND_IN_ARRAY = 1;
  * @returns {Promise<void>} Resolves when the assets are copied successfully.
  */
 const copyAssets = async (): Promise<void> => {
-	try {
-		// GOV.UK assets
-		await fs.copy(
-			path.resolve('./node_modules/govuk-frontend/dist/govuk/assets'),
-			path.resolve('./public/assets')
-		);
-		// Rebrand assets are optional and not present in every GOV.UK Frontend release.
-		const rebrandSourcePath = path.resolve('./node_modules/govuk-frontend/dist/govuk/assets/rebrand');
-		if (await fs.pathExists(rebrandSourcePath)) {
-			await fs.copy(
-				rebrandSourcePath,
-				path.resolve('./public/assets/rebrand')
-			);
-		}
-		// Copy MOJ Frontend assets
-		await fs.copy(
-			path.resolve('./node_modules/@ministryofjustice/frontend/moj/assets/images'),
-			path.resolve('./public/assets/images')
-		);
-		console.log('✅ GOV.UK and MOJ Frontend assets copied successfully.');
-	} catch (error) {
-		console.error('❌ Failed to copy assets:', error);
-		process.exit(UNCAUGHT_FATAL_EXCEPTION);
-	}
+  try {
+    // GOV.UK assets
+    await fs.copy(
+      path.resolve("./node_modules/govuk-frontend/dist/govuk/assets"),
+      path.resolve("./public/assets"),
+    );
+    // Rebrand assets are optional and not present in every GOV.UK Frontend release.
+    const rebrandSourcePath = path.resolve(
+      "./node_modules/govuk-frontend/dist/govuk/assets/rebrand",
+    );
+    if (await fs.pathExists(rebrandSourcePath)) {
+      await fs.copy(rebrandSourcePath, path.resolve("./public/assets/rebrand"));
+    }
+    // Copy MOJ Frontend assets
+    await fs.copy(
+      path.resolve(
+        "./node_modules/@ministryofjustice/frontend/moj/assets/images",
+      ),
+      path.resolve("./public/assets/images"),
+    );
+    console.log("✅ GOV.UK and MOJ Frontend assets copied successfully.");
+  } catch (error) {
+    console.error("❌ Failed to copy assets:", error);
+    process.exit(UNCAUGHT_FATAL_EXCEPTION);
+  }
 };
 
 /**
@@ -53,27 +54,27 @@ const copyAssets = async (): Promise<void> => {
  * @constant {string[]}
  */
 const externalModules: string[] = [
-	...builtinModules,
-	'debug',
-	'express',
-	'nunjucks',
-	'dotenv',
-	'cookie-signature',
-	'cookie-parser',
-	'body-parser',
-	'express-session',
-	'morgan',
-	'compression',
-	'axios',
-	'middleware-axios',
-	'util',
-	'path',
-	'fs',
-	'figlet',
-	'csrf-sync',
-	'http-errors',
-	'@azure/msal-node',
-	'*.node'
+  ...builtinModules,
+  "debug",
+  "express",
+  "nunjucks",
+  "dotenv",
+  "cookie-signature",
+  "cookie-parser",
+  "body-parser",
+  "express-session",
+  "morgan",
+  "compression",
+  "axios",
+  "middleware-axios",
+  "util",
+  "path",
+  "fs",
+  "figlet",
+  "csrf-sync",
+  "http-errors",
+  "@azure/msal-node",
+  "*.node",
 ];
 
 /**
@@ -82,48 +83,64 @@ const externalModules: string[] = [
  * @param {boolean} watch - Whether to enable watch mode
  * @returns {Promise<esbuild.BuildContext | undefined>} Build context if watching, undefined otherwise
  */
-const buildScss = async (watch = false): Promise<esbuild.BuildContext | undefined> => {
-	const options: esbuild.BuildOptions = {
-		entryPoints: ['src/scss/main.scss'],
-		bundle: true,
-		outfile: `public/css/main.${buildNumber}.css`,
-		external: ['*.woff', '*.woff2', '*.svg', '*.png', '*.jpg', '*.jpeg', '*.gif'],
-		plugins: [
-			sassPlugin({
-				loadPaths: [
-					path.resolve('.'), // Current directory
-					path.resolve('node_modules') // Node modules directory
-				],
-				/**
-				 * Transforms SCSS content to update asset paths.
-				 * @param {string} source - Original SCSS source content.
-				 * @returns {string} Transformed SCSS with updated asset paths.
-				 */
-				transform: (source: string): string =>
-					source
-						.replace(/url\(["']?\/assets\/fonts\/(?<fontPath>[^"')]+)["']?\)/gu, 'url("/assets/fonts/$<fontPath>")')
-						.replace(/url\(["']?\/assets\/images\/(?<imagePath>[^"')]+)["']?\)/gu, 'url("/assets/images/$<imagePath>")')
-			} satisfies SassPluginOptions)
-		],
-		loader: {
-			'.scss': 'css',
-			'.css': 'css'
-		},
-		minify: process.env.NODE_ENV === 'production',
-		sourcemap: process.env.NODE_ENV !== 'production'
-	};
+const buildScss = async (
+  watch = false,
+): Promise<esbuild.BuildContext | undefined> => {
+  const options: esbuild.BuildOptions = {
+    entryPoints: ["src/scss/main.scss"],
+    bundle: true,
+    outfile: `public/css/main.${buildNumber}.css`,
+    external: [
+      "*.woff",
+      "*.woff2",
+      "*.svg",
+      "*.png",
+      "*.jpg",
+      "*.jpeg",
+      "*.gif",
+    ],
+    plugins: [
+      sassPlugin({
+        loadPaths: [
+          path.resolve("."), // Current directory
+          path.resolve("node_modules"), // Node modules directory
+        ],
+        /**
+         * Transforms SCSS content to update asset paths.
+         * @param {string} source - Original SCSS source content.
+         * @returns {string} Transformed SCSS with updated asset paths.
+         */
+        transform: (source: string): string =>
+          source
+            .replace(
+              /url\(["']?\/assets\/fonts\/(?<fontPath>[^"')]+)["']?\)/gu,
+              'url("/assets/fonts/$<fontPath>")',
+            )
+            .replace(
+              /url\(["']?\/assets\/images\/(?<imagePath>[^"')]+)["']?\)/gu,
+              'url("/assets/images/$<imagePath>")',
+            ),
+      } satisfies SassPluginOptions),
+    ],
+    loader: {
+      ".scss": "css",
+      ".css": "css",
+    },
+    minify: process.env.NODE_ENV === "production",
+    sourcemap: process.env.NODE_ENV !== "production",
+  };
 
-	if (watch) {
-		const context = await esbuild.context(options);
-		await context.watch();
-		return context;
-	} else {
-		await esbuild.build(options).catch((error: unknown) => {
-			console.error('❌ SCSS build failed:', error);
-			process.exit(UNCAUGHT_FATAL_EXCEPTION);
-		});
-		return undefined;
-	}
+  if (watch) {
+    const context = await esbuild.context(options);
+    await context.watch();
+    return context;
+  } else {
+    await esbuild.build(options).catch((error: unknown) => {
+      console.error("❌ SCSS build failed:", error);
+      process.exit(UNCAUGHT_FATAL_EXCEPTION);
+    });
+    return undefined;
+  }
 };
 
 /**
@@ -132,35 +149,37 @@ const buildScss = async (watch = false): Promise<esbuild.BuildContext | undefine
  * @param {boolean} watch - Whether to enable watch mode
  * @returns {Promise<esbuild.BuildContext | undefined>} Build context if watching, undefined otherwise
  */
-const buildAppJs = async (watch = false): Promise<esbuild.BuildContext | undefined> => {
-	const options: esbuild.BuildOptions = {
-		entryPoints: ['src/app.ts'],
-		bundle: true,
-		platform: 'node',
-		target: 'esnext',
-		format: 'esm',
-		sourcemap: process.env.NODE_ENV !== 'production',
-		minify: process.env.NODE_ENV === 'production',
-		loader: {
-			'.js': 'jsx',
-			'.ts': 'tsx',
-			'.json': 'json',
-		},
-		external: externalModules,
-		outfile: 'public/app.js'
-	};
+const buildAppJs = async (
+  watch = false,
+): Promise<esbuild.BuildContext | undefined> => {
+  const options: esbuild.BuildOptions = {
+    entryPoints: ["src/app.ts"],
+    bundle: true,
+    platform: "node",
+    target: "esnext",
+    format: "esm",
+    sourcemap: process.env.NODE_ENV !== "production",
+    minify: process.env.NODE_ENV === "production",
+    loader: {
+      ".js": "jsx",
+      ".ts": "tsx",
+      ".json": "json",
+    },
+    external: externalModules,
+    outfile: "public/app.js",
+  };
 
-	if (watch) {
-		const context = await esbuild.context(options);
-		await context.watch();
-		return context;
-	} else {
-		await esbuild.build(options).catch((error: unknown) => {
-			console.error('❌ app.js build failed:', error);
-			process.exit(UNCAUGHT_FATAL_EXCEPTION);
-		});
-		return undefined;
-	}
+  if (watch) {
+    const context = await esbuild.context(options);
+    await context.watch();
+    return context;
+  } else {
+    await esbuild.build(options).catch((error: unknown) => {
+      console.error("❌ app.js build failed:", error);
+      process.exit(UNCAUGHT_FATAL_EXCEPTION);
+    });
+    return undefined;
+  }
 };
 
 /**
@@ -169,29 +188,31 @@ const buildAppJs = async (watch = false): Promise<esbuild.BuildContext | undefin
  * @param {boolean} watch - Whether to enable watch mode
  * @returns {Promise<esbuild.BuildContext | undefined>} Build context if watching, undefined otherwise
  */
-const buildCustomJs = async (watch = false): Promise<esbuild.BuildContext | undefined> => {
-	const options: esbuild.BuildOptions = {
-		entryPoints: ['src/scripts/custom.ts'],
-		bundle: true,
-		platform: 'browser',
-		target: 'esnext',
-		format: 'esm',
-		sourcemap: process.env.NODE_ENV !== 'production',
-		minify: process.env.NODE_ENV === 'production',
-		outfile: `public/js/custom.${buildNumber}.min.js`
-	};
+const buildCustomJs = async (
+  watch = false,
+): Promise<esbuild.BuildContext | undefined> => {
+  const options: esbuild.BuildOptions = {
+    entryPoints: ["src/scripts/custom.ts"],
+    bundle: true,
+    platform: "browser",
+    target: "esnext",
+    format: "esm",
+    sourcemap: process.env.NODE_ENV !== "production",
+    minify: process.env.NODE_ENV === "production",
+    outfile: `public/js/custom.${buildNumber}.min.js`,
+  };
 
-	if (watch) {
-		const context = await esbuild.context(options);
-		await context.watch();
-		return context;
-	} else {
-		await esbuild.build(options).catch((error: unknown) => {
-			console.error('❌ custom.js build failed:', error);
-			process.exit(UNCAUGHT_FATAL_EXCEPTION);
-		});
-		return undefined;
-	}
+  if (watch) {
+    const context = await esbuild.context(options);
+    await context.watch();
+    return context;
+  } else {
+    await esbuild.build(options).catch((error: unknown) => {
+      console.error("❌ custom.js build failed:", error);
+      process.exit(UNCAUGHT_FATAL_EXCEPTION);
+    });
+    return undefined;
+  }
 };
 
 /**
@@ -200,32 +221,35 @@ const buildCustomJs = async (watch = false): Promise<esbuild.BuildContext | unde
  * @param {boolean} watch - Whether to enable watch mode
  * @returns {Promise<esbuild.BuildContext | undefined>} Build context if watching, undefined otherwise
  */
-const buildFrontendPackages = async (watch = false): Promise<esbuild.BuildContext | undefined> => {
-	const options: esbuild.BuildOptions = {
-		entryPoints: [
-			'src/scripts/frontendPackagesEntry.ts'
-		],
-		bundle: true,
-		platform: 'browser',
-		target: 'esnext',
-		format: 'esm',
-		sourcemap: process.env.NODE_ENV !== 'production',
-		minify: process.env.NODE_ENV === 'production',
-		treeShaking: false, // Disable tree shaking to preserve side-effect imports
-		outfile: `public/js/frontend-packages.${buildNumber}.min.js`
-	};
+const buildFrontendPackages = async (
+  watch = false,
+): Promise<esbuild.BuildContext | undefined> => {
+  const options: esbuild.BuildOptions = {
+    entryPoints: ["src/scripts/frontendPackagesEntry.ts"],
+    bundle: true,
+    platform: "browser",
+    target: "esnext",
+    format: "esm",
+    sourcemap: process.env.NODE_ENV !== "production",
+    minify: process.env.NODE_ENV === "production",
+    treeShaking: false, // Disable tree shaking to preserve side-effect imports
+    outfile: `public/js/frontend-packages.${buildNumber}.min.js`,
+  };
 
-	if (watch) {
-		const context = await esbuild.context(options);
-		await context.watch();
-		return context;
-	} else {
-		await esbuild.build(options).catch((error: unknown) => {
-			console.error('❌ GOV.UK frontend and/or MOJ frontend JS build failed:', error);
-			process.exit(UNCAUGHT_FATAL_EXCEPTION);
-		});
-		return undefined;
-	}
+  if (watch) {
+    const context = await esbuild.context(options);
+    await context.watch();
+    return context;
+  } else {
+    await esbuild.build(options).catch((error: unknown) => {
+      console.error(
+        "❌ GOV.UK frontend and/or MOJ frontend JS build failed:",
+        error,
+      );
+      process.exit(UNCAUGHT_FATAL_EXCEPTION);
+    });
+    return undefined;
+  }
 };
 
 /**
@@ -234,64 +258,77 @@ const buildFrontendPackages = async (watch = false): Promise<esbuild.BuildContex
  * @returns {Promise<void>} Resolves when all watchers are set up.
  */
 const watchBuild = async (): Promise<void> => {
-	try {
-		// Copy assets initially
-		await copyAssets();
+  try {
+    // Copy assets initially
+    await copyAssets();
 
-		// Start all watchers
-		const contexts = await Promise.all([
-			buildScss(true),
-			buildAppJs(true),
-			buildCustomJs(true),
-			buildFrontendPackages(true)
-		]);
+    // Start all watchers
+    const contexts = await Promise.all([
+      buildScss(true),
+      buildAppJs(true),
+      buildCustomJs(true),
+      buildFrontendPackages(true),
+    ]);
 
-		// Watch for asset changes and copy them
-		const assetWatcher = chokidar.watch(['node_modules/govuk-frontend/dist/govuk/assets/**/*', 'node_modules/@ministryofjustice/frontend/moj/assets/images/**/*'], {
-			ignored: /node_modules\/(?!govuk-frontend|@ministryofjustice)/u,
-			persistent: true
-		});
+    // Watch for asset changes and copy them
+    const assetWatcher = chokidar.watch(
+      [
+        "node_modules/govuk-frontend/dist/govuk/assets/**/*",
+        "node_modules/@ministryofjustice/frontend/moj/assets/images/**/*",
+      ],
+      {
+        ignored: /node_modules\/(?!govuk-frontend|@ministryofjustice)/u,
+        persistent: true,
+      },
+    );
 
-		/**
-		 * Handles asset file changes by copying assets.
-		 * @returns {void}
-		 */
-		const handleAssetChange = (): void => {
-			copyAssets().catch((error: unknown) => {
-				console.error('❌ Failed to copy assets on change:', error);
-			});
-		};
+    /**
+     * Handles asset file changes by copying assets.
+     * @returns {void}
+     */
+    const handleAssetChange = (): void => {
+      copyAssets().catch((error: unknown) => {
+        console.error("❌ Failed to copy assets on change:", error);
+      });
+    };
 
-		assetWatcher.on('change', handleAssetChange);
+    assetWatcher.on("change", handleAssetChange);
 
-		console.log('✅ Watch mode started successfully. Watching for file changes...');
+    console.log(
+      "✅ Watch mode started successfully. Watching for file changes...",
+    );
 
-		// Keep the process alive
-		/**
-		 * Handles SIGINT signal for graceful shutdown.
-		 * @returns {void}
-		 */
-		const handleSigint = (): void => {
-			console.log('\n🛑 Stopping watch mode...');
-			void Promise.all(
-				contexts
-					.filter((context): context is esbuild.BuildContext => context !== undefined)
-					.map(async (context) => { await context.dispose(); })
-			).then(() => {
-				void assetWatcher.close();
-				process.exit(NO_MORE_ASYNC_OPERATIONS);
-			}).catch((error: unknown) => {
-				console.error('❌ Error during cleanup:', error);
-				process.exit(UNCAUGHT_FATAL_EXCEPTION);
-			});
-		};
+    // Keep the process alive
+    /**
+     * Handles SIGINT signal for graceful shutdown.
+     * @returns {void}
+     */
+    const handleSigint = (): void => {
+      console.log("\n🛑 Stopping watch mode...");
+      void Promise.all(
+        contexts
+          .filter(
+            (context): context is esbuild.BuildContext => context !== undefined,
+          )
+          .map(async (context) => {
+            await context.dispose();
+          }),
+      )
+        .then(() => {
+          void assetWatcher.close();
+          process.exit(NO_MORE_ASYNC_OPERATIONS);
+        })
+        .catch((error: unknown) => {
+          console.error("❌ Error during cleanup:", error);
+          process.exit(UNCAUGHT_FATAL_EXCEPTION);
+        });
+    };
 
-		process.on('SIGINT', handleSigint);
-
-	} catch (error: unknown) {
-		console.error('❌ Watch mode setup failed:', error);
-		process.exit(UNCAUGHT_FATAL_EXCEPTION);
-	}
+    process.on("SIGINT", handleSigint);
+  } catch (error: unknown) {
+    console.error("❌ Watch mode setup failed:", error);
+    process.exit(UNCAUGHT_FATAL_EXCEPTION);
+  }
 };
 
 /**
@@ -300,25 +337,25 @@ const watchBuild = async (): Promise<void> => {
  * @returns {Promise<void>} Resolves when the entire build process is completed successfully.
  */
 const build = async (): Promise<void> => {
-	try {
-		console.log('🚀 Starting build process...');
+  try {
+    console.log("🚀 Starting build process...");
 
-		// Copy assets
-		await copyAssets();
+    // Copy assets
+    await copyAssets();
 
-		// Build all files
-		await Promise.all([
-			buildScss(false),
-			buildAppJs(false),
-			buildCustomJs(false),
-			buildFrontendPackages(false)
-		]);
+    // Build all files
+    await Promise.all([
+      buildScss(false),
+      buildAppJs(false),
+      buildCustomJs(false),
+      buildFrontendPackages(false),
+    ]);
 
-		console.log('✅ Build completed successfully.');
-	} catch (error: unknown) {
-		console.error('❌ Build process failed:', error);
-		process.exit(UNCAUGHT_FATAL_EXCEPTION);
-	}
+    console.log("✅ Build completed successfully.");
+  } catch (error: unknown) {
+    console.error("❌ Build process failed:", error);
+    process.exit(UNCAUGHT_FATAL_EXCEPTION);
+  }
 };
 
 // Export functions
@@ -326,17 +363,17 @@ export { build, watchBuild };
 
 // Run based on command line arguments
 if (import.meta.url === `file://${process.argv[SECOND_IN_ARRAY]}`) {
-	const isWatch = process.argv.includes('--watch');
+  const isWatch = process.argv.includes("--watch");
 
-	if (isWatch) {
-		watchBuild().catch((error: unknown) => {
-			console.error('❌ Watch mode failed:', error);
-			process.exit(UNCAUGHT_FATAL_EXCEPTION);
-		});
-	} else {
-		build().catch((error: unknown) => {
-			console.error('❌ Build script failed:', error);
-			process.exit(UNCAUGHT_FATAL_EXCEPTION);
-		});
-	}
+  if (isWatch) {
+    watchBuild().catch((error: unknown) => {
+      console.error("❌ Watch mode failed:", error);
+      process.exit(UNCAUGHT_FATAL_EXCEPTION);
+    });
+  } else {
+    build().catch((error: unknown) => {
+      console.error("❌ Build script failed:", error);
+      process.exit(UNCAUGHT_FATAL_EXCEPTION);
+    });
+  }
 }

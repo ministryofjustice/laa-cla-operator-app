@@ -8,16 +8,16 @@
  * Based on MCC's utils/axiosSetup.ts patterns.
  */
 
-import { create } from 'middleware-axios';
-import type { Request, Response, NextFunction } from 'express';
-import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import type { SilasSessionAuth } from '#types/auth-types.js';
+import { create } from "middleware-axios";
+import type { Request, Response, NextFunction } from "express";
+import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
+import type { SilasSessionAuth } from "#types/auth-types.js";
 import {
   addLoggingInterceptors,
   addAuthServiceInterceptors,
   addSessionSilasTokenInterceptor,
   type ApiAuthService,
-} from './apiInterceptors.js';
+} from "./apiInterceptors.js";
 
 const DEFAULT_TIMEOUT = 5000;
 
@@ -79,7 +79,7 @@ declare global {
  * @returns {(req: Request, res: Response, next: NextFunction) => void} Express middleware function.
  */
 export function createApiMiddleware(
-  config: ApiMiddlewareConfig = {}
+  config: ApiMiddlewareConfig = {},
 ): (req: Request, res: Response, next: NextFunction) => void {
   const {
     timeout = DEFAULT_TIMEOUT,
@@ -96,7 +96,7 @@ export function createApiMiddleware(
     const axiosWrapper = create({
       timeout,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...defaultHeaders,
       },
     });
@@ -118,13 +118,14 @@ export function createApiMiddleware(
 
     if (useSessionSilasAuth) {
       const accessToken = req.session.silasAuth?.accessToken;
-      const hasToken = typeof accessToken === 'string' && accessToken.trim() !== '';
+      const hasToken =
+        typeof accessToken === "string" && accessToken.trim() !== "";
 
       if (hasToken) {
         addSessionSilasTokenInterceptor(
           axiosWrapper,
           accessToken,
-          enableLogging
+          enableLogging,
         );
       }
     }
@@ -150,13 +151,13 @@ export function createApiMiddleware(
 export function requireAuth(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   const { session } = req;
   const { silasAuth } = session;
 
   if (!hasValidSilasToken(silasAuth)) {
-    res.redirect('/sign-in');
+    res.redirect("/sign-in");
     return;
   }
 
@@ -173,7 +174,7 @@ export function requireAuth(
  * @returns {boolean} True when the authentication session exists and has not expired.
  */
 export function hasValidSilasToken(
-  silasAuth: SilasSessionAuth | undefined
+  silasAuth: SilasSessionAuth | undefined,
 ): boolean {
   if (silasAuth === undefined) {
     return false;
@@ -203,7 +204,7 @@ export const axiosMiddleware = createApiMiddleware();
 export const setAuthStatus = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   const { session } = req;
   const { silasAuth, user } = session;

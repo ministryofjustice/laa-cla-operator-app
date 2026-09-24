@@ -30,7 +30,10 @@
 }
 
 .govuk-button {
-  font-family: GDS Transport, arial, sans-serif;
+  font-family:
+    GDS Transport,
+    arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-weight: 400;
@@ -47,7 +50,6 @@
   color: #fff;
   background-color: #fff;
   box-shadow: 0 2px 0 #e6ade7;
-  ;
   text-align: center;
   vertical-align: top;
   cursor: pointer;
@@ -74,7 +76,9 @@
   outline: 3px solid transparent;
   color: #0b0c0c;
   background-color: #fd0;
-  box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+  box-shadow:
+    0 -2px #fd0,
+    0 4px #0b0c0c;
   text-decoration: none;
 }
 

@@ -1,6 +1,6 @@
-import dotenv from 'dotenv';
-import { isBlankString } from '#src/helpers/dataTransformers.js';
-import type { Config } from '#types/config-types.js';
+import dotenv from "dotenv";
+import { isBlankString } from "#src/helpers/dataTransformers.js";
+import type { Config } from "#types/config-types.js";
 dotenv.config();
 
 const DEFAULT_RATE_LIMIT_MAX = 100;
@@ -11,7 +11,9 @@ const { env } = process;
 const { SESSION_SECRET, SESSION_NAME } = env;
 
 if (isBlankString(SESSION_SECRET) || isBlankString(SESSION_NAME)) {
-  throw new Error('SESSION_SECRET and SESSION_NAME must be defined in environment variables.');
+  throw new Error(
+    "SESSION_SECRET and SESSION_NAME must be defined in environment variables.",
+  );
 }
 
 // Get environment variables
@@ -26,7 +28,10 @@ const config: Config = {
   RATELIMIT_STORAGE_URI: process.env.RATELIMIT_STORAGE_URI,
   RATE_LIMIT_MAX: Number(process.env.RATE_LIMIT_MAX ?? DEFAULT_RATE_LIMIT_MAX),
   // Default rate window: 15 minutes in milliseconds
-  RATE_WINDOW_MS: Number(process.env.RATE_WINDOW_MS ?? String(DEFAULT_RATE_WINDOW_MS_MINUTE * MILLISECONDS_IN_A_MINUTE)),
+  RATE_WINDOW_MS: Number(
+    process.env.RATE_WINDOW_MS ??
+      String(DEFAULT_RATE_WINDOW_MS_MINUTE * MILLISECONDS_IN_A_MINUTE),
+  ),
   SERVICE_NAME: process.env.SERVICE_NAME,
   SERVICE_PHASE: process.env.SERVICE_PHASE,
   SERVICE_URL: process.env.SERVICE_URL,
@@ -34,36 +39,36 @@ const config: Config = {
     secret: SESSION_SECRET,
     name: SESSION_NAME,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
   },
   app: {
     port: Number(process.env.PORT ?? DEFAULT_PORT),
-    environment: process.env.NODE_ENV ?? 'development',
-    appName: process.env.SERVICE_NAME ?? 'Your service name',
-    useHttps: process.env.NODE_ENV === 'production' // Use HTTPS in production
+    environment: process.env.NODE_ENV ?? "development",
+    appName: process.env.SERVICE_NAME ?? "Your service name",
+    useHttps: process.env.NODE_ENV === "production", // Use HTTPS in production
   },
   csrf: {
-    cookieName: '_csrf',
-    secure: process.env.NODE_ENV === 'production',  // Only secure in production
-    httpOnly: true,  // Restrict client-side access
+    cookieName: "_csrf",
+    secure: process.env.NODE_ENV === "production", // Only secure in production
+    httpOnly: true, // Restrict client-side access
   },
   paths: {
-    static: 'public',  // Path for serving static files
-    views: 'src/views',  // Path for Nunjucks views
+    static: "public", // Path for serving static files
+    views: "src/views", // Path for Nunjucks views
   },
   silas: {
-    authority: process.env.ENTRA_AUTHORITY?? '',
-    tenantId: process.env.ENTRA_TENANT_ID ?? '',
-    clientId: process.env.ENTRA_CLIENT_ID ?? '',
-    clientSecret: process.env.ENTRA_CLIENT_SECRET ?? '',
-    redirectUri: process.env.ENTRA_REDIRECT_URI ?? '',
-    postLogoutRedirectUri: process.env.ENTRA_POST_REDIRECT_URI ?? '/',
+    authority: process.env.ENTRA_AUTHORITY ?? "",
+    tenantId: process.env.ENTRA_TENANT_ID ?? "",
+    clientId: process.env.ENTRA_CLIENT_ID ?? "",
+    clientSecret: process.env.ENTRA_CLIENT_SECRET ?? "",
+    redirectUri: process.env.ENTRA_REDIRECT_URI ?? "",
+    postLogoutRedirectUri: process.env.ENTRA_POST_REDIRECT_URI ?? "/",
     scopes: process.env.ENTRA_SCOPES?.split(",") ?? [],
-    expectedAudience: process.env.ENTRA_EXPECTED_AUDIENCE ?? ''
+    expectedAudience: process.env.ENTRA_EXPECTED_AUDIENCE ?? "",
   },
   api: {
-    baseUrl: process.env.BACKEND_BASE_URL ?? ''
-  }
+    baseUrl: process.env.BACKEND_BASE_URL ?? "",
+  },
 };
 
 export default config;

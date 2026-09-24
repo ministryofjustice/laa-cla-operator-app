@@ -1,0 +1,9 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "yarn install": true,
+    "printf": true,
+    "true": true,
+    "yarn prettier": true,
+    "yarn exec": true
+  }
+}

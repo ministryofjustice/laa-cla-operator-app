@@ -1,5 +1,5 @@
-import type { Page } from '@playwright/test';
-import { ReceiveCallPage } from './ReceiveCallPage.js';
+import type { Page } from "@playwright/test";
+import { ReceiveCallPage } from "./ReceiveCallPage.js";
 
 /**
  * Factory class for creating page objects

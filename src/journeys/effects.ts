@@ -1,34 +1,45 @@
 import type { Deps } from "#src/journeys/api.js";
-import { type EffectFunctionExpr, type EffectFunctionContext, EffectRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
+import {
+  type EffectFunctionExpr,
+  type EffectFunctionContext,
+  EffectRegistry,
+} from "@ministryofjustice/hmpps-forge/core/authoring";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 
 export interface InboundCallEffectShape {
-    GetAllCases: () => EffectFunctionExpr;
+  GetAllCases: () => EffectFunctionExpr;
 }
 
-type InboundCallEffectsImplementation = (deps: Deps) => (context: EffectFunctionContext) => Promise<void>;
+type InboundCallEffectsImplementation = (
+  deps: Deps,
+) => (context: EffectFunctionContext) => Promise<void>;
 
-export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
+export const InboundCallEffectsImplementation: Record<
+  keyof InboundCallEffectShape,
+  InboundCallEffectsImplementation
+> = {
+  /**
+   * Implementation of the effect for retrieving all cases.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  GetAllCases: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = context.getState("authenticatedAxios");
 
-    /**
-     * Implementation of the effect for retrieving all cases.
-     * @param {Deps} deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    GetAllCases: (deps: Deps) => async (context: EffectFunctionContext) => {
-       const authenticatedAxiosState = context.getState("authenticatedAxios");
+    if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
+      throw new Error("Axios middleware is not available in the context.");
+    }
 
-       if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
-           throw new Error("Axios middleware is not available in the context.");
-       }
-
-       const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
-       context.setData("allCases", result);
-    },
+    const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
+    context.setData("allCases", result);
+  },
 };
 
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();
 
 export const InboundCallEffects: InboundCallEffectShape = {
-    GetAllCases: InboundCallEffectsRegistry.register("GetAllCases", InboundCallEffectsImplementation.GetAllCases),
-}
+  GetAllCases: InboundCallEffectsRegistry.register(
+    "GetAllCases",
+    InboundCallEffectsImplementation.GetAllCases,
+  ),
+};

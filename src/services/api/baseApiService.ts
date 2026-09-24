@@ -3,9 +3,9 @@
  * Provides shared utilities for all API services
  */
 
-import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import { extractAndLogError } from '#src/scripts/helpers/index.js';
-import config from '../../../config.js';
+import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
+import { extractAndLogError } from "#src/scripts/helpers/index.js";
+import config from "../../../config.js";
 
 /**
  * Generic API call wrapper with error handling
@@ -16,7 +16,7 @@ import config from '../../../config.js';
  */
 export async function handleApiCall<T>(
   apiCall: () => Promise<T>,
-  errorContext: string
+  errorContext: string,
 ): Promise<T> {
   try {
     return await apiCall();
@@ -31,19 +31,23 @@ export async function handleApiCall<T>(
  * @param {AxiosInstanceWrapper} axiosMiddleware - Axios middleware from request
  * @returns {AxiosInstanceWrapper} Configured axios instance
  */
-export function configureAxiosInstance(axiosMiddleware: AxiosInstanceWrapper): AxiosInstanceWrapper {
+export function configureAxiosInstance(
+  axiosMiddleware: AxiosInstanceWrapper,
+): AxiosInstanceWrapper {
   // Override base URL and add API-specific headers
   const { axiosInstance } = axiosMiddleware;
   const { defaults } = axiosInstance;
-  const { api: { baseUrl } } = config;
+  const {
+    api: { baseUrl },
+  } = config;
 
   // Safely configure axios defaults
-  if (typeof baseUrl === 'string') {
+  if (typeof baseUrl === "string") {
     defaults.baseURL = baseUrl;
   }
 
-  defaults.headers.common['Content-Type'] = 'application/json';
-  defaults.headers.common.Accept = 'application/json';
+  defaults.headers.common["Content-Type"] = "application/json";
+  defaults.headers.common.Accept = "application/json";
 
   return axiosMiddleware;
 }
