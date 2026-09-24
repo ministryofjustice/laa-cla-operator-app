@@ -7,6 +7,7 @@ declare module 'express-session' {
     // This allows both specific properties and dynamic namespace access
     silasAuth?: SilasSessionAuth;
     user?: SilasUserInfo;
+    return_to?: string | undefined | null;
   }
 }
 
