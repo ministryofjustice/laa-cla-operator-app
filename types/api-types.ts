@@ -15,6 +15,7 @@ export interface CaseDetails {
   personal_details: string;
   requires_action_by: string | null;
   postcode: string;
+  mobile_phone: string;
   rejected: boolean;
   date_of_birth: string;
   category: string | null;
@@ -34,4 +35,17 @@ export interface GetAllCasesResponse {
   next: string | null;
   previous: string | null;
   results: CaseDetails[];
+}
+
+export interface SearchCasesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CaseDetails[];
+}
+
+export interface SearchCasesParams {
+  query: string;
+  pageSize?: number;
+  pageNumber?: number;
 }

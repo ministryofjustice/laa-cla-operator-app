@@ -136,7 +136,7 @@ tolerations: []
 affinity: {}
 
 # Environment variables shared by all environments.
-# Per-environment files override only what differs, such as BACKEND_BASE_URI and NODE_ENV.
+# Per-environment files override only what differs, such as BACKEND_BASE_URL and NODE_ENV.
 envVars:
   CONTACT_EMAIL:
     value: "CONTACT_EMAIL"

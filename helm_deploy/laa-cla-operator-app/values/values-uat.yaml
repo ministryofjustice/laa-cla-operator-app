@@ -25,10 +25,10 @@ resources: {}
 
 # Environment variables can be added here
 envVars:
-  BACKEND_BASE_URI:
-    # Using service name instead of external domain name
-    value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"
+  BACKEND_BASE_URL:
+      # Using service name instead of external domain name
+      value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"
   NODE_ENV:
     value: "uat"
   ENTRA_REDIRECT_URI:
-    value: "https://laa-cla-operator-app-uat.cloud-platform.service.justice.gov.uk/redirect"
+    value: "https://lga-4310-search-client-laa-cla-operator-app.cloud-platform.service.justice.gov.uk/redirect"
