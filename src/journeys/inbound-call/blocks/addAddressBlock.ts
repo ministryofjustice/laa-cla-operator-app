@@ -8,7 +8,7 @@ export const addAddress = CollectionBlock({
         GovUKTextareaInput({
             code: "address-line-1",
             rows: '4',
-            classes: 'govuk-input--width-20',
+            classes: 'govuk-input--width-30',
             validWhen: [
                 validation({
                     condition: Self().match(Condition.IsRequired()),

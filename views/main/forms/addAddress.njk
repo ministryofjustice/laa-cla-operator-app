@@ -1,28 +1,33 @@
 {% extends "base.njk" %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block beforeContent %}
+    <a href="/" class="govuk-back-link">Back</a>
+{% endblock %}
 
 {% block content %}
-<a href="#" class="govuk-back-link">Back</a>
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
-            <h1 class="govuk-heading-xl">Enter client’s address</h1>
-            
-            <p class="govuk-body">
-                    <a href="#" class="govuk-link">Or search for an address</a>
-            </p>
 
-            {% if fieldValidationErrors | length %}
-                {{ govukErrorSummary({
-                    titleText: "There is a problem",
-                    errorList: fieldValidationErrors
-                }) }}
-            {% endif %}
+            {# Error summaries first, above the heading and outside the form #}
+            {% for block in blocks %}
+                {% if 'data-error-summary' in block %}
+                    {{ block | safe }}
+                {% endif %}
+            {% endfor %}
+
+            <h1 class="govuk-heading-xl"> Enter client’s address manually </h1>
+
+            <p class="govuk-body">
+                <a href="#" class="govuk-link">Or search for an address</a>
+            </p>
 
             <form method="post" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
                 {% for block in blocks %}
-                    {{ block | safe }}
+                    {% if 'data-error-summary' not in block %}
+                        {{ block | safe }}
+                    {% endif %}
                 {% endfor %}
             </form>
         </div>
