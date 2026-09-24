@@ -48,7 +48,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
       postcode: context.getAnswer("postcode"),
     };
     // TODO: replace hardcoded case ID
-    const caseId = "ED-0001-0001";
+    const caseId =  "NE-4745-9751"; //UAT  //"ED-0001-0001" LOCAL;
 
     try {
       await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, caseId, { address });
