@@ -30,7 +30,7 @@ const msalClient = new ConfidentialClientApplication({
   },
 });
 
-async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
+function processUATRedirect(req: Request, res: Response): boolean {
   console.log(`Environment is ${config.app.environment}`)
   if(config.app.environment.toLocaleLowerCase() == "ephemeral") {
     const hostname = process.env.HOST_NAME;
@@ -83,7 +83,7 @@ async function getAuthNonce(req: Request): Promise<String> {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  const userRedirected = await processUATRedirect(req, res);
+  const userRedirected = processUATRedirect(req, res);
   if(userRedirected) {
     console.log("User redirected, rerturning early")
     return
