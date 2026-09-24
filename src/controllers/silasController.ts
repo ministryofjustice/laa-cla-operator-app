@@ -38,7 +38,6 @@ const msalClient = new ConfidentialClientApplication({
  * @returns {boolean} - Returns true if the user was redirected
  */
 function processUATRedirect(req: Request, res: Response): boolean {
-  console.log(`Environment is ${config.app.environment}`)
   if(config.app.environment.toLocaleLowerCase() === "ephemeral") {
     // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
     const hostname = process.env.HOST_NAME;
@@ -54,17 +53,13 @@ function processUATRedirect(req: Request, res: Response): boolean {
   }
   if(config.app.environment.toLocaleLowerCase() === "uat" && req.query.return_to !== undefined) {
     const returnTo = req.query.return_to as string
-    console.log(`Return to is ${returnTo}`)
 
     // limit redirects those on our namespace
     const returnToDomain = new URL(config.silas.redirectUri).origin
-    console.log(`Return to domain is ${returnToDomain}`)
     if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
-      console.log("Return to and return to domain do not match")
       return false
     }
 
-    console.log(`Recieved nonce is ${req.query.nonce}`)
     if(req.query.nonce !== undefined) {
       req.session.auth_nonce = req.query.nonce as string
     }
@@ -308,7 +303,6 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
       req.query as Record<string, string>
     ).toString();
     const redirect = `${req.session.return_to}?${queryString}`
-    console.log(`Proxing auth to ${redirect}`)
     return res.redirect(redirect)
   }
 
