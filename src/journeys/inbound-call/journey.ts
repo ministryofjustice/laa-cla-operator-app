@@ -1,9 +1,10 @@
 import {
   journey,
-  step,
   submit,
   redirect,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
+ step } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { whosCallingStep } from "./whos-calling/step.js";
+import { searchClientStep } from "./search-client/step.js";
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
 import { addClientDetailsStep } from "./steps/clientDetailsStep.js";
@@ -32,6 +33,7 @@ const searchClient = step({
     }),
   ],
 });
+import { addClientDetailsStep } from "./client-details/step.js";
 
 // Step 4: Add client Address"
 const addClientAddressStep = step({
@@ -61,7 +63,7 @@ export const inboundCallJourney = journey({
   },
   steps: [
     whosCallingStep,
-    searchClient,
+    searchClientStep,
     addClientDetailsStep,
     addClientAddressStep,
     addAddressStep

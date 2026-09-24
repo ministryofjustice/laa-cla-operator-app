@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 import { ReceiveCallPage } from "./ReceiveCallPage.js";
 import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
 import {AddressPage} from "./addAddressPage.js"
+import { SearchClientPage } from './SearchClientPage.js';
 
 /**
  * Factory class for creating page objects
@@ -23,6 +24,10 @@ export class PageFactory {
    */
   get receiveCallPage(): ReceiveCallPage {
     return new ReceiveCallPage(this.page);
+  }
+
+  get searchClientPage(): SearchClientPage {
+    return new SearchClientPage(this.page);
   }
 
   /**
