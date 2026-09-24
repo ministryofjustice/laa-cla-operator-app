@@ -7,6 +7,8 @@ import {
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { whosCallingStep } from "./steps/whosCallingStep.js";
 import { addClientDetailsStep } from "./steps/clientDetailsStep.js";
+import { addAddressStep } from "./steps/addAddressStep.js";
+
 
 // Step 2: Placeholder for search-client step
 const searchClient = step({
@@ -62,5 +64,6 @@ export const inboundCallJourney = journey({
     searchClient,
     addClientDetailsStep,
     addClientAddressStep,
+    addAddressStep
   ],
 });

@@ -4,7 +4,6 @@ import { GovUKButton, GovUKTextInput, GovUKTextareaInput } from "@ministryofjust
 
 export const addAddress = CollectionBlock({
     collection: [
-
         GovUKTextareaInput({
             code: "address-line-1",
             rows: '4',

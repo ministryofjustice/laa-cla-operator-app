@@ -59,7 +59,7 @@ export const addAddressStep = step({
     submit({
       validate: true,
       onValid: {
-        effects: [InboundCallEffects.postAddress()],
+        effects: [InboundCallEffects.saveClientAddress()],
         next: [
           redirect({
             when: Data("addressSaved").match(Condition.Equals(true)),

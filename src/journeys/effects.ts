@@ -8,20 +8,15 @@ import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
-  postAddress: () => EffectFunctionExpr;
   /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
+  saveClientAddress :() => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
   deps: Deps,
 ) => (context: EffectFunctionContext) => Promise<void>;
 
-export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
-  /**
-   * Implementation of the effect for retrieving all cases.
-   * @param {Deps} deps - The API dependencies, including the case API client.
-   * @returns {(context: EffectFunctionContext) => Promise<void>} An effect function that fetches all cases and stores them in context data as "allCases".
 export const InboundCallEffectsImplementation: Record<
   keyof InboundCallEffectShape,
   InboundCallEffectsImplementation
@@ -42,18 +37,7 @@ export const InboundCallEffectsImplementation: Record<
     context.setData("allCases", result);
   },
 
-  /**
-   * Implementation of the effect for saving the address entered by the user.
-   * @param {Deps} deps - The API dependencies, including the case API client.
-   * @returns {(context: EffectFunctionContext) => Promise<void>} An effect function that saves the address and sets "addressSaved" in context data to indicate success or failure.
-   */
-  postAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
-  /**
-   * Implementation of the effect for retrieving all cases.
-   * @param {Deps} deps - The dependencies required for the effect.
-   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-   */
-  saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  saveClientAddress: (deps: Deps)=> async (context: EffectFunctionContext) => {
     const authenticatedAxiosState = context.getState("authenticatedAxios");
 
     if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
@@ -73,6 +57,21 @@ export const InboundCallEffectsImplementation: Record<
     } catch (error) {
       context.setData("addressSaved", false);
     }
+
+  },
+
+  /**
+   * Implementation of the effect for retrieving all cases.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = context.getState("authenticatedAxios");
+
+    if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
+      throw new Error("Axios middleware is not available in the context.");
+    }
+
     const personalDetails = {
       full_name: context.getPostData("fullName"),
       date_of_birth: context.getPostData("dateOfBirth"),
@@ -103,15 +102,18 @@ export const InboundCallEffectsImplementation: Record<
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();
 
 export const InboundCallEffects: InboundCallEffectShape = {
-  GetAllCases: InboundCallEffectsRegistry.register("GetAllCases", InboundCallEffectsImplementation.GetAllCases),
-  postAddress: InboundCallEffectsRegistry.register("postAddress", InboundCallEffectsImplementation.postAddress),
-};
   GetAllCases: InboundCallEffectsRegistry.register(
     "GetAllCases",
     InboundCallEffectsImplementation.GetAllCases,
   ),
+  saveClientAddress: InboundCallEffectsRegistry.register(
+    "saveClientAddress",
+     InboundCallEffectsImplementation.saveClientAddress,
+  ), 
+
   saveClientDetails: InboundCallEffectsRegistry.register(
     "saveClientDetails",
     InboundCallEffectsImplementation.saveClientDetails,
   ),
 };
+
