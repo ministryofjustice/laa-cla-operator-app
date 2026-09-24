@@ -7,6 +7,7 @@ import type { Request, Response } from "express";
 import config from "#config.js";
 import type { AccessTokenClaims } from "#types/auth-types.js";
 
+const EPHEMERAL_SUFFIX = "laa-cla-operator-app.cloud-platform.service.justice.gov.uk"
 const NONCE_BYTES = 32;
 const TOKEN_PARTS_COUNT = 3;
 const DEFAULT_SESSION_MINUTES = 30;
@@ -52,6 +53,11 @@ function processUATRedirect(req: Request, res: Response): boolean {
     }
   }
   if(config.app.environment.toLocaleLowerCase() === "uat" && req.query.return_to !== undefined) {
+    const return_to = req.query.return_to as string
+    // limit redirects those on our namespace
+    if(!return_to.endsWith(EPHEMERAL_SUFFIX)) {
+      return false
+    }
     if(req.query.nonce !== undefined) {
       req.session.auth_nonce = req.query.nonce as string
     }
