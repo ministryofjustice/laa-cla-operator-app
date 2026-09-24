@@ -30,7 +30,7 @@ const msalClient = new ConfidentialClientApplication({
   },
 });
 
-async function processUATRedirect(req: Request, res: Response) {
+async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
   console.log(`Environment is ${config.app.environment}`)
   if(config.app.environment.toLocaleLowerCase() == "ephemeral") {
     const hostname = process.env.HOST_NAME;
@@ -41,7 +41,8 @@ async function processUATRedirect(req: Request, res: Response) {
       const domain = new URL(config.silas.redirectUri).origin
       const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${String(nonce)}`
       console.log(`Redirecting log in ${redirect}`)
-      return res.redirect(redirect)
+      res.redirect(redirect)
+      return true
     }
   }
   if(config.app.environment.toLocaleLowerCase() == "uat") {
@@ -55,6 +56,7 @@ async function processUATRedirect(req: Request, res: Response) {
       req.session.save()
     }
   }
+  return false
 }
 
 async function getAuthNonce(req: Request): Promise<String> {
@@ -81,8 +83,11 @@ async function getAuthNonce(req: Request): Promise<String> {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  await processUATRedirect(req, res);
-
+  const userRedirected = await processUATRedirect(req, res);
+  if(userRedirected) {
+    console.log("User redirected, rerturning early")
+    return
+  }
   const auth_nonce = await getAuthNonce(req)
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
