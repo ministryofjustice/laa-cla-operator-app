@@ -285,7 +285,7 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
     const queryString = new URLSearchParams(
       req.query as Record<string, string>
     ).toString();
-    const redirect = `${req.session.return_to}?=${queryString}`
+    const redirect = `${req.session.return_to}?${queryString}`
     console.log(`Proxing auth to ${redirect}`)
     return res.redirect(redirect)
   }
