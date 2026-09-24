@@ -53,15 +53,15 @@ function processUATRedirect(req: Request, res: Response): boolean {
     }
   }
   if(config.app.environment.toLocaleLowerCase() === "uat" && req.query.return_to !== undefined) {
-    const return_to = req.query.return_to as string
+    const returnTo = req.query.return_to as string
     // limit redirects those on our namespace
-    if(!return_to.endsWith(EPHEMERAL_SUFFIX)) {
+    if(!returnTo.endsWith(EPHEMERAL_SUFFIX)) {
       return false
     }
     if(req.query.nonce !== undefined) {
       req.session.auth_nonce = req.query.nonce as string
     }
-    req.session.return_to = req.query.return_to as string
+    req.session.return_to = returnTo
     req.session.save()
   }
   return false
@@ -296,7 +296,7 @@ function hasValidAccountResponse(
  */
 export async function callbackAction(req: Request, res: Response): Promise<void> {
   // ON UAT we might need to proxy to an ephemeral environment
-  if(config.app.environment.toLocaleLowerCase() == "uat" && req.session.return_to) {
+  if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
     const queryString = new URLSearchParams(
       req.query as Record<string, string>
     ).toString();
