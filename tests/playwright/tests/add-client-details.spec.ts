@@ -1,6 +1,14 @@
 import { test, expect } from "../fixtures/index.js";
 
+const TEST_AUTH_NEXT_PATH = "/receive-call/add-client-details";
+
 test.describe("Client's details page", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(
+      `/test-auth/login?next=${encodeURIComponent(TEST_AUTH_NEXT_PATH)}`,
+    );
+  });
+
   test("renders revised content and back link", async ({ pages }) => {
     const { addClientDetailsPage } = pages;
     await addClientDetailsPage.navigate();
