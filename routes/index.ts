@@ -35,6 +35,11 @@ router.get('/privacy', (req: Request, res: Response): void => {
   res.render('main/privacy.njk');
 });
 
+//Cookies page
+router.get('/cookies', function (req: Request, res: Response): void {
+  res.render('main/cookies.njk');
+});
+
 // Liveness and readiness probes for Helm deployments
 router.get('/status', (req: Request, res: Response): void => {
   res.status(SUCCESSFUL_REQUEST).send('OK');
