@@ -39,25 +39,22 @@ const msalClient = new ConfidentialClientApplication({
  */
 export async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
   if(config.app.environment.toLocaleLowerCase() === "ephemeral") {
-    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
-    const hostname = process.env.HOST_NAME;
-    if(hostname !== undefined) {
+    if(config.SERVICE_URL !== undefined) {
       const nonce = randomUUID()
       req.session.auth_nonce = nonce
       await saveSession(req)
       
       // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
       const domain = new URL(config.silas.redirectUri).origin
-      const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${nonce}`
+      const redirect = `${domain}/login?return_to=https://${config.SERVICE_URL}/redirect&nonce=${nonce}`
       res.redirect(redirect)
       return true
     }
   }
   if(config.app.environment.toLowerCase() === "uat" && req.query.return_to !== undefined) {
     const returnTo = req.query.return_to as string
-
     // limit redirects those on our namespace
-    const returnToDomain = new URL(config.silas.redirectUri).origin
+    const returnToDomain = new URL(returnTo).origin
     if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
       return false
     }
