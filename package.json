@@ -65,7 +65,7 @@
     "http-errors": "~2.0.0",
     "i18next": "^25.6.0",
     "libphonenumber-js": "^1.12.24",
-    "moment": "^2.31.0",
+    "moment": "2.30.1",
     "morgan": "~1.10.1",
     "nunjucks": "^3.2.4",
     "validator": "^13.15.22"
@@ -100,7 +100,7 @@
     "concurrently": "^9.2.1",
     "connect-livereload": "^0.6.1",
     "cross-env": "^10.1.0",
-    "esbuild": "^0.25.10",
+    "esbuild": "^0.27.3",
     "esbuild-plugin-copy": "^2.1.1",
     "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^9.36.0",
