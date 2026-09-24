@@ -1,5 +1,6 @@
-import type { Page } from '@playwright/test';
-import { ReceiveCallPage } from './ReceiveCallPage.js';
+import type { Page } from "@playwright/test";
+import { ReceiveCallPage } from "./ReceiveCallPage.js";
+import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
 
 /**
  * Factory class for creating page objects
@@ -21,5 +22,13 @@ export class PageFactory {
    */
   get receiveCallPage(): ReceiveCallPage {
     return new ReceiveCallPage(this.page);
+  }
+
+  /**
+   * Gets an instance of the add client details page
+   * @returns {AddClientDetailsPage} The add client details page object
+   */
+  get addClientDetailsPage(): AddClientDetailsPage {
+    return new AddClientDetailsPage(this.page);
   }
 }
