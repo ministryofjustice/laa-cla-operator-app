@@ -65,7 +65,7 @@ describe('caseDetailsService', () => {
 
         it('encodes the case id in the URL', async () => {
             // Arrange
-            const caseId = 'id TX-123/FR5';
+            const caseId = 'TX-123FR5';
             patchStub.resolves();
 
             // Act
@@ -73,7 +73,7 @@ describe('caseDetailsService', () => {
 
             // Assert
             expect(patchStub.firstCall.args[0]).to.equal(
-                '/call_centre/api/v1/case/id%20TX-123%2FFR5/personal_details/'
+                '/call_centre/api/v1/case/TX-123FR5/personal_details/'
             );
         });
 
