@@ -122,6 +122,39 @@ Prerequisites, Docker Desktop
   docker stop {container_id}
   ```
 
+### Formatting and linting
+
+This repo enforces formatting and linting as part of CI.
+
+- Local autofix: `yarn lint` runs ESLint with `--fix`
+- Local formatting: `yarn format` runs Prettier with `--write`
+- CI check: `yarn format:check` runs Prettier in check mode only
+- CI lint: `yarn eslint .` checks the code without modifying files
+
+Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will fail on formatting or lint errors instead of rewriting files. These should be fixed locally.
+
+### Pre-commit checks
+
+This repo uses Husky and `lint-staged` to auto-fix code before each commit.
+
+1. Install hooks:
+
+   ```shell
+   yarn install
+   yarn prepare
+   ```
+
+2. On commit, staged `*.js` and `*.ts` files are automatically checked with:
+
+   ```shell
+   prettier --write
+   eslint --fix
+   ```
+
+3. If formatting or lint fixes are needed they are automatically applied
+
+This keeps local commits clean while CI remains a non-mutating enforcement step.
+
 ### GitHub Actions
 
 - These have been disabled in this GitHub template repo. Make sure you enable them when setting up your project.
