@@ -120,21 +120,36 @@ describe('caseDetailsService', () => {
             );
         });
     });
+});
 
-    describe('updatePersonalDetails', () => {
-        it('should update personal details for a case', async () => {
-            // Arrange
-            const caseId = '12345';
-            const body = { address: { line1: '123 Main St', city: 'Anytown' } };
-            putStub.resolves();
 
-            // Act
-            await updatePersonalDetails(axiosMiddlewareStub, caseId, body);
 
-            // Assert
-            expect(putStub.calledOnce).to.be.true;
-            expect(putStub.firstCall.args[0]).to.equal(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`);
-            expect(putStub.firstCall.args[1]).to.deep.equal(body);
-        });
-    });
+describe("updatePersonalDetails", () => {
+  let putStub: sinon.SinonStub;
+  let axiosMiddlewareStub: AxiosInstanceWrapper;
+
+  beforeEach(() => {
+    putStub = sinon.stub().resolves({ status: 200 });
+    axiosMiddlewareStub = { patch: putStub } as unknown as AxiosInstanceWrapper;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should update personal details for a case", async () => {
+    // Arrange
+    const caseId = "12345";
+    const body = { address: { line1: "123 Main St", postcode: "Anytown" } };
+
+    // Act
+    await updatePersonalDetails(axiosMiddlewareStub, caseId, body);
+
+    // Assert
+    expect(putStub.calledOnce).to.equal(true);
+    expect(putStub.firstCall.args[0]).to.equal(
+      `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`,
+    );
+    expect(putStub.firstCall.args[1]).to.deep.equal(body);
+  });
 });
