@@ -34,7 +34,7 @@ export async function updatePersonalDetails(
 ): Promise<void> {
   await handleApiCall(async () => {
     const configuredAxios = configureAxiosInstance(axiosMiddleware);
-    await configuredAxios.patch(`/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`, body);
+    await configuredAxios.patch(`/call_centre/api/v1/case/${caseId}/personal_details/`, body);
   }, "Error updating personal details");
 }
 

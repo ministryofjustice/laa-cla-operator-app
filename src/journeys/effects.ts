@@ -44,14 +44,14 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const address = {
-      addressLine1: context.getAnswer("address-line-1"),
+      street: context.getAnswer("address-line-1"),
       postcode: context.getAnswer("postcode"),
     };
     // TODO: replace hardcoded case ID
-    const caseId =  "NE-4745-9751"; //UAT  //"ED-0001-0001" LOCAL;
+     const caseId = "NE-4745-9751";   //"ED-0001-0001" LOCAL;
 
     try {
-      await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, caseId, { address });
+      await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, caseId,address);
       context.setData("addressSaved", true);
     } catch (error) {
       context.setData("addressSaved", false);
