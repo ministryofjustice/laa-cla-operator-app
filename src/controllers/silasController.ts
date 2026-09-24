@@ -41,12 +41,16 @@ function processUATRedirect(req: Request, res: Response): boolean {
   if(config.app.environment.toLocaleLowerCase() === "ephemeral") {
     // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
     const hostname = process.env.HOST_NAME;
+    console.log(`Hostname is ${hostname}`)
     if(hostname !== undefined) {
       const nonce = randomUUID()
       req.session.auth_nonce = nonce
+      req.session.save()
+      console.log(`Generated nonce is ${nonce}`)
       // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
       const domain = new URL(config.silas.redirectUri).origin
       const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${nonce}`
+      console.log(`Redirect is ${redirect}`);
       res.redirect(redirect)
       return true
     }
