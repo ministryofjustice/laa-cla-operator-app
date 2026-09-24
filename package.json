@@ -29,6 +29,8 @@
     "clean": "rimraf public",
     "build": "yarn clean && yarn build:ts && node public/esbuild.js",
     "lint": "yarn eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "dev": "yarn build:ts && concurrently \"tsc --watch\" \"node public/esbuild.js --watch\" \"nodemon\"",
     "deploy": "./scripts/deploy.sh",
     "prepare": "husky",
