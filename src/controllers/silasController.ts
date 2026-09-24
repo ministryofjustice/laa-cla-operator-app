@@ -37,14 +37,15 @@ const msalClient = new ConfidentialClientApplication({
  * @param {Response} res - Express Response object 
  * @returns {boolean} - Returns true if the user was redirected
  */
-function processUATRedirect(req: Request, res: Response): boolean {
+export async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
   if(config.app.environment.toLocaleLowerCase() === "ephemeral") {
     // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
     const hostname = process.env.HOST_NAME;
     if(hostname !== undefined) {
       const nonce = randomUUID()
       req.session.auth_nonce = nonce
-      req.session.save()
+      await saveSession(req)
+      
       // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
       const domain = new URL(config.silas.redirectUri).origin
       const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${nonce}`
@@ -52,7 +53,7 @@ function processUATRedirect(req: Request, res: Response): boolean {
       return true
     }
   }
-  if(config.app.environment.toLocaleLowerCase() === "uat" && req.query.return_to !== undefined) {
+  if(config.app.environment.toLowerCase() === "uat" && req.query.return_to !== undefined) {
     const returnTo = req.query.return_to as string
 
     // limit redirects those on our namespace
@@ -65,7 +66,7 @@ function processUATRedirect(req: Request, res: Response): boolean {
       req.session.auth_nonce = req.query.nonce as string
     }
     req.session.return_to = returnTo
-    req.session.save()
+    await saveSession(req)
   }
   return false
 }
@@ -95,7 +96,7 @@ async function getAuthNonce(req: Request): Promise<string> {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  const userRedirected = processUATRedirect(req, res);
+  const userRedirected = await processUATRedirect(req, res);
   if(userRedirected) {
     return
   }
