@@ -294,13 +294,18 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
 
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
+  console.log(`Code is ${code}`)
+  console.log(`State is ${state}`)
+  console.log(`Session nonce is ${req.session.auth_nonce}`)
 
   if (code.length === EMPTY_LENGTH || state.length === EMPTY_LENGTH) {
+    console.log("Code or state is empty")
     sendAuthenticationFailure(res);
     return;
   }
 
   if (state !== req.session.auth_nonce) {
+    console.log("State and nonce are not equal")
     sendAuthenticationFailure(res);
     return;
   }
@@ -313,6 +318,7 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
     });
 
     if (!hasValidAccountResponse(response)) {
+      console.log("NON SUCCESS RETURN FROM acquireTokenByCode ", response)
       sendAuthenticationFailure(res);
       return;
     }
