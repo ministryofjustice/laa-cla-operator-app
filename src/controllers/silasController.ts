@@ -56,7 +56,7 @@ export async function processUATRedirect(req: Request, res: Response): Promise<b
     // limit redirects those on our namespace
     const returnToDomain = new URL(returnTo).origin
     if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
-      return false
+      throw new Error(`Return to does not belong to our namespace: ${returnTo}`)
     }
 
     if(req.query.nonce !== undefined) {

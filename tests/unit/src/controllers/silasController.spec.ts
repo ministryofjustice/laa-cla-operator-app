@@ -57,9 +57,12 @@ describe("Process uat redirect", ()=>{
         req.query.nonce = "000-0000-0000-0000"
         const sessionSave = req.session.save as sinon.SinonStub
         const redirect = res.redirect as sinon.SinonStub
-        
-        const shouldRedirect = await processUATRedirect(req, res)
-        assert.equal(shouldRedirect, false)
+        try {
+            await processUATRedirect(req, res)
+        }
+        catch (error) {
+            assert.equal((error as Error).message, "Return to does not belong to our namespace: http://test.justice.gov.uk/login")
+        }
         assert.equal(redirect.notCalled, true)
         assert.equal(sessionSave.called, false)
         assert.equal(req.session.return_to, undefined)
