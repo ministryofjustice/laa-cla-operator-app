@@ -54,10 +54,17 @@ function processUATRedirect(req: Request, res: Response): boolean {
   }
   if(config.app.environment.toLocaleLowerCase() === "uat" && req.query.return_to !== undefined) {
     const returnTo = req.query.return_to as string
+    console.log(`Return to is ${returnTo}`)
+
     // limit redirects those on our namespace
-    if(!returnTo.endsWith(EPHEMERAL_SUFFIX)) {
+    const returnToDomain = new URL(config.silas.redirectUri).origin
+    console.log(`Return to domain is ${returnToDomain}`)
+    if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
+      console.log("Return to and return to domain do not match")
       return false
     }
+
+    console.log(`Recieved nonce is ${req.query.nonce}`)
     if(req.query.nonce !== undefined) {
       req.session.auth_nonce = req.query.nonce as string
     }
