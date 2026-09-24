@@ -90,6 +90,7 @@ jobs:
           --set pingdomIPs=$PINGDOM_IPS \
           --set envVars.HOST_NAME.value=${HOST_NAME} \
           --set envVars.NODE_ENV.value=ephemeral \
+          --set envVars.NODE_ENV.value=ephemeral \
           --force \
           --install
 
