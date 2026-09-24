@@ -36,14 +36,15 @@ function processUATRedirect(req: Request, res: Response) {
     const hostname = process.env.HOST_NAME;
     console.log(`HOST_NAME is ${hostname}`)
     if(hostname) {
-      const nonce = randomBytes(NONCE_BYTES).toString("base64url");
+      const nonce = getAuthNonce(req)
       const domain = new URL(config.silas.redirectUri).origin
       console.log(`Redirecting log in request to ${domain}/login?redirect_to=${hostname}`)
-      return res.redirect(`${domain}/login?redirect_to=${hostname}&nonce=${nonce}`)
+      return res.redirect(`${domain}/login?redirect_to=${hostname}&nonce=${String(nonce)}`)
     }
   }
   if(config.app.environment.toLocaleLowerCase() == "uat") {
     console.log(`return_to is ${req.query.return_to}`)
+    console.log(`nonce is ${req.query.nonce}`)
     if(req.query.return_to) {
       if(req.query.nonce) {
         req.session.auth_nonce = String(req.query.nonce)
