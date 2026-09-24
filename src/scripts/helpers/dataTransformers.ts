@@ -276,8 +276,9 @@ export function extractCurrentFields(
  * @returns {string[]} - Returns an array of strings
  */
 export function normaliseSelectedCheckbox(value: unknown): string[] {
-  if (Array.isArray(value))
+  if (Array.isArray(value)) {
     return value.filter((x): x is string => typeof x === "string");
+  }
   if (typeof value === "string" && value.trim() !== "") return [value];
   return [];
 }
