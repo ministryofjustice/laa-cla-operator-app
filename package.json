@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@azure/msal-node": "^6.0.0",
-    "@ministryofjustice/frontend": "^9.0.0",
+    "@ministryofjustice/frontend": "^11.1.0",
     "@ministryofjustice/hmpps-forge": "^0.4.1",
     "axios": "1.16.0",
     "body-parser": "^2.2.0",
@@ -65,7 +65,7 @@
     "http-errors": "~2.0.0",
     "i18next": "^25.6.0",
     "libphonenumber-js": "^1.12.24",
-    "moment": "2.30.1",
+    "moment": "^2.31.0",
     "morgan": "~1.10.1",
     "nunjucks": "^3.2.4",
     "validator": "^13.15.22"
