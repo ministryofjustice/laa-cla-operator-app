@@ -38,7 +38,7 @@ const msalClient = new ConfidentialClientApplication({
  * @returns {boolean} - Returns true if the user was redirected
  */
 export async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
-  if(config.app.environment.toLocaleLowerCase() === "ephemeral") {
+  if(config.app.environment.toLowerCase() === "ephemeral") {
     if(config.SERVICE_URL !== undefined) {
       const nonce = randomUUID()
       req.session.auth_nonce = nonce
