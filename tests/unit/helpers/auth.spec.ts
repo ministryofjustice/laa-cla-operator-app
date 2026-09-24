@@ -45,18 +45,23 @@ function buildToken(overrides: Record<string, any> = {}) {
     ...overrides,
   };
 
-  const encode = (obj: any) => Buffer.from(JSON.stringify(obj)).toString("base64url");
+  const encode = (obj: any) =>
+    Buffer.from(JSON.stringify(obj)).toString("base64url");
   return `${encode(header)}.${encode(payload)}.fakesignature`;
 }
 
 function buildTokenWithMalformedPayload(): string {
-  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid: "" })).toString("base64url");
+  const header = Buffer.from(
+    JSON.stringify({ alg: "RS256", typ: "JWT", kid: "" }),
+  ).toString("base64url");
   const payload = Buffer.from("{").toString("base64url");
   return `${header}.${payload}.fakesignature`;
 }
 
 function buildTokenWithNonObjectPayload(): string {
-  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid: "" })).toString("base64url");
+  const header = Buffer.from(
+    JSON.stringify({ alg: "RS256", typ: "JWT", kid: "" }),
+  ).toString("base64url");
   const payload = Buffer.from(JSON.stringify(null)).toString("base64url");
   return `${header}.${payload}.fakesignature`;
 }
@@ -100,7 +105,10 @@ describe("callbackAction", () => {
 
   beforeEach(() => {
     // Stub the MSAL prototype before each test so no network request can occur.
-    acquireTokenStub = sinon.stub(ConfidentialClientApplication.prototype, "acquireTokenByCode");
+    acquireTokenStub = sinon.stub(
+      ConfidentialClientApplication.prototype,
+      "acquireTokenByCode",
+    );
     sendStub = sinon.stub();
     redirectStub = sinon.stub();
     // status() returns an object with send(), matching Express chaining.
@@ -112,7 +120,9 @@ describe("callbackAction", () => {
       query: {},
       session: {
         auth_nonce: VALID_STATE,
-        regenerate: sinon.stub().callsFake((cb: (err: any) => void) => cb(null)),
+        regenerate: sinon
+          .stub()
+          .callsFake((cb: (err: any) => void) => cb(null)),
         save: sinon.stub().callsFake((cb: (err: any) => void) => cb(null)),
       },
     };
@@ -124,7 +134,6 @@ describe("callbackAction", () => {
     // Restore every Sinon stub so tests cannot affect one another.
     sinon.restore();
   });
-
 
   describe("input validation", () => {
     // Table-driven cases keep the same expected behavior together while making
@@ -159,12 +168,30 @@ describe("callbackAction", () => {
 
   describe("token claim validation failure", () => {
     const cases = [
-      { desc: "issuer doesn't match", token: buildToken({ iss: "https://not-microsoft.example.com" }) },
-      { desc: "audience doesn't match", token: buildToken({ aud: "wrong-audience" }) },
-      { desc: "required scope is missing", token: buildToken({ scp: "unrelated-scope" }) },
-      { desc: "payload isn't an object", token: buildTokenWithNonObjectPayload() },
-      { desc: "payload isn't valid JSON", token: buildTokenWithMalformedPayload() },
-      { desc: "malformed token can't be decoded", token: "not.a.validtoken.reallyattall" },
+      {
+        desc: "issuer doesn't match",
+        token: buildToken({ iss: "https://not-microsoft.example.com" }),
+      },
+      {
+        desc: "audience doesn't match",
+        token: buildToken({ aud: "wrong-audience" }),
+      },
+      {
+        desc: "required scope is missing",
+        token: buildToken({ scp: "unrelated-scope" }),
+      },
+      {
+        desc: "payload isn't an object",
+        token: buildTokenWithNonObjectPayload(),
+      },
+      {
+        desc: "payload isn't valid JSON",
+        token: buildTokenWithMalformedPayload(),
+      },
+      {
+        desc: "malformed token can't be decoded",
+        token: "not.a.validtoken.reallyattall",
+      },
     ];
 
     cases.forEach(({ desc, token }) => {
@@ -187,9 +214,15 @@ describe("callbackAction", () => {
       { desc: "access token is empty", response: { accessToken: "" } },
       { desc: "id token is empty", response: { idToken: "" } },
       { desc: "account is missing", response: { account: null } },
-      { desc: "account username is empty", response: { account: { username: "" } } },
+      {
+        desc: "account username is empty",
+        response: { account: { username: "" } },
+      },
       { desc: "account name is empty", response: { account: { name: "" } } },
-      { desc: "account id is empty", response: { account: { homeAccountId: "" } } },
+      {
+        desc: "account id is empty",
+        response: { account: { homeAccountId: "" } },
+      },
     ];
 
     cases.forEach(({ desc, response }) => {
@@ -200,7 +233,10 @@ describe("callbackAction", () => {
           account:
             response.account === null
               ? null
-              : { ...validEntraResponse(buildToken()).account, ...response.account },
+              : {
+                  ...validEntraResponse(buildToken()).account,
+                  ...response.account,
+                },
         });
         req.query = { code: "auth-code", state: VALID_STATE };
 
@@ -290,7 +326,9 @@ describe("loginAction", () => {
     const getAuthCodeUrlStub = sinon
       .stub(ConfidentialClientApplication.prototype, "getAuthCodeUrl")
       .resolves("https://login.example/auth");
-    const saveStub = sinon.stub().callsFake((callback: (err: null) => void) => callback(null));
+    const saveStub = sinon
+      .stub()
+      .callsFake((callback: (err: null) => void) => callback(null));
     // loginAction needs only session.save() on the request and redirect() on the response.
     const req: any = { session: { save: saveStub } };
     const redirectStub = sinon.stub();
@@ -300,12 +338,15 @@ describe("loginAction", () => {
 
     expect(req.session.auth_nonce).to.be.a("string").and.not.empty;
     expect(saveStub.calledOnce).to.be.true;
-    expect(getAuthCodeUrlStub.calledOnceWith({
-      scopes: config.silas.scopes,
-      redirectUri: config.silas.redirectUri,
-      state: req.session.auth_nonce,
-    })).to.be.true;
-    expect(redirectStub.calledOnceWith("https://login.example/auth")).to.be.true;
+    expect(
+      getAuthCodeUrlStub.calledOnceWith({
+        scopes: config.silas.scopes,
+        redirectUri: config.silas.redirectUri,
+        state: req.session.auth_nonce,
+      }),
+    ).to.be.true;
+    expect(redirectStub.calledOnceWith("https://login.example/auth")).to.be
+      .true;
     sinon.restore();
   });
 });
@@ -318,7 +359,9 @@ describe("logOut", () => {
   it("destroys the session, clears the cookie, and redirects to SILAS logout", async () => {
     // The logout URL is built from config; the session destroy callback is made
     // successful here so the normal cleanup path can be asserted.
-    const destroyStub = sinon.stub().callsFake((callback: (err: null) => void) => callback(null));
+    const destroyStub = sinon
+      .stub()
+      .callsFake((callback: (err: null) => void) => callback(null));
     const req: any = { session: { destroy: destroyStub } };
     const clearCookieStub = sinon.stub();
     const redirectStub = sinon.stub();
@@ -328,16 +371,20 @@ describe("logOut", () => {
 
     expect(destroyStub.calledOnce).to.be.true;
     expect(clearCookieStub.calledOnceWith("connect.sid")).to.be.true;
-    expect(redirectStub.calledOnceWith(
-      `${config.silas.authority}/oauth2/v2.0/logout`,
-    )).to.be.true;
+    expect(
+      redirectStub.calledOnceWith(
+        `${config.silas.authority}/oauth2/v2.0/logout`,
+      ),
+    ).to.be.true;
   });
 
   it("still clears the cookie and redirects when session destruction fails", async () => {
     // Provider logout must still happen when local session cleanup fails.
     const destroyStub = sinon
       .stub()
-      .callsFake((callback: (err: Error) => void) => callback(new Error("destroy failed")));
+      .callsFake((callback: (err: Error) => void) =>
+        callback(new Error("destroy failed")),
+      );
     const req: any = { session: { destroy: destroyStub } };
     const clearCookieStub = sinon.stub();
     const redirectStub = sinon.stub();
@@ -349,7 +396,3 @@ describe("logOut", () => {
     expect(redirectStub.calledOnce).to.be.true;
   });
 });
-
-
-
-

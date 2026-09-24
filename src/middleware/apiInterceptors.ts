@@ -1,6 +1,6 @@
-import type { AxiosInstanceWrapper } from '#types/axios-instance-wrapper.js';
-import type { InternalAxiosRequestConfig, AxiosError } from 'axios';
-import { devLog, devError } from '#src/scripts/helpers/index.js';
+import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
+import type { InternalAxiosRequestConfig, AxiosError } from "axios";
+import { devLog, devError } from "#src/scripts/helpers/index.js";
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -26,16 +26,16 @@ function toError(error: unknown): Error {
  * @returns {boolean} True when the error contains an Axios response with a numeric status.
  */
 function isAxiosErrorWithResponse(
-  error: unknown
+  error: unknown,
 ): error is AxiosError & { response: { status: number } } {
   return (
     error !== null &&
-    typeof error === 'object' &&
-    'response' in error &&
+    typeof error === "object" &&
+    "response" in error &&
     error.response !== null &&
-    typeof error.response === 'object' &&
-    'status' in error.response &&
-    typeof error.response.status === 'number'
+    typeof error.response === "object" &&
+    "status" in error.response &&
+    typeof error.response.status === "number"
   );
 }
 
@@ -45,13 +45,13 @@ function isAxiosErrorWithResponse(
  * @param {AxiosInstanceWrapper} axiosWrapper - Axios wrapper to augment with logging interceptors.
  */
 export function addLoggingInterceptors(
-  axiosWrapper: AxiosInstanceWrapper
+  axiosWrapper: AxiosInstanceWrapper,
 ): void {
   axiosWrapper.axiosInstance.interceptors.request.use(
     (requestConfig: InternalAxiosRequestConfig) => {
       devLog(
         `API Request: ${requestConfig.method?.toUpperCase()} ` +
-          `${requestConfig.baseURL ?? ''}${requestConfig.url ?? ''}`
+          `${requestConfig.baseURL ?? ""}${requestConfig.url ?? ""}`,
       );
 
       return requestConfig;
@@ -62,7 +62,7 @@ export function addLoggingInterceptors(
       devError(`API Request Error: ${requestError.message}`);
 
       return await Promise.reject(requestError);
-    }
+    },
   );
 
   axiosWrapper.axiosInstance.interceptors.response.use(
@@ -70,7 +70,7 @@ export function addLoggingInterceptors(
       devLog(
         `API Response: ${response.status} ` +
           `${response.config.method?.toUpperCase()} ` +
-          `${response.config.url}`
+          `${response.config.url}`,
       );
 
       return response;
@@ -80,7 +80,7 @@ export function addLoggingInterceptors(
         devError(
           `API Response Error: ${error.response.status} ` +
             `${error.config?.method?.toUpperCase()} ` +
-            `${error.config?.url}`
+            `${error.config?.url}`,
         );
       } else {
         const responseError = toError(error);
@@ -89,7 +89,7 @@ export function addLoggingInterceptors(
       }
 
       return await Promise.reject(toError(error));
-    }
+    },
   );
 }
 
@@ -103,30 +103,27 @@ export function addLoggingInterceptors(
 export function addAuthServiceInterceptors(
   axiosWrapper: AxiosInstanceWrapper,
   authService: ApiAuthService,
-  enableLogging: boolean
+  enableLogging: boolean,
 ): void {
   axiosWrapper.axiosInstance.interceptors.request.use(
     async (requestConfig: InternalAxiosRequestConfig) => {
       try {
-        requestConfig.headers.Authorization =
-          await authService.getAuthHeader();
+        requestConfig.headers.Authorization = await authService.getAuthHeader();
 
         if (enableLogging) {
-          devLog(
-            'Added JWT authorization header to API request'
-          );
+          devLog("Added JWT authorization header to API request");
         }
       } catch (error) {
         const authError = toError(error);
 
         devError(
-          `Failed to add JWT authorization header: ${authError.message}`
+          `Failed to add JWT authorization header: ${authError.message}`,
         );
       }
 
       return requestConfig;
     },
-    async (error: unknown) => await Promise.reject(toError(error))
+    async (error: unknown) => await Promise.reject(toError(error)),
   );
 
   axiosWrapper.axiosInstance.interceptors.response.use(
@@ -137,16 +134,14 @@ export function addAuthServiceInterceptors(
         error.response.status === HTTP_UNAUTHORIZED
       ) {
         if (enableLogging) {
-          devError(
-            'API returned 401 Unauthorized - clearing cached tokens'
-          );
+          devError("API returned 401 Unauthorized - clearing cached tokens");
         }
 
         authService.clearTokens();
       }
 
       return await Promise.reject(toError(error));
-    }
+    },
   );
 }
 
@@ -160,18 +155,18 @@ export function addAuthServiceInterceptors(
 export function addSessionSilasTokenInterceptor(
   axiosWrapper: AxiosInstanceWrapper,
   accessToken: string,
-  enableLogging: boolean
+  enableLogging: boolean,
 ): void {
   axiosWrapper.axiosInstance.interceptors.request.use(
     (requestConfig: InternalAxiosRequestConfig) => {
       requestConfig.headers.Authorization = `Bearer ${accessToken}`;
 
       if (enableLogging) {
-        devLog('Added SILAS bearer token to API request');
+        devLog("Added SILAS bearer token to API request");
       }
 
       return requestConfig;
     },
-    async (error: unknown) => await Promise.reject(toError(error))
+    async (error: unknown) => await Promise.reject(toError(error)),
   );
 }

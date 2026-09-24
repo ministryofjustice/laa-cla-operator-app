@@ -1,18 +1,18 @@
-import { strict as assert } from 'assert';
-import sinon from 'sinon';
-import type { Application, NextFunction, Request, Response } from 'express';
-import { setupGlobalErrorHandler } from '#src/middleware/globalErrorHandler.js';
+import { strict as assert } from "assert";
+import sinon from "sinon";
+import type { Application, NextFunction, Request, Response } from "express";
+import { setupGlobalErrorHandler } from "#src/middleware/globalErrorHandler.js";
 
-describe('setupGlobalErrorHandler', () => {
+describe("setupGlobalErrorHandler", () => {
   beforeEach(() => {
-    sinon.stub(console, 'error');
+    sinon.stub(console, "error");
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  it('registers middleware that renders the error page with normalized message', () => {
+  it("registers middleware that renders the error page with normalized message", () => {
     const use = sinon.stub();
     const app = { use } as unknown as Application;
 
@@ -24,7 +24,7 @@ describe('setupGlobalErrorHandler', () => {
       error: unknown,
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ) => void;
 
     const req = {} as Request;
@@ -36,19 +36,22 @@ describe('setupGlobalErrorHandler', () => {
       render,
     } as unknown as Response;
 
-    registeredHandler(new Error('db down'), req, res, next);
+    registeredHandler(new Error("db down"), req, res, next);
 
-    assert.equal((res.status as unknown as sinon.SinonStub).calledOnceWithExactly(500), true);
+    assert.equal(
+      (res.status as unknown as sinon.SinonStub).calledOnceWithExactly(500),
+      true,
+    );
     assert.equal(render.calledOnce, true);
-    assert.equal(render.firstCall.args[0], 'main/error.njk');
+    assert.equal(render.firstCall.args[0], "main/error.njk");
     assert.deepEqual(render.firstCall.args[1], {
       status: 500,
-      error: 'An unexpected error occurred. Please try again.',
+      error: "An unexpected error occurred. Please try again.",
     });
     assert.equal(next.called, false);
   });
 
-  it('delegates to next when headers were already sent', () => {
+  it("delegates to next when headers were already sent", () => {
     const use = sinon.stub();
     const app = { use } as unknown as Application;
 
@@ -58,14 +61,14 @@ describe('setupGlobalErrorHandler', () => {
       error: unknown,
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ) => void;
 
     const req = {} as Request;
     const next = sinon.stub();
     const status = sinon.stub();
     const render = sinon.stub();
-    const error = new Error('response already in flight');
+    const error = new Error("response already in flight");
     const res = {
       headersSent: true,
       status,

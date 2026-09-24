@@ -1,12 +1,12 @@
 /**
  * MSW Setup Configuration
- * 
+ *
  * Centralized configuration for MSW server setup and management.
  * Provides utilities for test setup, teardown, and handler management.
  */
 
-import { setupServer } from 'msw/node';
-import { handlers } from './handlers/index.js';
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers/index.js";
 
 /**
  * MSW server instance for Node.js environment
@@ -18,7 +18,7 @@ export const server = setupServer(...handlers);
  * MSW server configuration options
  */
 export const serverConfig = {
-  onUnhandledRequest: 'warn' as const,
+  onUnhandledRequest: "warn" as const,
 };
 
 /**
@@ -58,10 +58,14 @@ export function addRuntimeHandlers(additionalHandlers: any[]): void {
  * Ensures required environment variables are set
  */
 export function validateTestEnvironment(): void {
-  const requiredEnvVars = ['NODE_ENV'];
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-  
+  const requiredEnvVars = ["NODE_ENV"];
+  const missingVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName],
+  );
+
   if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(", ")}`,
+    );
   }
 }

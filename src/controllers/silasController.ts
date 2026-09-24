@@ -212,7 +212,9 @@ async function destroySession(req: Request): Promise<void> {
  * @returns {boolean} Whether the response contains valid authentication data.
  */
 function hasValidAccountResponse(
-  response: Awaited<ReturnType<ConfidentialClientApplication["acquireTokenByCode"]>>,
+  response: Awaited<
+    ReturnType<ConfidentialClientApplication["acquireTokenByCode"]>
+  >,
 ): response is typeof response & {
   accessToken: string;
   idToken: string;
@@ -232,7 +234,6 @@ function hasValidAccountResponse(
   );
 }
 
-
 /**
  * Handles the OAuth callback from SILAS.
  *
@@ -240,7 +241,10 @@ function hasValidAccountResponse(
  * @param {Response} res Express response used to complete authentication.
  * @returns {Promise<void>} A promise resolving after the response is sent.
  */
-export async function callbackAction(req: Request, res: Response): Promise<void> {
+export async function callbackAction(
+  req: Request,
+  res: Response,
+): Promise<void> {
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
 
@@ -279,7 +283,8 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
     session.silasAuth = {
       accessToken: response.accessToken,
       idToken: response.idToken,
-      expiresAt: response.expiresOn?.getTime() ?? Date.now() + TOKEN_EXPIRY_OFFSET_MS,
+      expiresAt:
+        response.expiresOn?.getTime() ?? Date.now() + TOKEN_EXPIRY_OFFSET_MS,
       email: claims.USER_EMAIL,
       name: claims.name,
     };
