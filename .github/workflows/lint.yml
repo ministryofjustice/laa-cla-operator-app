@@ -30,3 +30,7 @@ jobs:
       - name: Run ESLint
         run: |
           yarn eslint .
+
+      - name: Check Prettier formatting
+        run: |
+          yarn format:check
