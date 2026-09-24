@@ -30,49 +30,52 @@ const msalClient = new ConfidentialClientApplication({
   },
 });
 
-async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
+/**
+ * Redirects user to main uat if they are on a ephemeral environment for silas authentication
+ * @param {Request} req - Express Request object
+ * @param {Response} res - Express Response object 
+ * @returns {boolean} - Returns true if the user was redirected
+ */
+function processUATRedirect(req: Request, res: Response): boolean {
   console.log(`Environment is ${config.app.environment}`)
-  if(config.app.environment.toLocaleLowerCase() == "ephemeral") {
+  if(config.app.environment.toLocaleLowerCase() === "ephemeral") {
+    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
     const hostname = process.env.HOST_NAME;
-    console.log(`HOST_NAME is ${hostname}`)
-    if(hostname) {
+    if(hostname !== undefined) {
       const nonce = randomUUID()
       req.session.auth_nonce = nonce
+      // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
       const domain = new URL(config.silas.redirectUri).origin
-      const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${String(nonce)}`
-      console.log(`Redirecting log in ${redirect}`)
+      const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${nonce}`
       res.redirect(redirect)
       return true
     }
   }
-  if(config.app.environment.toLocaleLowerCase() == "uat") {
-    console.log(`return_to is ${req.query.return_to}`)
-    console.log(`nonce is ${req.query.nonce}`)
-    if(req.query.return_to) {
-      if(req.query.nonce) {
-        req.session.auth_nonce = String(req.query.nonce)
-      }
-      req.session.return_to = String(req.query.return_to)
-      req.session.save()
+  if(config.app.environment.toLocaleLowerCase() === "uat" && req.query.return_to !== undefined) {
+    if(req.query.nonce !== undefined) {
+      req.session.auth_nonce = req.query.nonce as string
     }
+    req.session.return_to = req.query.return_to as string
+    req.session.save()
   }
   return false
 }
 
-async function getAuthNonce(req: Request): Promise<String> {
-  let auth_nonce = req.session.auth_nonce
-  console.log(`Initial auth nonce ${auth_nonce}`)
-  if(!auth_nonce) {
-    auth_nonce = randomBytes(NONCE_BYTES).toString("base64url");
-    console.log(`Generated auth nonce ${auth_nonce}`)
-    req.session.auth_nonce = auth_nonce;
+/**
+ * Tries to find auth nonce in req.session.auth_nonce otherwise creates and saves in the session and returns it
+ * @param {Request} req  - Express Request object
+ * @returns {Promise<string>} - Returns the nonce to use for the auth
+ */
+async function getAuthNonce(req: Request): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+  let authNonce = req.session.auth_nonce
+  if(authNonce === undefined) {
+    authNonce = randomBytes(NONCE_BYTES).toString("base64url");
+    req.session.auth_nonce = authNonce;
     await saveSession(req);
 
   }
-  else {
-    auth_nonce = String(auth_nonce)
-  }
-  return auth_nonce
+  return authNonce as string
 }
 
 /**
@@ -83,16 +86,15 @@ async function getAuthNonce(req: Request): Promise<String> {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  const userRedirected = await processUATRedirect(req, res);
+  const userRedirected = processUATRedirect(req, res);
   if(userRedirected) {
-    console.log("User redirected, rerturning early")
     return
   }
-  const auth_nonce = await getAuthNonce(req)
+  const authNonce = await getAuthNonce(req)
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
     redirectUri: config.silas.redirectUri,
-    state: String(auth_nonce),
+    state: authNonce,
   });
 
   res.redirect(authUrl);

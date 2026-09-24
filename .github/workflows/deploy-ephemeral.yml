@@ -89,6 +89,7 @@ jobs:
           --set sharedIPRangesLAA=$SHARED_IP_RANGES_LAA \
           --set pingdomIPs=$PINGDOM_IPS \
           --set envVars.HOST_NAME.value=${HOST_NAME} \
+          --set envVars.NODE_ENV.value=ephemeral \
           --force \
           --install
 
