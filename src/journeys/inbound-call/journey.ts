@@ -6,34 +6,8 @@ import {
 import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { whosCallingStep } from "./steps/whosCallingStep.js";
-import { addClientDetailsStep } from "./steps/clientDetailsStep.js";
-import { addAddressStep } from "./steps/addAddressStep.js";
-
-
-// Step 2: Placeholder for search-client step
-const searchClient = step({
-  code: "search-client",
-  path: "/search-client",
-  title: "Search client's details",
-  reachability: { entryWhen: true },
-  view: { template: "main/search-client.njk" },
-  blocks: [
-    GovUKButton({
-      text: "Start a new case using the details entered",
-      classes: "govuk-button--secondary",
-    }),
-  ],
-  onSubmission: [
-    submit({
-      validate: true,
-      onValid: {
-        next: [redirect({ goto: "add-client-details" })],
-      },
-    }),
-  ],
-});
 import { addClientDetailsStep } from "./client-details/step.js";
+import { addAddressStep } from "./steps/addAddressStep.js";
 
 // Step 4: Add client Address"
 const addClientAddressStep = step({

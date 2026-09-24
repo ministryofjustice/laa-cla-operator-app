@@ -35,12 +35,13 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
     context.setData("allCases", result);
   },
 
-  saveClientAddress: (deps: Deps)=> async (context: EffectFunctionContext) => {
-    const authenticatedAxiosState = context.getState("authenticatedAxios");
-
-    if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
-      throw new Error("Axios middleware is not available in the context.");
-    }
+    /**
+     * Creates an effect that saves the client's address to the case.
+     * @param {Deps} deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+     */
+    saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const address = {
       addressLine1: context.getAnswer("address-line-1"),
