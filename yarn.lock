@@ -2269,18 +2269,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compression@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "compression@npm:1.8.1"
+"compression@npm:^1.8.2":
+  version: 1.8.2
+  resolution: "compression@npm:1.8.2"
   dependencies:
     bytes: "npm:3.1.2"
     compressible: "npm:~2.0.18"
     debug: "npm:2.6.9"
+    destroy: "npm:1.2.0"
     negotiator: "npm:~0.6.4"
     on-headers: "npm:~1.1.0"
     safe-buffer: "npm:5.2.1"
     vary: "npm:~1.1.2"
-  checksum: 10c0/85114b0b91c16594dc8c671cd9b05ef5e465066a60e5a4ed8b4551661303559a896ed17bb72c4234c04064e078f6ca86a34b8690349499a43f6fc4b844475da4
+  checksum: 10c0/f95be7122323fdffcaadc807f42da38b5227eeac7d9997c1c4314abd7ca4a4de2daa3d5bd4e142706bef4d34fa0f64cd265c6f074b221143e18da1215c0a07ab
   languageName: node
   linkType: hard
 
@@ -2570,6 +2571,13 @@ __metadata:
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: 10c0/58bd06ec20e19529b06f7ad07ddab60e504d9e0faca4bd23079fac2d279c3594334d736508dc350e06e510aba5e22e4594483b3a6562ce7c17dd797f4cc4ad2c
+  languageName: node
+  linkType: hard
+
+"destroy@npm:1.2.0":
+  version: 1.2.0
+  resolution: "destroy@npm:1.2.0"
+  checksum: 10c0/bd7633942f57418f5a3b80d5cb53898127bcf53e24cdf5d5f4396be471417671f0fee48a4ebe9a1e9defbde2a31280011af58a57e090ff822f589b443ed4e643
   languageName: node
   linkType: hard
 
@@ -3587,7 +3595,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"figlet@npm:^1.9.3":
+"figlet@npm:^1.11.4":
   version: 1.11.4
   resolution: "figlet@npm:1.11.4"
   dependencies:
@@ -4832,7 +4840,7 @@ __metadata:
     chai: "npm:^6.2.0"
     chalk: "npm:^5.6.2"
     chokidar: "npm:3.3.0"
-    compression: "npm:^1.8.1"
+    compression: "npm:^1.8.2"
     concurrently: "npm:^9.2.1"
     connect-livereload: "npm:^0.6.1"
     cookie-parser: "npm:~1.4.6"
@@ -4851,7 +4859,7 @@ __metadata:
     express-rate-limit: "npm:^8.1.1"
     express-session: "npm:^1.19.0"
     express-validator: "npm:^7.3.0"
-    figlet: "npm:^1.9.3"
+    figlet: "npm:^1.11.4"
     fs-extra: "npm:^11.3.2"
     globals: "npm:^16.4.0"
     govuk-frontend: "npm:^6.1.0"
@@ -4865,7 +4873,7 @@ __metadata:
     livereload: "npm:^0.10.2"
     middleware-axios: "npm:^3.0.0"
     mocha: "npm:^12.0.0"
-    moment: "npm:^2.30.1"
+    moment: "npm:^2.31.0"
     morgan: "npm:~1.10.1"
     msw: "npm:^2.11.3"
     nodemon: "npm:^3.1.9"
@@ -5234,10 +5242,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:^2.30.1":
-  version: 2.30.1
-  resolution: "moment@npm:2.30.1"
-  checksum: 10c0/865e4279418c6de666fca7786607705fd0189d8a7b7624e2e56be99290ac846f90878a6f602e34b4e0455c549b85385b1baf9966845962b313699e7cb847543a
+"moment@npm:^2.31.0":
+  version: 2.31.0
+  resolution: "moment@npm:2.31.0"
+  checksum: 10c0/3755b186b8ff62c565685ce69dde55bf46003c0329139be5c8dd7845cd567bfd7d02be3a13e379a25acb9e98f6b87136c4776745e440615a4f5ca8dd9a8815b9
   languageName: node
   linkType: hard
 

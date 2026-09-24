@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { isBlankString } from '#src/helpers/dataTransformers.js';
 import type { Config } from '#types/config-types.js';
 dotenv.config();
 
@@ -6,15 +7,15 @@ const DEFAULT_RATE_LIMIT_MAX = 100;
 const DEFAULT_RATE_WINDOW_MS_MINUTE = 15;
 const MILLISECONDS_IN_A_MINUTE = 60000;
 const DEFAULT_PORT = 3000;
+const { env } = process;
+const { SESSION_SECRET, SESSION_NAME } = env;
 
-// Validate required session env vars
-if (process.env.SESSION_SECRET == null || process.env.SESSION_SECRET === '' ||
-    process.env.SESSION_NAME == null || process.env.SESSION_NAME === '') {
+if (isBlankString(SESSION_SECRET) || isBlankString(SESSION_NAME)) {
   throw new Error('SESSION_SECRET and SESSION_NAME must be defined in environment variables.');
 }
 
 // Get environment variables
-// TODO(LGA-4295): CONTACT_*, DEPARTMENT_*, SERVICE_* are static content, not per-environment
+// TODO: CONTACT_*, DEPARTMENT_*, SERVICE_* are static content, not per-environment
 // config — move to locales/constants and stop reading them from env vars.
 const config: Config = {
   CONTACT_EMAIL: process.env.CONTACT_EMAIL,
@@ -30,8 +31,8 @@ const config: Config = {
   SERVICE_PHASE: process.env.SERVICE_PHASE,
   SERVICE_URL: process.env.SERVICE_URL,
   session: {
-    secret: process.env.SESSION_SECRET,
-    name: process.env.SESSION_NAME,
+    secret: SESSION_SECRET,
+    name: SESSION_NAME,
     resave: false,
     saveUninitialized: false
   },
