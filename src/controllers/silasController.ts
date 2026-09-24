@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { promisify } from "node:util";
 
 import { ConfidentialClientApplication } from "@azure/msal-node";
@@ -30,16 +30,19 @@ const msalClient = new ConfidentialClientApplication({
   },
 });
 
-function processUATRedirect(req: Request, res: Response) {
+async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
   console.log(`Environment is ${config.app.environment}`)
   if(config.app.environment.toLocaleLowerCase() == "ephemeral") {
     const hostname = process.env.HOST_NAME;
     console.log(`HOST_NAME is ${hostname}`)
     if(hostname) {
-      const nonce = getAuthNonce(req)
+      const nonce = randomUUID()
+      req.session.auth_nonce = nonce
       const domain = new URL(config.silas.redirectUri).origin
-      console.log(`Redirecting log in request to ${domain}/login?redirect_to=${hostname}`)
-      return res.redirect(`${domain}/login?redirect_to=${hostname}&nonce=${String(nonce)}`)
+      const redirect = `${domain}/login?return_to=https://${hostname}/redirect&nonce=${String(nonce)}`
+      console.log(`Redirecting log in ${redirect}`)
+      res.redirect(redirect)
+      return true
     }
   }
   if(config.app.environment.toLocaleLowerCase() == "uat") {
@@ -53,6 +56,7 @@ function processUATRedirect(req: Request, res: Response) {
       req.session.save()
     }
   }
+  return false
 }
 
 async function getAuthNonce(req: Request): Promise<String> {
@@ -79,8 +83,11 @@ async function getAuthNonce(req: Request): Promise<String> {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  processUATRedirect(req, res);
-
+  const userRedirected = await processUATRedirect(req, res);
+  if(userRedirected) {
+    console.log("User redirected, rerturning early")
+    return
+  }
   const auth_nonce = await getAuthNonce(req)
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
