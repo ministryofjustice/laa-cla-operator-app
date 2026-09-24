@@ -6,11 +6,12 @@ export interface Deps {
 }
 
 export interface CaseApiService {
-  getAllCases: (axiosMiddleware: AxiosInstanceWrapper) => Promise<GetAllCasesResponse>;
+  getAllCases: (
+    axiosMiddleware: AxiosInstanceWrapper,
+  ) => Promise<GetAllCasesResponse>;
   updatePersonalDetails: (
     axiosMiddleware: AxiosInstanceWrapper,
     caseId: string,
     body: Record<string, unknown>,
   ) => Promise<void>;
-
 }
