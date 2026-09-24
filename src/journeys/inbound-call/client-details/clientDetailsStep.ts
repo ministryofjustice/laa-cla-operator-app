@@ -5,7 +5,7 @@ import {
   redirect,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { InboundCallEffects } from "#src/journeys/effects.js";
-import { clientDetailsBlock } from "../blocks/clientDetailsBlock.js";
+import { clientDetailsBlock } from "./clientDetailsBlock.js";
 
 // Step 3: Add new client if clicked on "Start a new case"
 export const addClientDetailsStep = step({

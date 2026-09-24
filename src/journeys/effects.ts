@@ -39,11 +39,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
-    const authenticatedAxiosState = context.getState("authenticatedAxios");
-
-    if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
-      throw new Error("Axios middleware is not available in the context.");
-    }
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const personalDetails = {
       full_name: context.getPostData("fullName"),
