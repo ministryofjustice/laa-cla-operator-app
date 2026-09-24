@@ -36,19 +36,40 @@ function processUATRedirect(req: Request, res: Response) {
     const hostname = process.env.HOST_NAME;
     console.log(`HOST_NAME is ${hostname}`)
     if(hostname) {
+      const nonce = randomBytes(NONCE_BYTES).toString("base64url");
       const domain = new URL(config.silas.redirectUri).origin
       console.log(`Redirecting log in request to ${domain}/login?redirect_to=${hostname}`)
-      return res.redirect(`${domain}/login?redirect_to=${hostname}`)
+      return res.redirect(`${domain}/login?redirect_to=${hostname}&nonce=${nonce}`)
     }
   }
   if(config.app.environment.toLocaleLowerCase() == "uat") {
     console.log(`return_to is ${req.query.return_to}`)
     if(req.query.return_to) {
+      if(req.query.nonce) {
+        req.session.auth_nonce = String(req.query.nonce)
+      }
       req.session.return_to = String(req.query.return_to)
       req.session.save()
     }
   }
 }
+
+async function getAuthNonce(req: Request): Promise<String> {
+  let auth_nonce = req.session.auth_nonce
+  console.log(`Initial auth nonce ${auth_nonce}`)
+  if(!auth_nonce) {
+    auth_nonce = randomBytes(NONCE_BYTES).toString("base64url");
+    console.log(`Generated auth nonce ${auth_nonce}`)
+    req.session.auth_nonce = auth_nonce;
+    await saveSession(req);
+
+  }
+  else {
+    auth_nonce = String(auth_nonce)
+  }
+  return auth_nonce
+}
+
 /**
  * Handles the initial SILAS login request and redirects the user to Microsoft.
  *
@@ -57,15 +78,13 @@ function processUATRedirect(req: Request, res: Response) {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  const nonce = randomBytes(NONCE_BYTES).toString("base64url");
-
-  req.session.auth_nonce = nonce;
-  await saveSession(req);
   processUATRedirect(req, res);
+
+  const auth_nonce = getAuthNonce(req)
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
     redirectUri: config.silas.redirectUri,
-    state: nonce,
+    state: String(auth_nonce),
   });
 
   res.redirect(authUrl);
