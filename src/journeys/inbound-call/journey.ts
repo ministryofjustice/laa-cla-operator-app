@@ -2,11 +2,15 @@ import {
   journey,
   submit,
   redirect,
- step } from "@ministryofjustice/hmpps-forge/core/authoring";
+  access,
+  step
+} from "@ministryofjustice/hmpps-forge/core/authoring";
 import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { addClientDetailsStep } from "./client-details/step.js";
+import { InboundCallEffects } from "../effects.js";
+
 
 // Step 4: Add client Address"
 const addClientAddressStep = step({
@@ -37,6 +41,21 @@ export const inboundCallJourney = journey({
   steps: [
     whosCallingStep,
     searchClientStep,
+  ],
+});
+
+
+// Define the journey
+export const caseJourney = journey({
+  code: "case",
+  title: "Case",
+  path: "/case/:caseId",
+  onAccess: [
+    access({
+      effects: [InboundCallEffects.LoadCase()]
+    })
+  ],
+  steps: [
     addClientDetailsStep,
     addClientAddressStep,
   ],

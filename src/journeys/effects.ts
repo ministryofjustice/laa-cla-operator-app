@@ -1,14 +1,24 @@
 import type { Deps } from "#src/journeys/api.js";
 import {
   type EffectFunctionExpr,
-  type EffectFunctionContext,
+  EffectFunctionContext,
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, ZERO } from "#src/journeys/helpers/effectHelpers.js";
+import { CaseDetails } from "#types/api-types.js";
 
+/**
+ * Extends EffectFunctionContext to add method to get a case
+ */
+class CaseEffectFunctionContext extends EffectFunctionContext {
+  getCase(): CaseDetails{
+    return this.getData("case") as CaseDetails
+  }
+}
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
+  LoadCase: () => EffectFunctionExpr;
   /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
     SearchCases: () => EffectFunctionExpr;
@@ -18,7 +28,7 @@ export interface InboundCallEffectShape {
 
 type InboundCallEffectsImplementation = (
   deps: Deps,
-) => (context: EffectFunctionContext) => Promise<void>;
+) => (context: CaseEffectFunctionContext) => Promise<void>;
 
 export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
 
@@ -33,12 +43,28 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
     const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
     context.setData("allCases", result);
   },
+
   /**
-   * Implementation of the effect for retrieving all cases.
+   * Load case from the api
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  LoadCase: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const _case = await deps.caseApi.loadCase(authenticatedAxiosState, context.getRequestParam("caseId") as string);
+    if(_case === undefined) {
+      throw new Error("Missing case")
+    }
+    context.setData("case", _case);
+},
+
+  /**
+   * Save client details to the api.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: CaseEffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+    saveClientDetails: (deps: Deps) => async (context: CaseEffectFunctionContext) => {
+      const _case = context.getCase()
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const personalDetails = {
@@ -62,7 +88,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
 
     await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,
-      "ED-0001-0002",
+      _case.reference,
       apiPersonalDetails,
     );
   },
@@ -138,4 +164,5 @@ export const InboundCallEffects: InboundCallEffectShape = {
     SearchCases: InboundCallEffectsRegistry.register("SearchCases", InboundCallEffectsImplementation.SearchCases),
     SearchCasesPagination: InboundCallEffectsRegistry.register("SearchCasesPagination", InboundCallEffectsImplementation.SearchCasesPagination),
     CreateCase: InboundCallEffectsRegistry.register("CreateCase", InboundCallEffectsImplementation.CreateCase),
+    LoadCase: InboundCallEffectsRegistry.register("LoadCase", InboundCallEffectsImplementation.LoadCase),
 };

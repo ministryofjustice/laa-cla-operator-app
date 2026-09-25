@@ -32,9 +32,10 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const updatePersonalDetails = sinon.stub().resolves({});
     const searchCases = sinon.stub().resolves({ count: 1, results: [{ reference: 'FA-1' }] });
     const createCase = sinon.stub().resolves({ reference: 'FA-1' });
+    const loadCase = sinon.stub().resolves({ reference: 'FA-1' });
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      caseApi: { getAllCases, updatePersonalDetails, searchCases, createCase: createCase },
+      caseApi: { getAllCases, updatePersonalDetails, searchCases, createCase: createCase, loadCase},
     });
 
     const setData = sinon.stub();
@@ -56,7 +57,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: {
         getAllCases: sinon.stub(),
-        updatePersonalDetails: sinon.stub(), searchCases: sinon.stub(), createCase: sinon.stub(),
+        updatePersonalDetails: sinon.stub(), searchCases: sinon.stub(), createCase: sinon.stub(),loadCase: sinon.stub(),
       },
     });
 
