@@ -22,7 +22,7 @@ test.describe("Client's details page", () => {
     );
   });
 
-  test("submitting with valid details redirects to add-client-address", async ({
+  test("submitting with valid details redirects to address-lookup", async ({
     page,
     pages,
   }) => {
@@ -32,7 +32,7 @@ test.describe("Client's details page", () => {
     await addClientDetailsPage.fillValidForm();
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/receive-call\/add-client-address$/);
+    await expect(page).toHaveURL(/\/receive-call\/address-lookup$/);
   });
 
   test("submitting with everything blank shows all expected error messages", async ({
@@ -171,7 +171,7 @@ test.describe("Client's details page", () => {
     // emailInput intentionally left blank
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/receive-call\/add-client-address$/);
+    await expect(page).toHaveURL(/\/receive-call\/address-lookup$/);
   });
 
   test('selecting "Yes" for withheld number question reveals prompt text', async ({
