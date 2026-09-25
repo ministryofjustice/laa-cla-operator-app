@@ -18,6 +18,21 @@ export async function getAllCases(axiosMiddleware: AxiosInstanceWrapper): Promis
         return response.data;
     }, 'Error fetching all cases');
 }
+
+/**
+ * Retrieves a case from the API.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @returns {Promise<GetAllCasesResponse>} The response containing all cases.
+ */
+export async function loadCase(axiosMiddleware: AxiosInstanceWrapper, caseId: string): Promise<CaseDetails> {
+    return await handleApiCall(async () => {
+        const configuredAxios = configureAxiosInstance(axiosMiddleware);
+        const response = await configuredAxios.get<CaseDetails>(`/call_centre/api/v1/case/${caseId}`);
+        return response.data;
+    }, 'Error loading case');
+}
+
 /**
  * Updates the personal details (address) for a case.
  *
