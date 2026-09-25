@@ -3,11 +3,30 @@ import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import type { Request, Response, NextFunction } from "express";
 import {
+  axiosMiddleware,
   createApiMiddleware,
   hasValidSilasToken,
   requireAuth,
   setAuthStatus,
 } from "#src/middleware/apiMiddleware.js";
+
+describe("axiosMiddleware", () => {
+  it("attaches axios middleware to request and calls next", () => {
+    const req = { session: {} } as unknown as Request;
+    const res = {} as Response;
+    let nextCalled = false;
+
+    axiosMiddleware(req, res, () => {
+      nextCalled = true;
+    });
+
+    assert.equal(nextCalled, true);
+    assert.ok(req.axiosMiddleware);
+    assert.equal(typeof req.axiosMiddleware.get, "function");
+    assert.ok(req.state);
+    assert.strictEqual(req.state.authenticatedAxios, req.axiosMiddleware);
+  });
+});
 
 describe("apiMiddleware", () => {
   const server = setupServer();
@@ -41,6 +60,33 @@ describe("apiMiddleware", () => {
     assert.strictEqual(req.state.authenticatedAxios, req.axiosMiddleware);
   });
 
+  it("adds the SILAS session token from session by default", async () => {
+    const middleware = createApiMiddleware();
+    const req = {
+      session: {
+        silasAuth: { accessToken: "session-token" },
+      },
+    } as unknown as Request;
+    const res = {} as Response;
+
+    middleware(req, res, (() => undefined) as NextFunction);
+
+    server.use(
+      http.get("http://api.test/session-auth", ({ request }) => {
+        assert.equal(
+          request.headers.get("authorization"),
+          "Bearer session-token",
+        );
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+
+    const response = await req.axiosMiddleware.get(
+      "http://api.test/session-auth",
+    );
+
+    assert.equal(response.status, 200);
+  });
   it("adds authorization header from authService", async () => {
     const middleware = createApiMiddleware({
       enableLogging: false,
