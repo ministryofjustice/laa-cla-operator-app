@@ -10,7 +10,7 @@ import { clientDetailsBlock } from "./block.js";
 // Step 3: Add new client if clicked on "Start a new case"
 export const addClientDetailsStep = step({
   code: "add-client-details",
-  path: "/add-client-details",
+  path: "add-client-details",
   title: "Client's details",
   reachability: { entryWhen: true },
   onAccess: [requireSilasAuth],
