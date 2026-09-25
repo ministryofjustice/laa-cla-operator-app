@@ -184,6 +184,7 @@ The following reusable workflows are called by the branch pipelines:
   repository's Helm chart.
 - `deploy-ephemeral.yml` creates a branch-specific Kubernetes deployment and URL for
   previewing a pull request.
+
 ### Formatting and linting
 
 This repo enforces formatting and linting as part of CI.

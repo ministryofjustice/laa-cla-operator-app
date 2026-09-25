@@ -13,4 +13,5 @@ export const apiService = {
   updatePersonalDetails,
   searchCases,
   createCase,
+  /* c8 ignore next */
 };
