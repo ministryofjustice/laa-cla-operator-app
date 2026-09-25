@@ -2,6 +2,7 @@ import { strict as assert } from "assert";
 import sinon from "sinon";
 import { InboundCallEffectsImplementation } from "#src/journeys/effects.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
+import { PostcodeLookupService } from '#src/services/postcodeLookup.js';
 
 describe("InboundCallEffectsImplementation.GetAllCases", () => {
   function makeAxiosWrapper(): AxiosInstanceWrapper {
@@ -34,6 +35,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const createCase = sinon.stub().resolves({ reference: 'FA-1' });
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
+      postcodeapi: new PostcodeLookupService(),
       caseApi: { getAllCases, updatePersonalDetails, searchCases, createCase: createCase },
     });
 
@@ -54,10 +56,11 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
 
   it("throws when authenticatedAxios is missing or invalid", async () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
+      postcodeapi: new PostcodeLookupService(),
       caseApi: {
         getAllCases: sinon.stub(),
         updatePersonalDetails: sinon.stub(), searchCases: sinon.stub(), createCase: sinon.stub(),
-      },
+      }
     });
 
     const context = {

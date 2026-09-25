@@ -38,6 +38,7 @@ export interface Config {
 	SERVICE_NAME: string | undefined;
 	SERVICE_PHASE: string | undefined;
 	SERVICE_URL: string | undefined;
+	OS_PLACES_API_KEY: string | undefined
 	app: AppConfig;
 	csrf: CsrfConfig;
 	session: SessionConfig;
