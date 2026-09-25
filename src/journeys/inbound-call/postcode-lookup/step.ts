@@ -24,10 +24,11 @@ import { InboundCallEffects } from "#src/journeys/effects.js";
 import { requireSilasAuth } from "#src/journeys/auth.js";
 
 const MAXIMUM_POSTCODE_LENGTH = 12
+export const ADDRESS_LOOKUP_STEP_CODE = "address-lookup"
 
 export const addressLookupStep1 = step({
-    code: "address-lookup",
-    path: "address-lookup",
+    code: ADDRESS_LOOKUP_STEP_CODE,
+    path: ADDRESS_LOOKUP_STEP_CODE,
     title: "Search client's address",
     onAccess: [requireSilasAuth],
     reachability: { entryWhen: true },
