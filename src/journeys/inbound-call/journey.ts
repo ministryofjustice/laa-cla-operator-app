@@ -1,34 +1,45 @@
 import {
   journey,
-  step,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
-import {
-    GovUKPanel,
-} from "@ministryofjustice/hmpps-forge/govuk-components";
+  submit,
+  redirect,
+ step } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { whosCallingStep } from "./whos-calling/step.js";
+import { searchClientStep } from "./search-client/step.js";
+import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { addClientDetailsStep } from "./client-details/step.js";
 import { addressLookupStep1, addressLookupStep2 } from "./steps/postcode-lookup-steps.js";
-import { whosCallingStep } from "./steps/whosCallingStep.js";
 
-
-// Step 2: Placeholder for search-client step 
-const searchClient = step({
-    code: "search-client",
-    path: "/search-client",
-    title: "Search client's details",
-    blocks: [
-        GovUKPanel({
-            titleText: "Call details recorded",
-        }),
-    ],
-})
-
+// Step 4: Add client Address"
+const addClientAddressStep = step({
+  code: "add-client-address",
+  path: "/add-client-address",
+  title: "Search client's address",
+  reachability: { entryWhen: true },
+  view: { template: "main/add-client-address.njk" },
+  blocks: [GovUKButton({ text: "Find address" })],
+  onSubmission: [
+    submit({
+      validate: false,
+      onValid: {
+        next: [redirect({ goto: "search-client" })],
+      },
+    }),
+  ],
+});
 
 // Define the journey
 export const inboundCallJourney = journey({
-    code: "inboundCallJourney",
-    title: "Inbound Call Journey",
-    path: "/receive-call",
-    view: {
-        template: "main/forms/form.njk",
-    },
-    steps: [whosCallingStep, searchClient, addressLookupStep1, addressLookupStep2],
+  code: "inboundCallJourney",
+  title: "Inbound Call Journey",
+  path: "/receive-call",
+  view: {
+    template: "partials/form-step",
+  },
+  steps: [
+    whosCallingStep,
+    searchClientStep,
+    addClientDetailsStep,
+    addClientAddressStep,
+    addressLookupStep1, addressLookupStep2
+  ],
 });

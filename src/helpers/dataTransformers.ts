@@ -4,6 +4,9 @@
  * Utility functions for safely transforming and validating data from form inputs
  */
 
+import type { SearchCasesResponse } from "#types/api-types.js";
+
+
 /**
  * Type guard to check if value is a record object
  * @param {unknown} value Value to check
@@ -24,17 +27,35 @@ export function hasProperty(obj: unknown, key: string): obj is Record<string, un
 }
 
 /**
+ * Checks whether a nullable string is missing or empty.
+ * Use this in guard clauses instead of truthiness checks such as
+ * `if (!postcode || !building)` so nullable and empty values are handled explicitly.
+ *
+ * @example
+ * if (isBlankString(postcode) || isBlankString(building)) {
+ *   return;
+ * }
+ *
+ * @param {string | null | undefined} value - Nullable string value to check.
+ * @returns {boolean} True when the value is undefined, null, or an empty string.
+ */
+export function isBlankString(value: string | null | undefined): value is '' | null | undefined {
+  return value === undefined || value === null || value === '';
+}
+
+/**
  * Capitalises the first letter of each word in a string
  * @param {string} str - The string to capitalise
  * @returns {string} The capitalised string
  */
 export function capitaliseFirst(str: string): string {
-  return str.replace(/\b\w/g, (char) => char.toUpperCase());
+  return str.replace(/\b\w/gu, (char) => char.toUpperCase());
 }
 
 // Constants for date formatting
 const DATE_PADDING_WIDTH = 2;
 const DATE_PADDING_CHAR = '0';
+const DATE_PARTS_LENGTH = 3;
 
 /**
  * Constructs a date string in the format 'YYYY-MM-DD' from separate day, month, and year fields.
@@ -49,6 +70,40 @@ export function dateStringFromThreeFields(day: string, month: string, year: stri
   const paddedMonth = month.padStart(DATE_PADDING_WIDTH, DATE_PADDING_CHAR);
   const paddedDay = day.padStart(DATE_PADDING_WIDTH, DATE_PADDING_CHAR);
   return `${year}-${paddedMonth}-${paddedDay}`;
+}
+
+/**
+ * Formats a date of birth string from 'YYYY-MM-DD' to 'DD/MM/YYYY'.
+ * @param {string} dob - The date of birth value to format.
+ * @returns {string} The formatted date string or the original value if invalid.
+ */
+export function formatDob(dob: string): string {
+  if (typeof dob !== "string" || dob.trim() === "") {
+    return dob;
+  }
+  const parts = dob.split('-');
+  if (parts.length !== DATE_PARTS_LENGTH) {
+    return dob;
+  }
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year}`;
+}
+
+/**
+ * Maps result dates of birth to a human-readable 'DD/MM/YYYY' format.
+ * @param {SearchCasesResponse} results - The response object containing case results.
+ * @returns {SearchCasesResponse} Updated response with transformed date_of_birth values.
+ */
+export function mapResultsToFormatDob(
+  results: SearchCasesResponse
+): SearchCasesResponse {
+  return {
+    ...results,
+    results: results.results.map(result => ({
+      ...result,
+      date_of_birth: formatDob(result.date_of_birth),
+    })),
+  };
 }
 
 /**

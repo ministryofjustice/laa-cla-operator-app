@@ -36,7 +36,7 @@ autoscaling:
 
 # Environment variables can be added here
 envVars:
-  BACKEND_BASE_URI:
+  BACKEND_BASE_URL:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-production.svc.cluster.local"
   NODE_ENV:
