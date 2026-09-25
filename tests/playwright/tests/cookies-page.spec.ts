@@ -1,16 +1,22 @@
-import { test, expect } from '../fixtures/index.js';
+import { test, expect } from "../fixtures/index.js";
 
-test('cookies page displays the cookies notice heading', async ({ page }) => {
-  await page.goto('/cookies');
+test("cookies page displays the cookies notice heading", async ({ page }) => {
+  await page.goto("/cookies");
 
-  await expect(page.getByRole('heading', { level: 2, name: 'Essential cookies' })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Essential cookies" }),
+  ).toBeVisible();
 });
 
-test('cookies footer link on the front page opens the cookies page', async ({ page }) => {
-  await page.goto('/');
+test("cookies footer link on the front page opens the cookies page", async ({
+  page,
+}) => {
+  await page.goto("/");
 
-  await page.getByRole('link', { name: 'Cookies' }).click();
+  await page.getByRole("link", { name: "Cookies" }).click();
 
   await expect(page).toHaveURL(/\/cookies$/);
-  await expect(page.getByRole('heading', { level: 2, name: 'Essential cookies' })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Essential cookies" }),
+  ).toBeVisible();
 });

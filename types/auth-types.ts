@@ -7,7 +7,7 @@ export interface SilasSessionAuth {
   refreshToken?: string;
   scopes?: string[];
   email: string;
-  name:string;
+  name: string;
 }
 
 export interface SilasUserInfo {
@@ -22,8 +22,8 @@ export interface AccessTokenClaims {
   iss?: string;
   aud?: string;
   scp?: string;
-  name:string,
-  USER_EMAIL:string,
+  name: string;
+  USER_EMAIL: string;
   preferred_username?: string;
   oid?: string;
   [key: string]: unknown;

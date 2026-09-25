@@ -1,4 +1,5 @@
 # Legal Aid Agency - Express with TypeScript template (ETT)
+
 [![Standards Icon]][Standards Link]
 
 ![govuk-frontend 5.10.2](https://img.shields.io/badge/govuk--frontend%20version-5.10.2-005EA5?logo=gov.uk&style=flat)
@@ -8,6 +9,7 @@
 View the [full technical documentation here](https://ministryofjustice.github.io/laa-express-typescript-template/)
 
 ## Get Started
+
 ### Prerequisites
 
 - node stable version [26.8.1](https://nodejs.org/en/blog/release/v26.8.1/)
@@ -37,7 +39,8 @@ This project uses Yarn 4.9.2 managed by corepack (built into Node.js 16.10+). To
    # Should output: 4.9.2
    ```
 
-**To Note:** 
+**To Note:**
+
 - Corepack automatically uses the Yarn version specified in the `packageManager` field of `package.json`. No additional setup is required once corepack is enabled
 - Corepack is the preferred `yarn` way, to install the package manager, instead of `npm install -g yarn` in your ci/cd pipeline
 - `yarn install --immutable` ensures that the lockfile (`yarn.lock`) is not modified during the installation process
@@ -72,6 +75,7 @@ yarn dev
 Then, load http://localhost:3000/ in your browser to access the app.
 
 #### Install dependencies and run application for production
+
 ```shell
 yarn install
 yarn build
@@ -101,21 +105,53 @@ Prerequisites, Docker Desktop
   ```shell
   docker run -d -p 8888:3000 your-repo-name:latest
   ```
+
   (The application should be running at http://localhost:8888)
 
 - To stop the container
 
   obtain the container id
+
   ```shell
   docker ps
   ```
+
   stop the container
+
   ```shell
   docker stop {container_id}
   ```
 
-### GitHub Actions
-- These have been disabled in this GitHub template repo. Make sure you enable them when setting up your project. 
+### Formatting and linting
+
+This repo enforces formatting and linting as part of CI.
+
+- Local autofix: `yarn lint` runs ESLint with `--fix`
+- Local formatting: `yarn format` runs Prettier with `--write`
+- CI check: `yarn format:check` runs Prettier in check mode only
+- CI lint: `yarn eslint .` checks the code without modifying files
+
+Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will fail on formatting or lint errors instead of rewriting files. These should be fixed locally.
+
+### Pre-commit checks
+
+This repo uses Husky and `lint-staged` to format and lint code before each commit.
+
+1. Install hooks:
+
+   ```shell
+   yarn install
+   yarn prepare
+   ```
+
+2. On commit, staged `*.js` and `*.ts` files are automatically checked with:
+
+   ```shell
+   prettier --write
+   eslint
+   ```
+
+3. Prettier applies formatting fixes. ESLint reports lint errors without modifying files and prevents the commit until they are fixed.
 
 ### Secret detection
 
