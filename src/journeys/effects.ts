@@ -179,12 +179,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     saveAddressLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
-       const authenticatedAxiosState = context.getState("authenticatedAxios");
-
-       if (!isAxiosInstanceWrapper(authenticatedAxiosState)) {
-           throw new Error("Axios middleware is not available in the context.");
-       }
-
+       const authenticatedAxiosState = getAuthenticatedAxios(context);
         const uprn = context.getPostData("address")
         const address = await deps.postcodeapi.byUPRN(String(uprn))
         await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, "ED-0001-0002", {
