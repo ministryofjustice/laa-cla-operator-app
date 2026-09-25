@@ -1,0 +1,46 @@
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% set hasFieldErrors = fieldValidationErrors and fieldValidationErrors | length %}
+{% set hasDomainErrors = domainValidationErrors and domainValidationErrors | length %}
+{% set hasServiceError = serviceUnavailableError %}
+
+{% if hasFieldErrors or hasDomainErrors or hasServiceError %}
+    {% set errorList = [] %}
+
+    {% for error in fieldValidationErrors or [] %}
+        {% set errorText = error.text or error.message %}
+        {% set errorHref = error.href or ((error.anchor or error.blockCode) and ("#" + (error.anchor or error.blockCode))) %}
+
+        {% if errorHref %}
+            {% set errorList = (errorList.push({
+                text: errorText,
+                href: errorHref
+            }), errorList) %}
+        {% else %}
+            {% set errorList = (errorList.push({
+                text: errorText
+            }), errorList) %}
+        {% endif %}
+    {% endfor %}
+
+    {% for error in domainValidationErrors or [] %}
+        {% set errorText = error.text or error.message %}
+        {% set errorHref = error.href or "#fullName" %}
+        {% set errorList = (errorList.push({
+            text: errorText,
+            href: errorHref
+        }), errorList) %}
+    {% endfor %}
+
+    {% if serviceUnavailableError %}
+        {% set errorList = (errorList.push({
+            text: serviceUnavailableError.text,
+            href: serviceUnavailableError.href
+        }), errorList) %}
+    {% endif %}
+
+    {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+    }) }}
+{% endif %}

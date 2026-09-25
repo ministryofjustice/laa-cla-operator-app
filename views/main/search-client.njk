@@ -1,5 +1,4 @@
 {% extends "base.njk" %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 
@@ -10,6 +9,9 @@
                 text: "Back",
                 href: "/receive-call"
                 }) }}
+
+            {% set serviceUnavailableError = data.serviceUnavailableError %}
+            {% include "main/forms/error-summary.njk" %}
             <h1 class="govuk-heading-xl">{{ step.title }}</h1>
 
             <p class="govuk-body">
@@ -17,29 +19,6 @@
             </p>
 
             <h2 class="govuk-heading-s">Find a client using one or more of the search terms below.</h2>
-
-            {% if fieldValidationErrors | length or domainValidationErrors | length %}
-                {% set errorList = [] %}
-
-                {% for error in fieldValidationErrors %}
-                    {% set errorList = (errorList.push({
-                        text: error.message,
-                        href: "#" + (error.anchor or error.blockCode)
-                    }), errorList) %}
-                {% endfor %}
-
-                {% for error in domainValidationErrors %}
-                    {% set errorList = (errorList.push({
-                        text: error.message,
-                        href: "#fullName"
-                    }), errorList) %}
-                {% endfor %}
-
-                {{ govukErrorSummary({
-                    titleText: "There is a problem",
-                    errorList: errorList
-                }) }}
-            {% endif %}
 
             <form method="post" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
