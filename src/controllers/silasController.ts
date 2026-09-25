@@ -54,6 +54,7 @@ export async function processUATRedirect(req: Request, res: Response): Promise<b
   if(config.app.environment.toLowerCase() === "uat" && req.query.return_to !== undefined) {
     const returnTo = req.query.return_to as string
     // limit redirects those on our namespace
+    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
     const returnToDomain = new URL(returnTo).origin
     if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
       throw new Error(`Return to does not belong to our namespace: ${returnTo}`)
@@ -302,7 +303,8 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
       req.query as Record<string, string>
     ).toString();
     const redirect = `${req.session.return_to}?${queryString}`
-    return res.redirect(redirect)
+    res.redirect(redirect)
+    return;
   }
 
   const code = typeof req.query.code === "string" ? req.query.code : "";
