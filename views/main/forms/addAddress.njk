@@ -1,0 +1,32 @@
+{% extends "base.njk" %}
+
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+
+            {# Error summaries first, above the heading and outside the form #}
+            {% for block in blocks %}
+                {% if 'data-error-summary' in block %}
+                    {{ block | safe }}
+                {% endif %}
+            {% endfor %}
+
+            <h1 class="govuk-heading-xl"> Enter client’s address manually </h1>
+
+            <p class="govuk-body">
+                <a href="#" class="govuk-link">Or search for an address</a>
+            </p>
+
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% for block in blocks %}
+                    {% if 'data-error-summary' not in block %}
+                        {{ block | safe }}
+                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
+    </div>
+{% endblock %}
