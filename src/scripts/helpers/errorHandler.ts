@@ -27,9 +27,7 @@ const HTTP_GATEWAY_TIMEOUT = 504;
  * @param {unknown} error - Error to check
  * @returns {boolean} True if error is an Axios error with response
  */
-function isAxiosError(
-  error: unknown,
-): error is {
+function isAxiosError(error: unknown): error is {
   response: { status: number; data?: unknown; statusText?: string };
 } {
   return (

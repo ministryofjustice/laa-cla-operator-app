@@ -135,7 +135,7 @@ Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will 
 
 ### Pre-commit checks
 
-This repo uses Husky and `lint-staged` to auto-fix code before each commit.
+This repo uses Husky and `lint-staged` to format and lint code before each commit.
 
 1. Install hooks:
 
@@ -148,10 +148,10 @@ This repo uses Husky and `lint-staged` to auto-fix code before each commit.
 
    ```shell
    prettier --write
-   eslint --fix
+   eslint
    ```
 
-3. If formatting or lint fixes are needed they are automatically applied
+3. Prettier applies formatting fixes. ESLint reports lint errors without modifying files and prevents the commit until they are fixed.
 
 ### Secret detection
 
