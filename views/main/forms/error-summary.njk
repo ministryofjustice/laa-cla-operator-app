@@ -34,7 +34,7 @@
 
     {% if serviceUnavailableError %}
         {% set errorList = (errorList.push({
-            text: serviceUnavailableError.message,
+            text: serviceUnavailableError.text,
             href: serviceUnavailableError.href
         }), errorList) %}
     {% endif %}

@@ -5,7 +5,7 @@ import {
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData } from "#src/journeys/helpers/effectHelpers.js";
-import { withServiceUnavailableSummary } from "#src/journeys/helpers/effectErrorHandler.js";
+import { withServiceUnavailableSummary } from "#src/journeys/helpers/effectErrorHandlers.js";
 import { ZERO, FIRST_PAGE, SEARCH_PAGE_SIZE } from "./helpers/constants.js";
 
 
