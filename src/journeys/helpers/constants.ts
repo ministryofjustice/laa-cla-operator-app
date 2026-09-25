@@ -1,0 +1,9 @@
+export const SEARCH_PAGE_SIZE = 10;
+export const FIRST_PAGE = 1;
+export const DECIMAL_RADIX = 10;
+export const ZERO = 0;
+export const SINGLE_STEP = 1;
+export const HTTP_BAD_GATEWAY = 502;
+export const HTTP_SERVICE_UNAVAILABLE = 503;
+export const HTTP_GATEWAY_TIMEOUT = 504;
+export const EXTERNAL_SERVICE_ERROR_ANCHOR = "fullName";
