@@ -15,6 +15,7 @@
     "src/scripts/custom.ts",
     "src/scripts/frontendPackagesEntry.ts",
     "src/scripts/helpers/index.ts",
+    "src/services/api/index.ts",
     "src/scripts/pages/yourCases.ts",
     "middleware/index.ts",
     "middleware/setupCsrf.ts",
