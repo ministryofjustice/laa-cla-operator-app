@@ -45,7 +45,7 @@ export const addAddressStep = step({
   blocks: [
     // Shown when validWhen fails (address-line-1 submitted blank)
     HtmlBlock({
-      content: errorSummary("Address is required", "#address-line-1"),
+      content: errorSummary("Address field cannot be blank", "#address-line-1"),
       visibleWhen: Answer("address-line-1").match(Condition.Equals("")),
     }),
     // Shown when the form is valid but postAddress() fails
