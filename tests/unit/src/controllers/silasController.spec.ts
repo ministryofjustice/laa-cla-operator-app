@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, it } from "mocha";
 import sinon from "sinon"
-import { processUATRedirect } from "#src/controllers/silasController.js";
+import { callbackAction, loginAction, processUATRedirect } from "#src/controllers/silasController.js";
 import config from "#config.js";
 import { createTestRequest, createTestResponse } from "./index.js";
 
@@ -20,10 +20,9 @@ describe("Process uat redirect", ()=>{
         const req = createTestRequest()
         const res = createTestResponse()
         const redirect = res.redirect as sinon.SinonStub
-        const shouldRedirect = await processUATRedirect(req, res)
+        await loginAction(req, res)
         const redirectURL = new URL((redirect.args[0]) as unknown as string)
         
-        assert.equal(shouldRedirect, true)
         assert.equal(redirectURL.origin, "http://localhost:3000")
         assert.equal(redirectURL.pathname, "/login")
         assert.equal(redirectURL.searchParams.get("return_to"), `https://${config.SERVICE_URL}/redirect`)
@@ -68,5 +67,20 @@ describe("Process uat redirect", ()=>{
         assert.equal(req.session.return_to, undefined)
         assert.equal(req.session.auth_nonce, undefined)
     })
-    
+
+    it("Silas callback proxys to ephemeral on UAT", ()=>{
+        sinon.stub(config.app, "environment").value("uat")
+        const req = createTestRequest()
+        const res = createTestResponse()
+        req.session.return_to = `https://${config.SERVICE_URL}/callback`
+        req.query.state = "000-0000-0000-0000"
+        req.query.code = "1111-1111-1111-111"
+        const redirect = res.redirect as sinon.SinonStub
+        callbackAction(req, res)
+        const redirectURL = new URL((redirect.args[0]) as unknown as string)
+        assert.equal(redirectURL.origin, `https://${config.SERVICE_URL}`)
+        assert.equal(redirectURL.pathname, "/callback")
+        assert.equal(redirectURL.searchParams.get("state"), "000-0000-0000-0000")
+        assert.equal(redirectURL.searchParams.get("code"), "1111-1111-1111-111")
+    })
 })
