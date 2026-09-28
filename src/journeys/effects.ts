@@ -4,7 +4,9 @@ import {
   type EffectFunctionContext,
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, ZERO } from "#src/journeys/helpers/effectHelpers.js";
+import { getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData } from "#src/journeys/helpers/effectHelpers.js";
+import { withServiceUnavailableSummary } from "#src/journeys/helpers/effectErrorHandlers.js";
+import { ZERO, FIRST_PAGE, SEARCH_PAGE_SIZE } from "./helpers/constants.js";
 
 
 export interface InboundCallEffectShape {
@@ -74,18 +76,21 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     SearchCases: (deps: Deps) => async (context: EffectFunctionContext) => {
+      await withServiceUnavailableSummary(async (safeContext: EffectFunctionContext) => {
         const authenticatedAxiosState = getAuthenticatedAxios(context);
-        const searchParam = getSearchParamFromAnswers(context).trim();
+        const searchParam = getSearchParamFromAnswers(safeContext).trim();
 
         if (searchParam.length === ZERO) return;
-        context.setData("searchParam", searchParam);
+        safeContext.setData("searchParam", searchParam);
+
         const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
-            query: searchParam,
-            pageSize: SEARCH_PAGE_SIZE,
-            pageNumber: FIRST_PAGE,
+          query: searchParam,
+          pageSize: SEARCH_PAGE_SIZE,
+          pageNumber: FIRST_PAGE,
         });
 
-        setPaginatedSearchData(context, result, FIRST_PAGE);
+        setPaginatedSearchData(safeContext, result, FIRST_PAGE);
+      })(context);
     },
 
     /**
@@ -94,22 +99,24 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     SearchCasesPagination: (deps: Deps) => async (context: EffectFunctionContext) => {
+      await withServiceUnavailableSummary(async (safeContext: EffectFunctionContext) => {
         const authenticatedAxiosState = getAuthenticatedAxios(context);
-        const rawQ = context.getQueryParam("q");
+        const rawQ = safeContext.getQueryParam("q");
         const queryFromUrl = Array.isArray(rawQ) ? rawQ[ZERO] : rawQ;
         const searchParam = (queryFromUrl ?? "").trim();
 
        if (searchParam.length === ZERO) return;
 
-       context.setData("searchParam", searchParam);
-    
+       safeContext.setData("searchParam", searchParam);
+
        const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
-           query: searchParam,
-           pageSize: SEARCH_PAGE_SIZE,
-           pageNumber: getPageNumberFromQuery(context),
+         query: searchParam,
+         pageSize: SEARCH_PAGE_SIZE,
+         pageNumber: getPageNumberFromQuery(safeContext),
        });
 
-        setPaginatedSearchData(context, result, getPageNumberFromQuery(context));
+       setPaginatedSearchData(safeContext, result, getPageNumberFromQuery(safeContext));
+      })(context);
     },
 
     /**

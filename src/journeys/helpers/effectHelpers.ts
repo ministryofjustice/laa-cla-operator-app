@@ -3,13 +3,7 @@ import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import type { SearchCasesResponse } from "#types/api-types.js";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 import { mapResultsToFormatDob } from "#src/helpers/dataTransformers.js";
-
-
-export const SEARCH_PAGE_SIZE = 10;
-export const FIRST_PAGE = 1;
-const DECIMAL_RADIX = 10;
-export const ZERO = 0;
-export const SINGLE_STEP = 1;
+import { SEARCH_PAGE_SIZE, FIRST_PAGE, DECIMAL_RADIX, ZERO, SINGLE_STEP } from "#src/journeys/helpers/constants.js";
 
 
 /**

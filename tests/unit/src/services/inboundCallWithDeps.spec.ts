@@ -240,3 +240,67 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     );
   });
 });
+
+describe("InboundCallEffectsImplementation.SearchCases", () => {
+  function makeAxiosWrapper(): AxiosInstanceWrapper {
+    const get = sinon.stub();
+
+    return {
+      axiosInstance: {
+        defaults: {
+          headers: { common: {} },
+        },
+      },
+      get,
+      delete: sinon.stub(),
+      head: sinon.stub(),
+      options: sinon.stub(),
+      post: sinon.stub(),
+      put: sinon.stub(),
+      patch: sinon.stub(),
+      request: sinon.stub(),
+      use: sinon.stub(),
+    } as unknown as AxiosInstanceWrapper;
+  }
+
+  it("captures service unavailable errors and sets summary data", async () => {
+    const axiosWrapper = makeAxiosWrapper();
+    const serviceDown = {
+      response: { status: 503, statusText: "Service Unavailable" },
+      message: "service unavailable",
+    };
+    const searchCases = sinon
+      .stub()
+      .rejects(new Error("Service unavailable. Please try again later.", { cause: serviceDown }));
+
+    const effect = InboundCallEffectsImplementation.SearchCases({
+      caseApi: {
+        getAllCases: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases,
+        createCase: sinon.stub(),
+      },
+    });
+
+    const setData = sinon.stub();
+    const context = {
+      getState: sinon
+        .stub()
+        .withArgs("authenticatedAxios")
+        .returns(axiosWrapper),
+      getAnswer: sinon.stub().returns("Jo Smith"),
+      setData,
+    };
+
+    await effect(context as any);
+
+    assert.equal(searchCases.calledOnce, true);
+    assert.equal(
+      setData.calledWithExactly("serviceUnavailableError", {
+        message: "Service unavailable. Please try again later.",
+        href: "#fullName",
+      }),
+      true,
+    );
+  });
+});
