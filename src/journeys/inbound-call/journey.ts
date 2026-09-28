@@ -7,7 +7,7 @@ import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { addClientDetailsStep } from "./client-details/step.js";
-import { addAddressStep } from "./add-address/addAddressStep.js";
+import { addAddressStep } from "./add-address/step.js";
 
 // Step 4: Add client Address"
 const addClientAddressStep = step({
