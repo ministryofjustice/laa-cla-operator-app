@@ -38,8 +38,8 @@ const msalClient = new ConfidentialClientApplication({
  * @returns {string | undefined} - The querysyting value
  */
 function getQueryStringAsString(request: Request, key: string,): string | undefined {
-  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
-  const value = request.query?.[key]
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
+  const value = request.query[key]
   return typeof value === 'string' ? value : undefined
 }
 
@@ -81,17 +81,15 @@ export async function processUATRedirect(action: "login" | "redirect", req: Requ
       return false
     }
   }
-  else if(action === "redirect") {
-    if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
-      const queryString = new URLSearchParams(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
-        req.query as Record<string, string>
-      ).toString();
-      const redirect = `${req.session.return_to}?${queryString}`
-      console.log("Redirect is ", redirect)
-      res.redirect(redirect)
-      return true;
-    }
+  else if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
+    const queryString = new URLSearchParams(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
+      req.query as Record<string, string>
+    ).toString();
+    const redirect = `${req.session.return_to}?${queryString}`
+    console.log("Redirect is ", redirect)
+    res.redirect(redirect)
+    return true;
   }
   return false
 }
