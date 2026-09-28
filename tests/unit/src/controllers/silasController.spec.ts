@@ -40,7 +40,7 @@ describe("Process uat redirect", ()=>{
         const sessionSave = req.session.save as sinon.SinonStub
         const redirect = res.redirect as sinon.SinonStub
         
-        const shouldRedirect = await processUATRedirect(req, res)
+        const shouldRedirect = await processUATRedirect("login", req, res)
         assert.equal(shouldRedirect, false)
         assert.equal(redirect.notCalled, true)
         assert.equal(sessionSave.called, true)
@@ -57,7 +57,7 @@ describe("Process uat redirect", ()=>{
         const sessionSave = req.session.save as sinon.SinonStub
         const redirect = res.redirect as sinon.SinonStub
         try {
-            await processUATRedirect(req, res)
+            await processUATRedirect("login", req, res)
         }
         catch (error) {
             assert.equal((error as Error).message, "Return to does not belong to our namespace: http://test.justice.gov.uk/login")

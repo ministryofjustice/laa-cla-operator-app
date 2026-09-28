@@ -45,38 +45,53 @@ function getQueryStringAsString(request: Request, key: string,): string | undefi
 
 /**
  * Redirects user to main uat if they are on a ephemeral environment for silas authentication
+ * @param {"login" | "redirect"} action - The action under which this function is being called under
  * @param {Request} req - Express Request object
  * @param {Response} res - Express Response object 
  * @returns {boolean} - Returns true if the user was redirected
  */
-export async function processUATRedirect(req: Request, res: Response): Promise<boolean> {
-  if(config.app.environment.toLowerCase() === "ephemeral") {
-    if(config.SERVICE_URL !== undefined) {
-      const nonce = randomUUID()
-      req.session.auth_nonce = nonce
+export async function processUATRedirect(action: "login" | "redirect", req: Request, res: Response): Promise<boolean> {
+  if(action === "login"){
+    const returnTo = getQueryStringAsString(req, "return_to")
+    if(config.app.environment.toLowerCase() === "ephemeral") {
+      if(config.SERVICE_URL !== undefined) {
+        const nonce = randomUUID()
+        req.session.auth_nonce = nonce
+        await saveSession(req)
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+        const domain = new URL(config.silas.redirectUri).origin
+        const redirect = `${domain}/login?return_to=https://${config.SERVICE_URL}/redirect&nonce=${nonce}`
+        res.redirect(redirect)
+        return true
+      }
+    }
+    else if(config.app.environment.toLowerCase() === "uat" && returnTo !== undefined) {
+      // limit redirects those on our namespace
+      // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
+      const returnToDomain = new URL(returnTo).origin
+      if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
+        throw new Error(`Return to does not belong to our namespace: ${returnTo}`)
+      }
+
+      if(req.query.nonce !== undefined) {
+        req.session.auth_nonce = getQueryStringAsString(req, "nonce")
+      }
+      req.session.return_to = returnTo
       await saveSession(req)
-      
-      // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
-      const domain = new URL(config.silas.redirectUri).origin
-      const redirect = `${domain}/login?return_to=https://${config.SERVICE_URL}/redirect&nonce=${nonce}`
-      res.redirect(redirect)
-      return true
+      return false
     }
   }
-  const returnTo = getQueryStringAsString(req, "return_to")
-  if(config.app.environment.toLowerCase() === "uat" && returnTo !== undefined) {
-    // limit redirects those on our namespace
-    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
-    const returnToDomain = new URL(returnTo).origin
-    if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
-      throw new Error(`Return to does not belong to our namespace: ${returnTo}`)
+  else if(action === "redirect") {
+    if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
+      const queryString = new URLSearchParams(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
+        req.query as Record<string, string>
+      ).toString();
+      const redirect = `${req.session.return_to}?${queryString}`
+      console.log("Redirect is ", redirect)
+      res.redirect(redirect)
+      return true;
     }
-
-    if(req.query.nonce !== undefined) {
-      req.session.auth_nonce = getQueryStringAsString(req, "nonce")
-    }
-    req.session.return_to = returnTo
-    await saveSession(req)
   }
   return false
 }
@@ -107,7 +122,7 @@ async function getAuthNonce(req: Request): Promise<string> {
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  const userRedirected = await processUATRedirect(req, res);
+  const userRedirected = await processUATRedirect("login", req, res);
   if(userRedirected) {
     return
   }
@@ -301,26 +316,6 @@ function hasValidAccountResponse(
   );
 }
 
-
-/**
- * ON UAT we might need to proxy to an ephemeral environment
- * @param {Request} req - Express request object
- * @param {Response} res - Express response object
- * @returns {boolean} - Whether a redirect happened
- */
-function redirectUatCallback(req: Request, res: Response): boolean {
-    if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
-    const queryString = new URLSearchParams(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
-      req.query as Record<string, string>
-    ).toString();
-    const redirect = `${req.session.return_to}?${queryString}`
-    res.redirect(redirect)
-    return true;
-  }
-  return false
-}
-
 /**
  * Validate code and state from an entra redirect
  * @param {string} code - The entra code that will be exchange for an access token
@@ -347,8 +342,9 @@ function validateCodeAndState(code: string, state: string, req: Request): boolea
  */
 export async function callbackAction(req: Request, res: Response): Promise<void> {
   // ON UAT we might need to proxy to an ephemeral environment
-  if(redirectUatCallback(req, res)) {
-    return;
+  const userRedirected = await processUATRedirect("redirect", req, res);
+  if(userRedirected) {
+    return
   }
 
   const code = typeof req.query.code === "string" ? req.query.code : "";
