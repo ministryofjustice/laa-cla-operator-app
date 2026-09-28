@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures/index.js";
 
-const TEST_AUTH_NEXT_PATH = "/receive-call/add-client-details";
+const TEST_AUTH_NEXT_PATH = "/case/ED-0001-0002/add-client-details";
 
 test.describe("Client's details page", () => {
   test.beforeEach(async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe("Client's details page", () => {
     await addClientDetailsPage.fillValidForm();
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/receive-call\/address-lookup$/);
+    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
   });
 
   test("submitting with everything blank shows all expected error messages", async ({
@@ -171,7 +171,7 @@ test.describe("Client's details page", () => {
     // emailInput intentionally left blank
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/receive-call\/address-lookup$/);
+    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
   });
 
   test('selecting "Yes" for withheld number question reveals prompt text', async ({
