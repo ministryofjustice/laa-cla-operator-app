@@ -1,7 +1,7 @@
 import type { Deps } from "#src/journeys/api.js";
 import {
   type EffectFunctionExpr,
-  EffectFunctionContext,
+  type EffectFunctionContext,
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, ZERO } from "#src/journeys/helpers/effectHelpers.js";
@@ -9,6 +9,7 @@ import type { CaseDetails } from "#types/api-types.js";
 
 /**
  * Get the current case
+ * @param {EffectFunctionContext} context - The forge context
  * @returns {CaseDetails} - Returns the current case
  */
 function getCase(context: EffectFunctionContext): CaseDetails {
@@ -62,7 +63,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
   /**
    * Save client details to the api.
    * @param {Deps} deps - The dependencies required for the effect.
-   * @returns {(context: CaseEffectFunEffectFunctionContextctionContext) => Promise<void>} Effect function bound to dependencies.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
     saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
       const _case = getCase(context)
