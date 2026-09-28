@@ -12,7 +12,7 @@ import { addAddress } from "./block.js";
 
 export const addAddressStep = step({
   code: "add-address",
-  title: "Enter client’s address",
+  title: "Enter client’s address manually",
   path: "/add-address",
   reachability: { entryWhen: true },
   onAccess: [requireSilasAuth],
