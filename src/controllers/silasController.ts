@@ -39,7 +39,7 @@ const msalClient = new ConfidentialClientApplication({
  */
 function getQueryStringAsString(request: Request, key: string,): string | undefined {
   // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
-  const value = request.query[key]
+  const value = request.query?.[key]
   return typeof value === 'string' ? value : undefined
 }
 
@@ -83,7 +83,7 @@ export async function processUATRedirect(req: Request, res: Response): Promise<b
 
 /**
  * Tries to find auth nonce in req.session.auth_nonce otherwise creates and saves in the session and returns it
- * @param {Request} req  - Express Request object
+ * @param {Request} req - Express Request object
  * @returns {Promise<string>} - Returns the nonce to use for the auth
  */
 async function getAuthNonce(req: Request): Promise<string> {
