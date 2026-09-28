@@ -10,7 +10,7 @@ import {
   Answer,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import { addAddress } from "../blocks/addAddressBlock.js";
+import { addAddress } from "./addAddressBlock.js";
 
 /**
  * Builds a GOV.UK error summary component.
