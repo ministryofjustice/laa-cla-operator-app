@@ -21,8 +21,8 @@ export async function getAllCases(axiosMiddleware: AxiosInstanceWrapper): Promis
 
 /**
  * Retrieves a case from the API.
- *
  * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {string} caseId - The case id to load
  * @returns {Promise<GetAllCasesResponse>} The response containing all cases.
  */
 export async function loadCase(axiosMiddleware: AxiosInstanceWrapper, caseId: string): Promise<CaseDetails> {

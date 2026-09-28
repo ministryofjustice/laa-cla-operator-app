@@ -5,13 +5,18 @@ import {
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, ZERO } from "#src/journeys/helpers/effectHelpers.js";
-import { CaseDetails } from "#types/api-types.js";
+import type { CaseDetails } from "#types/api-types.js";
 
 /**
  * Extends EffectFunctionContext to add method to get a case
  */
 class CaseEffectFunctionContext extends EffectFunctionContext {
+  /**
+   * Get the current case
+   * @returns {CaseDetails} - Returns the current case
+   */
   getCase(): CaseDetails{
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This will be a case object
     return this.getData("case") as CaseDetails
   }
 }
@@ -50,11 +55,12 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   LoadCase: (deps: Deps) => async (context: EffectFunctionContext) => {
-    const authenticatedAxiosState = getAuthenticatedAxios(context);
-    const _case = await deps.caseApi.loadCase(authenticatedAxiosState, context.getRequestParam("caseId") as string);
-    if(_case === undefined) {
-      throw new Error("Missing case")
+    const caseId = context.getRequestParam("caseId")
+    if(caseId === undefined) {
+      throw new Error("Case id is required to load a case")
     }
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
 },
 
