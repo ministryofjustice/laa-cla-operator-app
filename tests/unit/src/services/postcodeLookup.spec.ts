@@ -50,7 +50,7 @@ describe("Postcode lookup", ()=>{
             json: async () => (TEST_POSTCODE_LOOKUP_RESPONSE)
         })
 
-        const addresses = await postcodeLookupService.byPostcode("MINISTRY OF JUSTICE", "SW1H 9AJ")
+        const addresses = await postcodeLookupService.byPostcode("SW1H 9AJ")
         assert(Array.isArray(addresses))
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- We are checking atleast one result is returned
         assert(addresses.length === 1)

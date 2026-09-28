@@ -63,12 +63,6 @@ export const addressLookupStep1 = step({
                 "text": "Building number or name",
                 "classes": GovUKUtilityClasses.Label.Small,
             },
-            validWhen: [
-                validation({
-                    condition: Self().match(Condition.IsRequired()),
-                    message: "You must enter a valid building number or name"
-                }),
-            ]
         }),
         GovUKButton({
             text: "Find address",

@@ -57,13 +57,13 @@ export class Address {
 export class PostcodeLookupService {
     /**
      * Utility lookup method that is used by other lookup methods in this class
-     * @param {"find" | "uprn"} endpoint - OS Places endpoint to use for address lookup
+     * @param {"find" | "uprn" | "postcode"} endpoint - OS Places endpoint to use for address lookup
      * @param {URLSearchParams} params - Parameters to pass to the address lookup endpoint
      * @param {boolean} includePostcodeInAddess - Whether to include the postcode in the formatted address
      * @returns {Address[]} - Returns list of addresses found
      */
     // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Utility method
-    async lookup(endpoint: "find" | "uprn", params: URLSearchParams, includePostcodeInAddess = true): Promise<Address[]> {
+    async lookup(endpoint: "find" | "uprn" | "postcode", params: URLSearchParams, includePostcodeInAddess = true): Promise<Address[]> {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
         if(!config.OS_PLACES_API_KEY) {
             return [];
@@ -90,17 +90,28 @@ export class PostcodeLookupService {
 
     /**
      * Lookup an address by postcode and building name/number
-     * @param {string} building - The building for postcode lookup
      * @param {string} postcode - The postcode to lookup
+     * @param {string} building - The building for postcode lookup
      * @returns {Address[] | null} - A list of matched addresses
      */
-    async byPostcode (building: string, postcode: string): Promise<Address[]>{
-        const params = new URLSearchParams({
-            query: `${building} ${postcode}`,
-            output_srs: "WGS84",
-            dataset: "DPA",
-        });
-        return await this.lookup("find", params)
+    async byPostcode (postcode: string, building?: string): Promise<Address[]>{
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
+        if(building) {
+            const params = new URLSearchParams({
+                query: `${building} ${postcode}`,
+                output_srs: "WGS84",
+                dataset: "DPA",
+            });
+            return await this.lookup("find", params)
+        }
+        else {
+            const params = new URLSearchParams({
+                postcode,
+                output_srs: "WGS84",
+                dataset: "DPA",
+            });
+            return await this.lookup("postcode", params)
+        }
     }
 
     /**
