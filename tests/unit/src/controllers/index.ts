@@ -8,6 +8,7 @@ const FIRST_ARGUMENT = 0
  * @returns {Request} - Returns a test express request object
  */
 export function createTestRequest(): Request  {
+    // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test request
     return {
         session: {
             // Creates a Sinon stub that, when called, calls its first argument with null
@@ -23,6 +24,7 @@ export function createTestRequest(): Request  {
  * @returns {Response} - Returns a test express response object
  */
 export function createTestResponse(): Response {
+    // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test response
     return {
         redirect: sinon.stub(),
         send: sinon.stub(),

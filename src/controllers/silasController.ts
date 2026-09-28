@@ -303,6 +303,42 @@ function hasValidAccountResponse(
 
 
 /**
+ * ON UAT we might need to proxy to an ephemeral environment
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {boolean} - Whether a redirect happened
+ */
+function redirectUatCallback(req: Request, res: Response): boolean {
+    if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
+    const queryString = new URLSearchParams(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
+      req.query as Record<string, string>
+    ).toString();
+    const redirect = `${req.session.return_to}?${queryString}`
+    res.redirect(redirect)
+    return true;
+  }
+  return false
+}
+
+/**
+ * Validate code and state from an entra redirect
+ * @param {string} code - The entra code that will be exchange for an access token
+ * @param {state} state - The alue that was added to the original lokin request
+ * @param {Request} req - Express request object
+ * @returns {boolean} - Whether the given values are valid
+ */
+function validateCodeAndState(code: string, state: string, req: Request): boolean {
+  if (code.length === EMPTY_LENGTH || state.length === EMPTY_LENGTH) {
+    return false;
+  }
+
+  if (state !== req.session.auth_nonce) {
+    return false;
+  }
+  return true
+}
+/**
  * Handles the OAuth callback from SILAS.
  *
  * @param {Request} req Express request containing the OAuth callback.
@@ -311,25 +347,14 @@ function hasValidAccountResponse(
  */
 export async function callbackAction(req: Request, res: Response): Promise<void> {
   // ON UAT we might need to proxy to an ephemeral environment
-  if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
-    const queryString = new URLSearchParams(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
-      req.query as Record<string, string>
-    ).toString();
-    const redirect = `${req.session.return_to}?${queryString}`
-    res.redirect(redirect)
+  if(redirectUatCallback(req, res)) {
     return;
   }
 
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
 
-  if (code.length === EMPTY_LENGTH || state.length === EMPTY_LENGTH) {
-    sendAuthenticationFailure(res);
-    return;
-  }
-
-  if (state !== req.session.auth_nonce) {
+  if (!validateCodeAndState(code, state, req)) {
     sendAuthenticationFailure(res);
     return;
   }
