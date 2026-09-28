@@ -32,6 +32,18 @@ const msalClient = new ConfidentialClientApplication({
 });
 
 /**
+ * Get a querystring as a string
+ * @param {Request} request - The express request
+ * @param {string} key - Which querystring to get
+ * @returns {string | undefined} - The querysyting value
+ */
+function getQueryStringAsString(request: Request, key: string,): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+  const value = request.query[key]
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
  * Redirects user to main uat if they are on a ephemeral environment for silas authentication
  * @param {Request} req - Express Request object
  * @param {Response} res - Express Response object 
@@ -51,8 +63,8 @@ export async function processUATRedirect(req: Request, res: Response): Promise<b
       return true
     }
   }
-  if(config.app.environment.toLowerCase() === "uat" && req.query.return_to !== undefined) {
-    const returnTo = req.query.return_to as string
+  const returnTo = getQueryStringAsString(req, "return_to")
+  if(config.app.environment.toLowerCase() === "uat" && returnTo !== undefined) {
     // limit redirects those on our namespace
     // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
     const returnToDomain = new URL(returnTo).origin
@@ -61,7 +73,7 @@ export async function processUATRedirect(req: Request, res: Response): Promise<b
     }
 
     if(req.query.nonce !== undefined) {
-      req.session.auth_nonce = req.query.nonce as string
+      req.session.auth_nonce = getQueryStringAsString(req, "nonce")
     }
     req.session.return_to = returnTo
     await saveSession(req)
@@ -83,6 +95,7 @@ async function getAuthNonce(req: Request): Promise<string> {
     await saveSession(req);
 
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- nonce will be a string
   return authNonce as string
 }
 
@@ -300,6 +313,7 @@ export async function callbackAction(req: Request, res: Response): Promise<void>
   // ON UAT we might need to proxy to an ephemeral environment
   if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
     const queryString = new URLSearchParams(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
       req.query as Record<string, string>
     ).toString();
     const redirect = `${req.session.return_to}?${queryString}`
