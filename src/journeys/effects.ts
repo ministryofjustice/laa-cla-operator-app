@@ -8,17 +8,12 @@ import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchPar
 import type { CaseDetails } from "#types/api-types.js";
 
 /**
- * Extends EffectFunctionContext to add method to get a case
+ * Get the current case
+ * @returns {CaseDetails} - Returns the current case
  */
-class CaseEffectFunctionContext extends EffectFunctionContext {
-  /**
-   * Get the current case
-   * @returns {CaseDetails} - Returns the current case
-   */
-  getCase(): CaseDetails{
+function getCase(context: EffectFunctionContext): CaseDetails {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This will be a case object
-    return this.getData("case") as CaseDetails
-  }
+    return context.getData("case") as CaseDetails
 }
 
 export interface InboundCallEffectShape {
@@ -33,7 +28,7 @@ export interface InboundCallEffectShape {
 
 type InboundCallEffectsImplementation = (
   deps: Deps,
-) => (context: CaseEffectFunctionContext) => Promise<void>;
+) => (context: EffectFunctionContext) => Promise<void>;
 
 export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
 
@@ -67,10 +62,11 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
   /**
    * Save client details to the api.
    * @param {Deps} deps - The dependencies required for the effect.
-   * @returns {(context: CaseEffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   * @returns {(context: CaseEffectFunEffectFunctionContextctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-    saveClientDetails: (deps: Deps) => async (context: CaseEffectFunctionContext) => {
-      const _case = context.getCase()
+    saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+      const _case = getCase(context)
+      console.log("Type of context: ", typeof context)
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const personalDetails = {
