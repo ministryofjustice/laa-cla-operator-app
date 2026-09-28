@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { promisify } from "node:util";
 
 import { ConfidentialClientApplication } from "@azure/msal-node";
@@ -7,6 +7,7 @@ import type { Request, Response } from "express";
 import config from "#config.js";
 import type { AccessTokenClaims } from "#types/auth-types.js";
 
+const EPHEMERAL_SUFFIX = "laa-cla-operator-app.cloud-platform.service.justice.gov.uk"
 const NONCE_BYTES = 32;
 const TOKEN_PARTS_COUNT = 3;
 const DEFAULT_SESSION_MINUTES = 30;
@@ -31,6 +32,87 @@ const msalClient = new ConfidentialClientApplication({
 });
 
 /**
+ * Get a querystring as a string
+ * @param {Request} request - The express request
+ * @param {string} key - Which querystring to get
+ * @returns {string | undefined} - The querysyting value
+ */
+function getQueryStringAsString(request: Request, key: string,): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
+  const value = request.query[key]
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Redirects user to main uat if they are on a ephemeral environment for silas authentication
+ * @param {"login" | "redirect"} action - The action under which this function is being called under
+ * @param {Request} req - Express Request object
+ * @param {Response} res - Express Response object 
+ * @returns {boolean} - Returns true if the user was redirected
+ */
+export async function processUATRedirect(action: "login" | "redirect", req: Request, res: Response): Promise<boolean> {
+  if(action === "login"){
+    const returnTo = getQueryStringAsString(req, "return_to")
+    if(config.app.environment.toLowerCase() === "ephemeral") {
+      if(config.SERVICE_URL !== undefined) {
+        const nonce = randomUUID()
+        req.session.auth_nonce = nonce
+        await saveSession(req)
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+        const domain = new URL(config.silas.redirectUri).origin
+        const redirect = `${domain}/login?return_to=https://${config.SERVICE_URL}/redirect&nonce=${nonce}`
+        res.redirect(redirect)
+        return true
+      }
+    }
+    else if(config.app.environment.toLowerCase() === "uat" && returnTo !== undefined) {
+      // limit redirects those on our namespace
+      // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much cleaner here
+      const returnToDomain = new URL(returnTo).origin
+      if(!returnToDomain.endsWith(EPHEMERAL_SUFFIX)) {
+        throw new Error(`Return to does not belong to our namespace: ${returnTo}`)
+      }
+
+      if(req.query.nonce !== undefined) {
+        req.session.auth_nonce = getQueryStringAsString(req, "nonce")
+      }
+      req.session.return_to = returnTo
+      await saveSession(req)
+      return false
+    }
+  }
+  else if(config.app.environment.toLocaleLowerCase() === "uat" && req.session.return_to !== undefined) {
+    const queryString = new URLSearchParams(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- query parameters will be a single value here
+      req.query as Record<string, string>
+    ).toString();
+    const redirect = `${req.session.return_to}?${queryString}`
+    console.log("Redirect is ", redirect)
+    res.redirect(redirect)
+    return true;
+  }
+  return false
+}
+
+/**
+ * Tries to find auth nonce in req.session.auth_nonce otherwise creates and saves in the session and returns it
+ * @param {Request} req - Express Request object
+ * @returns {Promise<string>} - Returns the nonce to use for the auth
+ */
+async function getAuthNonce(req: Request): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+  let authNonce = req.session.auth_nonce
+  if(authNonce === undefined) {
+    authNonce = randomBytes(NONCE_BYTES).toString("base64url");
+    req.session.auth_nonce = authNonce;
+    await saveSession(req);
+
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- nonce will be a string
+  return authNonce as string
+}
+
+/**
  * Handles the initial SILAS login request and redirects the user to Microsoft.
  *
  * @param {Request} req Express request containing the authenticated session.
@@ -38,15 +120,15 @@ const msalClient = new ConfidentialClientApplication({
  * @returns {Promise<void>} A promise that resolves after the redirect.
  */
 export async function loginAction(req: Request, res: Response): Promise<void> {
-  const nonce = randomBytes(NONCE_BYTES).toString("base64url");
-
-  req.session.auth_nonce = nonce;
-  await saveSession(req);
-
+  const userRedirected = await processUATRedirect("login", req, res);
+  if(userRedirected) {
+    return
+  }
+  const authNonce = await getAuthNonce(req)
   const authUrl = await msalClient.getAuthCodeUrl({
     scopes: config.silas.scopes,
     redirectUri: config.silas.redirectUri,
-    state: nonce,
+    state: authNonce,
   });
 
   res.redirect(authUrl);
@@ -232,7 +314,23 @@ function hasValidAccountResponse(
   );
 }
 
+/**
+ * Validate code and state from an entra redirect
+ * @param {string} code - The entra code that will be exchange for an access token
+ * @param {state} state - The alue that was added to the original lokin request
+ * @param {Request} req - Express request object
+ * @returns {boolean} - Whether the given values are valid
+ */
+function validateCodeAndState(code: string, state: string, req: Request): boolean {
+  if (code.length === EMPTY_LENGTH || state.length === EMPTY_LENGTH) {
+    return false;
+  }
 
+  if (state !== req.session.auth_nonce) {
+    return false;
+  }
+  return true
+}
 /**
  * Handles the OAuth callback from SILAS.
  *
@@ -241,15 +339,16 @@ function hasValidAccountResponse(
  * @returns {Promise<void>} A promise resolving after the response is sent.
  */
 export async function callbackAction(req: Request, res: Response): Promise<void> {
+  // ON UAT we might need to proxy to an ephemeral environment
+  const userRedirected = await processUATRedirect("redirect", req, res);
+  if(userRedirected) {
+    return
+  }
+
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
 
-  if (code.length === EMPTY_LENGTH || state.length === EMPTY_LENGTH) {
-    sendAuthenticationFailure(res);
-    return;
-  }
-
-  if (state !== req.session.auth_nonce) {
+  if (!validateCodeAndState(code, state, req)) {
     sendAuthenticationFailure(res);
     return;
   }

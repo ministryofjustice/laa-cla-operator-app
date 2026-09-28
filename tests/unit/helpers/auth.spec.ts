@@ -292,7 +292,7 @@ describe("loginAction", () => {
       .resolves("https://login.example/auth");
     const saveStub = sinon.stub().callsFake((callback: (err: null) => void) => callback(null));
     // loginAction needs only session.save() on the request and redirect() on the response.
-    const req: any = { session: { save: saveStub } };
+    const req: any = { session: { save: saveStub }, query: {} };
     const redirectStub = sinon.stub();
     const res: any = { redirect: redirectStub };
 
