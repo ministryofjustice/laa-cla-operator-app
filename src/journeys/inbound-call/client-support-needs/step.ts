@@ -4,9 +4,9 @@ import {
   submit,
   redirect,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { clientNeeds } from "./block.js";
+import { clientSupportNeeds } from "./block.js";
 
-export const addAddressStep = step({
+export const clientSupport = step({
   code: "client-support",
   title: "Client’s support needs",
   path: "/support-needs",
@@ -14,7 +14,7 @@ export const addAddressStep = step({
   onAccess: [requireSilasAuth],
   view: { template: "main/forms/form.njk" }, 
     blocks: [
-    clientNeeds,
+    clientSupportNeeds,
   ],
   onSubmission: [
     submit({
