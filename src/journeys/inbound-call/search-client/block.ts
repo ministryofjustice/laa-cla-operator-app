@@ -65,8 +65,8 @@ export const searchClientBlock = CollectionBlock({
       },
       hint: {
         text: displayTextByCallerType(
-          "If the third party is uncomfortable sharing the client's number, explain they'll only be contacted if it is safe and convenient to do so.",
           "If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.",
+          "If the third party is uncomfortable sharing the client's number, explain they'll only be contacted if it is safe and convenient to do so.",
           callerType,
         ),
       },
