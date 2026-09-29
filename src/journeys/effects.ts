@@ -4,14 +4,21 @@ import {
   type EffectFunctionContext,
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, ZERO } from "#src/journeys/helpers/effectHelpers.js";
+import {
+  FIRST_PAGE,
+  getAuthenticatedAxios,
+  getPageNumberFromQuery,
+  getSearchParamFromAnswers,
+  setPaginatedSearchData,
+  SEARCH_PAGE_SIZE,
+  ZERO,
+} from "#src/journeys/helpers/effectHelpers.js";
 import type { InboundCallContext } from "./types.js";
-
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
-  saveClientDetails: () => EffectFunctionExpr;
-  saveClientAddress :() => EffectFunctionExpr;
+  SaveClientDetails: () => EffectFunctionExpr;
+  SaveClientAddress: () => EffectFunctionExpr;
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
@@ -22,26 +29,28 @@ type InboundCallEffectsImplementation = (
   deps: Deps,
 ) => (context: InboundCallContext) => Promise<void>;
 
-export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
-
-    /**
-     * Implementation of the effect for retrieving all cases.
-     * @param {Deps} deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    GetAllCases: (deps: Deps) => async (context: EffectFunctionContext) => {
-       const authenticatedAxiosState = getAuthenticatedAxios(context);
+export const InboundCallEffectsImplementation: Record<
+  keyof InboundCallEffectShape,
+  InboundCallEffectsImplementation
+> = {
+  /**
+   * Implementation of the effect for retrieving all cases.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  GetAllCases: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
     context.setData("allCases", result);
   },
 
-    /**
-     * Creates an effect that saves the client's address to the case.
-     * @param {Deps} deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
+  /**
+   * Creates an effect that saves the client's address to the case.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  SaveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const address = {
@@ -49,15 +58,18 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
       postcode: context.getAnswer("postcode"),
     };
     // TODO: replace hardcoded case ID
-     const caseId =   "NE-4745-9751";   // "ED-0001-0001";
+    const caseId = "NE-4745-9751"; // "ED-0001-0001";
 
     try {
-      await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, caseId,address);
+      await deps.caseApi.updatePersonalDetails(
+        authenticatedAxiosState,
+        caseId,
+        address,
+      );
       context.setData("addressSaved", true);
     } catch (error) {
       context.setData("addressSaved", false);
     }
-
   },
 
   /**
@@ -65,7 +77,7 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  SaveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const personalDetails = {
@@ -94,73 +106,78 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
     );
   },
 
+  /**
+   * Implementation of the effect for searching cases based on user input.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  SearchCases: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const searchParam = getSearchParamFromAnswers(context).trim();
 
-    /**
-     * Implementation of the effect for searching cases based on user input.
-     * @param {Deps} deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    SearchCases: (deps: Deps) => async (context: EffectFunctionContext) => {
-        const authenticatedAxiosState = getAuthenticatedAxios(context);
-        const searchParam = getSearchParamFromAnswers(context).trim();
+    if (searchParam.length === ZERO) return;
+    context.setData("searchParam", searchParam);
+    const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
+      query: searchParam,
+      pageSize: SEARCH_PAGE_SIZE,
+      pageNumber: FIRST_PAGE,
+    });
 
-        if (searchParam.length === ZERO) return;
-        context.setData("searchParam", searchParam);
-        const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
-            query: searchParam,
-            pageSize: SEARCH_PAGE_SIZE,
-            pageNumber: FIRST_PAGE,
-        });
+    setPaginatedSearchData(context, result, FIRST_PAGE);
+  },
 
-        setPaginatedSearchData(context, result, FIRST_PAGE);
+  /**
+   * Implementation of the effect for handling pagination of search results.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  SearchCasesPagination:
+    (deps: Deps) => async (context: EffectFunctionContext) => {
+      const authenticatedAxiosState = getAuthenticatedAxios(context);
+      const rawQ = context.getQueryParam("q");
+      const queryFromUrl = Array.isArray(rawQ) ? rawQ[ZERO] : rawQ;
+      const searchParam = (queryFromUrl ?? "").trim();
+
+      if (searchParam.length === ZERO) return;
+
+      context.setData("searchParam", searchParam);
+
+      const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
+        query: searchParam,
+        pageSize: SEARCH_PAGE_SIZE,
+        pageNumber: getPageNumberFromQuery(context),
+      });
+
+      setPaginatedSearchData(context, result, getPageNumberFromQuery(context));
     },
 
-    /**
-     * Implementation of the effect for handling pagination of search results.
-     * @param {Deps} deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    SearchCasesPagination: (deps: Deps) => async (context: EffectFunctionContext) => {
-        const authenticatedAxiosState = getAuthenticatedAxios(context);
-        const rawQ = context.getQueryParam("q");
-        const queryFromUrl = Array.isArray(rawQ) ? rawQ[ZERO] : rawQ;
-        const searchParam = (queryFromUrl ?? "").trim();
+  /**
+   * Implementation of the effect for creating a new case based on user input.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  CreateCase: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const { reference } = await deps.caseApi.createCase(
+      authenticatedAxiosState,
+    );
+    context.setData("createdCaseRef", reference);
+  },
 
-       if (searchParam.length === ZERO) return;
-
-       context.setData("searchParam", searchParam);
-       
-         const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
-           query: searchParam,
-           pageSize: SEARCH_PAGE_SIZE,
-           pageNumber: getPageNumberFromQuery(context),
-       });
-
-        setPaginatedSearchData(context, result, getPageNumberFromQuery(context));
-    },
-
-    /**
-     * Implementation of the effect for creating a new case based on user input.
-     * @param {Deps} deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    CreateCase: (deps: Deps) => async (context: EffectFunctionContext) => {
-       const authenticatedAxiosState = getAuthenticatedAxios(context);
-       const { reference } = await deps.caseApi.createCase(authenticatedAxiosState);
-       context.setData("createdCaseRef", reference);
-    },
-
-    /**
-     * 
-     * Add the caller type to the session.
-     * @param {Deps} _deps - The dependencies required for the effect.
-     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-     */
-    StoreCallerTypeInSession: (_deps: Deps) => async (context: InboundCallContext) => {
+  /**
+   *
+   * Add the caller type to the session.
+   * @param {Deps} _deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  StoreCallerTypeInSession:
+    (_deps: Deps) => async (context: InboundCallContext) => {
       const session = context.getSession();
 
       if (session !== undefined) {
-        session.callerType = context.getAnswer<string | undefined>("callerType");
+        session.callerType = context.getAnswer<string | undefined>(
+          "callerType",
+        );
       }
 
       await Promise.resolve();
@@ -174,18 +191,29 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "GetAllCases",
     InboundCallEffectsImplementation.GetAllCases,
   ),
-  saveClientAddress: InboundCallEffectsRegistry.register(
-    "saveClientAddress",
-     InboundCallEffectsImplementation.saveClientAddress,
-  ), 
-
-  saveClientDetails: InboundCallEffectsRegistry.register(
-    "saveClientDetails",
-    InboundCallEffectsImplementation.saveClientDetails,
+  SaveClientAddress: InboundCallEffectsRegistry.register(
+    "SaveClientAddress",
+    InboundCallEffectsImplementation.SaveClientAddress,
   ),
-    SearchCases: InboundCallEffectsRegistry.register("SearchCases", InboundCallEffectsImplementation.SearchCases),
-    SearchCasesPagination: InboundCallEffectsRegistry.register("SearchCasesPagination", InboundCallEffectsImplementation.SearchCasesPagination),
-    CreateCase: InboundCallEffectsRegistry.register("CreateCase", InboundCallEffectsImplementation.CreateCase),
-    StoreCallerTypeInSession: InboundCallEffectsRegistry.register("StoreCallerTypeInSession", InboundCallEffectsImplementation.StoreCallerTypeInSession),
-};
 
+  SaveClientDetails: InboundCallEffectsRegistry.register(
+    "SaveClientDetails",
+    InboundCallEffectsImplementation.SaveClientDetails,
+  ),
+  SearchCases: InboundCallEffectsRegistry.register(
+    "SearchCases",
+    InboundCallEffectsImplementation.SearchCases,
+  ),
+  SearchCasesPagination: InboundCallEffectsRegistry.register(
+    "SearchCasesPagination",
+    InboundCallEffectsImplementation.SearchCasesPagination,
+  ),
+  CreateCase: InboundCallEffectsRegistry.register(
+    "CreateCase",
+    InboundCallEffectsImplementation.CreateCase,
+  ),
+  StoreCallerTypeInSession: InboundCallEffectsRegistry.register(
+    "StoreCallerTypeInSession",
+    InboundCallEffectsImplementation.StoreCallerTypeInSession,
+  ),
+};

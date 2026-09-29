@@ -30,11 +30,18 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const expected = { count: 1, results: [{ reference: "FA-1" }] };
     const getAllCases = sinon.stub().resolves(expected);
     const updatePersonalDetails = sinon.stub().resolves({});
-    const searchCases = sinon.stub().resolves({ count: 1, results: [{ reference: 'FA-1' }] });
-    const createCase = sinon.stub().resolves({ reference: 'FA-1' });
+    const searchCases = sinon
+      .stub()
+      .resolves({ count: 1, results: [{ reference: "FA-1" }] });
+    const createCase = sinon.stub().resolves({ reference: "FA-1" });
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      caseApi: { getAllCases, updatePersonalDetails, searchCases, createCase: createCase },
+      caseApi: {
+        getAllCases,
+        updatePersonalDetails,
+        searchCases,
+        createCase: createCase,
+      },
     });
 
     const setData = sinon.stub();
@@ -56,7 +63,9 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: {
         getAllCases: sinon.stub(),
-        updatePersonalDetails: sinon.stub(), searchCases: sinon.stub(), createCase: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases: sinon.stub(),
+        createCase: sinon.stub(),
       },
     });
 
@@ -113,7 +122,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   it("sets personalDetails data with SAFE when safeToCall is yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
     const deps = makeDeps();
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
+    const effect = InboundCallEffectsImplementation.SaveClientDetails(
       deps as any,
     );
 
@@ -166,7 +175,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   it("sets personalDetails data with DONT_CALL when safeToCall is not yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
     const deps = makeDeps();
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
+    const effect = InboundCallEffectsImplementation.SaveClientDetails(
       deps as any,
     );
 
@@ -217,7 +226,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   });
 
   it("throws when authenticatedAxios is missing or invalid", async () => {
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
+    const effect = InboundCallEffectsImplementation.SaveClientDetails(
       makeDeps() as any,
     );
 

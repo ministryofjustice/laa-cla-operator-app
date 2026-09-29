@@ -1,5 +1,9 @@
-import { type ChainableMatch, type ChainableRef, Condition, match } from "@ministryofjustice/hmpps-forge/core/authoring";
-
+import {
+  type ChainableMatch,
+  type ChainableRef,
+  Condition,
+  match,
+} from "@ministryofjustice/hmpps-forge/core/authoring";
 
 /**
  * Returns the appropriate text based on the caller type.
@@ -8,13 +12,12 @@ import { type ChainableMatch, type ChainableRef, Condition, match } from "@minis
  * @param {ChainableRef} callerType - The type of caller.
  * @returns {ChainableMatch} The appropriate text based on the caller type.
  */
-export const displayTextByCallerType = (myself: string, thirdParty: string, callerType: ChainableRef): ChainableMatch => match(callerType)
-        .branch(
-            Condition.Equals("myself"),
-            myself,
-        )
-        .branch(
-            Condition.Equals("thirdParty"),
-            thirdParty,
-        )
-        .otherwise(myself);
+export const displayTextByCallerType = (
+  myself: string,
+  thirdParty: string,
+  callerType: ChainableRef,
+): ChainableMatch =>
+  match(callerType)
+    .branch(Condition.Equals("myself"), myself)
+    .branch(Condition.Equals("thirdParty"), thirdParty)
+    .otherwise(myself);

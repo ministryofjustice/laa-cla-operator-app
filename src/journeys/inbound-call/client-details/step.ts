@@ -20,7 +20,7 @@ export const addClientDetailsStep = step({
     submit({
       validate: true,
       onValid: {
-        effects: [InboundCallEffects.saveClientDetails()],
+        effects: [InboundCallEffects.SaveClientDetails()],
         next: [redirect({ goto: "add-client-address" })],
       },
     }),
