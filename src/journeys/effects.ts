@@ -52,17 +52,16 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
      * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
      */
     saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context)
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const address = {
       street: context.getAnswer("address-line-1"),
       postcode: context.getAnswer("postcode"),
     };
-    // TODO: replace hardcoded case ID
-     const caseId =   "NE-4745-9751";   // "ED-0001-0001";
 
     try {
-      await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, caseId,address);
+      await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, _case.reference, address);
       context.setData("addressSaved", true);
     } catch (error) {
       context.setData("addressSaved", false);
