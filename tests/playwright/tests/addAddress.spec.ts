@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures/index.js";
 
-const TEST_AUTH_NEXT_PATH = "/receive-call/add-address";
+const TEST_AUTH_NEXT_PATH = "/case/ED-0001-0002/add-address";
 
 test.describe("add client address", () => {
   test.beforeEach(async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe("add client address", () => {
     page.waitForResponse(
       (r) =>
         r.request().method() === "POST" &&
-        r.url().includes("/receive-call/add-address"),
+        r.url().includes("/case/ED-0001-0002/add-address"),
     ),
     AddAddressPage.continueButton.click(),
   ]);
