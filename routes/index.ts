@@ -93,7 +93,7 @@ router.get("/privacy", (req: Request, res: Response): void => {
 });
 
 //Cookies page
-router.get("/cookies", function (req: Request, res: Response): void {
+router.get("/cookies", (req: Request, res: Response): void => {
   res.render("main/cookies.njk");
 });
 
