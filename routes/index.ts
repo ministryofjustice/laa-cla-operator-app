@@ -56,10 +56,7 @@ if (process.env.NODE_ENV === "test") {
     const next = getSafeRelativeNextPath(req.query.next);
 
     req.session.silasAuth = {
-      // Test-only placeholder; never used outside NODE_ENV=test.
-      // snyk ignore:start
       accessToken: "test-access-token",
-      // snyk ignore:end
       expiresAt: Date.now() + AUTH_SESSION_TTL_MS,
       email: "test.user@justice.gov.uk",
       name: "Test User",
