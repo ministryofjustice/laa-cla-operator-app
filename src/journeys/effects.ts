@@ -67,7 +67,6 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
    */
     saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
       const _case = getCase(context)
-      console.log("Type of context: ", typeof context)
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const personalDetails = {
