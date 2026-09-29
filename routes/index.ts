@@ -52,11 +52,19 @@ router.get("/logout", logOut);
 
 // Test-only helper route to seed an authenticated session for E2E tests.
 if (process.env.NODE_ENV === "test") {
+  const {
+    env: { TEST_ACCESS_TOKEN },
+  } = process;
+
+  if (TEST_ACCESS_TOKEN === undefined) {
+    throw new Error("TEST_ACCESS_TOKEN must be defined when NODE_ENV is test.");
+  }
+
   router.get("/test-auth/login", (req: Request, res: Response): void => {
     const next = getSafeRelativeNextPath(req.query.next);
 
     req.session.silasAuth = {
-      accessToken: "test-access-token",
+      accessToken: TEST_ACCESS_TOKEN,
       expiresAt: Date.now() + AUTH_SESSION_TTL_MS,
       email: "test.user@justice.gov.uk",
       name: "Test User",
