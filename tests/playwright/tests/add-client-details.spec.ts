@@ -1,9 +1,8 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/index.js";
 
-const TEST_AUTH_NEXT_PATH = "/case/ED-0001-0002/add-client-details";
-const DETAILS_PATH = "/receive-call/add-client-details";
-const ADDRESS_PATH = "/receive-call/add-client-address";
+const DETAILS_PATH = "/case/ED-0001-0002/add-client-details";
+const ADDRESS_PATH = "/case/ED-0001-0002/add-client-address";
 
 async function stubSubmit(page: Page): Promise<string[]> {
   const postBodies: string[] = [];
@@ -34,7 +33,7 @@ async function stubSubmit(page: Page): Promise<string[]> {
 test.describe("Client's details page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(
-      `/test-auth/login?next=${encodeURIComponent(TEST_AUTH_NEXT_PATH)}`,
+      `/test-auth/login?next=${encodeURIComponent(DETAILS_PATH)}`,
     );
   });
 
