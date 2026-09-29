@@ -12,12 +12,6 @@
                 }) }}
             <h1 class="govuk-heading-xl">{{ step.title }}</h1>
 
-            <p class="govuk-body">
-                If the client is calling on their own behalf, take their details and search for any existing records before starting a new case.
-            </p>
-
-            <h2 class="govuk-heading-s">Find a client using one or more of the search terms below.</h2>
-
             {% if fieldValidationErrors | length or domainValidationErrors | length %}
                 {% set errorList = [] %}
 

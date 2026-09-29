@@ -30,11 +30,35 @@ import { displayTextByCallerType } from "#src/journeys/helpers/journeyHelpers.js
 
 const callerType = Session("callerType");
 
-export const searchClientBlock = CollectionBlock({
+export const searchClientIntroBlock = CollectionBlock({
+  collection: [
+    HtmlBlock({
+      tag: "p",
+      classes: "govuk-body",
+      content: displayTextByCallerType(
+        "If the client is calling on their own behalf, take their details and search for any existing records before starting a new case.",
+        "If someone is calling on behalf of another person (acting as a 'third party'), take the details of the person they are representing.",
+        callerType,
+      ),
+    }),
+    HtmlBlock({
+      tag: "p",
+      classes: "govuk-body",
+      content: displayTextByCallerType(
+        '<span class="govuk-!-font-weight-bold">Find a client using one or more of the search terms below.</span>',
+        'Search for any existing records in that person\'s name before starting a new case, <span class="govuk-!-font-weight-bold">using one or more of the search terms below.</span>',
+        callerType,
+      ),
+    }),
+  ],
+});
+
+export const searchClientFormBlock = CollectionBlock({
   classes: "search-client-box",
   collection: [
     GovUKTextInput({
       code: "fullName",
+      classes: "govuk-input--width-30",
       label: {
         text: displayTextByCallerType(
           "What's your name?",
@@ -55,6 +79,7 @@ export const searchClientBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "phone",
+      classes: "govuk-input--width-30",
       label: {
         text: displayTextByCallerType(
           "What's your phone number?",
@@ -82,6 +107,7 @@ export const searchClientBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "postcode",
+      classes: "govuk-input--width-30",
       label: {
         text: displayTextByCallerType(
           "What's your postcode?",
