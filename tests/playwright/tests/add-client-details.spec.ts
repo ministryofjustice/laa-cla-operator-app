@@ -1,11 +1,39 @@
+import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/index.js";
 
-const TEST_AUTH_NEXT_PATH = "/case/ED-0001-0002/add-client-details";
+const DETAILS_PATH = "/case/ED-0001-0002/add-client-details";
+const ADDRESS_PATH = "/case/ED-0001-0002/add-client-address";
+
+async function stubSubmit(page: Page): Promise<string[]> {
+  const postBodies: string[] = [];
+
+  await page.route(`**${DETAILS_PATH}`, async (route) => {
+    const request = route.request();
+    if (request.method() !== "POST") {
+      return route.fallback();
+    }
+    postBodies.push(request.postData() ?? "");
+    await route.fulfill({
+      status: 302,
+      headers: { location: new URL(ADDRESS_PATH, request.url()).href },
+    });
+  });
+
+  await page.route(`**${ADDRESS_PATH}`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: '<!doctype html><html lang="en"><head><title>Stub</title></head><body><main>Stubbed add-client-address</main></body></html>',
+    }),
+  );
+
+  return postBodies;
+}
 
 test.describe("Client's details page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(
-      `/test-auth/login?next=${encodeURIComponent(TEST_AUTH_NEXT_PATH)}`,
+      `/test-auth/login?next=${encodeURIComponent(DETAILS_PATH)}`,
     );
   });
 
@@ -27,12 +55,14 @@ test.describe("Client's details page", () => {
     pages,
   }) => {
     const { addClientDetailsPage } = pages;
+    const postBodies = await stubSubmit(page);
     await addClientDetailsPage.navigate();
 
     await addClientDetailsPage.fillValidForm();
     await addClientDetailsPage.submit();
 
     await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
+    expect(postBodies).toHaveLength(1);
   });
 
   test("submitting with everything blank shows all expected error messages", async ({
@@ -165,13 +195,19 @@ test.describe("Client's details page", () => {
     pages,
   }) => {
     const { addClientDetailsPage } = pages;
+    const postBodies = await stubSubmit(page);
     await addClientDetailsPage.navigate();
 
     await addClientDetailsPage.fillValidForm();
-    // emailInput intentionally left blank
+    await addClientDetailsPage.emailInput.fill("");
+    await expect(addClientDetailsPage.emailInput).toHaveValue("");
     await addClientDetailsPage.submit();
 
     await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
+
+    expect(postBodies).toHaveLength(1);
+    const body = new URLSearchParams(postBodies[0]);
+    expect(body.get("email") ?? "").toBe("");
   });
 
   test('selecting "Yes" for withheld number question reveals prompt text', async ({
