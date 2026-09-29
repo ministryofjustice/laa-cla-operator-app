@@ -41,6 +41,9 @@
                 {% if blocks[0] and blocks[1] %}
                     {{ blocks[0] | safe }}
                     {{ blocks[1] | safe }}
+                    {% if blocks[2] %}
+                        {{ blocks[2] | safe }}
+                    {% endif %}
                 {% endif %}
 
             </form>
@@ -95,11 +98,11 @@
                 bindNumericLimit("dateOfBirth-year", 4, null);
             </script>
 
-            {% if data.searchResults and blocks[2] %}
+            {% if data.searchResults and blocks[3] %}
                 {% if data.searchResults.results and data.searchResults.results | length %}
                 <h2 class="govuk-heading-m">{{ data.searchResults.count }} search result{% if data.searchResults.count != 1 %}s{% endif %}</h2>
                 <p class="govuk-body">Select a  client’s name to display their case history.</p>
-                    {{ blocks[2] | safe }}
+                    {{ blocks[3] | safe }}
                 {% else %}
                 <h2 class="govuk-heading-m">No results found</h2>
                 {% endif %}
