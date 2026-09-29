@@ -11,6 +11,7 @@ export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
+  saveClientAddress :() => EffectFunctionExpr;
     SearchCases: () => EffectFunctionExpr;
     SearchCasesPagination: () => EffectFunctionExpr;
     CreateCase: () => EffectFunctionExpr;
@@ -33,6 +34,31 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
     const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
     context.setData("allCases", result);
   },
+
+    /**
+     * Creates an effect that saves the client's address to the case.
+     * @param {Deps} deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+     */
+    saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+
+    const address = {
+      street: context.getAnswer("address-line-1"),
+      postcode: context.getAnswer("postcode"),
+    };
+    // TODO: replace hardcoded case ID
+     const caseId =   "NE-4745-9751";   // "ED-0001-0001";
+
+    try {
+      await deps.caseApi.updatePersonalDetails(authenticatedAxiosState, caseId,address);
+      context.setData("addressSaved", true);
+    } catch (error) {
+      context.setData("addressSaved", false);
+    }
+
+  },
+
   /**
    * Implementation of the effect for retrieving all cases.
    * @param {Deps} deps - The dependencies required for the effect.
@@ -131,6 +157,11 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "GetAllCases",
     InboundCallEffectsImplementation.GetAllCases,
   ),
+  saveClientAddress: InboundCallEffectsRegistry.register(
+    "saveClientAddress",
+     InboundCallEffectsImplementation.saveClientAddress,
+  ), 
+
   saveClientDetails: InboundCallEffectsRegistry.register(
     "saveClientDetails",
     InboundCallEffectsImplementation.saveClientDetails,
@@ -139,3 +170,4 @@ export const InboundCallEffects: InboundCallEffectShape = {
     SearchCasesPagination: InboundCallEffectsRegistry.register("SearchCasesPagination", InboundCallEffectsImplementation.SearchCasesPagination),
     CreateCase: InboundCallEffectsRegistry.register("CreateCase", InboundCallEffectsImplementation.CreateCase),
 };
+
