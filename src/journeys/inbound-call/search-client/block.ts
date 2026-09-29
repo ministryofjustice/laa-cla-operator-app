@@ -6,7 +6,11 @@ import { GovUKPagination ,
   GovUKTable,
   GovUKButtonGroup,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { Data, Item, Iterator, Generator, validation, Self, Condition, or, match, Format, Answer, Loop, and } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { Data, Item, Iterator, Generator, validation, Self, Condition, or, match, Format, Answer, Loop, and, Session } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { displayTextByCallerType } from "#src/journeys/helpers/journeyHelpers.js";
+
+
+const callerType = Session("callerType");
 
 export const searchClientBlock = CollectionBlock({
     classes: "search-client-box",
@@ -14,7 +18,11 @@ export const searchClientBlock = CollectionBlock({
         GovUKTextInput({
         code: "fullName",
         label: {
-            text: "What's your name?",
+            text: displayTextByCallerType(
+                "What's your name?", 
+                "What's the name of the person you are calling on behalf of?",
+                callerType
+                ),
             classes: "govuk-label--s",
         },
         validWhen: [
@@ -30,11 +38,15 @@ export const searchClientBlock = CollectionBlock({
         GovUKTextInput({
         code: "phone",
         label: {
-            text: "What's your phone number?",
+            text: displayTextByCallerType("What's your phone number?", "What's their phone number?", callerType),
             classes: "govuk-label--s",
         },
         hint: {
-            text: "If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.",
+            text: displayTextByCallerType(
+                "If the third party is uncomfortable sharing the client's number, explain they'll only be contacted if it is safe and convenient to do so.",
+                "If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.",
+                callerType
+            ),
         },
         validWhen: [
             validation({
@@ -49,7 +61,7 @@ export const searchClientBlock = CollectionBlock({
         GovUKTextInput({
         code: "postcode",
         label: {
-            text: "What's your postcode?",
+            text: displayTextByCallerType("What's your postcode?", "What's their postcode?", callerType),
             classes: "govuk-label--s",
         },
         validWhen: [
@@ -66,7 +78,7 @@ export const searchClientBlock = CollectionBlock({
         code: "dateOfBirth",
         fieldset: {
             legend: {
-            text: "What's your date of birth?",
+            text: displayTextByCallerType("What's your date of birth?", "What's their date of birth?", callerType),
             classes: "govuk-fieldset__legend--s",
             },
         },

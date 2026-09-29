@@ -5,21 +5,22 @@ import {
   EffectRegistry,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { FIRST_PAGE, getAuthenticatedAxios, getPageNumberFromQuery, getSearchParamFromAnswers, setPaginatedSearchData, SEARCH_PAGE_SIZE, ZERO } from "#src/journeys/helpers/effectHelpers.js";
+import type { InboundCallContext } from "./types.js";
 
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
-  /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress :() => EffectFunctionExpr;
-    SearchCases: () => EffectFunctionExpr;
-    SearchCasesPagination: () => EffectFunctionExpr;
-    CreateCase: () => EffectFunctionExpr;
+  SearchCases: () => EffectFunctionExpr;
+  SearchCasesPagination: () => EffectFunctionExpr;
+  CreateCase: () => EffectFunctionExpr;
+  StoreCallerTypeInSession: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
   deps: Deps,
-) => (context: EffectFunctionContext) => Promise<void>;
+) => (context: InboundCallContext) => Promise<void>;
 
 export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectShape, InboundCallEffectsImplementation> = {
 
@@ -128,8 +129,8 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
        if (searchParam.length === ZERO) return;
 
        context.setData("searchParam", searchParam);
-    
-       const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
+       
+         const result = await deps.caseApi.searchCases(authenticatedAxiosState, {
            query: searchParam,
            pageSize: SEARCH_PAGE_SIZE,
            pageNumber: getPageNumberFromQuery(context),
@@ -147,6 +148,22 @@ export const InboundCallEffectsImplementation: Record<keyof InboundCallEffectSha
        const authenticatedAxiosState = getAuthenticatedAxios(context);
        const { reference } = await deps.caseApi.createCase(authenticatedAxiosState);
        context.setData("createdCaseRef", reference);
+    },
+
+    /**
+     * 
+     * Add the caller type to the session.
+     * @param {Deps} _deps - The dependencies required for the effect.
+     * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+     */
+    StoreCallerTypeInSession: (_deps: Deps) => async (context: InboundCallContext) => {
+      const session = context.getSession();
+
+      if (session !== undefined) {
+        session.callerType = context.getAnswer<string | undefined>("callerType");
+      }
+
+      await Promise.resolve();
     },
 };
 
@@ -169,5 +186,6 @@ export const InboundCallEffects: InboundCallEffectShape = {
     SearchCases: InboundCallEffectsRegistry.register("SearchCases", InboundCallEffectsImplementation.SearchCases),
     SearchCasesPagination: InboundCallEffectsRegistry.register("SearchCasesPagination", InboundCallEffectsImplementation.SearchCasesPagination),
     CreateCase: InboundCallEffectsRegistry.register("CreateCase", InboundCallEffectsImplementation.CreateCase),
+    StoreCallerTypeInSession: InboundCallEffectsRegistry.register("StoreCallerTypeInSession", InboundCallEffectsImplementation.StoreCallerTypeInSession),
 };
 

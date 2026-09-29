@@ -240,3 +240,45 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     );
   });
 });
+
+describe("InboundCallEffectsImplementation.StoreCallerTypeInSession", () => {
+  it("stores callerType in session when session is available", async () => {
+    const effect = InboundCallEffectsImplementation.StoreCallerTypeInSession({
+      caseApi: {
+        getAllCases: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases: sinon.stub(),
+        createCase: sinon.stub(),
+      },
+    } as any);
+
+    const session: Record<string, unknown> = {};
+    const context = {
+      getSession: sinon.stub().returns(session),
+      getAnswer: sinon.stub().withArgs("callerType").returns("thirdParty"),
+    };
+
+    await effect(context as any);
+
+    assert.equal(session.callerType, "thirdParty");
+  });
+
+  it("does not throw when session is undefined", async () => {
+    const effect = InboundCallEffectsImplementation.StoreCallerTypeInSession({
+      caseApi: {
+        getAllCases: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases: sinon.stub(),
+        createCase: sinon.stub(),
+      },
+    } as any);
+
+    const context = {
+      getSession: sinon.stub().returns(undefined),
+      getAnswer: sinon.stub(),
+    };
+
+    await assert.doesNotReject(async () => effect(context as any));
+    assert.equal(context.getAnswer.called, false);
+  });
+});

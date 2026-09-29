@@ -9,4 +9,27 @@ test('search-client redirects unauthenticated users to auth flow', async ({ page
   await expect(page).toHaveURL(/\/login|\/sign-in/);
 });
 
-// TODO: Microsoft Entra test implementation isn't applied yet, which means Playwright tests will likely fail
+test('search-client shows myself full name text when callerType is myself', async ({ page, pages }) => {
+  const receiveCallPage = pages.receiveCallPage;
+  const searchClientPage = pages.searchClientPage;
+
+  await page.goto('/test-auth/login?next=/receive-call');
+  await receiveCallPage.selectCallerType('myself');
+  await receiveCallPage.continueButton.click();
+
+  await expect(page).toHaveURL(/\/receive-call\/search-client$/);
+  await expect(searchClientPage.fullNameLabelMyself).toBeVisible();
+});
+
+test('search-client shows third-party full name text when callerType is thirdParty', async ({ page, pages }) => {
+  const receiveCallPage = pages.receiveCallPage;
+  const searchClientPage = pages.searchClientPage;
+
+  await page.goto('/test-auth/login?next=/receive-call');
+  await receiveCallPage.selectCallerType('thirdParty');
+  await receiveCallPage.continueButton.click();
+
+  await expect(page).toHaveURL(/\/receive-call\/search-client$/);
+  await expect(searchClientPage.fullNameLabelThirdParty).toBeVisible();
+});
+

@@ -25,6 +25,14 @@ export class SearchClientPage {
     return this.page.getByRole('button', { name: 'Search' });
   }
 
+  get fullNameLabelMyself(): Locator {
+    return this.page.getByText("What's your name?");
+  }
+
+  get fullNameLabelThirdParty(): Locator {
+    return this.page.getByText("What's the name of the person you are calling on behalf of?");
+  }
+
   get validationMessageName(): Locator {
     return this.page.getByText(
       'Full name must only contain letters, spaces, hyphens and apostrophes'
