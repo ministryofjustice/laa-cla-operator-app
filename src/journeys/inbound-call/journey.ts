@@ -43,5 +43,6 @@ export const inboundCallJourney = journey({
     addClientDetailsStep,
     addClientAddressStep,
     addAddressStep,
+    clientSupport
   ],
 });
