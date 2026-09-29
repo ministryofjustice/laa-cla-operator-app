@@ -1,19 +1,19 @@
-import { strict as assert } from 'assert';
-import { setupServer } from 'msw/node';
-import { http, HttpResponse } from 'msw';
-import type { Request, Response, NextFunction } from 'express';
+import { strict as assert } from "assert";
+import { setupServer } from "msw/node";
+import { http, HttpResponse } from "msw";
+import type { Request, Response, NextFunction } from "express";
 import {
   createApiMiddleware,
   hasValidSilasToken,
   requireAuth,
   setAuthStatus,
-} from '#src/middleware/apiMiddleware.js';
+} from "#src/middleware/apiMiddleware.js";
 
-describe('apiMiddleware', () => {
+describe("apiMiddleware", () => {
   const server = setupServer();
 
   before(() => {
-    server.listen({ onUnhandledRequest: 'error' });
+    server.listen({ onUnhandledRequest: "error" });
   });
 
   afterEach(() => {
@@ -24,7 +24,7 @@ describe('apiMiddleware', () => {
     server.close();
   });
 
-  it('attaches axios middleware to request and calls next', () => {
+  it("attaches axios middleware to request and calls next", () => {
     const middleware = createApiMiddleware({ enableLogging: false });
     const req = { session: {} } as unknown as Request;
     const res = {} as Response;
@@ -36,16 +36,16 @@ describe('apiMiddleware', () => {
 
     assert.equal(nextCalled, true);
     assert.ok(req.axiosMiddleware);
-    assert.equal(typeof req.axiosMiddleware.get, 'function');
+    assert.equal(typeof req.axiosMiddleware.get, "function");
     assert.ok(req.state);
     assert.strictEqual(req.state.authenticatedAxios, req.axiosMiddleware);
   });
 
-  it('adds authorization header from authService', async () => {
+  it("adds authorization header from authService", async () => {
     const middleware = createApiMiddleware({
       enableLogging: false,
       authService: {
-        getAuthHeader: async () => 'Bearer test-token',
+        getAuthHeader: async () => "Bearer test-token",
         clearTokens: () => undefined,
       },
     });
@@ -56,30 +56,32 @@ describe('apiMiddleware', () => {
     middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
-      http.get('http://api.test/auth-header', ({ request }) => {
-        const authHeader = request.headers.get('authorization');
+      http.get("http://api.test/auth-header", ({ request }) => {
+        const authHeader = request.headers.get("authorization");
 
-        if (authHeader === 'Bearer test-token') {
+        if (authHeader === "Bearer test-token") {
           return HttpResponse.json({ ok: true });
         }
 
         return new HttpResponse(null, { status: 401 });
-      })
+      }),
     );
 
-    const response = await req.axiosMiddleware.get('http://api.test/auth-header');
+    const response = await req.axiosMiddleware.get(
+      "http://api.test/auth-header",
+    );
 
     assert.equal(response.status, 200);
     assert.deepEqual(response.data, { ok: true });
   });
 
-  it('clears tokens on 401 responses', async () => {
+  it("clears tokens on 401 responses", async () => {
     let clearTokensCalls = 0;
 
     const middleware = createApiMiddleware({
       enableLogging: false,
       authService: {
-        getAuthHeader: async () => 'Bearer expired-token',
+        getAuthHeader: async () => "Bearer expired-token",
         clearTokens: () => {
           clearTokensCalls += 1;
         },
@@ -92,19 +94,19 @@ describe('apiMiddleware', () => {
     middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
-      http.get('http://api.test/unauthorized', () => {
+      http.get("http://api.test/unauthorized", () => {
         return new HttpResponse(null, { status: 401 });
-      })
+      }),
     );
 
     await assert.rejects(async () => {
-      await req.axiosMiddleware.get('http://api.test/unauthorized');
+      await req.axiosMiddleware.get("http://api.test/unauthorized");
     });
 
     assert.equal(clearTokensCalls, 1);
   });
 
-  it('does not throw when getAuthHeader fails', async () => {
+  it("does not throw when getAuthHeader fails", async () => {
     let called = 0;
 
     const middleware = createApiMiddleware({
@@ -112,7 +114,7 @@ describe('apiMiddleware', () => {
       authService: {
         getAuthHeader: async () => {
           called += 1;
-          throw new Error('header unavailable');
+          throw new Error("header unavailable");
         },
         clearTokens: () => undefined,
       },
@@ -124,22 +126,24 @@ describe('apiMiddleware', () => {
     middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
-      http.get('http://api.test/no-auth-required', () => {
+      http.get("http://api.test/no-auth-required", () => {
         return HttpResponse.json({ ok: true });
-      })
+      }),
     );
 
-    const response = await req.axiosMiddleware.get('http://api.test/no-auth-required');
+    const response = await req.axiosMiddleware.get(
+      "http://api.test/no-auth-required",
+    );
 
     assert.equal(called, 1);
     assert.equal(response.status, 200);
   });
 });
 
-describe('requireAuth', () => {
-  it('redirects to sign-in when silasAuth is missing from session', () => {
+describe("requireAuth", () => {
+  it("redirects to sign-in when silasAuth is missing from session", () => {
     const req = { session: {} } as unknown as Request;
-    let redirectedTo = '';
+    let redirectedTo = "";
     let nextCalled = false;
 
     const res = {
@@ -152,19 +156,19 @@ describe('requireAuth', () => {
       nextCalled = true;
     });
 
-    assert.equal(redirectedTo, '/sign-in');
+    assert.equal(redirectedTo, "/sign-in");
     assert.equal(nextCalled, false);
   });
 
-  it('calls next when silasAuth token is valid', () => {
+  it("calls next when silasAuth token is valid", () => {
     const req = {
       session: {
         silasAuth: {
-          accessToken: 'token',
-          idToken: 'id-token',
+          accessToken: "token",
+          idToken: "id-token",
           expiresAt: Date.now() + 10_000,
-          email: 'user@example.com',
-          name: 'User',
+          email: "user@example.com",
+          name: "User",
         },
       },
     } as unknown as Request;
@@ -183,38 +187,38 @@ describe('requireAuth', () => {
   });
 });
 
-describe('hasValidSilasToken', () => {
-  it('returns false for undefined', () => {
+describe("hasValidSilasToken", () => {
+  it("returns false for undefined", () => {
     assert.equal(hasValidSilasToken(undefined), false);
   });
 
-  it('returns false for expired token', () => {
+  it("returns false for expired token", () => {
     const token = {
-      accessToken: 'token',
-      idToken: 'id-token',
+      accessToken: "token",
+      idToken: "id-token",
       expiresAt: Date.now() - 1,
-      email: 'user@example.com',
-      name: 'User',
+      email: "user@example.com",
+      name: "User",
     };
 
     assert.equal(hasValidSilasToken(token), false);
   });
 
-  it('returns true for unexpired token', () => {
+  it("returns true for unexpired token", () => {
     const token = {
-      accessToken: 'token',
-      idToken: 'id-token',
+      accessToken: "token",
+      idToken: "id-token",
       expiresAt: Date.now() + 1_000,
-      email: 'user@example.com',
-      name: 'User',
+      email: "user@example.com",
+      name: "User",
     };
 
     assert.equal(hasValidSilasToken(token), true);
   });
 });
 
-describe('setAuthStatus', () => {
-  it('sets locals for unauthenticated users without silasAuth in session', () => {
+describe("setAuthStatus", () => {
+  it("sets locals for unauthenticated users without silasAuth in session", () => {
     const req = { session: {} } as unknown as Request;
     const res = { locals: {} as Record<string, unknown> } as Response;
 
@@ -230,20 +234,20 @@ describe('setAuthStatus', () => {
     assert.equal(nextCalled, true);
   });
 
-  it('sets locals for authenticated users', () => {
+  it("sets locals for authenticated users", () => {
     const req = {
       session: {
         silasAuth: {
-          accessToken: 'token',
-          idToken: 'id-token',
+          accessToken: "token",
+          idToken: "id-token",
           expiresAt: Date.now() + 10_000,
-          email: 'user@example.com',
-          name: 'User',
+          email: "user@example.com",
+          name: "User",
         },
         user: {
-          email: 'user@example.com',
-          name: 'User',
-          oid: 'oid-123',
+          email: "user@example.com",
+          name: "User",
+          oid: "oid-123",
         },
       },
     } as unknown as Request;
@@ -253,7 +257,7 @@ describe('setAuthStatus', () => {
     setAuthStatus(req, res, (() => undefined) as NextFunction);
 
     assert.equal(res.locals.isAuthenticated, true);
-    assert.equal(res.locals.userEmail, 'user@example.com');
-    assert.equal(res.locals.userName, 'User');
+    assert.equal(res.locals.userEmail, "user@example.com");
+    assert.equal(res.locals.userName, "User");
   });
 });
