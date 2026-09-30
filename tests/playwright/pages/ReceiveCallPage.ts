@@ -15,10 +15,11 @@ export class ReceiveCallPage {
 
   get url(): string {
     return "/receive-call";
+    return "/receive-call";
   }
 
-  get whosCallingInput(): Locator {
-    return this.page.locator("#whos-calling");
+  callerTypeInput(value: "client" | "thirdParty"): Locator {
+    return this.page.locator(`input[name="callerType"][value="${value}"]`);
   }
 
   get continueButton(): Locator {
@@ -33,5 +34,9 @@ export class ReceiveCallPage {
 
   async navigate(): Promise<void> {
     await this.page.goto(this.receiveCallUrl);
+  }
+
+  async selectCallerType(value: "client" | "thirdParty"): Promise<void> {
+    await this.callerTypeInput(value).check();
   }
 }

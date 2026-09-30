@@ -15,8 +15,9 @@ import {
 import { requireSilasAuth } from "#src/journeys/auth.js";
 import {
   displaySearchClientBlock,
-  searchClientBlock,
+  searchClientFormBlock,
   createCaseButtonBlock,
+  searchClientIntroBlock,
 } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 
@@ -48,7 +49,12 @@ export const searchClientStep = step({
   ],
   reachability: { entryWhen: true },
   view: { template: "main/search-client.njk" },
-  blocks: [searchClientBlock, createCaseButtonBlock, displaySearchClientBlock],
+  blocks: [
+    searchClientIntroBlock,
+    searchClientFormBlock,
+    createCaseButtonBlock,
+    displaySearchClientBlock,
+  ],
   onSubmission: [
     submit({
       when: Post("action").match(Condition.Equals("search")),
