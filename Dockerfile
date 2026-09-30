@@ -4,13 +4,12 @@ FROM node:26.10.0-alpine
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install Corepack, then prepare the required Yarn version
+# Install Corepack, prepare Yarn, then remove npm from the image
 RUN npm install --global corepack && \
     corepack enable && \
-    corepack prepare yarn@4.9.2 --activate
-
-# Upgrade npm from the version bundled with the Node image
-RUN npm install --global npm@12.1.0
+    corepack prepare yarn@4.9.2 --activate && \
+    npm uninstall --global npm && \
+    rm -f /usr/local/bin/npm /usr/local/bin/npx
 
 # Copy package.json and yarn.lock to the working directory
 COPY package*.json yarn.lock .yarnrc.yml ./
