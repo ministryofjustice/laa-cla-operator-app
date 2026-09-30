@@ -1,4 +1,4 @@
-import inboundCallPackage from './inbound-call/index.js';
+import inboundCallPackage from "./inbound-call/index.js";
 
 type JourneyPackage = typeof inboundCallPackage;
 

@@ -1,7 +1,8 @@
 import type { Page } from "@playwright/test";
 import { ReceiveCallPage } from "./ReceiveCallPage.js";
 import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
-import { SearchClientPage } from './SearchClientPage.js';
+import { AddressPage } from "./addAddressPage.js";
+import { SearchClientPage } from "./SearchClientPage.js";
 
 /**
  * Factory class for creating page objects
@@ -35,5 +36,9 @@ export class PageFactory {
    */
   get addClientDetailsPage(): AddClientDetailsPage {
     return new AddClientDetailsPage(this.page);
+  }
+
+  get AddAddressPage(): AddressPage {
+    return new AddressPage(this.page);
   }
 }

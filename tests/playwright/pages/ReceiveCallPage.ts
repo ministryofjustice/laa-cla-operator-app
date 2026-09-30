@@ -1,5 +1,5 @@
-import type { Locator, Page } from '@playwright/test';
-import { TEST_CONFIG } from '../playwright.config.js';
+import type { Locator, Page } from "@playwright/test";
+import { TEST_CONFIG } from "../playwright.config.js";
 
 /**
  * Page object for the receive-call journey entry step.
@@ -14,20 +14,20 @@ export class ReceiveCallPage {
   }
 
   get url(): string {
-    return '/receive-call';
+    return "/receive-call";
   }
 
   get whosCallingInput(): Locator {
-    return this.page.locator('#whos-calling');
+    return this.page.locator("#whos-calling");
   }
 
   get continueButton(): Locator {
-    return this.page.getByRole('button', { name: 'Continue' });
+    return this.page.getByRole("button", { name: "Continue" });
   }
 
   get validationMessage(): Locator {
     return this.page.getByText(
-      'Please select whether you are calling on behalf of yourself or another person.'
+      "Please select whether you are calling on behalf of yourself or another person.",
     );
   }
 
