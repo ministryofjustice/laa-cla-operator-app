@@ -1,6 +1,5 @@
 import { test, expect } from "../fixtures/index.js";
 
-
 test("search-client redirects unauthenticated users to auth flow", async ({
   page,
   pages,
