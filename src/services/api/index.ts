@@ -1,6 +1,19 @@
-import { createCase, getAllCases, updatePersonalDetails, searchCases, loadCase } from './caseDetailsService.js';
+import {
+  createCase,
+  getAllCases,
+  loadCase,
+  updatePersonalDetails,
+  searchCases,
+} from "./caseDetailsService.js";
 
-export * from './baseApiService.js'
-export * from './caseDetailsService.js'
+export * from "./baseApiService.js";
+export * from "./caseDetailsService.js";
 
-export const apiService = { getAllCases, loadCase, updatePersonalDetails, searchCases, createCase }
+export const apiService = {
+  getAllCases,
+  loadCase,
+  updatePersonalDetails,
+  searchCases,
+  createCase,
+  /* c8 ignore next */
+};

@@ -1,5 +1,5 @@
-import type { Locator, Page } from '@playwright/test';
-import { TEST_CONFIG } from '../playwright.config.js';
+import type { Locator, Page } from "@playwright/test";
+import { TEST_CONFIG } from "../playwright.config.js";
 
 export class AddressPage {
   private readonly page: Page;
@@ -11,29 +11,30 @@ export class AddressPage {
   }
 
   get url(): string {
-    return '/case/ED-0001-0002/add-address'; // was '/receive/add-address', which didn't match
+    return "/case/ED-0001-0002/add-address"; // was '/receive/add-address', which didn't match
   }
 
   get heading(): Locator {
-    return this.page.getByRole('heading', { name: /enter client.s address manually/i });
+    return this.page.getByRole("heading", {
+      name: /enter client.s address manually/i,
+    });
   }
 
   get addressInput(): Locator {
-    return this.page.locator('#address-line-1');
+    return this.page.locator("#address-line-1");
   }
 
   get postcodeInput(): Locator {
-    return this.page.locator('#postcode');
+    return this.page.locator("#postcode");
   }
 
   get continueButton(): Locator {
-    return this.page.getByRole('button', { name: 'Use this address' });
+    return this.page.getByRole("button", { name: "Use this address" });
   }
 
   // Summary box at the top of the page
   get errorSummary(): Locator {
-    return this.page.locator('.govuk-error-summary');
-
+    return this.page.locator(".govuk-error-summary");
   }
 
   // Link inside the summary that points at the address field
@@ -42,7 +43,7 @@ export class AddressPage {
   }
 
   get addressErrorMessage(): Locator {
-    return this.page.locator('#address-line-1-error');
+    return this.page.locator("#address-line-1-error");
   }
 
   async navigate(): Promise<void> {

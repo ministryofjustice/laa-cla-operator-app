@@ -2,8 +2,7 @@ import {
   journey,
   submit,
   redirect,
-  access,
-  step
+  step,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
@@ -59,6 +58,6 @@ export const caseJourney = journey({
   steps: [
     addClientDetailsStep,
     addClientAddressStep,
-    addAddressStep
+    addAddressStep,
   ],
 });
