@@ -1,18 +1,17 @@
-import { Answer, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import { GovUKButton, GovUKCheckboxInput, GovUKTextareaInput,GovUKHeading, GovUKBody, GovUKInsetText, } from "@ministryofjustice/hmpps-forge/govuk-components";
-import {} from "@ministryofjustice/hmpps-forge/moj-components"
+import { GovUKButton, GovUKCheckboxInput, GovUKTextareaInput,GovUKHeading, GovUKBody, GovUKInsetText,GovUKUtilityClasses } from "@ministryofjustice/hmpps-forge/govuk-components";
+
 
 export const clientSupportNeeds = CollectionBlock({
   collection: [
-    
+  
     GovUKBody(
         { text: 'A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult. ', size: 's' }
     ),
 
     GovUKInsetText({
-        text: "Is there anything we can do to make it easier to communicate with us?"
-
+        text: "Is there anything we can do to make it easier to communicate with us?",
+        classes: "govuk-tag--blue"
     }),
 
     GovUKHeading({ 
@@ -28,8 +27,10 @@ export const clientSupportNeeds = CollectionBlock({
     }),
 
     GovUKHeading({ 
+
         text: 'Client’s communication and support needs (optional)', 
-        size: 'm'
+        size: 'm',
+      
     }),
     GovUKCheckboxInput({
       code: "client-communication-needs",
