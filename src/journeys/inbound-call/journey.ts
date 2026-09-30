@@ -39,12 +39,8 @@ export const inboundCallJourney = journey({
   view: {
     template: "partials/form-step",
   },
-  steps: [
-    whosCallingStep,
-    searchClientStep,
-  ],
+  steps: [whosCallingStep, searchClientStep],
 });
-
 
 // Define the journey
 export const caseJourney = journey({
@@ -53,12 +49,8 @@ export const caseJourney = journey({
   path: "/case/:caseId",
   onAccess: [
     access({
-      effects: [InboundCallEffects.LoadCase()]
-    })
+      effects: [InboundCallEffects.LoadCase()],
+    }),
   ],
-  steps: [
-    addClientDetailsStep,
-    addClientAddressStep,
-    addAddressStep,
-  ],
+  steps: [addClientDetailsStep, addClientAddressStep, addAddressStep],
 });

@@ -30,7 +30,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const expected = { count: 1, results: [{ reference: "FA-1" }] };
     const getAllCases = sinon.stub().resolves(expected);
     const updatePersonalDetails = sinon.stub().resolves({});
-    const loadCase = sinon.stub().resolves({ reference: 'FA-1' });
+    const loadCase = sinon.stub().resolves({ reference: "FA-1" });
     const searchCases = sinon
       .stub()
       .resolves({ count: 1, results: [{ reference: "FA-1" }] });
@@ -131,7 +131,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
 
     const setData = sinon.stub();
     const getData = sinon.stub();
-    getData.withArgs("case").returns({reference: "ED-0001-0002"})
+    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
 
     const getPostData = sinon.stub();
     getPostData.withArgs("fullName").returns("Jane Doe");
@@ -189,7 +189,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     const setData = sinon.stub();
     const getPostData = sinon.stub();
     const getData = sinon.stub();
-    getData.withArgs("case").returns({reference: "ED-0001-0002"})
+    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
     getPostData.withArgs("fullName").returns("Jane Doe");
     getPostData.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
@@ -241,7 +241,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     );
 
     const getData = sinon.stub();
-    getData.withArgs("case").returns({reference: "ED-0001-0002"})
+    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
     const context = {
       getState: sinon.stub().withArgs("authenticatedAxios").returns(undefined),
       getPostData: sinon.stub(),

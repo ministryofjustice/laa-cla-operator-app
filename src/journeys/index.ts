@@ -1,7 +1,13 @@
-import {inboundCallJourneyPackage, caseJourneyPackage} from './inbound-call/index.js';
+import {
+  inboundCallJourneyPackage,
+  caseJourneyPackage,
+} from "./inbound-call/index.js";
 
 type JourneyPackage = typeof inboundCallJourneyPackage;
 
-const journeyPackages: JourneyPackage[] = [inboundCallJourneyPackage, caseJourneyPackage];
+const journeyPackages: JourneyPackage[] = [
+  inboundCallJourneyPackage,
+  caseJourneyPackage,
+];
 
 export default journeyPackages;

@@ -34,12 +34,17 @@ export async function getAllCases(
  * @param {string} caseId - The case id to load
  * @returns {Promise<GetAllCasesResponse>} The response containing all cases.
  */
-export async function loadCase(axiosMiddleware: AxiosInstanceWrapper, caseId: string): Promise<CaseDetails> {
-    return await handleApiCall(async () => {
-        const configuredAxios = configureAxiosInstance(axiosMiddleware);
-        const response = await configuredAxios.get<CaseDetails>(`/call_centre/api/v1/case/${caseId}`);
-        return response.data;
-    }, 'Error loading case');
+export async function loadCase(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+): Promise<CaseDetails> {
+  return await handleApiCall(async () => {
+    const configuredAxios = configureAxiosInstance(axiosMiddleware);
+    const response = await configuredAxios.get<CaseDetails>(
+      `/call_centre/api/v1/case/${caseId}`,
+    );
+    return response.data;
+  }, "Error loading case");
 }
 
 /**

@@ -6,7 +6,7 @@ import type { Deps } from "../api.js";
 
 // Package entrypoint for the inbound call journey.
 // app.ts registers this package with forge.registerPackage(...).
-export const inboundCallJourneyPackage =  createForgePackage<Deps>({
+export const inboundCallJourneyPackage = createForgePackage<Deps>({
   journey: inboundCallJourney,
   functions: [conditionRegistry, InboundCallEffectsRegistry],
 });
