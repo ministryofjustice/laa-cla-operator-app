@@ -15,10 +15,8 @@ export const addAddressStep = step({
   path: "/add-address",
   reachability: { entryWhen: true },
   onAccess: [requireSilasAuth],
-  view: { template: "main/forms/form.njk" }, 
-    blocks: [
-    addAddress,
-  ],
+  view: { template: "main/forms/form.njk" },
+  blocks: [addAddress],
   onSubmission: [
     submit({
       validate: true,
