@@ -170,7 +170,7 @@ export const InboundCallEffectsImplementation: Record<
    * @param {Deps} _deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await -- Forge expects methods to be async
   StoreCallerTypeInSession:
     (_deps: Deps) => async (context: InboundCallContext) => {
       const session = context.getSession();
@@ -179,7 +179,7 @@ export const InboundCallEffectsImplementation: Record<
         session.callerType = context.getAnswer<CallerType | undefined>(
           "callerType",
         );
-      }
+      }    
     },
 };
 

@@ -17,7 +17,7 @@ export class ReceiveCallPage {
     return "/receive-call";
   }
 
-  callerTypeInput(value: "myself" | "thirdParty"): Locator {
+  callerTypeInput(value: "client" | "thirdParty"): Locator {
     return this.page.locator(`input[name="callerType"][value="${value}"]`);
   }
 
@@ -35,7 +35,7 @@ export class ReceiveCallPage {
     await this.page.goto(this.receiveCallUrl);
   }
 
-  async selectCallerType(value: "myself" | "thirdParty"): Promise<void> {
+  async selectCallerType(value: "client" | "thirdParty"): Promise<void> {
     await this.callerTypeInput(value).check();
   }
 }

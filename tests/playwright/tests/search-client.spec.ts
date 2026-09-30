@@ -12,7 +12,7 @@ test("search-client redirects unauthenticated users to auth flow", async ({
   await expect(page).toHaveURL(/\/login|\/sign-in/);
 });
 
-test("search-client shows myself full name text when callerType is myself", async ({
+test("search-client shows myself full name text when callerType is client", async ({
   page,
   pages,
 }) => {
@@ -20,7 +20,7 @@ test("search-client shows myself full name text when callerType is myself", asyn
   const searchClientPage = pages.searchClientPage;
 
   await page.goto("/test-auth/login?next=/receive-call");
-  await receiveCallPage.selectCallerType("myself");
+  await receiveCallPage.selectCallerType("client");
   await receiveCallPage.continueButton.click();
 
   await expect(page).toHaveURL(/\/receive-call\/search-client$/);
