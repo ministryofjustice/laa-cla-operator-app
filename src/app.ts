@@ -29,7 +29,7 @@ import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunj
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
 import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
-import { PostcodeLookupService } from './services/postcodeLookup.js';
+import { PostcodeLookupService } from "./services/postcodeLookup.js";
 
 const TRUST_FIRST_PROXY = 1;
 

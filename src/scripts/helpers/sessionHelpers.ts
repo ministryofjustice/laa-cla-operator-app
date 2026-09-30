@@ -7,10 +7,10 @@ declare module "express-session" {
   interface Session {
     forms?: {
       postcodeLookup?: {
-        building?: string
-        postcode?: string
-      }
-    }
+        building?: string;
+        postcode?: string;
+      };
+    };
   }
   interface SessionData extends Record<
     string,

@@ -7,8 +7,10 @@ import {
 import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { addClientDetailsStep } from "./client-details/step.js";
-import { addressLookupStep1, addressLookupStep2 } from "./postcode-lookup/step.js";
-
+import {
+  addressLookupStep1,
+  addressLookupStep2,
+} from "./postcode-lookup/step.js";
 
 // Define the journey
 export const inboundCallJourney = journey({
@@ -22,6 +24,7 @@ export const inboundCallJourney = journey({
     whosCallingStep,
     searchClientStep,
     addClientDetailsStep,
-    addressLookupStep1, addressLookupStep2
+    addressLookupStep1,
+    addressLookupStep2,
   ],
 });
