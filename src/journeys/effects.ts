@@ -171,8 +171,7 @@ export const InboundCallEffectsImplementation: Record<
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   // eslint-disable-next-line @typescript-eslint/require-await -- Forge expects methods to be async
-  StoreCallerTypeInSession:
-    (_deps: Deps) => async (context: InboundCallContext) => {
+  StoreCallerTypeInSession: (_deps: Deps) => async (context: InboundCallContext) => {
       const session = context.getSession();
 
       if (session !== undefined) {
