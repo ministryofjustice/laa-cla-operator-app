@@ -4,6 +4,7 @@ import {
   Condition,
   match,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { CallerType } from "#src/journeys/types.js";
 
 /**
  * Returns the appropriate text based on the caller type.
@@ -18,6 +19,6 @@ export const displayTextByCallerType = (
   callerType: ChainableRef,
 ): ChainableMatch =>
   match(callerType)
-    .branch(Condition.Equals("myself"), myself)
-    .branch(Condition.Equals("thirdParty"), thirdParty)
+    .branch(Condition.Equals(CallerType.client), myself)
+    .branch(Condition.Equals(CallerType.thirdParty), thirdParty)
     .otherwise(myself);

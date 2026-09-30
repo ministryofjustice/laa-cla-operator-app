@@ -13,7 +13,7 @@ import {
   SEARCH_PAGE_SIZE,
   ZERO,
 } from "#src/journeys/helpers/effectHelpers.js";
-import type { InboundCallContext } from "./types.js";
+import type { CallerType, InboundCallContext } from "./types.js";
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
@@ -170,17 +170,16 @@ export const InboundCallEffectsImplementation: Record<
    * @param {Deps} _deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   StoreCallerTypeInSession:
     (_deps: Deps) => async (context: InboundCallContext) => {
       const session = context.getSession();
 
       if (session !== undefined) {
-        session.callerType = context.getAnswer<string | undefined>(
+        session.callerType = context.getAnswer<CallerType | undefined>(
           "callerType",
         );
       }
-
-      await Promise.resolve();
     },
 };
 
