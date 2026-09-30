@@ -48,6 +48,7 @@ export default defineConfig({
       PORT: "3001",
       SESSION_SECRET: "test-secret-key-for-playwright-tests",
       SESSION_NAME: "test-session",
+      TEST_ACCESS_TOKEN: "test-access-token",
       BACKEND_BASE_URL: MSW_CONFIG.API_BASE_URL,
     },
   },
