@@ -3,6 +3,15 @@ import type { SilasSessionAuth, SilasUserInfo } from "types/auth-types.js";
 
 // Extend the Express session interface to support dynamic namespaces
 declare module "express-session" {
+  interface Session {
+    forms?: {
+      postcodeLookup?: {
+        building?: string;
+        postcode?: string;
+      };
+    };
+  }
+
   interface SessionData extends Record<
     string,
     Record<string, string> | string | undefined

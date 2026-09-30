@@ -29,8 +29,10 @@ import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunj
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
 import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
+import { PostcodeLookupService } from "./services/postcodeLookup.js";
 
 const TRUST_FIRST_PROXY = 1;
+
 /**
  * Creates and configures an Express application.
  * Then starts the server listening on the configured port.
@@ -131,6 +133,7 @@ const createApp = (): express.Application => {
     }
     forge.registerPackage<Deps>(journeyPackage, {
       caseApi: apiService,
+      postcodeapi: new PostcodeLookupService(),
     });
   }
 

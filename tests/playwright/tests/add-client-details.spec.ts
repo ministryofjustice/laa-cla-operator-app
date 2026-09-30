@@ -3,7 +3,7 @@ import { test, expect } from "../fixtures/index.js";
 
 const TEST_AUTH_NEXT_PATH = "/receive-call/add-client-details";
 const DETAILS_PATH = "/receive-call/add-client-details";
-const ADDRESS_PATH = "/receive-call/add-client-address";
+const ADDRESS_PATH = "/receive-call/address-lookup";
 
 async function stubSubmit(page: Page): Promise<string[]> {
   const postBodies: string[] = [];
@@ -51,7 +51,7 @@ test.describe("Client's details page", () => {
     );
   });
 
-  test("submitting with valid details redirects to add-client-address", async ({
+  test("submitting with valid details redirects to address-lookup", async ({
     page,
     pages,
   }) => {
@@ -62,7 +62,7 @@ test.describe("Client's details page", () => {
     await addClientDetailsPage.fillValidForm();
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/receive-call\/add-client-address$/);
+    await expect(page).toHaveURL(/\/receive-call\/address-lookup$/);
     expect(postBodies).toHaveLength(1);
   });
 
@@ -204,7 +204,7 @@ test.describe("Client's details page", () => {
     await expect(addClientDetailsPage.emailInput).toHaveValue("");
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/receive-call\/add-client-address$/);
+    await expect(page).toHaveURL(/\/receive-call\/address-lookup$/);
 
     expect(postBodies).toHaveLength(1);
     const body = new URLSearchParams(postBodies[0]);

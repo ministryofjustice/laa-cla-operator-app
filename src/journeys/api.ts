@@ -5,9 +5,11 @@ import type {
   CaseDetails,
   SearchCasesResponse,
 } from "#types/api-types.js";
+import type { PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
 export interface Deps {
   caseApi: CaseApiService;
+  postcodeapi: PostcodeLookupService;
 }
 
 export interface CaseApiService {
