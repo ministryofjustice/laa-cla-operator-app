@@ -3,7 +3,7 @@ import { test, expect } from "../fixtures/index.js";
 
 const TEST_AUTH_NEXT_PATH = "/receive-call/add-client-details";
 const DETAILS_PATH = "/receive-call/add-client-details";
-const ADDRESS_PATH = "/receive-call/add-client-address";
+const ADDRESS_PATH = "/receive-call/address-lookup";
 
 async function stubSubmit(page: Page): Promise<string[]> {
   const postBodies: string[] = [];
@@ -19,14 +19,6 @@ async function stubSubmit(page: Page): Promise<string[]> {
       headers: { location: new URL(ADDRESS_PATH, request.url()).href },
     });
   });
-
-  await page.route(`**${ADDRESS_PATH}`, (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "text/html",
-      body: '<!doctype html><html lang="en"><head><title>Stub</title></head><body><main>Stubbed add-client-address</main></body></html>',
-    }),
-  );
 
   return postBodies;
 }
