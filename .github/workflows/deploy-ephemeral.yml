@@ -25,7 +25,6 @@ on:
       KUBE_TOKEN:
         required: true
 
-
 jobs:
   deploy:
     name: Deploy
@@ -33,8 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # This is required for requesting the JWT
-      contents: read  # This is required for actions/checkout
-      pull-requests: write  # This is required to post the PR comment
+      contents: read # This is required for actions/checkout
+      pull-requests: write # This is required to post the PR comment
     steps:
       - name: Checkout GitHub repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

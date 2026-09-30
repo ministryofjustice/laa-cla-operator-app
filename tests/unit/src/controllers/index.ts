@@ -1,22 +1,22 @@
-import sinon from "sinon"
+import sinon from "sinon";
 import type { Request, Response } from "express";
 
-const FIRST_ARGUMENT = 0
+const FIRST_ARGUMENT = 0;
 
 /**
  * Get a test express request object
  * @returns {Request} - Returns a test express request object
  */
-export function createTestRequest(): Request  {
-    // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test request
-    return {
-        session: {
-            // Creates a Sinon stub that, when called, calls its first argument with null
-            // This is useful when the req.session.save is wrapped in a promise
-            save: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
-        },
-        query: {}
-    } as unknown as Request;
+export function createTestRequest(): Request {
+  // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test request
+  return {
+    session: {
+      // Creates a Sinon stub that, when called, calls its first argument with null
+      // This is useful when the req.session.save is wrapped in a promise
+      save: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
+    },
+    query: {},
+  } as unknown as Request;
 }
 
 /**
@@ -24,9 +24,9 @@ export function createTestRequest(): Request  {
  * @returns {Response} - Returns a test express response object
  */
 export function createTestResponse(): Response {
-    // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test response
-    return {
-        redirect: sinon.stub(),
-        send: sinon.stub(),
-    } as unknown as Response;
+  // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test response
+  return {
+    redirect: sinon.stub(),
+    send: sinon.stub(),
+  } as unknown as Response;
 }
