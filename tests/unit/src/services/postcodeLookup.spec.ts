@@ -47,7 +47,7 @@ describe("Postcode lookup", () => {
       ok: true,
       /**
        * Override what fetch.json returns
-      * @returns {Record<any: any>} - A json object
+       * @returns {Record<any: any>} - A json object
        */
       // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
       json: async () => TEST_POSTCODE_LOOKUP_RESPONSE,
@@ -75,7 +75,7 @@ describe("Postcode lookup", () => {
       ok: true,
       /**
        * Override what fetch.json returns
-      * @returns {Record<any: any>} - A json object
+       * @returns {Record<any: any>} - A json object
        */
       // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
       json: async () => ({}),
@@ -92,7 +92,7 @@ describe("Postcode lookup", () => {
       ok: true,
       /**
        * Override what fetch.json returns
-      * @returns {Record<any: any>} - A json object
+       * @returns {Record<any: any>} - A json object
        */
       // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
       json: async () => TEST_POSTCODE_LOOKUP_RESPONSE,
@@ -115,7 +115,7 @@ describe("Postcode lookup", () => {
       ok: true,
       /**
        * Override what fetch.json returns
-      * @returns {Record<any: any>} - A json object
+       * @returns {Record<any: any>} - A json object
        */
       // eslint-disable-next-line @typescript-eslint/require-await -- We are mocking the original json method
       json: async () => [],
