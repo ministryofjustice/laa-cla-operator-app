@@ -21,14 +21,6 @@ test.describe("add client address", () => {
   test("Enter the details and submit the form", async ({ page, pages }) => {
     const { AddAddressPage } = pages;
 
-  const [response] = await Promise.all([
-    page.waitForResponse(
-      (r) =>
-        r.request().method() === "POST" &&
-        r.url().includes("/case/ED-0001-0002/add-address"),
-    ),
-    AddAddressPage.continueButton.click(),
-  ]);
     await AddAddressPage.addressInput.fill("12 Test Street\nTest Town");
     await AddAddressPage.postcodeInput.fill("AB1 2CD");
 
@@ -36,7 +28,7 @@ test.describe("add client address", () => {
       page.waitForResponse(
         (r) =>
           r.request().method() === "POST" &&
-          r.url().includes("/receive-call/add-address"),
+          r.url().includes("/case/ED-0001-0002/add-address"),
       ),
       AddAddressPage.continueButton.click(),
     ]);

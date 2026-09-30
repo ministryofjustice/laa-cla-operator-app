@@ -2,6 +2,7 @@ import {
   journey,
   submit,
   redirect,
+  access,
   step,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { whosCallingStep } from "./whos-calling/step.js";
