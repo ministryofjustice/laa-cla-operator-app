@@ -56,11 +56,11 @@ export const InboundCallEffectsImplementation: Record<
     context.setData("allCases", result);
   },
 
-  /**
-   * Load case from the api
-   * @param {Deps} deps - The dependencies required for the effect.
-   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-   */
+/**
+ * Load case from the api
+ * @param {Deps} deps - The dependencies required for the effect.
+ * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+ */
   LoadCase: (deps: Deps) => async (context: EffectFunctionContext) => {
     const caseId = context.getRequestParam("caseId")
     if(caseId === undefined) {
@@ -70,11 +70,12 @@ export const InboundCallEffectsImplementation: Record<
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
 },
-   /**
-   * Creates an effect that saves the client's address to the case.
-   * @param {Deps} deps - The dependencies required for the effect.
-   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
-   */
+
+/**
+ * Creates an effect that saves the client's address to the case.
+ * @param {Deps} deps - The dependencies required for the effect.
+ * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+ */
   saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
     const _case = getCase(context)
     const authenticatedAxiosState = getAuthenticatedAxios(context);
