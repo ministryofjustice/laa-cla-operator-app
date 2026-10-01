@@ -22,7 +22,7 @@ export const clientSupport = step({
     submit({
       validate: true,
       onValid: {
-        effects: [InboundCallEffects.saveClientAddress()],
+        effects: [InboundCallEffects.saveClientNeeds()],
         next: [
           redirect({
             goto: "/",

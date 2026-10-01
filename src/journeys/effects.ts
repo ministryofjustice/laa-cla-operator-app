@@ -54,9 +54,11 @@ export const InboundCallEffectsImplementation: Record<
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const clientNeeds  = {
-      languageChoice: "", 
-
+      languageChoice: context.getAnswer("languageChoice"), 
+      communicationChoice: context.getAnswer("communicationNeeds")
     }
+
+    console.log("This is data",clientNeeds)
 
      await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,
@@ -200,7 +202,7 @@ export const InboundCallEffects: InboundCallEffectShape = {
 
   saveClientNeeds: InboundCallEffectsRegistry.register(
     "saveClientNeeds",
-    InboundCallEffectsImplementation.GetAllCases,
+    InboundCallEffectsImplementation.saveClientNeeds,
   ),
 
   saveClientDetails: InboundCallEffectsRegistry.register(
