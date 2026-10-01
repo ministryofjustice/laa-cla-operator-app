@@ -31,6 +31,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const expected = { count: 1, results: [{ reference: "FA-1" }] };
     const getAllCases = sinon.stub().resolves(expected);
     const updatePersonalDetails = sinon.stub().resolves({});
+    const loadCase = sinon.stub().resolves({ reference: "FA-1" });
     const searchCases = sinon
       .stub()
       .resolves({ count: 1, results: [{ reference: "FA-1" }] });
@@ -42,6 +43,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         updatePersonalDetails,
         searchCases,
         createCase: createCase,
+        loadCase,
       },
       postcodeapi: new PostcodeLookupService(),
     });
@@ -69,6 +71,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         updatePersonalDetails: sinon.stub(),
         searchCases: sinon.stub(),
         createCase: sinon.stub(),
+        loadCase: sinon.stub(),
       },
     });
 
@@ -136,6 +139,8 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     getPostData.withArgs("phoneNumber").returns("07123456789");
     getPostData.withArgs("safeToCall").returns("yes");
     getPostData.withArgs("email").returns("jane@example.com");
+    const getData = sinon.stub();
+    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
 
     const context = {
       getState: sinon
@@ -144,6 +149,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         .returns(axiosWrapper),
       getPostData,
       setData,
+      getData,
     };
 
     await effect(context as any);
@@ -189,6 +195,8 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     getPostData.withArgs("phoneNumber").returns("07123456789");
     getPostData.withArgs("safeToCall").returns("no");
     getPostData.withArgs("email").returns("jane@example.com");
+    const getData = sinon.stub();
+    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
 
     const context = {
       getState: sinon
@@ -197,6 +205,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         .returns(axiosWrapper),
       getPostData,
       setData,
+      getData,
     };
 
     await effect(context as any);
@@ -233,10 +242,14 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
       makeDeps() as any,
     );
 
+    const getData = sinon.stub();
+    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
+
     const context = {
       getState: sinon.stub().withArgs("authenticatedAxios").returns(undefined),
       getPostData: sinon.stub(),
       setData: sinon.stub(),
+      getData,
     };
 
     await assert.rejects(

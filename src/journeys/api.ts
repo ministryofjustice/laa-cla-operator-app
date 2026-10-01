@@ -16,6 +16,10 @@ export interface CaseApiService {
   getAllCases: (
     axiosMiddleware: AxiosInstanceWrapper,
   ) => Promise<GetAllCasesResponse>;
+  loadCase: (
+    axiosMiddleware: AxiosInstanceWrapper,
+    caseId: string,
+  ) => Promise<CaseDetails>;
   searchCases: (
     axiosMiddleware: AxiosInstanceWrapper,
     params: SearchCasesParams,
