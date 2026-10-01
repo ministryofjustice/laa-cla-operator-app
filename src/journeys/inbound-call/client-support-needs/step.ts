@@ -5,6 +5,8 @@ import {
   redirect,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { clientSupportNeeds } from "./block.js";
+import { InboundCallEffects } from "#src/journeys/effects.js";
+
 
 export const clientSupport = step({
   code: "client-support",
@@ -20,6 +22,7 @@ export const clientSupport = step({
     submit({
       validate: true,
       onValid: {
+        effects: [InboundCallEffects.saveClientAddress()],
         next: [
           redirect({
             goto: "/",

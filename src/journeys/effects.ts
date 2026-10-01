@@ -22,6 +22,7 @@ export interface InboundCallEffectShape {
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
+  saveClientNeeds: () => EffectFunctionExpr; 
 }
 
 type InboundCallEffectsImplementation = (
@@ -42,6 +43,27 @@ export const InboundCallEffectsImplementation: Record<
 
     const result = await deps.caseApi.getAllCases(authenticatedAxiosState);
     context.setData("allCases", result);
+  },
+
+  /**
+   * Implementation of the effect for updating personal needs.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  saveClientNeeds: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+
+    const clientNeeds  = {
+      languageChoice: "", 
+
+    }
+
+     await deps.caseApi.updatePersonalDetails(
+      authenticatedAxiosState,
+      "ED-0001-0002",
+      clientNeeds,
+    );
+
   },
 
   /**
@@ -174,6 +196,11 @@ export const InboundCallEffects: InboundCallEffectShape = {
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",
     InboundCallEffectsImplementation.saveClientAddress,
+  ),
+
+  saveClientNeeds: InboundCallEffectsRegistry.register(
+    "saveClientNeeds",
+    InboundCallEffectsImplementation.GetAllCases,
   ),
 
   saveClientDetails: InboundCallEffectsRegistry.register(
