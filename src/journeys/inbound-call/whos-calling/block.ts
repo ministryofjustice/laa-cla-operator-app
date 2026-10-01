@@ -8,11 +8,12 @@ import {
   GovUKButton,
   GovUKRadioInput,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { CallerType } from "#src/journeys/types.js";
 
 export const whosCallingBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
-      code: "whos-calling",
+      code: "callerType",
       fieldset: {
         legend: {
           text: "Are you calling on behalf of yourself or another person?",
@@ -20,8 +21,8 @@ export const whosCallingBlock = CollectionBlock({
         },
       },
       items: [
-        { value: "myself", text: "Myself" },
-        { value: "thirdParty", text: "Another person" },
+        { value: CallerType.client, text: "Myself" },
+        { value: CallerType.thirdParty, text: "Another person" },
       ],
       validWhen: [
         validation({

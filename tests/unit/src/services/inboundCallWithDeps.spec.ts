@@ -125,7 +125,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   it("sets personalDetails data with SAFE when safeToCall is yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
     const deps = makeDeps();
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
+    const effect = InboundCallEffectsImplementation.SaveClientDetails(
       deps as any,
     );
 
@@ -181,7 +181,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   it("sets personalDetails data with DONT_CALL when safeToCall is not yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
     const deps = makeDeps();
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
+    const effect = InboundCallEffectsImplementation.SaveClientDetails(
       deps as any,
     );
 
@@ -235,7 +235,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   });
 
   it("throws when authenticatedAxios is missing or invalid", async () => {
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
+    const effect = InboundCallEffectsImplementation.SaveClientDetails(
       makeDeps() as any,
     );
 
@@ -260,5 +260,47 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         return true;
       },
     );
+  });
+});
+
+describe("InboundCallEffectsImplementation.StoreCallerTypeInSession", () => {
+  it("stores callerType in session when session is available", async () => {
+    const effect = InboundCallEffectsImplementation.StoreCallerTypeInSession({
+      caseApi: {
+        getAllCases: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases: sinon.stub(),
+        createCase: sinon.stub(),
+      },
+    } as any);
+
+    const session: Record<string, unknown> = {};
+    const context = {
+      getSession: sinon.stub().returns(session),
+      getAnswer: sinon.stub().withArgs("callerType").returns("thirdParty"),
+    };
+
+    await effect(context as any);
+
+    assert.equal(session.callerType, "thirdParty");
+  });
+
+  it("does not throw when session is undefined", async () => {
+    const effect = InboundCallEffectsImplementation.StoreCallerTypeInSession({
+      caseApi: {
+        getAllCases: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases: sinon.stub(),
+        createCase: sinon.stub(),
+      },
+    } as any);
+
+    const context = {
+      getSession: sinon.stub().returns(undefined),
+      getAnswer: sinon.stub(),
+    };
+
+    await assert.doesNotReject(async () => effect(context as any));
+    assert.equal(context.getAnswer.called, false);
   });
 });

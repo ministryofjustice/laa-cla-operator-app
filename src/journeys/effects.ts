@@ -13,6 +13,7 @@ import {
   SEARCH_PAGE_SIZE,
   ZERO,
 } from "#src/journeys/helpers/effectHelpers.js";
+import type { CallerType, InboundCallContext } from "./types.js";
 import type { CaseDetails } from "#types/api-types.js";
 
 /**
@@ -28,17 +29,17 @@ function getCase(context: EffectFunctionContext): CaseDetails {
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
-  /** Add a new one called save client details */
-  saveClientDetails: () => EffectFunctionExpr;
-  saveClientAddress: () => EffectFunctionExpr;
+  SaveClientDetails: () => EffectFunctionExpr;
+  SaveClientAddress: () => EffectFunctionExpr;
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
+  StoreCallerTypeInSession: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
   deps: Deps,
-) => (context: EffectFunctionContext) => Promise<void>;
+) => (context: InboundCallContext) => Promise<void>;
 
 export const InboundCallEffectsImplementation: Record<
   keyof InboundCallEffectShape,
@@ -76,7 +77,7 @@ export const InboundCallEffectsImplementation: Record<
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
+  SaveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
@@ -102,7 +103,7 @@ export const InboundCallEffectsImplementation: Record<
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  SaveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
@@ -189,6 +190,25 @@ export const InboundCallEffectsImplementation: Record<
     );
     context.setData("createdCaseRef", reference);
   },
+
+  /* eslint-disable @typescript-eslint/require-await -- Forge expects methods to be async */
+  /**
+   *
+   * Add the caller type to the session.
+   * @param {Deps} _deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  StoreCallerTypeInSession:
+    (_deps: Deps) => async (context: InboundCallContext) => {
+      const session = context.getSession();
+
+      if (session !== undefined) {
+        session.callerType = context.getAnswer<CallerType | undefined>(
+          "callerType",
+        );
+      }
+    },
+  /* eslint-enable @typescript-eslint/require-await -- Forge expects methods to be async */
 };
 
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();
@@ -202,14 +222,14 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
   ),
-  saveClientAddress: InboundCallEffectsRegistry.register(
-    "saveClientAddress",
-    InboundCallEffectsImplementation.saveClientAddress,
+  SaveClientAddress: InboundCallEffectsRegistry.register(
+    "SaveClientAddress",
+    InboundCallEffectsImplementation.SaveClientAddress,
   ),
 
-  saveClientDetails: InboundCallEffectsRegistry.register(
-    "saveClientDetails",
-    InboundCallEffectsImplementation.saveClientDetails,
+  SaveClientDetails: InboundCallEffectsRegistry.register(
+    "SaveClientDetails",
+    InboundCallEffectsImplementation.SaveClientDetails,
   ),
   SearchCases: InboundCallEffectsRegistry.register(
     "SearchCases",
@@ -222,5 +242,9 @@ export const InboundCallEffects: InboundCallEffectShape = {
   CreateCase: InboundCallEffectsRegistry.register(
     "CreateCase",
     InboundCallEffectsImplementation.CreateCase,
+  ),
+  StoreCallerTypeInSession: InboundCallEffectsRegistry.register(
+    "StoreCallerTypeInSession",
+    InboundCallEffectsImplementation.StoreCallerTypeInSession,
   ),
 };

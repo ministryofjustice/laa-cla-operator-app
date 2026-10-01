@@ -24,15 +24,47 @@ import {
   Answer,
   Loop,
   and,
+  Session,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { displayTextByCallerType } from "#src/journeys/helpers/journeyHelpers.js";
 
-export const searchClientBlock = CollectionBlock({
+const callerType = Session("callerType");
+
+export const searchClientIntroBlock = CollectionBlock({
+  collection: [
+    HtmlBlock({
+      tag: "p",
+      classes: "govuk-body",
+      content: displayTextByCallerType(
+        "If the client is calling on their own behalf, take their details and search for any existing records before starting a new case.",
+        "If someone is calling on behalf of another person (acting as a 'third party'), take the details of the person they are representing.",
+        callerType,
+      ),
+    }),
+    HtmlBlock({
+      tag: "p",
+      classes: "govuk-body",
+      content: displayTextByCallerType(
+        '<span class="govuk-!-font-weight-bold">Find a client using one or more of the search terms below.</span>',
+        'Search for any existing records in that person\'s name before starting a new case, <span class="govuk-!-font-weight-bold">using one or more of the search terms below.</span>',
+        callerType,
+      ),
+    }),
+  ],
+});
+
+export const searchClientFormBlock = CollectionBlock({
   classes: "search-client-box",
   collection: [
     GovUKTextInput({
       code: "fullName",
+      classes: "govuk-input--width-30",
       label: {
-        text: "What's your name?",
+        text: displayTextByCallerType(
+          "What's your name?",
+          "What's the name of the person you are calling on behalf of?",
+          callerType,
+        ),
         classes: "govuk-label--s",
       },
       validWhen: [
@@ -47,12 +79,21 @@ export const searchClientBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "phone",
+      classes: "govuk-input--width-30",
       label: {
-        text: "What's your phone number?",
+        text: displayTextByCallerType(
+          "What's your phone number?",
+          "What's their phone number?",
+          callerType,
+        ),
         classes: "govuk-label--s",
       },
       hint: {
-        text: "If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.",
+        text: displayTextByCallerType(
+          "If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.",
+          "If the third party is uncomfortable sharing the client's number, explain they'll only be contacted if it is safe and convenient to do so.",
+          callerType,
+        ),
       },
       validWhen: [
         validation({
@@ -66,8 +107,13 @@ export const searchClientBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "postcode",
+      classes: "govuk-input--width-30",
       label: {
-        text: "What's your postcode?",
+        text: displayTextByCallerType(
+          "What's your postcode?",
+          "What's their postcode?",
+          callerType,
+        ),
         classes: "govuk-label--s",
       },
       validWhen: [
@@ -84,7 +130,11 @@ export const searchClientBlock = CollectionBlock({
       code: "dateOfBirth",
       fieldset: {
         legend: {
-          text: "What's your date of birth?",
+          text: displayTextByCallerType(
+            "What's your date of birth?",
+            "What's their date of birth?",
+            callerType,
+          ),
           classes: "govuk-fieldset__legend--s",
         },
       },
