@@ -4,13 +4,20 @@
 {% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
-
+                <div class="govuk-error-summary" role="alert">
+                <div class="govuk-error-summary__body">
+                    <p class="govuk-body">
+                        Address lookup is temporarily unavailable. Please try again later.
+                        <p class="govuk-body-s"><a href="{{ forgeReverse('case.add-address', {':caseId': data.case.reference}) }}">Enter address manually</a></p>
+                    </p>
+                </div>
+                </div>
             {% if data.lookup.error !== null %}
                 <div class="govuk-error-summary" role="alert">
                 <div class="govuk-error-summary__body">
                     <p class="govuk-body">
                         Address lookup is temporarily unavailable. Please try again later.
-                        <p class="govuk-body-s"><a href="#">Enter address manually</a></p>
+                        <p class="govuk-body-s"><a href="{{ forgeReverse('case.add-address', {':caseId': data.case.reference}) }}">Enter address manually</a></p>
                     </p>
                 </div>
                 </div>
@@ -22,8 +29,8 @@
             {% if data.lookup.postcode and data.lookup.building %}
             <p class="govuk-body-s">We could not find an address that matches <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>. You can search again or enter the address manually.</p>
             {% endif %}
-            <p class="govuk-body-s"><a href="{{forgeReverse('inboundCallJourney.address-lookup')}}">Search again</a></p>
-            <p class="govuk-body-s"><a href="#">Enter address manually</a></p>
+            <p class="govuk-body-s"><a href="{{forgeReverse('case.address-lookup', {':caseId': data.case.reference}) }}">Search again</a></p>
+            <p class="govuk-body-s"><a href="{{ forgeReverse('case.add-address', {':caseId': data.case.reference}) }}">Enter address manually</a></p>
             {% else %}
             <h1 class="govuk-heading-xl">{{ step.title }}</h1>
             {% if fieldValidationErrors | length %}
@@ -37,7 +44,7 @@
                 <h2 class="govuk-heading-m">Select an address</h2>
                 <p class="govuk-body-s">
                 {{ data.lookup.count }} addresses found for <b>{{ data.lookup.postcode}}</b> and <b>{{ data.lookup.building}}</b>.
-                <a href="{{forgeReverse('inboundCallJourney.address-lookup')}}">Search again</a>
+                <a href="{{forgeReverse('case.address-lookup', {':caseId': data.case.reference}) }}">Search again</a>
                 </p>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
@@ -45,6 +52,9 @@
                     {{ block | safe }}
                 {% endfor %}
             </form>
+
+            <p class='govuk-body'><h3 class='govuk-heading-m'>Address not found</h3></p>
+            <p class='govuk-body-s'>If your address was not found, try a different search or enter the address manually <a href='{{ forgeReverse('case.address-lookup', {':caseId': data.case.reference}) }}' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>,
 
             {% endif %}
 

@@ -19,7 +19,6 @@ import {
   GovUKHeading,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 
-import { HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 import { requireSilasAuth } from "#src/journeys/auth.js";
 
@@ -34,6 +33,9 @@ export const addressLookupStep1 = step({
   title: "Search client's address",
   onAccess: [requireSilasAuth],
   reachability: { entryWhen: true },
+  view: {
+    template: "main/forms/lookup-address-form.njk",
+  },
 
   blocks: [
     GovUKHeading({
@@ -73,10 +75,6 @@ export const addressLookupStep1 = step({
       text: "Find address",
       value: "step1",
     }),
-    HtmlBlock({
-      content:
-        "<p class='govuk-body'><a href='#' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>",
-    }),
   ],
   onSubmission: [
     submit({
@@ -107,8 +105,6 @@ export const addressLookupStep2 = step({
     GovUKRadioInput({
       code: "address",
       label: "",
-      // items is declared as items: (GovUKRadioInputItem | GovUKRadioInputDivider)[];
-      // but forge does not export the definition GovUKRadioInputItem and GovUKRadioInputDivider
       items: Data("lookup.result").each(
         Iterator.Map({
           value: Item().path("uprn"),
@@ -120,19 +116,12 @@ export const addressLookupStep2 = step({
       text: "Use this address",
       value: "step2",
     }),
-    HtmlBlock({
-      content: `
-            <p class='govuk-body'><h3 class='govuk-heading-m'>Address not found</h3></p>
-            <p class='govuk-body-s'>If your address was not found, try a different search or enter the address manually <a href='#' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>",
-            `,
-    }),
   ],
   onSubmission: [
     submit({
       validate: true,
       onValid: {
         effects: [InboundCallEffects.saveAddressLookup()],
-        // next: [redirect({goto: "address-lookup/select"})]
       },
     }),
   ],

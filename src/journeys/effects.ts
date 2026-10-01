@@ -23,8 +23,7 @@ import type { CaseDetails } from "#types/api-types.js";
  * @returns {CaseDetails} - Returns the current case
  */
 function getCase(context: EffectFunctionContext): CaseDetails {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This will be a case object
-  return context.getData("case") as CaseDetails;
+  return context.getData<CaseDetails>("case");
 }
 
 export interface InboundCallEffectShape {

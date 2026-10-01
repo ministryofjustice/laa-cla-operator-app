@@ -137,13 +137,6 @@ describe("Postcode lookup", () => {
     fetchStub.resolves({
       ok: false,
     });
-    fetchStub.callsFake((url, options) => {
-      new Promise((resolve, reject) => {
-        options?.signal?.addEventListener("abort", () => {
-          reject(new Error("Aborted"));
-        });
-      });
-    });
     await assert.rejects(() => postcodeLookupService.byPostcode("SW1H 9AJ"), {
       message: "Postcode lookup service is currently not working",
     });

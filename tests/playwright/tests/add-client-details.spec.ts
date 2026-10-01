@@ -53,7 +53,7 @@ test.describe("Client's details page", () => {
     await addClientDetailsPage.fillValidForm();
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
+    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/address-lookup$/);
     expect(postBodies).toHaveLength(1);
   });
 

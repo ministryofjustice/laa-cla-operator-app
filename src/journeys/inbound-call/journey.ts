@@ -1,4 +1,4 @@
-import { journey } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { journey, access } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { addClientDetailsStep } from "./client-details/step.js";
@@ -26,10 +26,18 @@ export const caseJourney = journey({
   code: "case",
   title: "Case",
   path: "/case/:caseId",
+  view: {
+    template: "main/forms/form.njk",
+  },
   onAccess: [
     access({
       effects: [InboundCallEffects.LoadCase()],
     }),
   ],
-  steps: [addClientDetailsStep, addAddressStep, addressLookupStep1, addressLookupStep2,],
+  steps: [
+    addClientDetailsStep,
+    addAddressStep,
+    addressLookupStep1,
+    addressLookupStep2,
+  ],
 });
