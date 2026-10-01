@@ -4,6 +4,18 @@
 {% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
+
+            {% if data.lookup.error !== null %}
+                <div class="govuk-error-summary" role="alert">
+                <div class="govuk-error-summary__body">
+                    <p class="govuk-body">
+                        Address lookup is temporarily unavailable. Please try again later.
+                        <p class="govuk-body-s"><a href="#">Enter address manually</a></p>
+                    </p>
+                </div>
+                </div>
+            {% endif %}
+
             {% if data.lookup.count == 0 %}
             <h1 class="govuk-heading-xl">Address not found</h1>
             <h3 class="govuk-heading-m">No address found</h3>

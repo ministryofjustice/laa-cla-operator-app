@@ -84,6 +84,9 @@ export class PostcodeLookupService {
         },
       },
     );
+    if (!response.ok) {
+      throw new Error("Postcode lookup service is currently not working");
+    }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- OS Places API response is expected to match AddressLookUpResponse
     const data = (await response.json()) as AddressLookUpResponse;
     if (data.results === undefined) {

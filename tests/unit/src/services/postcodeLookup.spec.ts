@@ -132,4 +132,13 @@ describe("Postcode lookup", () => {
     );
     assert.deepEqual(addresses, []);
   });
+
+  it("OS Places down", async () => {
+    fetchStub.resolves({
+      ok: false,
+    });
+    await assert.rejects(() => postcodeLookupService.byPostcode("SW1H 9AJ"), {
+      message: "Postcode lookup service is currently not working",
+    });
+  });
 });
