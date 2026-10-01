@@ -4,6 +4,7 @@ import {
   getAllCases,
   updatePersonalDetails,
   searchCases,
+  loadCase,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
@@ -218,6 +219,43 @@ describe("caseDetailsService", () => {
       expect(result.results[0].reference).to.equal(
         mockResponse.data.results[0].reference,
       );
+    });
+
+    it("load a case", async () => {
+      // Arrange
+      const mockResponse = {
+        data: {
+          reference: "FA-3465-9114",
+          created: "2022-03-29T18:13:50.596Z",
+          modified: "2022-03-29T18:15:56.782Z",
+          full_name: "Jo Smith",
+          laa_reference: 3000003,
+          eligibility_state: null,
+          personal_details: "95e85bc7406c429e8fd655562406f6b2",
+          requires_action_by: "1_provider_review",
+          postcode: "OX2 0LD",
+          rejected: false,
+          date_of_birth: "2003-02-01",
+          category: null,
+          outcome_code: "MANALC",
+          outcome_description: "Manually allocated to Specialist",
+          case_count: 1,
+          source: "PHONE",
+          requires_action_at: null,
+          callback_time_string: null,
+          flagged_with_eod: false,
+          is_urgent: false,
+          organisation_name: null,
+        },
+      };
+
+      getStub.resolves(mockResponse);
+
+      // Act
+      const _case = await loadCase(axiosMiddlewareStub, "FA-3465-9114");
+
+      // Assert
+      expect(_case).to.deep.equal(mockResponse.data);
     });
 
     it("should return friendly API error message", async () => {

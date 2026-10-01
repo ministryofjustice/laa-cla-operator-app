@@ -13,9 +13,21 @@ import {
   SEARCH_PAGE_SIZE,
   ZERO,
 } from "#src/journeys/helpers/effectHelpers.js";
+import type { CaseDetails } from "#types/api-types.js";
+
+/**
+ * Get the current case
+ * @param {EffectFunctionContext} context - The forge context
+ * @returns {CaseDetails} - Returns the current case
+ */
+function getCase(context: EffectFunctionContext): CaseDetails {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This will be a case object
+  return context.getData("case") as CaseDetails;
+}
 
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
+  LoadCase: () => EffectFunctionExpr;
   /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress: () => EffectFunctionExpr;
@@ -45,24 +57,38 @@ export const InboundCallEffectsImplementation: Record<
   },
 
   /**
+   * Load case from the api
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  LoadCase: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const caseId = context.getRequestParam("caseId");
+    if (caseId === undefined) {
+      throw new Error("Case id is required to load a case");
+    }
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
+    context.setData("case", _case);
+  },
+
+  /**
    * Creates an effect that saves the client's address to the case.
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   saveClientAddress: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const address = {
       street: context.getAnswer("address-line-1"),
       postcode: context.getAnswer("postcode"),
     };
-    // TODO: replace hardcoded case ID
-    const caseId = "NE-4745-9751"; // "ED-0001-0001";
 
     try {
       await deps.caseApi.updatePersonalDetails(
         authenticatedAxiosState,
-        caseId,
+        _case.reference,
         address,
       );
       context.setData("addressSaved", true);
@@ -72,11 +98,12 @@ export const InboundCallEffectsImplementation: Record<
   },
 
   /**
-   * Implementation of the effect for retrieving all cases.
+   * Save client details to the api.
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   saveClientDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
     const personalDetails = {
@@ -100,7 +127,7 @@ export const InboundCallEffectsImplementation: Record<
 
     await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,
-      "ED-0001-0002",
+      _case.reference,
       apiPersonalDetails,
     );
   },
@@ -170,6 +197,10 @@ export const InboundCallEffects: InboundCallEffectShape = {
   GetAllCases: InboundCallEffectsRegistry.register(
     "GetAllCases",
     InboundCallEffectsImplementation.GetAllCases,
+  ),
+  LoadCase: InboundCallEffectsRegistry.register(
+    "LoadCase",
+    InboundCallEffectsImplementation.LoadCase,
   ),
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",
