@@ -43,11 +43,9 @@ export class SearchClientPage {
 
   get validationMessagePhone(): Locator {
     return this.page.getByText("Phone number must be valid");
-    return this.page.getByText("Phone number must be valid");
   }
 
   get validationMessagePostcode(): Locator {
-    return this.page.getByText("Postcode must be valid");
     return this.page.getByText("Postcode must be valid");
   }
 

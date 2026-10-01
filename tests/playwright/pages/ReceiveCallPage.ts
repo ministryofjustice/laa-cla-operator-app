@@ -15,7 +15,6 @@ export class ReceiveCallPage {
 
   get url(): string {
     return "/receive-call";
-    return "/receive-call";
   }
 
   callerTypeInput(value: "client" | "thirdParty"): Locator {
