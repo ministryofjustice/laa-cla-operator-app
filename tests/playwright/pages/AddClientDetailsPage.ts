@@ -15,7 +15,7 @@ export class AddClientDetailsPage {
    */
   constructor(page: Page) {
     this.page = page;
-    this.url = TEST_CONFIG.BASE_URL + "/receive-call/add-client-details";
+    this.url = TEST_CONFIG.BASE_URL + "/case/ED-0001-0002/add-client-details";
   }
 
   /**
