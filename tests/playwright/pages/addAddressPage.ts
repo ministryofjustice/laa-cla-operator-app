@@ -7,11 +7,11 @@ export class AddressPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.addAddressUrl = `${TEST_CONFIG.BASE_URL}/receive-call/add-address`;
+    this.addAddressUrl = `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/add-address`;
   }
 
   get url(): string {
-    return "/receive-call/add-address"; // was '/receive/add-address', which didn't match
+    return "/case/ED-0001-0002/add-address"; // was '/receive/add-address', which didn't match
   }
 
   get heading(): Locator {

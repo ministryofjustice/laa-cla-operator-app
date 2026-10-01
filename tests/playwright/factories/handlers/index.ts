@@ -21,6 +21,13 @@ export const handlers = [
       results: [],
     }),
   ),
+  http.get<{ caseId: string }>(
+    "*/call_centre/api/v1/case/:caseId",
+    ({ params }) =>
+      HttpResponse.json({
+        reference: params.caseId,
+      }),
+  ),
   http.put(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
     () => new HttpResponse(null, { status: 204 }),
