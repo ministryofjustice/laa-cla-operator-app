@@ -88,6 +88,24 @@ export const InboundCallEffectsImplementation: Record<
     const authenticatedAxiosState = getAuthenticatedAxios(context);
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
+   * Implementation of the effect for updating personal needs.
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  saveClientNeeds: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+
+    const clientNeeds  = {
+      languageChoice: "", 
+
+    }
+
+     await deps.caseApi.updatePersonalDetails(
+      authenticatedAxiosState,
+      "ED-0001-0002",
+      clientNeeds,
+    );
+
   },
 
   /**

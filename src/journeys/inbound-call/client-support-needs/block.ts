@@ -45,10 +45,12 @@ export const clientSupportNeeds = CollectionBlock({
     GovUKBody(
         { text: 'A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult. ', size: 's' }
     ),
-
-    GovUKInsetText({
-        text: "Is there anything we can do to make it easier to communicate with us?"
-
+    HtmlBlock({
+      content:`
+        <div class="govuk-inset-text taking-call-inset">
+          <p class="govuk-body">Is there anything we can do to make it easier to communicate with us?</p>
+        </div> 
+        `,
     }),
 
     GovUKCheckboxInput({
