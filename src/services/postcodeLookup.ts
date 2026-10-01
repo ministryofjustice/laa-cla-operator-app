@@ -1,5 +1,6 @@
 import config from "#config.js";
 
+const LOOKUP_TIMEOUT = 30000;
 export interface AddressLookupDPAResponse {
   UPRN: string;
   POSTCODE: string;
@@ -76,27 +77,36 @@ export class PostcodeLookupService {
     }
     params.append("key", config.OS_PLACES_API_KEY);
 
-    const response = await fetch(
-      `https://api.os.uk/search/places/v1/${endpoint}?${params}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
+    try {
+      const response = await fetch(
+        `https://api.os.uk/search/places/v1/${endpoint}?${params}`,
+        {
+          // Timeout after 30 seconds
+          signal: AbortSignal.timeout(LOOKUP_TIMEOUT),
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      },
-    );
-    if (!response.ok) {
-      throw new Error("Postcode lookup service is currently not working");
+      );
+
+      if (!response.ok) {
+        throw new Error("Postcode lookup service is currently not working");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- OS Places API response is expected to match AddressLookUpResponse
+      const data = (await response.json()) as AddressLookUpResponse;
+      if (data.results === undefined) {
+        return [];
+      }
+      const addresses = data.results.map((result) => {
+        const address = new Address(result.DPA, includePostcodeInAddess);
+        return address;
+      });
+      return addresses;
+    } catch (error) {
+      throw new Error("Postcode lookup service is currently not working", {
+        cause: error,
+      });
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- OS Places API response is expected to match AddressLookUpResponse
-    const data = (await response.json()) as AddressLookUpResponse;
-    if (data.results === undefined) {
-      return [];
-    }
-    const addresses = data.results.map((result) => {
-      const address = new Address(result.DPA, includePostcodeInAddess);
-      return address;
-    });
-    return addresses;
   }
 
   /**

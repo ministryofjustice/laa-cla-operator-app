@@ -133,9 +133,29 @@ describe("Postcode lookup", () => {
     assert.deepEqual(addresses, []);
   });
 
-  it("OS Places down", async () => {
+  it("OS Places down - returning non-success status code", async () => {
     fetchStub.resolves({
       ok: false,
+    });
+    fetchStub.callsFake((url, options) => {
+      new Promise((resolve, reject) => {
+        options?.signal?.addEventListener("abort", () => {
+          reject(new Error("Aborted"));
+        });
+      });
+    });
+    await assert.rejects(() => postcodeLookupService.byPostcode("SW1H 9AJ"), {
+      message: "Postcode lookup service is currently not working",
+    });
+  });
+
+  it("OS Places down - timeout", async () => {
+    fetchStub.callsFake((url, options) => {
+      new Promise((resolve, reject) => {
+        options?.signal?.addEventListener("abort", () => {
+          reject(new Error("Aborted"));
+        });
+      });
     });
     await assert.rejects(() => postcodeLookupService.byPostcode("SW1H 9AJ"), {
       message: "Postcode lookup service is currently not working",
