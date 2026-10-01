@@ -23,7 +23,8 @@ import { HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 import { requireSilasAuth } from "#src/journeys/auth.js";
 
-const MAXIMUM_POSTCODE_LENGTH = 12;
+// Source: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/488478/Bulk_Data_Transfer_-_additional_validation_valid_from_12_November_2015.pdf
+const POSTCODE_REGEX = '^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([AZa-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z])))) [0-9][A-Za-z]{2})$'
 export const ADDRESS_LOOKUP_STEP_CODE = "address-lookup";
 
 export const addressLookupStep1 = step({
@@ -53,7 +54,7 @@ export const addressLookupStep1 = step({
         }),
         validation({
           condition: Self().match(
-            Condition.String.HasMaxLength(MAXIMUM_POSTCODE_LENGTH),
+            Condition.String.MatchesRegex(POSTCODE_REGEX),
           ),
           message: "You must enter a valid postcode",
         }),
