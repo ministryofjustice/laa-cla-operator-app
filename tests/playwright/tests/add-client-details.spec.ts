@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/index.js";
 
 const DETAILS_PATH = "/case/ED-0001-0002/add-client-details";
-const ADDRESS_PATH = "/case/ED-0001-0002/add-client-address";
+const ADDRESS_PATH = "/case/ED-0001-0002/address-lookup";
 
 async function stubSubmit(page: Page): Promise<string[]> {
   const postBodies: string[] = [];
@@ -18,14 +18,6 @@ async function stubSubmit(page: Page): Promise<string[]> {
       headers: { location: new URL(ADDRESS_PATH, request.url()).href },
     });
   });
-
-  await page.route(`**${ADDRESS_PATH}`, (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "text/html",
-      body: '<!doctype html><html lang="en"><head><title>Stub</title></head><body><main>Stubbed add-client-address</main></body></html>',
-    }),
-  );
 
   return postBodies;
 }
@@ -50,7 +42,7 @@ test.describe("Client's details page", () => {
     );
   });
 
-  test("submitting with valid details redirects to add-client-address", async ({
+  test("submitting with valid details redirects to address-lookup", async ({
     page,
     pages,
   }) => {
@@ -61,7 +53,7 @@ test.describe("Client's details page", () => {
     await addClientDetailsPage.fillValidForm();
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
+    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/address-lookup$/);
     expect(postBodies).toHaveLength(1);
   });
 
@@ -203,7 +195,7 @@ test.describe("Client's details page", () => {
     await expect(addClientDetailsPage.emailInput).toHaveValue("");
     await addClientDetailsPage.submit();
 
-    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/add-client-address$/);
+    await expect(page).toHaveURL(/\/case\/ED-0001-0002\/address-lookup$/);
 
     expect(postBodies).toHaveLength(1);
     const body = new URLSearchParams(postBodies[0]);

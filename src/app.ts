@@ -29,6 +29,7 @@ import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunj
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
 import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
+import { PostcodeLookupService } from "./services/postcodeLookup.js";
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -131,6 +132,7 @@ const createApp = (): express.Application => {
     }
     forge.registerPackage<Deps>(journeyPackage, {
       caseApi: apiService,
+      postcodeapi: new PostcodeLookupService(),
     });
   }
 
@@ -138,13 +140,25 @@ const createApp = (): express.Application => {
    * Create a function to go from forge code to path
    *
    * @param {string} code - The full forge code, if it's a step then include the parent journey code separated by a dot i.e <journey.code>.<step.code>
+   * @param {Record<string, string>} params - Replaces parameters in the path
    * @returns {string} path - The forge path
    */
-  app.locals.forgeReverse = (code: string): string => {
+  app.locals.forgeReverse = (code: string, params?: Record<string, string>): string => {
     if (!(code in pathLookup)) {
       throw new Error(`Could not find path for ${code}`);
     }
-    return pathLookup[code];
+    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access is much clearer here
+    let path = pathLookup[code];
+
+    if (params !== undefined) {
+      path = path.replace(/:[^/]+/giu, (match) => {
+        if (match in params) {
+          return params[match];
+        }
+        return match;
+      });
+    }
+    return path;
   };
 
   app.use(express.urlencoded({ extended: true }));
