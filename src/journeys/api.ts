@@ -9,7 +9,7 @@ import type { PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
 export interface Deps {
   caseApi: CaseApiService;
-  postcodeapi: PostcodeLookupService
+  postcodeapi: PostcodeLookupService;
 }
 
 export interface CaseApiService {

@@ -2,7 +2,10 @@ import { describe, it } from "mocha";
 import sinon from "sinon";
 import assert from "node:assert/strict";
 import config from "#config.js";
-import { PostcodeLookupService, Address } from "#src/services/postcodeLookup.js";
+import {
+  PostcodeLookupService,
+  Address,
+} from "#src/services/postcodeLookup.js";
 
 const TEST_POSTCODE_LOOKUP_RESPONSE = {
   results: [

@@ -269,7 +269,6 @@ export const InboundCallEffectsImplementation: Record<
       },
     );
   },
-
 };
 
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();

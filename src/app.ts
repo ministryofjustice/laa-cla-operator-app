@@ -143,7 +143,10 @@ const createApp = (): express.Application => {
    * @param {Record<string, string>} params - Replaces parameters in the path
    * @returns {string} path - The forge path
    */
-  app.locals.forgeReverse = (code: string, params?: Record<string, string>): string => {
+  app.locals.forgeReverse = (
+    code: string,
+    params?: Record<string, string>,
+  ): string => {
     if (!(code in pathLookup)) {
       throw new Error(`Could not find path for ${code}`);
     }
