@@ -109,22 +109,26 @@ adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
 
   const isCreate = !("adoption_details" in _case && _case.adoption_details);
 
-  const comNeeds = (context.getAnswer("communicationNeeds") as string[]) || [];
-  const languageChoice = (context.getAnswer("languageChoice") as string) || "";
+  const languageChoice = (context.getAnswer("languageChoice") as string[]) || [];
+  const isWelsh: boolean = languageChoice.includes("welsh");
+  const otherLanguage = (context.getAnswer("otherLanguageChoice")  as string) || "";
 
-  const isBsl: boolean = languageChoice.toUpperCase() === "BSL";
+  const comNeeds = (context.getAnswer("communicationNeeds") as string[]) || [];
+ 
   const hasBslWebcam: boolean = comNeeds.includes("bsl_webcam");
   const hasTextRelay: boolean = comNeeds.includes("relayUK");
 
   const adoptionBody = {
-    language: languageChoice.toUpperCase(),
-
-    bsl_webcam: isBsl || hasBslWebcam,
-
-    text_relay: hasTextRelay,
-
+    //Language choice 
+    language: isWelsh ? "WELSH" : otherLanguage,
+    
+    //comunication needs 
+    bsl_webcam: hasBslWebcam ? true: false,
+    text_relay: hasTextRelay ? true : false,
     notes: context.getAnswer("otherSupportDetails")
   };
+
+  console.log("the action body", adoptionBody)
 
   try {
     await deps.caseApi.adoptionDetails(

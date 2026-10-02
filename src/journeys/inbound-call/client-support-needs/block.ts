@@ -42,8 +42,8 @@ export const clientSupportNeeds = CollectionBlock({
       code: "languageChoice",
       items: [
         {
-          value: "britishSignLanguage",
-          text: "British Sign Language (BSL)",
+          value: "welsh",
+          text: "Welsh language service needed",
         },
         {
           value: "otherLanguage",
