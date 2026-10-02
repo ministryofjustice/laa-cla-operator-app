@@ -58,9 +58,7 @@ export const InboundCallEffectsImplementation: Record<
       communicationChoice: context.getAnswer("communicationNeeds")
     }
 
-    console.log("This is data",clientNeeds)
-
-     await deps.caseApi.updatePersonalDetails(
+     await deps.caseApi.adoptionDetails(
       authenticatedAxiosState,
       "ED-0001-0002",
       clientNeeds,
