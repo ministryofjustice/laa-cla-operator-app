@@ -45,7 +45,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         createCase: createCase,
         loadCase,
       },
-      postcodeapi: new PostcodeLookupService()
+      postcodeapi: new PostcodeLookupService(),
     });
 
     const setData = sinon.stub();
@@ -72,7 +72,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         createCase: sinon.stub(),
         loadCase: sinon.stub(),
       },
-      postcodeapi: new PostcodeLookupService()
+      postcodeapi: new PostcodeLookupService(),
     });
 
     const context = {
