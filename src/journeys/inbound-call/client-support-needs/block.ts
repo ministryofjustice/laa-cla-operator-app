@@ -34,23 +34,6 @@ export const clientSupportNeeds = CollectionBlock({
     GovUKHeading({
       text: "Client’s language requirements (optional)",
       size: "m",
-import { Answer, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import { GovUKButton, GovUKCheckboxInput, GovUKTextareaInput,GovUKHeading, GovUKBody, GovUKInsetText, } from "@ministryofjustice/hmpps-forge/govuk-components";
-import {} from "@ministryofjustice/hmpps-forge/moj-components"
-
-export const clientSupportNeeds = CollectionBlock({
-  collection: [
-    
-    GovUKBody(
-        { text: 'A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult. ', size: 's' }
-    ),
-    HtmlBlock({
-      content:`
-        <div class="govuk-inset-text taking-call-inset">
-          <p class="govuk-body">Is there anything we can do to make it easier to communicate with us?</p>
-        </div> 
-        `,
     }),
 
     GovUKCheckboxInput({

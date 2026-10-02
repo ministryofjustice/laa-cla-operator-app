@@ -12,7 +12,6 @@ import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
 
 import { addAddressStep } from "./add-address/step.js";
-import {clientSupport} from "./client-support-needs/step.js"
 
 // Step 4: Add client Address"
 const addClientAddressStep = step({
@@ -40,14 +39,6 @@ export const inboundCallJourney = journey({
   view: {
     template: "partials/form-step",
   },
-  steps: [
-    whosCallingStep,
-    searchClientStep,
-    addClientDetailsStep,
-    addClientAddressStep,
-    addAddressStep,
-    clientSupport
-  ],
   steps: [whosCallingStep, searchClientStep],
 });
 
