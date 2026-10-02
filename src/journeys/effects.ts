@@ -97,28 +97,47 @@ export const InboundCallEffectsImplementation: Record<
       context.setData("addressSaved", false);
     }
   },
+/**
+ * Saves the adoption details (language preference and communication needs).
+ * Patches if adoption details already exist on the case, otherwise posts.
+ * @param {Deps} deps - The dependencies required for the effect.
+ * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+ */
+adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  const _case = getCase(context);
+  const authenticatedAxiosState = getAuthenticatedAxios(context);
 
-  adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
-    const _case = getCase(context);
-    const authenticatedAxiosState = getAuthenticatedAxios(context);
+  const isCreate = !("adoption_details" in _case && _case.adoption_details);
 
-    const adoptionBody = {
-        language: context.getAnswer("languageChoice"),
-        communication: context.getAnswer("communicationNeeds")
-    }
-    console.log(adoptionBody)
-    try {
-      await deps.caseApi.updatePersonalDetails(
-        authenticatedAxiosState,
-        _case.reference,
-        adoptionBody,
-      );
-      context.setData("adoptionDetailsSaved", true);
-    } catch (error) {
-      context.setData("adoptionDetailsSaved", false);
-    }
-  },
+  const comNeeds = (context.getAnswer("communicationNeeds") as string[]) || [];
+  const languageChoice = (context.getAnswer("languageChoice") as string) || "";
 
+  const isBsl: boolean = languageChoice.toUpperCase() === "BSL";
+  const hasBslWebcam: boolean = comNeeds.includes("bsl_webcam");
+  const hasTextRelay: boolean = comNeeds.includes("relayUK");
+
+  const adoptionBody = {
+    language: languageChoice.toUpperCase(),
+
+    bsl_webcam: isBsl || hasBslWebcam,
+
+    text_relay: hasTextRelay,
+
+    notes: context.getAnswer("otherSupportDetails")
+  };
+
+  try {
+    await deps.caseApi.adoptionDetails(
+      authenticatedAxiosState,
+      isCreate,
+      _case.reference,
+      adoptionBody,
+    );
+    context.setData("adoptionDetailsSaved", true);
+  } catch (error) {
+    context.setData("adoptionDetailsSaved", false);
+  }
+},
   /**
    * Save client details to the api.
    * @param {Deps} deps - The dependencies required for the effect.

@@ -16,20 +16,22 @@ import {
   Self,
   validation,
   Answer,
+  or,
+  and,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 export const clientSupportNeeds = CollectionBlock({
   collection: [
     GovUKBody({
-      text: "A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult. ",
+      text: "A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult.",
       size: "s",
     }),
     HtmlBlock({
       content: `
         <div class="govuk-inset-text taking-call-inset">
           <p class="govuk-body">Is there anything we can do to make it easier to communicate with us?</p>
-        </div> 
-        `,
+        </div>
+      `,
     }),
     GovUKHeading({
       text: "Client’s language requirements (optional)",
@@ -49,7 +51,7 @@ export const clientSupportNeeds = CollectionBlock({
           block: GovUKTextInput({
             code: "otherLanguageChoice",
             classes: GovUKUtilityClasses.Input.Width10,
-            label: "Start typing to select the language ",
+            label: "Start typing to select the language",
             inputType: "text",
             dependentWhen: Answer("languageChoice").match(
               Condition.Array.Contains("otherLanguage"),
@@ -57,18 +59,30 @@ export const clientSupportNeeds = CollectionBlock({
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
-                message: "Select an option for a language",
+                message: "Enter a language",
               }),
+                validation({
+                  condition: Self().match(Condition.String.HasMaxLength(30)),
+                  message: "Language must be 30 characters or fewer",
+                }),
             ],
           }),
         },
+      ],
+      validWhen: [
+        validation({
+          condition: or(
+            Self().not.match(Condition.Array.Contains("britishSignLanguage")),
+            Self().not.match(Condition.Array.Contains("otherLanguage")),
+          ),
+          message: "Select only one language option",
+        }),
       ],
     }),
 
     GovUKHeading({
       text: "Client’s communication and support needs (optional)",
       size: "m",
-      visibleWhen: true,
     }),
 
     GovUKCheckboxInput({
@@ -80,13 +94,13 @@ export const clientSupportNeeds = CollectionBlock({
         },
         {
           value: "relayUK",
-          text: "Relay UK ",
+          text: "Relay UK",
         },
         {
           value: "otherSupport",
           text: "Any other support or accessibility needs",
           block: GovUKTextareaInput({
-            code: "otherSupport",
+            code: "otherSupportDetails",
             rows: "6",
             classes: GovUKUtilityClasses.Input.Width20,
             label: `Enter client’s preferences, for example, ‘Client is hard of hearing, please speak distinctly’.
@@ -97,11 +111,30 @@ export const clientSupportNeeds = CollectionBlock({
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
-                message: "Enter a language",
+                message: "Enter the client’s support needs",
               }),
             ],
           }),
         },
+      ],
+      validWhen: [
+        validation({
+          condition: or(
+            and(
+              Self().not.match(Condition.Array.Contains("britishSignLanguage")),
+              Self().not.match(Condition.Array.Contains("relayUK")),
+            ),
+            and(
+              Self().not.match(Condition.Array.Contains("britishSignLanguage")),
+              Self().not.match(Condition.Array.Contains("otherSupport")),
+            ),
+            and(
+              Self().not.match(Condition.Array.Contains("relayUK")),
+              Self().not.match(Condition.Array.Contains("otherSupport")),
+            ),
+          ),
+          message: "Select only one communication or support need",
+        }),
       ],
     }),
 

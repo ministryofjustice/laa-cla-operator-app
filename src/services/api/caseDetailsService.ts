@@ -112,8 +112,16 @@ export async function createCase(
 
 export async function adoptionDetails(
   axiosMiddleware: AxiosInstanceWrapper,
+  isCreate: boolean,
   caseId: string,
   body: Record<string, unknown>,
 ): Promise<void> {
-  await axiosMiddleware.patch(`/cases/${caseId}/adoption-details`, body);
+  const url = `/cases/${caseId}/adoption-details`;
+
+  if (isCreate) {
+    await axiosMiddleware.post(url, body);
+  } else {
+    await axiosMiddleware.patch(url, body);
+  }
 }
+ 

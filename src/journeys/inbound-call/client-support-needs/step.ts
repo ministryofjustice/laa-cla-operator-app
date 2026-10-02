@@ -3,6 +3,8 @@ import {
   step,
   submit,
   redirect,
+  Data,
+  Condition
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { clientSupportNeeds } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
@@ -22,9 +24,10 @@ export const clientSupport = step({
     submit({
       validate: true,
       onValid: {
-        effects: [InboundCallEffects.saveClientDetails()],
+        effects: [InboundCallEffects.adoptionDetails()],
         next: [
           redirect({
+             when: Data("adoptionDetailsSaved").match(Condition.Equals(true)),
             goto: "/",
           }),
         ],
