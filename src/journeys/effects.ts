@@ -34,6 +34,7 @@ export interface InboundCallEffectShape {
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
+  adoptionDetails: () => EffectFunctionExpr; 
 }
 
 type InboundCallEffectsImplementation = (
@@ -94,6 +95,27 @@ export const InboundCallEffectsImplementation: Record<
       context.setData("addressSaved", true);
     } catch (error) {
       context.setData("addressSaved", false);
+    }
+  },
+
+  adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context);
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+
+    const adoptionBody = {
+        language: context.getAnswer("languageChoice"),
+        communication: context.getAnswer("communicationNeeds")
+    }
+    console.log(adoptionBody)
+    try {
+      await deps.caseApi.updatePersonalDetails(
+        authenticatedAxiosState,
+        _case.reference,
+        adoptionBody,
+      );
+      context.setData("adoptionDetailsSaved", true);
+    } catch (error) {
+      context.setData("adoptionDetailsSaved", false);
     }
   },
 
@@ -205,6 +227,9 @@ export const InboundCallEffects: InboundCallEffectShape = {
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",
     InboundCallEffectsImplementation.saveClientAddress,
+  ),
+  adoptionDetails: InboundCallEffectsRegistry.register(
+    "adoptionDetails", InboundCallEffectsImplementation.adoptionDetails,
   ),
 
   saveClientDetails: InboundCallEffectsRegistry.register(

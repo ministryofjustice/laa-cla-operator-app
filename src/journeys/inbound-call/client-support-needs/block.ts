@@ -57,7 +57,7 @@ export const clientSupportNeeds = CollectionBlock({
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
-                message: "Enter a language",
+                message: "Select an option for a language",
               }),
             ],
           }),

@@ -108,3 +108,12 @@ export async function createCase(
     return response.data;
   }, "Error creating case");
 }
+
+
+export async function adoptionDetails(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+  body: Record<string, unknown>,
+): Promise<void> {
+  await axiosMiddleware.patch(`/cases/${caseId}/adoption-details`, body);
+}

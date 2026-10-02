@@ -10,9 +10,8 @@ import { searchClientStep } from "./search-client/step.js";
 import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
-
 import { addAddressStep } from "./add-address/step.js";
-
+import {clientSupport} from "./client-support-needs/step.js"
 // Step 4: Add client Address"
 const addClientAddressStep = step({
   code: "add-client-address",
@@ -52,5 +51,5 @@ export const caseJourney = journey({
       effects: [InboundCallEffects.LoadCase()],
     }),
   ],
-  steps: [addClientDetailsStep, addClientAddressStep, addAddressStep],
+  steps: [addClientDetailsStep, addClientAddressStep, addAddressStep, clientSupport],
 });
