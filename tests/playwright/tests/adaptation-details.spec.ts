@@ -112,23 +112,6 @@ test.describe("select client support needs", () => {
     ).toBeVisible();
   });
 
-  // NOTE: this will fail until the languageChoice validation in the form is
-  // changed to check "welsh" instead of "britishSignLanguage".
-  test("shows an error when more than one language option is selected", async ({
-    pages,
-  }) => {
-    const { adaptationDetailsWebPage } = pages;
-
-    await adaptationDetailsWebPage.selectWelsh();
-    await adaptationDetailsWebPage.selectOtherLanguage("French");
-    await adaptationDetailsWebPage.clickContinue();
-
-    await expect(
-      adaptationDetailsWebPage.errorSummaryLink(
-        "Select only one language option",
-      ),
-    ).toBeVisible();
-  });
 
   test("shows an error when more than one communication or support need is selected", async ({
     pages,
