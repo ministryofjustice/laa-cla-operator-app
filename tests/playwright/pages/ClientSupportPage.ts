@@ -7,7 +7,7 @@ export class ClientSupportPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.supportNeedsUrl = `${TEST_CONFIG.BASE_URL}/receive-call/support-needs`;
+    this.supportNeedsUrl = `${TEST_CONFIG.BASE_URL}/support-needs`;
   }
 
   get url(): string {
