@@ -15,8 +15,9 @@ import {
 import { requireSilasAuth } from "#src/journeys/auth.js";
 import {
   displaySearchClientBlock,
-  searchClientBlock,
+  searchClientFormBlock,
   createCaseButtonBlock,
+  searchClientIntroBlock,
 } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 
@@ -25,7 +26,7 @@ export const SEARCH_CLIENT_STEP_CODE = "search-client";
 export const searchClientStep = step({
   code: SEARCH_CLIENT_STEP_CODE,
   path: "/search-client",
-  title: "Search client's details",
+  title: "Inbound calls",
   validWhen: [
     validation({
       condition: or(
@@ -41,6 +42,7 @@ export const searchClientStep = step({
   ],
   onAccess: [
     requireSilasAuth,
+    access({ effects: [InboundCallEffects.SetAgentName()] }),
     access({
       when: Query("page").match(Condition.IsRequired()),
       effects: [InboundCallEffects.SearchCasesPagination()],
@@ -48,7 +50,12 @@ export const searchClientStep = step({
   ],
   reachability: { entryWhen: true },
   view: { template: "main/search-client.njk" },
-  blocks: [searchClientBlock, createCaseButtonBlock, displaySearchClientBlock],
+  blocks: [
+    searchClientIntroBlock,
+    searchClientFormBlock,
+    createCaseButtonBlock,
+    displaySearchClientBlock,
+  ],
   onSubmission: [
     submit({
       when: Post("action").match(Condition.Equals("search")),

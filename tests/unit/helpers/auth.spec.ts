@@ -268,7 +268,7 @@ describe("callbackAction", () => {
     });
     expect(req.session.regenerate.calledOnce).to.be.true;
     expect(req.session.save.calledOnce).to.be.true;
-    expect(redirectStub.calledOnceWith("/receive-call")).to.be.true;
+    expect(redirectStub.calledOnceWith("/dashboard")).to.be.true;
   });
 
   it("allows authentication when only OIDC scopes are configured", async () => {
@@ -280,7 +280,7 @@ describe("callbackAction", () => {
 
       await callbackAction(req, res);
 
-      expect(redirectStub.calledOnceWith("/receive-call")).to.be.true;
+      expect(redirectStub.calledOnceWith("/dashboard")).to.be.true;
     } finally {
       config.silas.scopes = originalScopes;
     }
