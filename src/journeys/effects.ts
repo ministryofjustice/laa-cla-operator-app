@@ -257,7 +257,7 @@ export const InboundCallEffectsImplementation: Record<
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   SaveAddressLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
-    const _case = getCase(context)
+    const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
     const uprn = context.getPostData("address");
     const address = await deps.postCodeApi.byUPRN(String(uprn));
