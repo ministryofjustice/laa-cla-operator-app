@@ -24,7 +24,7 @@ export const adaptationDetails = step({
         effects: [InboundCallEffects.adaptationDetails()],
         next: [
           redirect({
-            when: Data("adoptionDetailsSaved").match(Condition.Equals(true)),
+            when: Data("adaptationDetailsSaved").match(Condition.Equals(true)),
             goto: "/",
           }),
         ],

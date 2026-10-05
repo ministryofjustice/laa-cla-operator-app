@@ -131,7 +131,7 @@ export const InboundCallEffectsImplementation: Record<
       comNeeds.length === ZERO;
 
     if (hasNothingToSave) {
-      context.setData("adoptionDetailsSaved", true);
+      context.setData("adaptationDetailsSaved", true);
       return;
     }
 
@@ -152,9 +152,9 @@ export const InboundCallEffectsImplementation: Record<
         _case.reference,
         adoptionBody,
       );
-      context.setData("adoptionDetailsSaved", true);
+      context.setData("adaptationDetailsSaved", true);
     } catch (error) {
-      context.setData("adoptionDetailsSaved", false);
+      context.setData("adaptationDetailsSaved", false);
     }
   },
 
