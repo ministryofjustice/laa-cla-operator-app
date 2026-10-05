@@ -20,6 +20,8 @@ import {
   and,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
+const MAX_LANGUAGE_LENGTH = 30;
+
 export const clientSupportNeeds = CollectionBlock({
   collection: [
     GovUKBody({
@@ -62,7 +64,7 @@ export const clientSupportNeeds = CollectionBlock({
                 message: "Enter a language",
               }),
                 validation({
-                  condition: Self().match(Condition.String.HasMaxLength(30)),
+                  condition: Self().match(Condition.String.HasMaxLength(MAX_LANGUAGE_LENGTH)),
                   message: "Language must be 30 characters or fewer",
                 }),
             ],

@@ -25,6 +25,44 @@ function getCase(context: EffectFunctionContext): CaseDetails {
   return context.getData("case") as CaseDetails;
 }
 
+/**
+ * Safely read an answer as a string array
+ * @param {EffectFunctionContext} context - The forge context
+ * @param {string} key - The answer key
+ * @returns {string[]} The answer, or an empty array if it isn't a string array
+ */
+function getStringArrayAnswer(
+  context: EffectFunctionContext,
+  key: string,
+): string[] {
+  const value: unknown = context.getAnswer(key);
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+/**
+ * Safely read an answer as a string
+ * @param {EffectFunctionContext} context - The forge context
+ * @param {string} key - The answer key
+ * @returns {string} The answer, or an empty string if it isn't a string
+ */
+function getStringAnswer(context: EffectFunctionContext, key: string): string {
+  const value: unknown = context.getAnswer(key);
+  return typeof value === "string" ? value : "";
+}
+
+/**
+ * Whether the case already has adoption details saved
+ * @param {CaseDetails} _case - The current case
+ * @returns {boolean} True if adoption details already exist
+ */
+function hasAdoptionDetails(_case: CaseDetails): boolean {
+  if (!("adoption_details" in _case)) return false;
+  const details: unknown = _case.adoption_details;
+  return details !== undefined && details !== null;
+}
+
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
@@ -34,7 +72,7 @@ export interface InboundCallEffectShape {
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
-  adoptionDetails: () => EffectFunctionExpr; 
+  adoptionDetails: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
@@ -72,57 +110,53 @@ export const InboundCallEffectsImplementation: Record<
     context.setData("case", _case);
   },
 
-
   /**
-   * update client adoption details 
+   * Update client adoption details
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
-  const _case = getCase(context);
-  const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const _case = getCase(context);
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
 
-  const isCreate = !("adoption_details" in _case && _case.adoption_details);
+    const isCreate = !hasAdoptionDetails(_case);
 
-  const languageChoice = (context.getAnswer("languageChoice") as string[]) || [];
-  const isWelsh: boolean = languageChoice.includes("welsh");
-  const otherLanguage = (context.getAnswer("otherLanguageChoice")  as string) || "";
+    const languageChoice = getStringArrayAnswer(context, "languageChoice");
+    const otherLanguage = getStringAnswer(context, "otherLanguageChoice");
+    const comNeeds = getStringArrayAnswer(context, "communicationNeeds");
 
-  const comNeeds = (context.getAnswer("communicationNeeds") as string[]) || [];
- 
-  const hasBslWebcam = comNeeds.includes("bsl_webcam");
-  const hasTextRelay = comNeeds.includes("relayUK");
+    const hasNothingToSave =
+      languageChoice.length === ZERO &&
+      otherLanguage === "" &&
+      comNeeds.length === ZERO;
 
-  const hasNothingToSave =
-    otherLanguage === "" && comNeeds.length === 0;
+    if (hasNothingToSave) {
+      context.setData("adoptionDetailsSaved", true);
+      return;
+    }
 
-  if (hasNothingToSave) {
-    context.setData("adoptionDetailsSaved", true);
-    return;
-  }
+    const adoptionBody = {
+      // Language choice
+      language: languageChoice.includes("welsh") ? "WELSH" : otherLanguage,
 
-  const adoptionBody = {
-    //Language choice 
-    language: isWelsh ? "WELSH" : otherLanguage,
-    
-    //comunication needs 
-    bsl_webcam: hasBslWebcam ? true: false,
-    text_relay: hasTextRelay ? true : false,
-    notes: context.getAnswer("otherSupportDetails")
-  };
+      // Communication needs
+      bsl_webcam: comNeeds.includes("bsl_webcam"),
+      text_relay: comNeeds.includes("relayUK"),
+      notes: context.getAnswer("otherSupportDetails"),
+    };
 
-  try {
-    await deps.caseApi.adoptionDetails(
-      authenticatedAxiosState,
-      isCreate,
-      _case.reference,
-      adoptionBody,
-    );
-    context.setData("adoptionDetailsSaved", true);
-  } catch (error) {
-    context.setData("adoptionDetailsSaved", false);
-  }
-},
+    try {
+      await deps.caseApi.adoptionDetails(
+        authenticatedAxiosState,
+        isCreate,
+        _case.reference,
+        adoptionBody,
+      );
+      context.setData("adoptionDetailsSaved", true);
+    } catch (error) {
+      context.setData("adoptionDetailsSaved", false);
+    }
+  },
 
   /**
    * Creates an effect that saves the client's address to the case.
@@ -256,13 +290,13 @@ export const InboundCallEffects: InboundCallEffectShape = {
     InboundCallEffectsImplementation.LoadCase,
   ),
   adoptionDetails: InboundCallEffectsRegistry.register(
-    "adoptionDetails", InboundCallEffectsImplementation.adoptionDetails,
+    "adoptionDetails",
+    InboundCallEffectsImplementation.adoptionDetails,
   ),
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",
     InboundCallEffectsImplementation.saveClientAddress,
   ),
-
   saveClientDetails: InboundCallEffectsRegistry.register(
     "saveClientDetails",
     InboundCallEffectsImplementation.saveClientDetails,
