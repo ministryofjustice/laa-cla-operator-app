@@ -3,7 +3,8 @@ import sinon from "sinon";
 import { InboundCallEffectsImplementation } from "#src/journeys/effects.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 
-const AXIOS_MISSING_MESSAGE = "Axios middleware is not available in the context.";
+const AXIOS_MISSING_MESSAGE =
+  "Axios middleware is not available in the context.";
 
 function makeAxiosWrapper(): AxiosInstanceWrapper {
   return {
