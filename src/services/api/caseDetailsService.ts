@@ -128,8 +128,8 @@ export async function adaptationDetails(
   const url = `/call_centre/api/v1/case/${caseId}/adaptation_details/`;
 
   if (isCreate) {
-    await  await configuredAxios.patch(url, body);
+    await configuredAxios.patch(url, body);
   } else {
-    await  await configuredAxios.post(url, body);
+     await configuredAxios.post(url, body);
   }
 }
