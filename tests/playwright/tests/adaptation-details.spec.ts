@@ -112,7 +112,6 @@ test.describe("select client support needs", () => {
     ).toBeVisible();
   });
 
-
   test("shows an error when more than one communication or support need is selected", async ({
     pages,
   }) => {
