@@ -5,7 +5,7 @@ import {
   updatePersonalDetails,
   searchCases,
   loadCase,
-  adoptionDetails
+  adoptionDetails,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
@@ -52,59 +52,59 @@ describe("caseDetailsService", () => {
     sinon.restore();
   });
 
-describe("updateAdoptionDetails", () => {
-  it("should update adoption details for a case", async () => {
-    // Arrange
-    const caseId = "TX-123-FR5";
-    const body = {
-      // Language choice
-      language: "WELSH",
+  describe("updateAdoptionDetails", () => {
+    it("should update adoption details for a case", async () => {
+      // Arrange
+      const caseId = "TX-123-FR5";
+      const body = {
+        // Language choice
+        language: "WELSH",
 
-      // Communication needs
-      bsl_webcam: true,
-      text_relay: false,
-      notes: "some random notes",
-    };
-    patchStub.resolves();
+        // Communication needs
+        bsl_webcam: true,
+        text_relay: false,
+        notes: "some random notes",
+      };
+      patchStub.resolves();
 
-    // Act
-    await adoptionDetails(axiosMiddlewareStub, true, caseId, body);
+      // Act
+      await adoptionDetails(axiosMiddlewareStub, true, caseId, body);
 
-    // Assert
-    expect(patchStub.calledOnce).to.be.true;
-    expect(patchStub.firstCall.args[0]).to.equal(
-      `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
-    );
-    expect(patchStub.firstCall.args[1]).to.deep.equal(body);
+      // Assert
+      expect(patchStub.calledOnce).to.be.true;
+      expect(patchStub.firstCall.args[0]).to.equal(
+        `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
+      );
+      expect(patchStub.firstCall.args[1]).to.deep.equal(body);
+    });
   });
-});
 
-describe("createAdoptionDetails", () => {
-  it("should create new adoption details for a case", async () => {
-    // Arrange
-    const caseId = "TX-123-FR5";
-    const body = {
-      // Language choice
-      language: "WELSH",
+  describe("createAdoptionDetails", () => {
+    it("should create new adoption details for a case", async () => {
+      // Arrange
+      const caseId = "TX-123-FR5";
+      const body = {
+        // Language choice
+        language: "WELSH",
 
-      // Communication needs
-      bsl_webcam: true,
-      text_relay: false,
-      notes: "some random notes",
-    };
-    postStub.resolves();
+        // Communication needs
+        bsl_webcam: true,
+        text_relay: false,
+        notes: "some random notes",
+      };
+      postStub.resolves();
 
-    // Act
-    await adoptionDetails(axiosMiddlewareStub, false,caseId, body);
+      // Act
+      await adoptionDetails(axiosMiddlewareStub, false, caseId, body);
 
-    // Assert
-    expect(postStub.calledOnce).to.be.true;
-    expect(postStub.firstCall.args[0]).to.equal(
-      `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
-    );
-    expect(postStub.firstCall.args[1]).to.deep.equal(body);
+      // Assert
+      expect(postStub.calledOnce).to.be.true;
+      expect(postStub.firstCall.args[0]).to.equal(
+        `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
+      );
+      expect(postStub.firstCall.args[1]).to.deep.equal(body);
+    });
   });
-});
 
   describe("updatePersonalDetails", () => {
     it("should update personal details for a case", async () => {

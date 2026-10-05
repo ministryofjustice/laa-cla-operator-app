@@ -30,9 +30,9 @@ export interface CaseApiService {
   ) => Promise<void>;
 
   adoptionDetails: (
-    axiosMiddleware: AxiosInstanceWrapper, 
+    axiosMiddleware: AxiosInstanceWrapper,
     isCreate: boolean,
     caseId: string,
     body: Record<string, unknown>,
-  )=> Promise<void>;
+  ) => Promise<void>;
 }

@@ -4,11 +4,10 @@ import {
   submit,
   redirect,
   Data,
-  Condition
+  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { clientSupportNeeds } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
-
 
 export const clientSupport = step({
   code: "client-support",
@@ -16,10 +15,8 @@ export const clientSupport = step({
   path: "/support-needs",
   reachability: { entryWhen: true },
   onAccess: [requireSilasAuth],
-  view: { template: "main/forms/form.njk" }, 
-    blocks: [
-    clientSupportNeeds,
-  ],
+  view: { template: "main/forms/form.njk" },
+  blocks: [clientSupportNeeds],
   onSubmission: [
     submit({
       validate: true,
@@ -27,7 +24,7 @@ export const clientSupport = step({
         effects: [InboundCallEffects.adoptionDetails()],
         next: [
           redirect({
-             when: Data("adoptionDetailsSaved").match(Condition.Equals(true)),
+            when: Data("adoptionDetailsSaved").match(Condition.Equals(true)),
             goto: "/",
           }),
         ],

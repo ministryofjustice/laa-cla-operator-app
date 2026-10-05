@@ -63,10 +63,12 @@ export const clientSupportNeeds = CollectionBlock({
                 condition: Self().match(Condition.IsRequired()),
                 message: "Enter a language",
               }),
-                validation({
-                  condition: Self().match(Condition.String.HasMaxLength(MAX_LANGUAGE_LENGTH)),
-                  message: "Language must be 30 characters or fewer",
-                }),
+              validation({
+                condition: Self().match(
+                  Condition.String.HasMaxLength(MAX_LANGUAGE_LENGTH),
+                ),
+                message: "Language must be 30 characters or fewer",
+              }),
             ],
           }),
         },

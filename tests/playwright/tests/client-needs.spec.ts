@@ -9,7 +9,7 @@ test.describe("select client support needs", () => {
     );
   });
 
-test("correct text and checkboxes display", async ({ page, pages }) => {
+  test("correct text and checkboxes display", async ({ page, pages }) => {
     const { ClientSupportPage } = pages;
 
     await expect(
@@ -33,17 +33,19 @@ test("correct text and checkboxes display", async ({ page, pages }) => {
     await expect(ClientSupportPage.continueButton).toBeVisible();
   });
 
-test("checkboxes are unchecked by default", async ({ pages }) => {
+  test("checkboxes are unchecked by default", async ({ pages }) => {
     const { ClientSupportPage } = pages;
 
     await expect(ClientSupportPage.welshCheckbox).not.toBeChecked();
     await expect(ClientSupportPage.otherLanguageCheckbox).not.toBeChecked();
-    await expect(ClientSupportPage.britishSignLanguageCheckBox).not.toBeChecked();
+    await expect(
+      ClientSupportPage.britishSignLanguageCheckBox,
+    ).not.toBeChecked();
     await expect(ClientSupportPage.relayUKCheckbox).not.toBeChecked();
     await expect(ClientSupportPage.otherSupportCheckbox).not.toBeChecked();
   });
 
-test("conditional inputs are hidden until their checkbox is selected", async ({
+  test("conditional inputs are hidden until their checkbox is selected", async ({
     pages,
   }) => {
     const { ClientSupportPage } = pages;
@@ -61,7 +63,7 @@ test("conditional inputs are hidden until their checkbox is selected", async ({
     await expect(ClientSupportPage.otherLanguageInput).toBeHidden();
   });
 
-test("shows an error when other language is selected without a language", async ({
+  test("shows an error when other language is selected without a language", async ({
     pages,
   }) => {
     const { ClientSupportPage } = pages;
@@ -90,7 +92,7 @@ test("shows an error when other language is selected without a language", async 
     ).toBeVisible();
   });
 
-test("shows an error when other support is selected without details", async ({
+  test("shows an error when other support is selected without details", async ({
     pages,
   }) => {
     const { ClientSupportPage } = pages;

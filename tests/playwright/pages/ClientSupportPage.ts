@@ -14,7 +14,6 @@ export class ClientSupportPage {
     return "/receive-call/support-needs";
   }
 
-
   get heading(): Locator {
     return this.page.getByRole("heading", {
       name: /Client’s support needs/i,
@@ -118,5 +117,4 @@ export class ClientSupportPage {
   async goto(): Promise<void> {
     await this.page.goto(this.supportNeedsUrl);
   }
-
 }
