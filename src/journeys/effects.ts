@@ -34,6 +34,7 @@ export interface InboundCallEffectShape {
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
+  adoptionDetails: () => EffectFunctionExpr; 
 }
 
 type InboundCallEffectsImplementation = (
@@ -70,6 +71,43 @@ export const InboundCallEffectsImplementation: Record<
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
   },
+  adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  const _case = getCase(context);
+  const authenticatedAxiosState = getAuthenticatedAxios(context);
+
+  const isCreate = !("adoption_details" in _case && _case.adoption_details);
+
+  const languageChoice = (context.getAnswer("languageChoice") as string[]) || [];
+  const isWelsh: boolean = languageChoice.includes("welsh");
+  const otherLanguage = (context.getAnswer("otherLanguageChoice")  as string) || "";
+
+  const comNeeds = (context.getAnswer("communicationNeeds") as string[]) || [];
+ 
+  const hasBslWebcam: boolean = comNeeds.includes("bsl_webcam");
+  const hasTextRelay: boolean = comNeeds.includes("relayUK");
+
+  const adoptionBody = {
+    //Language choice 
+    language: isWelsh ? "WELSH" : otherLanguage,
+    
+    //comunication needs 
+    bsl_webcam: hasBslWebcam ? true: false,
+    text_relay: hasTextRelay ? true : false,
+    notes: context.getAnswer("otherSupportDetails")
+  };
+
+  try {
+    await deps.caseApi.adoptionDetails(
+      authenticatedAxiosState,
+      isCreate,
+      _case.reference,
+      adoptionBody,
+    );
+    context.setData("adoptionDetailsSaved", true);
+  } catch (error) {
+    context.setData("adoptionDetailsSaved", false);
+  }
+},
 
   /**
    * Creates an effect that saves the client's address to the case.
@@ -201,6 +239,9 @@ export const InboundCallEffects: InboundCallEffectShape = {
   LoadCase: InboundCallEffectsRegistry.register(
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
+  ),
+  adoptionDetails: InboundCallEffectsRegistry.register(
+    "adoptionDetails", InboundCallEffectsImplementation.adoptionDetails,
   ),
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",
