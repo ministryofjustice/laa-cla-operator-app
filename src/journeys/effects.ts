@@ -82,7 +82,7 @@ export const InboundCallEffectsImplementation: Record<
    * @param {Deps} _deps - Unused dependencies parameter required by effect signature.
    * @returns {(context: InboundCallContext) => Promise<void>} Effect function bound to dependencies.
    */
-  /* eslint-disable-next-line @typescript-eslint/require-await -- Forge requires async functions even if not awaited */
+  // eslint-disable-next-line @typescript-eslint/require-await -- Forge requires async functions even if not awaited
   SetAgentName: (_deps: Deps) => async (context: InboundCallContext) => {
     const session = context.getSession();
     if (session !== undefined) {
