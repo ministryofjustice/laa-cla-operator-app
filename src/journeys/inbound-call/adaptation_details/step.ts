@@ -6,22 +6,22 @@ import {
   Data,
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { clientSupportNeeds } from "./block.js";
+import { adaptationDetailsNeed } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 
-export const clientSupport = step({
+export const adaptationDetails = step({
   code: "client-support",
   title: "Client’s support needs",
-  path: "/support-needs",
+  path: "/adaptation-details",
   reachability: { entryWhen: true },
   onAccess: [requireSilasAuth],
   view: { template: "main/forms/form.njk" },
-  blocks: [clientSupportNeeds],
+  blocks: [adaptationDetailsNeed],
   onSubmission: [
     submit({
       validate: true,
       onValid: {
-        effects: [InboundCallEffects.adoptionDetails()],
+        effects: [InboundCallEffects.adaptationDetails()],
         next: [
           redirect({
             when: Data("adoptionDetailsSaved").match(Condition.Equals(true)),

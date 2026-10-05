@@ -11,7 +11,7 @@ import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
 import { addAddressStep } from "./add-address/step.js";
-import { clientSupport } from "./client-support/step.js";
+import { adaptationDetails } from "./adaptation_details/step.js";
 
 // Step 4: Add client Address"
 const addClientAddressStep = step({
@@ -56,6 +56,6 @@ export const caseJourney = journey({
     addClientDetailsStep,
     addClientAddressStep,
     addAddressStep,
-    clientSupport,
+    adaptationDetails,
   ],
 });

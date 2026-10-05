@@ -118,7 +118,7 @@ export async function createCase(
  * @param {Record<string, unknown>} body The adoption details payload to send.
  * @returns {Promise<void>} Resolves when the request completes.
  */
-export async function adoptionDetails(
+export async function adaptationDetails(
   axiosMiddleware: AxiosInstanceWrapper,
   isCreate: boolean,
   caseId: string,

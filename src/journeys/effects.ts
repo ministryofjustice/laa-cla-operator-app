@@ -72,7 +72,7 @@ export interface InboundCallEffectShape {
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
-  adoptionDetails: () => EffectFunctionExpr;
+  adaptationDetails: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
@@ -115,7 +115,7 @@ export const InboundCallEffectsImplementation: Record<
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+  adaptationDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
@@ -289,9 +289,9 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
   ),
-  adoptionDetails: InboundCallEffectsRegistry.register(
+  adaptationDetails: InboundCallEffectsRegistry.register(
     "adoptionDetails",
-    InboundCallEffectsImplementation.adoptionDetails,
+    InboundCallEffectsImplementation.adaptationDetails,
   ),
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",

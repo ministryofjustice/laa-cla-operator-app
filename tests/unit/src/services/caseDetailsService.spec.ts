@@ -5,7 +5,7 @@ import {
   updatePersonalDetails,
   searchCases,
   loadCase,
-  adoptionDetails,
+  adaptationDetails,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
@@ -68,7 +68,7 @@ describe("caseDetailsService", () => {
       patchStub.resolves();
 
       // Act
-      await adoptionDetails(axiosMiddlewareStub, true, caseId, body);
+      await adaptationDetails(axiosMiddlewareStub, true, caseId, body);
 
       // Assert
       expect(patchStub.calledOnce).to.be.true;
@@ -95,7 +95,7 @@ describe("caseDetailsService", () => {
       postStub.resolves();
 
       // Act
-      await adoptionDetails(axiosMiddlewareStub, false, caseId, body);
+      await adaptationDetails(axiosMiddlewareStub, false, caseId, body);
 
       // Assert
       expect(postStub.calledOnce).to.be.true;

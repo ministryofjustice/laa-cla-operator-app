@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures/index.js";
 
-const TEST_AUTH_NEXT_PATH = "/case/ED-0001-0002/support-needs";
+const TEST_AUTH_NEXT_PATH = "/case/JT-4272-9443/adaptation-details";
 
 test.describe("select client support needs", () => {
   test.beforeEach(async ({ page }) => {
@@ -10,7 +10,7 @@ test.describe("select client support needs", () => {
   });
 
   test("correct text and checkboxes display", async ({ page, pages }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
     await expect(
       page.getByText(/A client may need translation services/i),
@@ -21,72 +21,78 @@ test.describe("select client support needs", () => {
       ),
     ).toBeVisible();
 
-    await expect(ClientSupportPage.languageHeading).toBeVisible();
-    await expect(ClientSupportPage.welshCheckbox).toBeVisible();
-    await expect(ClientSupportPage.otherLanguageCheckbox).toBeVisible();
+    await expect(adaptationDetailsWebPage.languageHeading).toBeVisible();
+    await expect(adaptationDetailsWebPage.welshCheckbox).toBeVisible();
+    await expect(adaptationDetailsWebPage.otherLanguageCheckbox).toBeVisible();
 
-    await expect(ClientSupportPage.communicationHeading).toBeVisible();
-    await expect(ClientSupportPage.britishSignLanguageCheckBox).toBeVisible();
-    await expect(ClientSupportPage.relayUKCheckbox).toBeVisible();
-    await expect(ClientSupportPage.otherSupportCheckbox).toBeVisible();
+    await expect(adaptationDetailsWebPage.communicationHeading).toBeVisible();
+    await expect(
+      adaptationDetailsWebPage.britishSignLanguageCheckBox,
+    ).toBeVisible();
+    await expect(adaptationDetailsWebPage.relayUKCheckbox).toBeVisible();
+    await expect(adaptationDetailsWebPage.otherSupportCheckbox).toBeVisible();
 
-    await expect(ClientSupportPage.continueButton).toBeVisible();
+    await expect(adaptationDetailsWebPage.continueButton).toBeVisible();
   });
 
   test("checkboxes are unchecked by default", async ({ pages }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await expect(ClientSupportPage.welshCheckbox).not.toBeChecked();
-    await expect(ClientSupportPage.otherLanguageCheckbox).not.toBeChecked();
+    await expect(adaptationDetailsWebPage.welshCheckbox).not.toBeChecked();
     await expect(
-      ClientSupportPage.britishSignLanguageCheckBox,
+      adaptationDetailsWebPage.otherLanguageCheckbox,
     ).not.toBeChecked();
-    await expect(ClientSupportPage.relayUKCheckbox).not.toBeChecked();
-    await expect(ClientSupportPage.otherSupportCheckbox).not.toBeChecked();
+    await expect(
+      adaptationDetailsWebPage.britishSignLanguageCheckBox,
+    ).not.toBeChecked();
+    await expect(adaptationDetailsWebPage.relayUKCheckbox).not.toBeChecked();
+    await expect(
+      adaptationDetailsWebPage.otherSupportCheckbox,
+    ).not.toBeChecked();
   });
 
   test("conditional inputs are hidden until their checkbox is selected", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await expect(ClientSupportPage.otherLanguageInput).toBeHidden();
-    await expect(ClientSupportPage.otherSupportTextarea).toBeHidden();
+    await expect(adaptationDetailsWebPage.otherLanguageInput).toBeHidden();
+    await expect(adaptationDetailsWebPage.otherSupportTextarea).toBeHidden();
 
-    await ClientSupportPage.otherLanguageCheckbox.check();
-    await expect(ClientSupportPage.otherLanguageInput).toBeVisible();
+    await adaptationDetailsWebPage.otherLanguageCheckbox.check();
+    await expect(adaptationDetailsWebPage.otherLanguageInput).toBeVisible();
 
-    await ClientSupportPage.otherSupportCheckbox.check();
-    await expect(ClientSupportPage.otherSupportTextarea).toBeVisible();
+    await adaptationDetailsWebPage.otherSupportCheckbox.check();
+    await expect(adaptationDetailsWebPage.otherSupportTextarea).toBeVisible();
 
-    await ClientSupportPage.otherLanguageCheckbox.uncheck();
-    await expect(ClientSupportPage.otherLanguageInput).toBeHidden();
+    await adaptationDetailsWebPage.otherLanguageCheckbox.uncheck();
+    await expect(adaptationDetailsWebPage.otherLanguageInput).toBeHidden();
   });
 
   test("shows an error when other language is selected without a language", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.otherLanguageCheckbox.check();
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.otherLanguageCheckbox.check();
+    await adaptationDetailsWebPage.clickContinue();
 
-    await expect(ClientSupportPage.errorSummary).toBeVisible();
+    await expect(adaptationDetailsWebPage.errorSummary).toBeVisible();
     await expect(
-      ClientSupportPage.errorSummaryLink("Enter a language"),
+      adaptationDetailsWebPage.errorSummaryLink("Enter a language"),
     ).toBeVisible();
   });
 
   test("shows an error when the language is longer than 30 characters", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.selectOtherLanguage("a".repeat(31));
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.selectOtherLanguage("a".repeat(31));
+    await adaptationDetailsWebPage.clickContinue();
 
     await expect(
-      ClientSupportPage.errorSummaryLink(
+      adaptationDetailsWebPage.errorSummaryLink(
         "Language must be 30 characters or fewer",
       ),
     ).toBeVisible();
@@ -95,13 +101,15 @@ test.describe("select client support needs", () => {
   test("shows an error when other support is selected without details", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.otherSupportCheckbox.check();
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.otherSupportCheckbox.check();
+    await adaptationDetailsWebPage.clickContinue();
 
     await expect(
-      ClientSupportPage.errorSummaryLink("Enter the client’s support needs"),
+      adaptationDetailsWebPage.errorSummaryLink(
+        "Enter the client’s support needs",
+      ),
     ).toBeVisible();
   });
 
@@ -110,28 +118,30 @@ test.describe("select client support needs", () => {
   test("shows an error when more than one language option is selected", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.selectWelsh();
-    await ClientSupportPage.selectOtherLanguage("French");
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.selectWelsh();
+    await adaptationDetailsWebPage.selectOtherLanguage("French");
+    await adaptationDetailsWebPage.clickContinue();
 
     await expect(
-      ClientSupportPage.errorSummaryLink("Select only one language option"),
+      adaptationDetailsWebPage.errorSummaryLink(
+        "Select only one language option",
+      ),
     ).toBeVisible();
   });
 
   test("shows an error when more than one communication or support need is selected", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.selectBritishSignLanguage();
-    await ClientSupportPage.selectRelayUK();
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.selectBritishSignLanguage();
+    await adaptationDetailsWebPage.selectRelayUK();
+    await adaptationDetailsWebPage.clickContinue();
 
     await expect(
-      ClientSupportPage.errorSummaryLink(
+      adaptationDetailsWebPage.errorSummaryLink(
         "Select only one communication or support need",
       ),
     ).toBeVisible();
@@ -140,22 +150,22 @@ test.describe("select client support needs", () => {
   test("a single language and a single support need pass validation", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.selectWelsh();
-    await ClientSupportPage.selectBritishSignLanguage();
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.selectWelsh();
+    await adaptationDetailsWebPage.selectBritishSignLanguage();
+    await adaptationDetailsWebPage.clickContinue();
 
-    await expect(ClientSupportPage.errorSummary).toBeHidden();
+    await expect(adaptationDetailsWebPage.errorSummary).toBeHidden();
   });
 
   test("can continue without selecting anything (both sections are optional)", async ({
     pages,
   }) => {
-    const { ClientSupportPage } = pages;
+    const { adaptationDetailsWebPage } = pages;
 
-    await ClientSupportPage.clickContinue();
+    await adaptationDetailsWebPage.clickContinue();
 
-    await expect(ClientSupportPage.errorSummary).toBeHidden();
+    await expect(adaptationDetailsWebPage.errorSummary).toBeHidden();
   });
 });

@@ -3,6 +3,7 @@ import { ReceiveCallPage } from "./ReceiveCallPage.js";
 import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
 import { AddressPage } from "./addAddressPage.js";
 import { SearchClientPage } from "./SearchClientPage.js";
+import { adaptationDetailsWebPage } from "./adaptationDetailsPage.js";
 
 /**
  * Factory class for creating page objects
@@ -40,5 +41,9 @@ export class PageFactory {
 
   get AddAddressPage(): AddressPage {
     return new AddressPage(this.page);
+  }
+
+  get adaptationDetailsWebPage(): adaptationDetailsWebPage {
+    return new adaptationDetailsWebPage(this.page);
   }
 }
