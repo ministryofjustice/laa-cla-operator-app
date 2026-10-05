@@ -28,6 +28,7 @@ export interface CaseDetails {
   flagged_with_eod: boolean;
   is_urgent: boolean;
   organisation_name: string | null;
+  adaptation_details?: string | null;
 }
 
 export interface GetAllCasesResponse {

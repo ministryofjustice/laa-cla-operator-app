@@ -58,9 +58,10 @@ function getStringAnswer(context: EffectFunctionContext, key: string): string {
  * @returns {boolean} True if adoption details already exist
  */
 function hasAdoptionDetails(_case: CaseDetails): boolean {
-  if (!("adoption_details" in _case)) return false;
-  const details: unknown = _case.adoption_details;
-  return details !== undefined && details !== null;
+  const result =
+    typeof _case.adaptation_details === "string" &&
+    _case.adaptation_details !== "";
+  return result;
 }
 
 export interface InboundCallEffectShape {
@@ -118,11 +119,14 @@ export const InboundCallEffectsImplementation: Record<
   adaptationDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const isCreate = hasAdoptionDetails(_case);
 
-    const isCreate = !hasAdoptionDetails(_case);
+    const otherLanguage = getStringAnswer(
+      context,
+      "otherLanguageChoice",
+    ).toUpperCase();
 
     const languageChoice = getStringArrayAnswer(context, "languageChoice");
-    const otherLanguage = getStringAnswer(context, "otherLanguageChoice");
     const comNeeds = getStringArrayAnswer(context, "communicationNeeds");
 
     const hasNothingToSave =
