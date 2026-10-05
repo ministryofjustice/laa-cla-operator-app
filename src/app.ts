@@ -120,6 +120,7 @@ const createApp = (): express.Application => {
 
   // Everytime a new journey is added to the project,
   // it'll be automatically registered with Forge here.
+  const postcodeServiceInstance = new PostcodeLookupService();
   const pathLookup: Record<string, string> = {};
   for (const journeyPackage of journeyPackages) {
     const steps = journeyPackage.journey.steps ?? [];
@@ -132,7 +133,7 @@ const createApp = (): express.Application => {
     }
     forge.registerPackage<Deps>(journeyPackage, {
       caseApi: apiService,
-      postcodeapi: new PostcodeLookupService(),
+      postcodeapi: postcodeServiceInstance,
     });
   }
 
