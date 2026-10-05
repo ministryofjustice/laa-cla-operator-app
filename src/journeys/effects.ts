@@ -128,8 +128,6 @@ adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
     notes: context.getAnswer("otherSupportDetails")
   };
 
-  console.log("the action body", adoptionBody)
-
   try {
     await deps.caseApi.adoptionDetails(
       authenticatedAxiosState,
