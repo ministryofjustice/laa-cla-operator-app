@@ -3,156 +3,135 @@ import sinon from "sinon";
 import { InboundCallEffectsImplementation } from "#src/journeys/effects.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 
-describe("InboundCallEffectsImplementation.GetAllCases", () => {
-  function makeAxiosWrapper(): AxiosInstanceWrapper {
-    const get = sinon.stub();
+const AXIOS_MISSING_MESSAGE = "Axios middleware is not available in the context.";
 
-    return {
-      axiosInstance: {
-        defaults: {
-          headers: { common: {} },
-        },
+function makeAxiosWrapper(): AxiosInstanceWrapper {
+  return {
+    axiosInstance: {
+      defaults: {
+        headers: { common: {} },
       },
-      get,
-      delete: sinon.stub(),
-      head: sinon.stub(),
-      options: sinon.stub(),
-      post: sinon.stub(),
-      put: sinon.stub(),
-      patch: sinon.stub(),
-      request: sinon.stub(),
-      use: sinon.stub(),
-    } as unknown as AxiosInstanceWrapper;
-  }
+    },
+    get: sinon.stub(),
+    delete: sinon.stub(),
+    head: sinon.stub(),
+    options: sinon.stub(),
+    post: sinon.stub(),
+    put: sinon.stub(),
+    patch: sinon.stub(),
+    request: sinon.stub(),
+    use: sinon.stub(),
+  } as unknown as AxiosInstanceWrapper;
+}
 
+/**
+ * Builds a caseApi mock with every method CaseApiService requires.
+ * Pass overrides to control the stubs a test cares about.
+ */
+function makeCaseApi(overrides: Record<string, sinon.SinonStub> = {}) {
+  return {
+    getAllCases: sinon.stub().resolves({}),
+    updatePersonalDetails: sinon.stub().resolves({}),
+    searchCases: sinon.stub().resolves({ count: 0, results: [] }),
+    createCase: sinon.stub().resolves({ reference: "FA-1" }),
+    loadCase: sinon.stub().resolves({ reference: "FA-1" }),
+    adoptionDetails: sinon.stub().resolves(undefined),
+    ...overrides,
+  };
+}
+
+function makeContextWithAxios(
+  axios: AxiosInstanceWrapper | undefined,
+  extra: Record<string, unknown> = {},
+) {
+  return {
+    getState: sinon.stub().withArgs("authenticatedAxios").returns(axios),
+    setData: sinon.stub(),
+    ...extra,
+  };
+}
+
+async function assertRejectsWithAxiosError(run: () => Promise<void>) {
+  await assert.rejects(run, (error: unknown) => {
+    assert(error instanceof Error);
+    assert.equal(error.message, AXIOS_MISSING_MESSAGE);
+    return true;
+  });
+}
+
+describe("InboundCallEffectsImplementation.GetAllCases", () => {
   it("sets allCases data when context has authenticatedAxios wrapper", async () => {
     const axiosWrapper = makeAxiosWrapper();
     const expected = { count: 1, results: [{ reference: "FA-1" }] };
     const getAllCases = sinon.stub().resolves(expected);
-    const updatePersonalDetails = sinon.stub().resolves({});
-    const loadCase = sinon.stub().resolves({ reference: "FA-1" });
-    const searchCases = sinon
-      .stub()
-      .resolves({ count: 1, results: [{ reference: "FA-1" }] });
-    const createCase = sinon.stub().resolves({ reference: "FA-1" });
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      caseApi: {
-        getAllCases,
-        updatePersonalDetails,
-        searchCases,
-        createCase: createCase,
-        loadCase,
-      },
-    });
+      caseApi: makeCaseApi({ getAllCases }),
+    } as any);
 
-    const setData = sinon.stub();
-    const context = {
-      getState: sinon
-        .stub()
-        .withArgs("authenticatedAxios")
-        .returns(axiosWrapper),
-      setData,
-    };
+    const context = makeContextWithAxios(axiosWrapper);
 
     await effect(context as any);
 
     assert.equal(getAllCases.calledOnceWithExactly(axiosWrapper), true);
-    assert.equal(setData.calledOnceWithExactly("allCases", expected), true);
+    assert.equal(
+      context.setData.calledOnceWithExactly("allCases", expected),
+      true,
+    );
   });
 
   it("throws when authenticatedAxios is missing or invalid", async () => {
+    const getAllCases = sinon.stub();
     const effect = InboundCallEffectsImplementation.GetAllCases({
-      caseApi: {
-        getAllCases: sinon.stub(),
-        updatePersonalDetails: sinon.stub(),
-        searchCases: sinon.stub(),
-        createCase: sinon.stub(),
-        loadCase: sinon.stub(),
-      },
-    });
+      caseApi: makeCaseApi({ getAllCases }),
+    } as any);
 
-    const context = {
-      getState: sinon.stub().withArgs("authenticatedAxios").returns(undefined),
-      setData: sinon.stub(),
-    };
+    const context = makeContextWithAxios(undefined);
 
-    await assert.rejects(
-      () => effect(context as any),
-      (error: unknown) => {
-        assert(error instanceof Error);
-        assert.equal(
-          error.message,
-          "Axios middleware is not available in the context.",
-        );
-        return true;
-      },
-    );
+    await assertRejectsWithAxiosError(() => effect(context as any));
+    assert.equal(getAllCases.notCalled, true);
+    assert.equal(context.setData.notCalled, true);
   });
 });
 
 describe("InboundCallEffectsImplementation.saveClientDetails", () => {
-  function makeAxiosWrapper(): AxiosInstanceWrapper {
-    const get = sinon.stub();
-
-    return {
-      axiosInstance: {
-        defaults: {
-          headers: { common: {} },
-        },
-      },
-      get,
-      delete: sinon.stub(),
-      head: sinon.stub(),
-      options: sinon.stub(),
-      post: sinon.stub(),
-      put: sinon.stub(),
-      patch: sinon.stub(),
-      request: sinon.stub(),
-      use: sinon.stub(),
-    } as unknown as AxiosInstanceWrapper;
-  }
-
-  function makeDeps() {
-    return {
-      caseApi: {
-        getAllCases: sinon.stub().resolves({}),
-        updatePersonalDetails: sinon.stub().resolves({}),
-      },
-    };
-  }
-
-  it("sets personalDetails data with SAFE when safeToCall is yes", async () => {
-    const axiosWrapper = makeAxiosWrapper();
-    const deps = makeDeps();
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
-      deps as any,
-    );
-
-    const setData = sinon.stub();
+  function makeContext(
+    axios: AxiosInstanceWrapper | undefined,
+    postData: Record<string, string>,
+  ) {
     const getPostData = sinon.stub();
-    getPostData.withArgs("fullName").returns("Jane Doe");
-    getPostData.withArgs("dateOfBirth").returns("2001-05-12");
-    getPostData.withArgs("phoneNumber").returns("07123456789");
-    getPostData.withArgs("safeToCall").returns("yes");
-    getPostData.withArgs("email").returns("jane@example.com");
+    for (const [key, value] of Object.entries(postData)) {
+      getPostData.withArgs(key).returns(value);
+    }
     const getData = sinon.stub();
     getData.withArgs("case").returns({ reference: "ED-0001-0002" });
 
-    const context = {
-      getState: sinon
-        .stub()
-        .withArgs("authenticatedAxios")
-        .returns(axiosWrapper),
-      getPostData,
-      setData,
-      getData,
-    };
+    return makeContextWithAxios(axios, { getPostData, getData });
+  }
+
+  const baseAnswers = {
+    fullName: "Jane Doe",
+    dateOfBirth: "2001-05-12",
+    phoneNumber: "07123456789",
+    email: "jane@example.com",
+  };
+
+  it("sets personalDetails data with SAFE when safeToCall is yes", async () => {
+    const axiosWrapper = makeAxiosWrapper();
+    const caseApi = makeCaseApi();
+    const effect = InboundCallEffectsImplementation.saveClientDetails({
+      caseApi,
+    } as any);
+
+    const context = makeContext(axiosWrapper, {
+      ...baseAnswers,
+      safeToCall: "yes",
+    });
 
     await effect(context as any);
 
     assert.equal(
-      setData.calledOnceWithExactly("personalDetails", {
+      context.setData.calledOnceWithExactly("personalDetails", {
         full_name: "Jane Doe",
         date_of_birth: "2001-05-12",
         mobile_phone: "07123456789",
@@ -163,7 +142,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     );
 
     assert.equal(
-      deps.caseApi.updatePersonalDetails.calledOnceWithExactly(
+      caseApi.updatePersonalDetails.calledOnceWithExactly(
         axiosWrapper,
         "ED-0001-0002",
         {
@@ -180,35 +159,20 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
 
   it("sets personalDetails data with DONT_CALL when safeToCall is not yes", async () => {
     const axiosWrapper = makeAxiosWrapper();
-    const deps = makeDeps();
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
-      deps as any,
-    );
+    const caseApi = makeCaseApi();
+    const effect = InboundCallEffectsImplementation.saveClientDetails({
+      caseApi,
+    } as any);
 
-    const setData = sinon.stub();
-    const getPostData = sinon.stub();
-    getPostData.withArgs("fullName").returns("Jane Doe");
-    getPostData.withArgs("dateOfBirth").returns("2001-05-12");
-    getPostData.withArgs("phoneNumber").returns("07123456789");
-    getPostData.withArgs("safeToCall").returns("no");
-    getPostData.withArgs("email").returns("jane@example.com");
-    const getData = sinon.stub();
-    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
-
-    const context = {
-      getState: sinon
-        .stub()
-        .withArgs("authenticatedAxios")
-        .returns(axiosWrapper),
-      getPostData,
-      setData,
-      getData,
-    };
+    const context = makeContext(axiosWrapper, {
+      ...baseAnswers,
+      safeToCall: "no",
+    });
 
     await effect(context as any);
 
     assert.equal(
-      setData.calledOnceWithExactly("personalDetails", {
+      context.setData.calledOnceWithExactly("personalDetails", {
         full_name: "Jane Doe",
         date_of_birth: "2001-05-12",
         mobile_phone: "07123456789",
@@ -219,7 +183,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     );
 
     assert.equal(
-      deps.caseApi.updatePersonalDetails.calledOnceWithExactly(
+      caseApi.updatePersonalDetails.calledOnceWithExactly(
         axiosWrapper,
         "ED-0001-0002",
         {
@@ -235,30 +199,14 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
   });
 
   it("throws when authenticatedAxios is missing or invalid", async () => {
-    const effect = InboundCallEffectsImplementation.saveClientDetails(
-      makeDeps() as any,
-    );
+    const caseApi = makeCaseApi();
+    const effect = InboundCallEffectsImplementation.saveClientDetails({
+      caseApi,
+    } as any);
 
-    const getData = sinon.stub();
-    getData.withArgs("case").returns({ reference: "ED-0001-0002" });
+    const context = makeContext(undefined, {});
 
-    const context = {
-      getState: sinon.stub().withArgs("authenticatedAxios").returns(undefined),
-      getPostData: sinon.stub(),
-      setData: sinon.stub(),
-      getData,
-    };
-
-    await assert.rejects(
-      () => effect(context as any),
-      (error: unknown) => {
-        assert(error instanceof Error);
-        assert.equal(
-          error.message,
-          "Axios middleware is not available in the context.",
-        );
-        return true;
-      },
-    );
+    await assertRejectsWithAxiosError(() => effect(context as any));
+    assert.equal(caseApi.updatePersonalDetails.notCalled, true);
   });
 });

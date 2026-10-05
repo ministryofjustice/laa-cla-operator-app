@@ -1,5 +1,4 @@
 import { test, expect } from "../fixtures/index.js";
-
 const TEST_AUTH_NEXT_PATH = "/case/JT-4272-9443/adaptation-details";
 
 test.describe("select client support needs", () => {
