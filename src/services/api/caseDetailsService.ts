@@ -109,17 +109,26 @@ export async function createCase(
   }, "Error creating case");
 }
 
+/**
+ * Creates or updates a client's adoption details.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {boolean} isCreate Whether to create (POST) or update (PATCH) the adoption details.
+ * @param {string} caseId The ID of the case the adoption details belong to.
+ * @param {Record<string, unknown>} body The adoption details payload to send.
+ * @returns {Promise<void>} Resolves when the request completes.
+ */
 export async function adoptionDetails(
   axiosMiddleware: AxiosInstanceWrapper,
   isCreate: boolean,
   caseId: string,
   body: Record<string, unknown>,
 ): Promise<void> {
-  const url = `/cases/${caseId}/adoption-details`;
+  const url = `/call_centre/api/v1/case/${caseId}/adaptation_details/`;
 
   if (isCreate) {
-    await axiosMiddleware.post(url, body);
-  } else {
     await axiosMiddleware.patch(url, body);
+  } else {
+    await axiosMiddleware.post(url, body);
   }
 }

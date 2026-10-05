@@ -71,6 +71,13 @@ export const InboundCallEffectsImplementation: Record<
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
   },
+
+
+  /**
+   * update client adoption details 
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
   adoptionDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
   const _case = getCase(context);
   const authenticatedAxiosState = getAuthenticatedAxios(context);
@@ -83,8 +90,16 @@ export const InboundCallEffectsImplementation: Record<
 
   const comNeeds = (context.getAnswer("communicationNeeds") as string[]) || [];
  
-  const hasBslWebcam: boolean = comNeeds.includes("bsl_webcam");
-  const hasTextRelay: boolean = comNeeds.includes("relayUK");
+  const hasBslWebcam = comNeeds.includes("bsl_webcam");
+  const hasTextRelay = comNeeds.includes("relayUK");
+
+  const hasNothingToSave =
+    otherLanguage === "" && comNeeds.length === 0;
+
+  if (hasNothingToSave) {
+    context.setData("adoptionDetailsSaved", true);
+    return;
+  }
 
   const adoptionBody = {
     //Language choice 
