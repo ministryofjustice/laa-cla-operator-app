@@ -146,7 +146,7 @@ export const InboundCallEffectsImplementation: Record<
     };
 
     try {
-      await deps.caseApi.adoptionDetails(
+      await deps.caseApi.adaptationDetails(
         authenticatedAxiosState,
         isCreate,
         _case.reference,

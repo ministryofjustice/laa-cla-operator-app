@@ -29,7 +29,7 @@ export interface CaseApiService {
     body: Record<string, unknown>,
   ) => Promise<void>;
 
-  adoptionDetails: (
+  adaptationDetails: (
     axiosMiddleware: AxiosInstanceWrapper,
     isCreate: boolean,
     caseId: string,
