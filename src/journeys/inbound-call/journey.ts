@@ -1,9 +1,8 @@
 import { journey, access } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { whosCallingStep } from "./whos-calling/step.js";
+import { dashboardStep } from "./dashboard/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
-
 import { addAddressStep } from "./add-address/step.js";
 import {
   addressLookupStep1,
@@ -19,10 +18,9 @@ export const inboundCallJourney = journey({
   view: {
     template: "main/forms/form.njk",
   },
-  steps: [whosCallingStep, searchClientStep],
+  steps: [searchClientStep],
 });
 
-// Define the journey
 export const caseJourney = journey({
   code: "case",
   title: "Case",
