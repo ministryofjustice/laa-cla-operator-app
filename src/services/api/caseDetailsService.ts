@@ -124,11 +124,12 @@ export async function adaptationDetails(
   caseId: string,
   body: Record<string, unknown>,
 ): Promise<void> {
+   const configuredAxios = configureAxiosInstance(axiosMiddleware);
   const url = `/call_centre/api/v1/case/${caseId}/adaptation_details/`;
 
   if (isCreate) {
-    await axiosMiddleware.patch(url, body);
+    await  await configuredAxios.patch(url, body);
   } else {
-    await axiosMiddleware.post(url, body);
+    await  await configuredAxios.post(url, body);
   }
 }
