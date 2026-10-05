@@ -218,7 +218,7 @@ export const InboundCallEffectsImplementation: Record<
       return;
     }
     try {
-      const addresses = await deps.postcodeapi.byPostcode(postcode, building);
+      const addresses = await deps.postCodeApi.byPostcode(postcode, building);
       data.result = addresses.map((address: Address) => ({
         address: address.address,
         uprn: address.uprn,
@@ -257,12 +257,13 @@ export const InboundCallEffectsImplementation: Record<
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
   SaveAddressLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context)
     const authenticatedAxiosState = getAuthenticatedAxios(context);
     const uprn = context.getPostData("address");
-    const address = await deps.postcodeapi.byUPRN(String(uprn));
+    const address = await deps.postCodeApi.byUPRN(String(uprn));
     await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,
-      "ED-0001-0002",
+      _case.reference,
       {
         postcode: address?.postcode,
         street: address?.address,

@@ -133,7 +133,7 @@ const createApp = (): express.Application => {
     }
     forge.registerPackage<Deps>(journeyPackage, {
       caseApi: apiService,
-      postcodeapi: postcodeServiceInstance,
+      postCodeApi: postcodeServiceInstance,
     });
   }
 
