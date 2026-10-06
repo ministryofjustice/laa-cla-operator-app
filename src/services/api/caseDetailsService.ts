@@ -113,7 +113,7 @@ export async function createCase(
  * Creates or updates a client's adoption details.
  *
  * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
- * @param {boolean} isCreate Whether to create (POST) or update (PATCH) the adoption details.
+ * @param {boolean} isUpdate Whether to create (POST) or update (PATCH) the adoption details.
  * @param {string} caseId The ID of the case the adoption details belong to.
  * @param {Record<string, unknown>} body The adoption details payload to send.
  * @returns {Promise<void>} Resolves when the request completes.
