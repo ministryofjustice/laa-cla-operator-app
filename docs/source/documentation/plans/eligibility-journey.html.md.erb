@@ -34,6 +34,10 @@ The questions, their order and the branching rules come from **Check if your cli
 | D3 | Answers stay in the session until there is a result. The host decides what to save at that point. | 2026-10-06 |
 | D4 | Branching rules are ported as plain TypeScript (a port of CCQ's `Steps::Logic` and section classes). Forge handles navigation only. | Proposed |
 | D5 | Session answer keys use CCQ's names exactly (for example `partner_` prefixes and add-another list keys), to make parity testing straightforward. | Proposed |
+| D6 | The module calls CFE directly through its `Assessor` (`CfeHttpClient`), not through cla_backend. This answers Q4. See spike S3 for the trade-offs. | 2026-10-06 |
+| D7 | Every environment uses CFE staging (`cfe-civil-staging`) until production, which uses `cfe-civil-production`. | 2026-10-06 |
+| D8 | Sessions move to Redis (open pull request). We assume Redis is available in every environment before the journey reaches UAT. | 2026-10-06 |
+| D9 | CFE is called once per check, by this module. Its result is the record. cla_backend must store it without calling CFE again (see "How cla_backend works out eligibility today" and Q3). | 2026-10-06 |
 
 ## Background
 
@@ -101,6 +105,31 @@ These CCQ features belong to individual services, not the shared journey:
 - result PDF download
 
 A host can provide its own versions through the `ResultHandler` hook described below.
+
+### How cla_backend works out eligibility today
+
+Checked against `cla_backend` at `94801bbe` (7 September 2026).
+
+**What it does.** Every save through the eligibility check API recalculates eligibility. `EligibilityCheckSerializerBase.save` calls `EligibilityCheck.update_state()` (`apps/legalaid/serializers.py`). That calls `EligibilityChecker`, which posts to CFE, then stores two things on the check:
+
+- `state`: `yes`, `no` or `unknown`
+- `calculations`: amounts in pence, built from CFE's response by `_translate_response`
+
+A client cannot set `state` or `calculations`. `state` is listed in the call centre serializer's fields, but `update_state()` overwrites it on every save. The `is_eligible` endpoints (`apps/legalaid/views.py`, `apps/checker/views.py`) call CFE again without saving.
+
+**Why it was built like this.**
+
+- **2014: the calculator ran inside cla_backend.** cla_backend owned the means test for both of its front ends, cla_frontend (operators) and cla_public (the public checker). The front ends were thin and saved answers section by section. The calculation was cheap and in-process, so `state` was treated as a field derived from the answers and recalculated on every save. That kept it correct and showed `unknown` until there were enough answers. Commit `4f65c885` (June 2014) moved the recalculation from the model save to the API save, because it depends on related records (income, savings, property).
+- **January 2024: CFE replaced the calculator's internals.** PR #1082 (`f82a3186`) changed `EligibilityChecker` to call CFE, so the Eligibility Platform team would own the calculation and its thresholds. PR #1103 (`121626de`) deleted the old calculator. Both kept the existing interface, callers and storage. As a result, what used to be a cheap in-process calculation became an HTTP call to CFE on every save. That was a side effect of keeping the change small, not a deliberate choice.
+
+**What depends on the stored result.** This is why it cannot simply be dropped:
+
+- MI reports read `eligibility_check.state`: `MIScopeReport`, `MIExtractByOutcome`, `MIExtractByOutcomeExtended`, `MIDemographicReport`, `MIProblemCategorisation`, `MICB1sSLA1`, `MICB1sSLA2`, `MICB1sSLAAgilisys` and `metrics.sql`.
+- The OBIEE export (`reports/sql/obiee/export_legal_aid_eligibility_check.sql`) includes `calculations`.
+- Specialist providers get `calculations` through `ExtendedEligibilityCheckSerializer` (`apps/cla_provider/serializers.py`).
+- Each save logs a `means_test` event against the case, recording `state`. The case log context also includes it.
+
+To meet D9, this module's result must fill `state` and `calculations` in the same shape, without cla_backend calling CFE again (Q3).
 
 ## Design
 
@@ -297,14 +326,35 @@ Checked against a local copy of `cloud-platform-environments` from 18 September 
   | production | `http://cfe-civil.cfe-civil-production.svc.cluster.local` |
 
   Staging and training use **production** CFE.
-- In the same copy, `laa-cla-backend-staging`'s policy does not list `laa-cla-operator-app-staging` either, and there is no `laa-cla-operator-app-training` namespace. Either the copy is out of date, or this app reaches cla_backend another way. Check before relying on either.
+- In the same copy, `laa-cla-backend-staging`'s policy does not list `laa-cla-operator-app-staging` either, and there is no `laa-cla-operator-app-training` namespace. Either the copy is out of date, or this app reaches cla_backend another way. (The update below resolves this: the copy was out of date.)
 - Calling CFE directly needs a pull request to `cloud-platform-environments` adding each `laa-cla-operator-app-*` namespace to the matching `cfe-civil-*` policy, approved by the CFE team. Going through cla_backend needs no network change. This affects Q4.
 
 Done in this spike:
 
 - Added `config.cfe.baseUrl`, read from `CFE_HOST`, to `config.ts` and `types/config-types.ts`.
 - Added `CFE_HOST` to `.env.example`, set to the public staging URL that CCQ uses for local development.
-- Helm values are **not** set yet. Add them once Q4 is answered and the network policy is in place. If calling directly, match cla_backend: `cfe-civil-staging` for uat, and `cfe-civil-production` for staging, training and production, unless the CFE team prefers otherwise.
+
+##### S3 update: calling CFE directly (2026-10-06)
+
+Decided: call CFE directly (D6), using CFE staging until production (D7). Checked again against `cloud-platform-environments` `main` at `c3aaceb32a` (6 October 2026):
+
+- `cfe-civil-staging`'s `allow-source-namespace` policy still lists no `laa-cla-operator-app-*` namespace. The policy pull request must add `laa-cla-operator-app-uat`, `-staging` and `-training` to `cfe-civil-staging`. Add `laa-cla-operator-app-production` to `cfe-civil-production` before go-live.
+- All four `laa-cla-operator-app-*` namespaces now exist. None has an egress policy, so only CFE's policy needs to change.
+- cla_backend's policies now allow `laa-cla-operator-app-uat` and `-staging`, but not `-training` or `-production` yet. This is not needed for CFE, but the case journey needs it in those environments.
+- CFE has no authentication. Its network policy is the only control on who can call it inside the cluster.
+- Helm values: `CFE_HOST` is set to `http://cfe-civil.cfe-civil-staging.svc.cluster.local` for uat, staging and training. Production is not set yet. Calls fail until the policy pull request is merged, but nothing uses `CFE_HOST` until the journey is mounted.
+
+cla_backend calls CFE itself whenever an eligibility check is saved through its API. It stores CFE's state and calculations on the case. See "How cla_backend works out eligibility today" for why, and D9 for what we will do about it.
+
+Calling CFE directly, compared with going through cla_backend:
+
+| Advantages | Disadvantages |
+|---|---|
+| The module stays reusable. Another service only needs a CFE URL, not cla_backend. | If the answers are also saved through cla_backend's eligibility check API, CFE is called twice and cla_backend stores its own result, which can differ from the one the operator saw (Q3). |
+| It uses CCQ's payload, so parity tests can compare payloads and results directly. cla_backend builds a different payload from its own `CaseData` model. | Network policy changes are needed for each environment, approved by the CFE team. |
+| No cla_backend changes are needed to run a check, and its Python 2 / Django 1 code is not touched. | The app now depends on another service: CFE timeouts, errors and status need handling here (the `Assessor` port and the "CFE fails, answers stay in the session" rule cover this). |
+| The result is available straight away for the result page, without saving to and reading back from the case. | Until production, this app uses CFE staging but cla_backend staging and training use CFE production (D7), so the two results can differ in those environments. |
+| CFE can be stubbed in the module's tests (MSW) without running cla_backend. | CFE's request and response format is a contract this module owns. CFE version changes must be tracked here as well as in cla_backend. |
 
 ### Phase 1: rules engine and parity tests (no UI)
 
@@ -339,7 +389,9 @@ Done in this spike:
 
 | Risk | Mitigation |
 |---|---|
-| Sessions use express-session `MemoryStore` (`utils/session.ts`), which keeps each session in one pod's memory. Staging runs 2 replicas and production 4, with no session affinity (found in spike S3), so this already affects the app, not just this journey: a request sent to a different pod loses the session, including SiLAS sign-in. | Move to a shared store such as Redis (`connect-redis`) before the eligibility journey goes live, or add sticky sessions as a stopgap. Track as a separate app-wide ticket. |
+| Sessions use express-session `MemoryStore` (`utils/session.ts`), which keeps each session in one pod's memory. Staging runs 2 replicas and production 4, with no session affinity (found in spike S3), so this already affects the app, not just this journey: a request sent to a different pod loses the session, including SiLAS sign-in. | Redis is being added in an open pull request (D8). On 6 October 2026 only `laa-cla-operator-app-uat` had an ElastiCache resource in `cloud-platform-environments`. Staging, training and production need one before the journey reaches them. |
+| A second CFE call, and possibly a different result: today, every save through cla_backend's eligibility check API calls CFE and overwrites `state` and `calculations`. This includes saves that only change other fields, such as `category`. cla_backend builds a different payload from ours, and until production it calls a different CFE environment (D7). | A cla_backend change so this module's result is stored without a CFE call (D9, Q3). Until it ships, do not save eligibility answers through the existing endpoint. The operator app's `ResultHandler` builds `state` and `calculations` in cla_backend's shape, ported from `_translate_response`. This stays in the host, not the module, because the shape belongs to cla_backend. |
+| Staging, training and UAT use CFE staging (D7), whose thresholds or behaviour may run ahead of production. | Before go-live, run the parity fixtures against CFE production. |
 | Forge is pre-1.0 (0.4.x), so its API may change. | Pin the version. Keep Forge-specific code in `journey/` and `registries/` so `domain/` is unaffected. |
 | Forge declares Node 20/22/24 support, but this app runs Node 26. | Confirm with the Forge maintainers, or test explicitly. |
 | A second copy of Forge (`ts-app/node_modules`) could cause duplicate-instance bugs if bundled. | Remove the stray `ts-app/`. List Forge as a peer dependency if the module is extracted. |
@@ -352,8 +404,8 @@ Done in this spike:
 |---|---|---|
 | Q1 | CCQ's matter types map to DA001, IM030, IA031 and SE003. Is SE003 ("other") correct for CLA categories (debt, housing, discrimination, education, family), or does the operator journey need its own matter-type step? | BA / CLA |
 | Q2 | Is CLA always controlled work, so that `level_of_help` can be preset? Do the under-18 questions apply to CLA callers? | BA / CLA |
-| Q3 | Which cla_backend endpoint should the operator `ResultHandler` save the result to? | Backend team |
-| Q4 | Should cla-operator-app call CFE directly, or go through cla_backend? | Tech lead |
+| Q3 | How does cla_backend store this module's result without calling CFE (D9)? For example, a new operator endpoint, or an option on the existing one, that: accepts the answers in cla_backend's model, plus `state` and `calculations`; skips `update_state()`; and still logs the `means_test` event. Also: can later saves of other eligibility check fields (such as `category` or `notes`) skip the recalculation, so they do not replace the stored result? | Backend team |
+| Q4 | ~~Should cla-operator-app call CFE directly, or go through cla_backend?~~ Answered by D6: directly. | Tech lead |
 
 ## Review checklist
 
