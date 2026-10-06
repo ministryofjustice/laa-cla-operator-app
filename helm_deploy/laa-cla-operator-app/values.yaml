@@ -199,3 +199,17 @@ envVars:
       secretKeyRef:
         name: sso
         key: expected_audience
+  REDIS_HOST:
+    valueFrom:
+      secretKeyRef:
+        name: elasticache-redis
+        key: primary_endpoint_address
+  REDIS_AUTH_TOKEN:
+    valueFrom:
+      secretKeyRef:
+        name: elasticache-redis
+        key: auth_token
+  REDIS_ENABLED:
+    value: "true"
+  REDIS_TLS_ENABLED:
+    value: "true"
