@@ -106,6 +106,7 @@ export default [
       "node_modules/*",
       "public/*",
       "tests/**/*.spec.ts", // Unit test specs (if any remain in tests/)
+      "src/eligibility/**/*.spec.ts", // Eligibility module specs live with the module
       "tests/playwright/**/*.spec.ts", // E2E test specs in new Playwright structure
       "tests/playwright/fixtures/*", // Test fixtures
       "tests/playwright/factories/*", // Test factories and mock handlers

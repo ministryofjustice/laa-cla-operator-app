@@ -170,10 +170,10 @@ interface EligibilityDeps {
 
 ### How Forge is used
 
-- Every step:
-  - runs `Eligibility.LoadAnswers` when accessed
-  - redirects to the correct step if it is not in `stepsFor(answers)`
-- A valid submit runs `Eligibility.SaveAnswers`, then `Eligibility.ResolveNext`. ResolveNext sets `Data("nextStep")` from `nextStep(answers, current)`. The step then does `redirect({ goto: Data("nextStep") })`.
+- The journey runs `Eligibility.LoadAnswers` on access. It loads **every** saved answer into Forge with `setAnswer`, and publishes a navigation map (`Data("nav")`, step code to next step) built from `stepsFor(answers)`. See spike S1 for why both are needed.
+- Each step redirects with `redirect({ goto: Data("nav.<step code>") })`. Forge's reachability checking then follows the same map, so a step that `stepsFor(answers)` leaves out cannot be reached.
+- A valid submit runs `Eligibility.SaveAnswers`, which saves the answers and rebuilds the map before the redirect is evaluated.
+- The journey sets `reachability: { unreachableRedirect: "frontier" }`, so a user who opens a step too early is sent to the first unanswered relevant step.
 - If `cannotUseService(answers)` is true after a submit, the user is redirected to the module's "cannot use this service" page.
 - Check your answers submits to `Eligibility.RunAssessment`, which does the following in order:
   1. builds the payload from `relevantAnswers(answers)`
@@ -210,6 +210,30 @@ interface EligibilityDeps {
 | S2 | Do MOJ add-another lists post nested arrays that Forge can validate item by item (possibly with `CollectionBlock`)? |
 | S3 | Is there a network route from this app's namespace to `cfe-civil`? Add `CFE_HOST` to config. |
 | S4 | Do session writes from effects persist across POST then redirect? |
+
+Spike tests live in `src/eligibility/tests/forge-assumptions/` and run with the unit tests. If a Forge upgrade breaks an assumption the design depends on, they fail.
+
+#### S1 findings: runtime-computed goto (2026-10-06)
+
+**Result: works.** Forge 0.4.4's reachability checking accepts a `goto` computed at runtime. Test: `s1-dynamic-goto.spec.ts`.
+
+How it works: for each request, Forge evaluates every step's redirect `goto` after the access phase, then walks forward from the entry step to decide which steps can be reached. A computed target is therefore treated like a static one, as long as the data it reads is in place before reachability runs.
+
+The design depends on three conditions:
+
+1. **Load every saved answer on access, not just the current step's.** Forge only follows a step's `goto` if that step's own answers are valid. If earlier answers are not loaded, every later step is unreachable. A control run without loading showed this: GET on any step after the first redirected back.
+2. **Store the next step for every step**, as `Data("nav.<step code>")`, not as a single `Data("nextStep")`. Reachability evaluates all steps' `goto` in the same request, so one shared value would point every step at the same place.
+3. **Rebuild the map in the submit effect.** On POST the access phase runs before the posted answer is read, so `SaveAnswers` must recompute `nav` before the redirect is evaluated. Forge evaluates `onValid` effects before `next`, so this works.
+
+Behaviour confirmed:
+
+- The posted answer chooses the branch: under 18 goes to the conditional step, otherwise the conditional step is skipped.
+- GET on a later step renders when the saved answers make it reachable.
+- GET on a step that the answers make irrelevant redirects.
+- When an earlier answer changes, steps on the abandoned branch become unreachable. Their stale answers remain in the session, as in CCQ, so `relevantAnswers` must filter them before building the CFE payload.
+- With `unreachableRedirect: "frontier"`, a user who opens a step too early goes to the first unanswered relevant step. With the default, they go back to the first step.
+
+No fallback (`entryWhen` with a condition, or disabling reachability checks) is needed.
 
 ### Phase 1: rules engine and parity tests (no UI)
 
