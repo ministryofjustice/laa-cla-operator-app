@@ -17,8 +17,8 @@ describe("session", () => {
       },
       redis: {
         host: "",
-        enabled: false
-      }
+        enabled: false,
+      },
     } as Config;
 
     beforeEach(() => {
