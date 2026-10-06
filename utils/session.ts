@@ -11,12 +11,6 @@ import { createRedisClient } from '#utils/redis.js';
  * @returns {session.SessionOptions} Configured session options
  */
 export const buildSessionConfig = async (config: Config): Promise<session.SessionOptions> => {
-  console.log(
-    chalk.yellow(
-      "Using in-memory session store (not suitable for production environments)",
-    ),
-  );
-
   let store = null;
   if(config.redis.enabled) {
     const client = await createRedisClient(config.redis)

@@ -13,6 +13,8 @@ export const MSW_CONFIG = {
  */
 export const TEST_CONFIG = {
   BASE_URL: process.env.BASE_URL || "http://localhost:3001",
+      REDIS_ENABLED: false,
+      REDIS_HOST: "localhost",
 };
 
 /**

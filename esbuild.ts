@@ -75,6 +75,8 @@ const externalModules: string[] = [
   "http-errors",
   "@azure/msal-node",
   "*.node",
+  'redis',
+  'connect-redis',
 ];
 
 /**
