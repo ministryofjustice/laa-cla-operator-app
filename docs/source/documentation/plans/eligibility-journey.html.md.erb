@@ -181,7 +181,7 @@ interface EligibilityDeps {
   3. calls `resultHandler.handle`
   4. clears the session answers
   5. redirects to `onComplete`
-- Add-another lists use the MOJ Frontend add-another component, subject to spike S2.
+- Add-another lists (for example bank accounts) render one field per row with `Iterator.Map` over a row list that `LoadAnswers` publishes. Fields use flat codes such as `bank_accounts_0_amount`, and `SaveAnswers` stores the rows as a list. See spike S2.
 
 ### Session storage
 
@@ -234,6 +234,36 @@ Behaviour confirmed:
 - With `unreachableRedirect: "frontier"`, a user who opens a step too early goes to the first unanswered relevant step. With the default, they go back to the first step.
 
 No fallback (`entryWhen` with a condition, or disabling reachability checks) is needed.
+
+#### S2 findings: add-another lists (2026-10-06)
+
+**Result: works, but not with CCQ's field names.** Test: `s2-add-another.spec.ts`, using a bank accounts list.
+
+Forge has no add-another component, but it can build one:
+
+- `CollectionBlock({ collection: Data("bankAccountRows").each(Iterator.Map(GovUKTextInput({ ... }))) })` renders one field per row.
+- A field's `code` can be an expression (`Item().path("code")`). Labels and messages can use the row number (`Loop.Index()`, starting at 1).
+
+Field names must be flat, for example `bank_accounts_0_amount`:
+
+- Forge reads each posted value by its exact field name.
+- CCQ posts `bank_account_model[items][0][amount]`. This app's body parser (`express.urlencoded({ extended: true })`) turns that into a nested object, which Forge does not read, so validation fails as if the field were blank. The spike has a test that fails if Forge starts reading nested values.
+
+How the spike works:
+
+- **Rows.** The access effect publishes the row list:
+  - on GET, one row per saved account, or one empty row if there are none
+  - on POST, one row per posted `bank_accounts_N_amount`, so every row the browser sent is read and validated
+- **Validation.** Each row is validated. Errors are attached to that row's field and numbered by position ("Enter the amount in bank account 2"), as in CCQ.
+- **Pre-fill.** Saved answers are loaded with `setAnswer` under the flat names, so going back pre-fills every row.
+- **Saving.** `SaveAnswers` converts the flat answers into a list in the session (`bank_accounts: [{ amount }]`). Removed rows are not kept.
+- **Adding a row without JavaScript.** An "Add another account" button posts `action=add`. A separate `submit` handler, with `validate: false`, re-renders with one more row and keeps what was typed. CCQ needs JavaScript for this.
+
+Still to build in Phase 2 or 3:
+
+- **Remove buttons.** They can work the same way as the add button (for example `action=remove-1`). Removing a row must renumber the rows after it.
+- **JavaScript add-another (optional).** The MOJ Frontend add-another component renames fields by replacing the number in `[N]`. It cannot be used unchanged with `bank_accounts_N_amount`. Either write a small script or use the button without JavaScript. Using the button everywhere is simpler and works for every user.
+- **Rows with several fields** (CCQ asks for amount, joint account and account holder). These are more fields in the same `Iterator.Map` template, using codes such as `bank_accounts_0_joint`.
 
 #### S4 findings: session persistence (2026-10-06)
 
@@ -331,5 +361,5 @@ Before marking this plan Approved:
 
 - [ ] D4 and D5 agreed
 - [ ] Q1 to Q4 answered or assigned
-- [ ] Phase 0 spikes complete and findings added to this page
+- [x] Phase 0 spikes complete and findings added to this page
 - [ ] Session store risk has an owner
