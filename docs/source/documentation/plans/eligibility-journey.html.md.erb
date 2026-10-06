@@ -235,6 +235,21 @@ Behaviour confirmed:
 
 No fallback (`entryWhen` with a condition, or disabling reachability checks) is needed.
 
+#### S4 findings: session persistence (2026-10-06)
+
+**Result: works.** Test: `s4-session-persistence.spec.ts`. It uses a real Express app with `express-session` (same options as `config.session`, default `MemoryStore`), Forge's `createExpressRouter`, and supertest.
+
+- Forge's Express adapter passes `req.session` to effects by reference (`context.getSession()`). Changes made by an effect are saved by `express-session` before the redirect response is sent.
+- Confirmed:
+  - after a POST, the next step renders on the following GET (it is only reachable if the answer was saved)
+  - going back pre-fills the saved answer
+  - answers build up across several steps
+  - a different browser session does not see the answers
+  - two checks in one browser session, keyed by `checkId` (`req.session.eligibility[checkId]`), stay separate
+- A control run with a fresh session object on each request failed as expected.
+- Effects must change the object returned by `getSession()` in place. The effect context has no way to replace the session.
+- This does not change the `MemoryStore` risk below. Answers are still lost on a restart or if requests go to a different pod.
+
 ### Phase 1: rules engine and parity tests (no UI)
 
 - Port `logic.rb`, the section classes, the CFE payload builders and the result interpretation into `domain/`.
