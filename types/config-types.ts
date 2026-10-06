@@ -44,6 +44,7 @@ export interface Config {
   paths: PathsConfig;
   silas: SilasConfig;
   api: ApiConfig;
+  redis: RedisConfig;
 }
 
 export interface SilasConfig {
@@ -59,4 +60,12 @@ export interface SilasConfig {
 
 export interface ApiConfig {
   baseUrl: string;
+}
+
+export interface RedisConfig {
+  host: string;
+  enabled: boolean;
+  auth_token?: string;
+  port?: number;
+  tls_enabled?: boolean;
 }

@@ -866,6 +866,57 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/bloom@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@redis/bloom@npm:6.3.0"
+  peerDependencies:
+    "@redis/client": ^6.3.0
+  checksum: 10c0/359ac93a7b1c4b207f1a2822798c9901e362ec852381823db6a33b3785c51ebc78bb458d38e4947d90e31ff3340543e90888124c113c8b729035d74f4a98c25e
+  languageName: node
+  linkType: hard
+
+"@redis/client@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@redis/client@npm:6.3.0"
+  peerDependencies:
+    "@node-rs/xxhash": ^1.1.0
+    "@opentelemetry/api": ">=1 <2"
+  peerDependenciesMeta:
+    "@node-rs/xxhash":
+      optional: true
+    "@opentelemetry/api":
+      optional: true
+  checksum: 10c0/e194a221d29785e581250d9ec212891c5bb133599cab98db7b985afbc06809c85b6e717b10f86e46033ae5e9bb08d034642484cd87b5e01e538575bbf0956217
+  languageName: node
+  linkType: hard
+
+"@redis/json@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@redis/json@npm:6.3.0"
+  peerDependencies:
+    "@redis/client": ^6.3.0
+  checksum: 10c0/a3509240ca75efa347ea949713eebe79e81387ee9d37e89a06251ff57ec7931fd5b5a1509efce503d023020f95b07750d76d6d2d6dc7869d7dbf268dc9473ce8
+  languageName: node
+  linkType: hard
+
+"@redis/search@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@redis/search@npm:6.3.0"
+  peerDependencies:
+    "@redis/client": ^6.3.0
+  checksum: 10c0/f60974f0448ff79baf4f24479bcba556e65dbb81e3e1b55c2c4eb07a502dfe160aafdaa7aa3bac13d352a394d61dbf67f026a0dcc0904d2068b13f385b57e567
+  languageName: node
+  linkType: hard
+
+"@redis/time-series@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@redis/time-series@npm:6.3.0"
+  peerDependencies:
+    "@redis/client": ^6.3.0
+  checksum: 10c0/417625b51142a65e3eec99ce3ce7411d8e9044189423e6be6ca55d90dd50214361367ef504eae4802c590b34f9f182d8d86887cb75dd2964c09dba57ddd0725a
+  languageName: node
+  linkType: hard
+
 "@sindresorhus/base62@npm:^1.0.0":
   version: 1.0.0
   resolution: "@sindresorhus/base62@npm:1.0.0"
@@ -2080,6 +2131,16 @@ __metadata:
   version: 0.6.1
   resolution: "connect-livereload@npm:0.6.1"
   checksum: 10c0/703b36996ed6ff928744dd35881d624574dcd7c56e8e5a800fa6125e7892daa80f400a48d74a004ca514c666e9e94cdf5043648059181f3579dd51e3e2c19b36
+  languageName: node
+  linkType: hard
+
+"connect-redis@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "connect-redis@npm:10.0.0"
+  peerDependencies:
+    express-session: ">=1"
+    redis: ">=5"
+  checksum: 10c0/effe2806fb6a2f0a1b8902728203dd2214fa1510e42cad7652927524582be162a95d4353adde8c7dbe4a015cc88766cd94fa2b43548b8fdca4e1e7b01baf48c5
   languageName: node
   linkType: hard
 
@@ -3814,6 +3875,7 @@ __metadata:
     compression: "npm:^1.8.2"
     concurrently: "npm:^10.0.5"
     connect-livereload: "npm:^0.6.1"
+    connect-redis: "npm:^10.0.0"
     cookie-parser: "npm:~1.4.6"
     cross-env: "npm:^10.1.0"
     csrf-sync: "npm:^4.2.1"
@@ -3851,6 +3913,7 @@ __metadata:
     nunjucks: "npm:^3.2.4"
     playwright-core: "npm:^1.63.0"
     prettier: "npm:^3.9.9"
+    redis: "npm:^6.3.0"
     rimraf: "npm:^6.0.1"
     sass: "npm:^1.104.1"
     sass-embedded: "npm:^1.104.1"
@@ -4675,6 +4738,19 @@ __metadata:
   dependencies:
     picomatch: "npm:^2.2.1"
   checksum: 10c0/6fa848cf63d1b82ab4e985f4cf72bd55b7dcfd8e0a376905804e48c3634b7e749170940ba77b32804d5fe93b3cc521aa95a8d7e7d725f830da6d93f3669ce66b
+  languageName: node
+  linkType: hard
+
+"redis@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "redis@npm:6.3.0"
+  dependencies:
+    "@redis/bloom": "npm:6.3.0"
+    "@redis/client": "npm:6.3.0"
+    "@redis/json": "npm:6.3.0"
+    "@redis/search": "npm:6.3.0"
+    "@redis/time-series": "npm:6.3.0"
+  checksum: 10c0/9f9d7af35c6ec42cf0084b8db29fdd1e28a10875a0cc992b99d04116533a118be5646e9be7594b95098c63e73d9b555359326b42ea31c0a406094ee623fd065d
   languageName: node
   linkType: hard
 

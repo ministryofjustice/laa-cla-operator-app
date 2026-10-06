@@ -53,6 +53,7 @@
     "body-parser": "^2.2.0",
     "chalk": "^6.0.0",
     "compression": "^1.8.2",
+    "connect-redis": "^10.0.0",
     "cookie-parser": "~1.4.6",
     "csrf-sync": "^4.2.1",
     "debug": "~4.4.3",
@@ -71,6 +72,7 @@
     "moment": "^2.31.0",
     "morgan": "~1.12.1",
     "nunjucks": "^3.2.4",
+    "redis": "^6.3.0",
     "validator": "^13.15.22"
   },
   "devDependencies": {
