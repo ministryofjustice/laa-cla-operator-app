@@ -33,6 +33,9 @@ autoscaling:
 envVars:
   BACKEND_BASE_URL:
     value: "http://cla-backend-app.laa-cla-backend-training.svc.cluster.local"
+  CFE_HOST:
+    # CFE staging in every environment until production (eligibility journey)
+    value: "http://cfe-civil.cfe-civil-staging.svc.cluster.local"
   NODE_ENV:
     value: "production"
   ENTRA_REDIRECT_URI:

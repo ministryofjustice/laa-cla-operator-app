@@ -28,6 +28,9 @@ envVars:
   BACKEND_BASE_URL:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"
+  CFE_HOST:
+    # CFE staging in every environment until production (eligibility journey)
+    value: "http://cfe-civil.cfe-civil-staging.svc.cluster.local"
   NODE_ENV:
     value: "uat"
   ENTRA_REDIRECT_URI:
