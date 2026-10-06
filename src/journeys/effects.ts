@@ -119,7 +119,7 @@ export const InboundCallEffectsImplementation: Record<
   adaptationDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
-    const isCreate = hasAdoptionDetails(_case);
+    const isUpdate = hasAdoptionDetails(_case);
 
     const otherLanguage = getStringAnswer(
       context,
@@ -152,7 +152,7 @@ export const InboundCallEffectsImplementation: Record<
     try {
       await deps.caseApi.adaptationDetails(
         authenticatedAxiosState,
-        isCreate,
+        isUpdate,
         _case.reference,
         adoptionBody,
       );
