@@ -8,6 +8,7 @@ import {
   lastStep,
   nextStep,
   previousStep,
+  relevantAnswers,
   stepsFor,
 } from "./navigation.js";
 
@@ -124,6 +125,58 @@ describe("domain/navigation (port of Steps::Helper)", () => {
         cannotUseService({ property_landlord: true }, "property_landlord"),
         false,
       );
+    });
+  });
+
+  describe("relevantAnswers", () => {
+    it("keeps every answer for a passported client with no partner", () => {
+      // Regression test: relevantAnswers used to compare answer keys
+      // against step codes directly, so it dropped every answer whose key
+      // did not happen to match a step code (e.g. the 'applicant' step
+      // saves 'partner' and 'passporting', not 'applicant'). For answers
+      // like these it returned {} instead of the input unchanged.
+      // passporting: true skips the income questions (per the existing
+      // stepsFor test above), so this does not include employment_status.
+      const answers = {
+        partner: false,
+        passporting: true,
+        property_owned: "outright",
+        additional_property_owned: "none",
+        vehicle_owned: false,
+      };
+      assert.deepEqual(relevantAnswers(answers), answers);
+    });
+
+    it("drops answers left over from an abandoned branch", () => {
+      // The client said they had a partner, answered
+      // partner_employment_status, then went back and said they have no
+      // partner after all. The partner answer is still in the session (as
+      // in CCQ) but is no longer relevant.
+      const answers = {
+        partner: false,
+        passporting: true,
+        partner_employment_status: "in_work",
+      };
+      assert.deepEqual(relevantAnswers(answers), {
+        partner: false,
+        passporting: true,
+      });
+    });
+
+    it("keeps dependant answers until passporting makes them irrelevant", () => {
+      const notPassported = {
+        partner: false,
+        passporting: false,
+        child_dependants: true,
+        child_dependants_count: 2,
+      };
+      assert.deepEqual(relevantAnswers(notPassported), notPassported);
+
+      const passported = { ...notPassported, passporting: true };
+      assert.deepEqual(relevantAnswers(passported), {
+        partner: false,
+        passporting: true,
+      });
     });
   });
 });
