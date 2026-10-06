@@ -1,4 +1,4 @@
 {% extends "main/forms/form.njk" %}
 {% block afterForm %}
-<p class='govuk-body'><a href='{{ forgeReverse('case.add-address', {':caseId': data.case.reference}) }}' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>
+<p class='govuk-body'><a class="govuk-link" href='{{ forgeReverse('case.add-address', {':caseId': data.case.reference}) }}' class='govuk-link govuk-link--no-underline'>Enter address manually</a></p>
 {% endblock %}
