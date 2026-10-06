@@ -1,0 +1,270 @@
+---
+title: Plan - Reusable eligibility journey
+last_reviewed_on: 2026-10-06
+review_in: 4 weeks
+---
+
+# Plan: reusable eligibility journey
+
+| | |
+|---|---|
+| Status | In review |
+| Author | Will Clarke |
+| Reviewers | _To be added_ |
+| Last updated | 2026-10-06 |
+
+## Summary
+
+We will build a financial eligibility (means test) journey with [hmpps-forge](https://github.com/ministryofjustice/hmpps-forge). It will live in this repository as a single, self-contained module (`src/eligibility/`).
+
+The module will have clear boundaries, so that:
+
+- cla-operator-app can mount it under a case
+- another service can copy the folder into its own codebase and mount it the same way
+- it can later be published as a package without restructuring
+
+The questions, their order and the branching rules come from **Check if your client qualifies for legal aid (CCQ)**. Business analysis (BA) and user-centred design (UCD) work established what an eligibility service needs to ask and in what order, and CCQ is the result. We are reusing that knowledge, not CCQ's Rails code.
+
+## Decisions
+
+| # | Decision | Date |
+|---|---|---|
+| D1 | The source of truth for questions, order and branching is CCQ (`ministryofjustice/laa-check-client-qualifies`). We reimplement it rather than port code. | 2026-10-06 |
+| D2 | The module lives in this repo at `src/eligibility/`, with lint-enforced boundaries, so it can be copied into a new service or extracted into a package later. | 2026-10-06 |
+| D3 | Answers stay in the session until there is a result. The host decides what to save at that point. | 2026-10-06 |
+| D4 | Branching rules are ported as plain TypeScript (a port of CCQ's `Steps::Logic` and section classes). Forge handles navigation only. | Proposed |
+| D5 | Session answer keys use CCQ's names exactly (for example `partner_` prefixes and add-another list keys), to make parity testing straightforward. | Proposed |
+
+## Background
+
+### Forge in this app
+
+- The app uses `@ministryofjustice/hmpps-forge` (^0.4.4). Journeys are packaged with `createForgePackage({ journey, functions })` and registered in `src/app.ts` with `forge.registerPackage(pkg, deps)`. Dependencies are injected at that point.
+- Forge does **not** keep answers between requests. On POST, answers come from the request body. Anything that must persist has to be written by our own effects (functions the journey runs when a step is accessed or submitted).
+- The existing journeys are tied to this app in several ways. The eligibility module must not be:
+  - SiLAS auth (`requireSilasAuth`)
+  - `/case/:caseId` parameters
+  - `ctx.getState("authenticatedAxios")`
+  - `/call_centre/api/v1/` paths
+  - app layouts
+  - English text hard-coded in `block.ts` files
+
+### The CCQ journey
+
+CCQ is in `~/dev/laa-check-client-qualifies`; this summary was taken at commit `1a30ea3f`.
+
+- **Step list:** the step-to-form map is in `app/controllers/flow/handler.rb`. The step list is rebuilt from the session on every request, from six sections in a fixed order: NonFinancial, Income, Partner, Outgoings, Property, AssetsAndVehicles (`app/lib/steps/helper.rb:72-79`).
+- **Branching:** all of it comes from one set of predicates in `app/lib/steps/logic.rb`. The main ones are `controlled?`, `client_under_eighteen?`, `under_eighteen_no_means_test_required?`, `immigration_or_asylum?`, `asylum_supported?`, `non_means_tested?`, `passported?`, `skip_income_questions?`, `skip_capital_questions?` and `partner?`.
+- **Size:** there are 41 possible steps. Six of them are add-another lists on a single page (incomes, benefits, dependant incomes, additional properties, bank accounts, vehicles).
+- **Early exits:**
+  - "Cannot use this service": shared ownership where the landlord is not the only other joint owner, or additional property in shared ownership.
+  - An early gross-income result after `other_income`.
+- **Check your answers:** has a change loop. Edits go into a pending copy that is committed when the loop ends, and the user is walked through any steps that become relevant.
+- **CFE (Check Financial Eligibility) calls:**
+  - `POST v6/assessments` for the assessment
+  - `GET state_benefit_type` for benefit autocomplete
+
+  About ten builder services assemble the payload from the relevant steps only. The result is `eligible`, `contribution_required` or `ineligible`.
+- **Welsh:** there is no Welsh UI. Only the downloadable controlled work (CW) PDF forms have Welsh versions.
+
+#### Step order
+
+| # | Step | Shown when |
+|---|---|---|
+| 1 | `client_age` | Always |
+| 2 | `level_of_help` | Always |
+| 3–7 | `under_18_clr`, `aggregated_means`, `how_to_aggregate`, `regular_income`, `under_eighteen_assets` | Controlled work and under 18. A chain: any "yes" ends it |
+| 8 | `domestic_abuse_applicant` | Certificated work and means-tested |
+| 9–10 | `immigration_or_asylum`, `immigration_or_asylum_type` | Controlled work |
+| 11 | `immigration_or_asylum_type_upper_tribunal` | Certificated work and not a domestic abuse applicant |
+| 12 | `asylum_support` | Immigration or asylum matter |
+| 13 | `applicant` (partner, passporting benefit) | Means-tested |
+| 14–16 | `dependant_details`, `dependant_income`, `dependant_income_details` | Means-tested and not passported |
+| 17–21 | `employment_status`, `income`, `benefits`, `benefit_details`, `other_income` | Not skipping income questions |
+| 22–27 | `partner_details`, `partner_employment_status`, `partner_income`, `partner_benefits`, `partner_benefit_details`, `partner_other_income` | Has a partner. If passported, only `partner_details` |
+| 28–29 | `outgoings`, `partner_outgoings` | Not skipping income questions |
+| 30–32 | `property`, `property_landlord`, and one of the housing-cost steps | Not skipping capital questions. Housing costs depend on ownership type |
+| 33–37 | `property_entry`, `additional_property`(`_details`), `partner_additional_property`(`_details`) | Not skipping capital questions |
+| 38–39 | `assets`, `partner_assets` | Not skipping capital questions |
+| 40–41 | `vehicle`, `vehicles_details` | Certificated work only |
+
+The full predicate code is in `app/lib/steps/logic.rb`, and each section's rules are in `app/lib/steps/*_section.rb`.
+
+#### Out of scope for the module
+
+These CCQ features belong to individual services, not the shared journey:
+
+- CW form PDFs
+- LAA Portal SAML sign-in
+- analytics
+- the journey logger
+- result PDF download
+
+A host can provide its own versions through the `ResultHandler` hook described below.
+
+## Design
+
+### Module layout
+
+```
+src/eligibility/                 ← the reusable unit: copy this folder to reuse
+  index.ts                       ← public API; the only file hosts may import
+  README.md                      ← how to mount, what to provide, options
+  domain/
+    logic.ts                     ← port of Steps::Logic
+    sections/*.ts                ← port of the six section classes → stepsFor(answers)
+    navigation.ts                ← nextStep, previousStep, relevantAnswers, cannotUseService
+    cfe/*.ts                     ← port of the CFE payload builders → buildAssessment(answers)
+    result.ts                    ← port of CfeResult / CalculationResult
+  ports/                         ← AnswerStore, Assessor, ResultHandler interfaces
+  adapters/                      ← SessionAnswerStore, CfeHttpClient
+  journey/                       ← createEligibilityPackage(opts); one folder per step
+  registries/                    ← Eligibility.* effects and conditions
+  views/eligibility/*.njk        ← extend a layout supplied by the host
+  locales/en.json
+  tests/
+
+src/journeys/eligibility-host/   ← cla-operator-app specific; NOT copied
+  index.ts                       ← mounts the module with SiLAS auth, case param, layout
+  resultHandler.ts               ← saves the result against the case
+```
+
+### Public API
+
+```ts
+const eligibilityPkg = createEligibilityPackage({
+  path: "eligibility",                         // relative to the parent journey
+  onAccess: [requireSilasAuth],                // host's auth guard
+  checkId: Params("caseId"),                   // how this host identifies a check
+  presetAnswers: { level_of_help: "controlled" }, // steps fully answered here are skipped
+  onComplete: Format("/case/%1/eligibility-result", Params("caseId")),
+  template: { layout: "layouts/operator.njk" },
+});
+
+forge.registerPackage<EligibilityDeps>(eligibilityPkg, {
+  assessor: new CfeHttpClient(config.cfe),
+  resultHandler: new CaseResultHandler(apiService),
+  // answerStore defaults to SessionAnswerStore
+});
+```
+
+```ts
+interface EligibilityDeps {
+  assessor: Assessor;           // assess(payload), stateBenefitTypes()
+  resultHandler: ResultHandler; // handle({ checkId, answers, result })
+  answerStore?: AnswerStore;    // load(checkId), save(checkId, partial), clear(checkId)
+}
+```
+
+### Boundary rules
+
+- Code in `src/eligibility/` may only import:
+  - `@ministryofjustice/hmpps-forge/*`
+  - Node built-ins
+  - its own files
+
+  That rules out `#src/*`, `#utils/*`, `#types/*`, and any `../` path that leaves the folder. An ESLint `no-restricted-imports` override scoped to the folder enforces this.
+- Host code may only import from `src/eligibility/index.ts`. A second lint rule enforces this.
+- Auth, check identity, storage, the CFE client, layout and completion are all injected through `createEligibilityPackage` options or `EligibilityDeps`.
+- All user-facing text uses keys from `src/eligibility/locales/en.json`. These are ported from CCQ's `config/locales/en.yml`, including the variants by level of help and for a partner.
+
+### How Forge is used
+
+- Every step:
+  - runs `Eligibility.LoadAnswers` when accessed
+  - redirects to the correct step if it is not in `stepsFor(answers)`
+- A valid submit runs `Eligibility.SaveAnswers`, then `Eligibility.ResolveNext`. ResolveNext sets `Data("nextStep")` from `nextStep(answers, current)`. The step then does `redirect({ goto: Data("nextStep") })`.
+- If `cannotUseService(answers)` is true after a submit, the user is redirected to the module's "cannot use this service" page.
+- Check your answers submits to `Eligibility.RunAssessment`, which does the following in order:
+  1. builds the payload from `relevantAnswers(answers)`
+  2. calls `assessor.assess`
+  3. calls `resultHandler.handle`
+  4. clears the session answers
+  5. redirects to `onComplete`
+- Add-another lists use the MOJ Frontend add-another component, subject to spike S2.
+
+### Session storage
+
+- Answers are stored under `req.session.eligibility[checkId]`, so checks in different tabs do not collide.
+- If CFE fails, answers stay in the session and the user can retry.
+- The change-answers loop keeps a pending copy at `req.session.eligibility[checkId].pending`, as CCQ does. It is committed only when the loop completes.
+
+### cla-operator-app integration
+
+- Mount the module as a child of `caseJourney` (`src/journeys/inbound-call/journey.ts`) at `/case/:caseId/eligibility/...`. It inherits `LoadCase` and receives SiLAS auth through `onAccess`.
+- Other changes outside the module:
+  - register the package in `src/journeys/index.ts`
+  - add `src/eligibility/views` to `utils/nunjucksSetup.ts`
+  - merge `src/eligibility/locales` in `i18nLoader.ts`
+  - add `src/eligibility/**/*.spec.ts` to `.mocharc.json`
+  - make sure the Docker image ships `src/eligibility/views` and `locales`, since templates are read from disk at runtime
+- End-to-end tests stay in `tests/playwright/`, with CFE stubbed through MSW.
+
+## Delivery phases
+
+### Phase 0: spikes (about 2 to 3 days)
+
+| Spike | Question to answer |
+|---|---|
+| S1 | Does Forge's reachability checking work with a runtime-computed `goto`? If not, use `entryWhen` with an `Eligibility.StepIsRelevant(code)` condition, or disable reachability checks for this journey. |
+| S2 | Do MOJ add-another lists post nested arrays that Forge can validate item by item (possibly with `CollectionBlock`)? |
+| S3 | Is there a network route from this app's namespace to `cfe-civil`? Add `CFE_HOST` to config. |
+| S4 | Do session writes from effects persist across POST then redirect? |
+
+### Phase 1: rules engine and parity tests (no UI)
+
+- Port `logic.rb`, the section classes, the CFE payload builders and the result interpretation into `domain/`.
+- Port CCQ's RSpec cases for step logic and payload builders into Mocha tables.
+- Build a parity fixture set from CCQ's FactoryBot "instant" sessions. The test is: the same answers must give the same step list and the same CFE payload JSON as CCQ.
+
+### Phase 2: first end-to-end journey
+
+- Build the module skeleton, the lint boundaries, `SessionAnswerStore` and `CfeHttpClient`.
+- Implement these steps:
+  - the non-financial section
+  - `applicant`
+  - the passported route through property and assets, including the bank accounts list
+- Add check your answers and a basic result page.
+- Mount the module in cla-operator-app.
+
+### Phase 3: remaining sections
+
+- Income, partner, dependants, outgoings, housing costs, additional property, vehicles.
+- The "cannot use this service" page.
+- Benefit autocomplete from CFE.
+
+### Phase 4: CCQ's more detailed behaviour
+
+- The change-answers loop.
+- The early gross-income result.
+- Copy that varies by level of help and for a partner.
+- Childcare eligibility within the outgoings step.
+
+## Risks
+
+| Risk | Mitigation |
+|---|---|
+| Sessions use express-session `MemoryStore` (`utils/session.ts`). Multiple pods or restarts lose answers partway through a check. | Before go-live, confirm a single pod with sticky sessions, or move to Redis (`connect-redis`). Track as a separate app-wide ticket. |
+| Forge is pre-1.0 (0.4.x), so its API may change. | Pin the version. Keep Forge-specific code in `journey/` and `registries/` so `domain/` is unaffected. |
+| Forge declares Node 20/22/24 support, but this app runs Node 26. | Confirm with the Forge maintainers, or test explicitly. |
+| A second copy of Forge (`ts-app/node_modules`) could cause duplicate-instance bugs if bundled. | Remove the stray `ts-app/`. List Forge as a peer dependency if the module is extracted. |
+| Parity drift: CCQ changes after the port. | Pin the CCQ commit the port is based on (currently `1a30ea3f`). Re-run parity fixtures when CCQ changes. |
+| The create-case redirect bug (`search-client/step.ts:66` resolves to `/receive-call/cases/<ref>`) makes `/case/:caseId` unreachable. | Fix before mounting the eligibility journey under the case journey. |
+
+## Open questions
+
+| # | Question | Owner |
+|---|---|---|
+| Q1 | CCQ's matter types map to DA001, IM030, IA031 and SE003. Is SE003 ("other") correct for CLA categories (debt, housing, discrimination, education, family), or does the operator journey need its own matter-type step? | BA / CLA |
+| Q2 | Is CLA always controlled work, so that `level_of_help` can be preset? Do the under-18 questions apply to CLA callers? | BA / CLA |
+| Q3 | Which cla_backend endpoint should the operator `ResultHandler` save the result to? | Backend team |
+| Q4 | Should cla-operator-app call CFE directly, or go through cla_backend? | Tech lead |
+
+## Review checklist
+
+Before marking this plan Approved:
+
+- [ ] D4 and D5 agreed
+- [ ] Q1 to Q4 answered or assigned
+- [ ] Phase 0 spikes complete and findings added to this page
+- [ ] Session store risk has an owner
