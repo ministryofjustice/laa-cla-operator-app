@@ -250,6 +250,32 @@ No fallback (`entryWhen` with a condition, or disabling reachability checks) is 
 - Effects must change the object returned by `getSession()` in place. The effect context has no way to replace the session.
 - This does not change the `MemoryStore` risk below. Answers are still lost on a restart or if requests go to a different pod.
 
+#### S3 findings: network route to CFE (2026-10-06)
+
+**Result: no route yet.** This app cannot call CFE inside the cluster until the CFE team allows it.
+
+Checked against a local copy of `cloud-platform-environments` from 18 September 2026. Check again against `main` before raising requests.
+
+- Each `cfe-civil-*` namespace has an `allow-source-namespace` network policy listing which namespaces may call it. No `laa-cla-operator-app-*` namespace is listed.
+- cla_backend already calls CFE inside the cluster (`CFE_HOST` in `cla_backend/helm_deploy`):
+
+  | cla_backend environment | CFE it calls |
+  |---|---|
+  | uat | `http://cfe-civil.cfe-civil-staging.svc.cluster.local` |
+  | staging | `http://cfe-civil.cfe-civil-production.svc.cluster.local` |
+  | training | `http://cfe-civil.cfe-civil-production.svc.cluster.local` |
+  | production | `http://cfe-civil.cfe-civil-production.svc.cluster.local` |
+
+  Staging and training use **production** CFE.
+- In the same copy, `laa-cla-backend-staging`'s policy does not list `laa-cla-operator-app-staging` either, and there is no `laa-cla-operator-app-training` namespace. Either the copy is out of date, or this app reaches cla_backend another way. Check before relying on either.
+- Calling CFE directly needs a pull request to `cloud-platform-environments` adding each `laa-cla-operator-app-*` namespace to the matching `cfe-civil-*` policy, approved by the CFE team. Going through cla_backend needs no network change. This affects Q4.
+
+Done in this spike:
+
+- Added `config.cfe.baseUrl`, read from `CFE_HOST`, to `config.ts` and `types/config-types.ts`.
+- Added `CFE_HOST` to `.env.example`, set to the public staging URL that CCQ uses for local development.
+- Helm values are **not** set yet. Add them once Q4 is answered and the network policy is in place. If calling directly, match cla_backend: `cfe-civil-staging` for uat, and `cfe-civil-production` for staging, training and production, unless the CFE team prefers otherwise.
+
 ### Phase 1: rules engine and parity tests (no UI)
 
 - Port `logic.rb`, the section classes, the CFE payload builders and the result interpretation into `domain/`.
@@ -283,7 +309,7 @@ No fallback (`entryWhen` with a condition, or disabling reachability checks) is 
 
 | Risk | Mitigation |
 |---|---|
-| Sessions use express-session `MemoryStore` (`utils/session.ts`). Multiple pods or restarts lose answers partway through a check. | Before go-live, confirm a single pod with sticky sessions, or move to Redis (`connect-redis`). Track as a separate app-wide ticket. |
+| Sessions use express-session `MemoryStore` (`utils/session.ts`), which keeps each session in one pod's memory. Staging runs 2 replicas and production 4, with no session affinity (found in spike S3), so this already affects the app, not just this journey: a request sent to a different pod loses the session, including SiLAS sign-in. | Move to a shared store such as Redis (`connect-redis`) before the eligibility journey goes live, or add sticky sessions as a stopgap. Track as a separate app-wide ticket. |
 | Forge is pre-1.0 (0.4.x), so its API may change. | Pin the version. Keep Forge-specific code in `journey/` and `registries/` so `domain/` is unaffected. |
 | Forge declares Node 20/22/24 support, but this app runs Node 26. | Confirm with the Forge maintainers, or test explicitly. |
 | A second copy of Forge (`ts-app/node_modules`) could cause duplicate-instance bugs if bundled. | Remove the stray `ts-app/`. List Forge as a peer dependency if the module is extracted. |
