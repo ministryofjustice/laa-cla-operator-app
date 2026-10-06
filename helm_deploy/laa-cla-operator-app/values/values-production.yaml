@@ -23,7 +23,7 @@ ingress:
       hosts:
         - laa-cla-operator-app.cloud-platform.service.justice.gov.uk
   whitelist:
-    enabled: true
+    enabled: false
 
 resources: {}
 
