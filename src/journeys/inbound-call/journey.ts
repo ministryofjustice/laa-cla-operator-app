@@ -1,35 +1,15 @@
-import {
-  journey,
-  submit,
-  redirect,
-  access,
-  step,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
+import { journey, access } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { whosCallingStep } from "./whos-calling/step.js";
 import { searchClientStep } from "./search-client/step.js";
-import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
 
 import { addAddressStep } from "./add-address/step.js";
-
-// Step 4: Add client Address"
-const addClientAddressStep = step({
-  code: "add-client-address",
-  path: "/add-client-address",
-  title: "Search client's address",
-  reachability: { entryWhen: true },
-  view: { template: "main/add-client-address.njk" },
-  blocks: [GovUKButton({ text: "Find address" })],
-  onSubmission: [
-    submit({
-      validate: false,
-      onValid: {
-        next: [redirect({ goto: "search-client" })],
-      },
-    }),
-  ],
-});
+import {
+  addressLookupStep1,
+  addressLookupStep2,
+} from "./address-lookup/step.js";
+import { requireSilasAuth } from "../auth.js";
 
 // Define the journey
 export const inboundCallJourney = journey({
@@ -37,7 +17,7 @@ export const inboundCallJourney = journey({
   title: "Inbound Call Journey",
   path: "/receive-call",
   view: {
-    template: "partials/form-step",
+    template: "main/forms/form.njk",
   },
   steps: [whosCallingStep, searchClientStep],
 });
@@ -48,9 +28,15 @@ export const caseJourney = journey({
   title: "Case",
   path: "/case/:caseId",
   onAccess: [
+    requireSilasAuth,
     access({
       effects: [InboundCallEffects.LoadCase()],
     }),
   ],
-  steps: [addClientDetailsStep, addClientAddressStep, addAddressStep],
+  steps: [
+    addClientDetailsStep,
+    addAddressStep,
+    addressLookupStep1,
+    addressLookupStep2,
+  ],
 });
