@@ -3,6 +3,7 @@
 // questions about where a given step sits in it.
 import type { Answers } from "./logic.js";
 import { skipIncomeQuestions } from "./logic.js";
+import { STEP_ANSWER_KEYS } from "./step-answer-keys.js";
 import type { Group } from "./sections/shared.js";
 import { nonFinancialSection } from "./sections/non-financial-section.js";
 import { incomeSection } from "./sections/income-section.js";
@@ -59,13 +60,19 @@ export function stepsFor(answers: Answers): string[] {
  * CCQ never needs this because it recomputes answered state from session
  * data shaped like its own steps, but this module needs an explicit filter
  * before sending answers on to CFE.
+ *
+ * Answer keys are not the same as step codes (e.g. the `applicant` step
+ * saves `partner` and `passporting`), so this goes through
+ * `STEP_ANSWER_KEYS` rather than matching keys against step codes directly.
  * @param {Answers} answers - the saved answers
  * @returns {Answers} only the answers for currently relevant steps
  */
 export function relevantAnswers(answers: Answers): Answers {
-  const relevant = new Set(stepsFor(answers));
+  const relevantKeys = new Set(
+    stepsFor(answers).flatMap((step) => STEP_ANSWER_KEYS[step] ?? []),
+  );
   return Object.fromEntries(
-    Object.entries(answers).filter(([code]) => relevant.has(code)),
+    Object.entries(answers).filter(([key]) => relevantKeys.has(key)),
   );
 }
 
