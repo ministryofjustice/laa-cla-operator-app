@@ -5,7 +5,7 @@ import { devError, devLog } from "#src/scripts/helpers/index.js";
 
 const REDIS_CONNECTION_TIMEOUT_MS = 10000;
 const REDIS_RECONNECT_DELAY_MULTIPLIER = 100;
-const REDIS_RECONNECT_DELAY_MAX_MS = 300;
+const REDIS_RECONNECT_DELAY_MAX_MS = 3000;
 const REDIS_MAX_RETRIES = 10;
 /**
  * Builds the Redis connection URL based on the configuration.
