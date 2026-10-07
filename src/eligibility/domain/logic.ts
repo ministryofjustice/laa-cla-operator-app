@@ -145,7 +145,7 @@ export const underEighteenAssets = (answers: Answers): boolean | undefined => {
  * @param {Answers} answers - the saved answers
  * @returns {boolean} whether no means test is required, having confirmed each part
  */
-function notAggregatedNoIncomeLowCapital(answers: Answers): boolean {
+export function notAggregatedNoIncomeLowCapital(answers: Answers): boolean {
   return (
     aggregatedMeans(answers) === false &&
     underEighteenRegularIncome(answers) === false &&
@@ -182,6 +182,16 @@ export const immigrationOrAsylum = (answers: Answers): boolean => {
     ]) && !domesticAbuseApplicant(answers)
   );
 };
+
+/**
+ * Whether disputed assets (subject matter of dispute) can be flagged in the
+ * CFE payload at all. Immigration/asylum matters never ask the dispute
+ * questions, so nothing can be flagged for them.
+ * @param {Answers} answers - the saved answers
+ * @returns {boolean} whether disputed-asset flags apply to this check
+ */
+export const smodApplicable = (answers: Answers): boolean =>
+  !immigrationOrAsylum(answers);
 
 /**
  * Whether the client is a domestic abuse applicant. Only asked outside
