@@ -26,6 +26,7 @@ let globalRedisClient: ReturnType<typeof createClient> | null = null;
  */
 export const recycleRedisClient = (): void => {
   if (globalRedisClient !== null) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- we do not need to wait for this
     globalRedisClient.quit();
     globalRedisClient = null;
   }
