@@ -3,6 +3,7 @@ import sinon from "sinon";
 import { MemoryStore } from "express-session";
 import { buildSessionConfig } from "#utils/session.js";
 import type { Config } from "#types/config-types.js";
+import { createRedisClient } from "#utils/redis.js";
 
 describe("session", () => {
   describe("buildSessionConfig", () => {
@@ -54,6 +55,24 @@ describe("session", () => {
       await buildSessionConfig(testConfig);
 
       assert(consoleLogStub.calledOnce, "Should log a warning");
+    });
+
+    it("should use redis session store", async () => {
+      const config = Object.assign(testConfig, {
+        redis: {
+          host: "localhost",
+          port: 6379,
+          tls_enabled: false,
+          auth_token: "secret-token",
+          enabled: true,
+        },
+      });
+
+      const client = createRedisClient(config.redis);
+      const redisConnectStub = sinon.stub(client, "connect");
+      await buildSessionConfig(config);
+
+      assert(redisConnectStub.calledOnce, "Redis connect not called");
     });
   });
 });

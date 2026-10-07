@@ -145,4 +145,20 @@ describe("createRedisClient", () => {
     assert(consoleLogStub.calledWithMatch("Redis client disconnected"));
     assert(consoleErrorStub.calledWithMatch("Redis Client Error:"));
   });
+
+  it("should reuse same redis client", () => {
+    const config: RedisConfig = {
+      host: "localhost",
+      port: 6379,
+      tls_enabled: false,
+      enabled: true,
+    };
+
+    const client1 = createRedisClient(config);
+    const client2 = createRedisClient(config);
+    assert.equal(client1, client2);
+    recycleRedisClient();
+    const client3 = createRedisClient(config);
+    assert.notEqual(client1, client3);
+  });
 });
