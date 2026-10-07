@@ -22,15 +22,12 @@ let globalRedisClient: ReturnType<typeof createClient> | null = null;
 
 /**
  * Recycle the global Redis client by quitting the connection and clearing the reference.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export const recycleRedisClient = async (): Promise<void> => {
-  const client = globalRedisClient;
-  if (client !== null) {
+export const recycleRedisClient = (): void => {
+  if (globalRedisClient !== null) {
+    globalRedisClient.quit();
     globalRedisClient = null;
-    if (client.isOpen) {
-      await client.quit();
-    }
   }
 };
 

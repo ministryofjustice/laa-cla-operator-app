@@ -7,10 +7,10 @@ describe("createRedisClient", () => {
   let consoleLogStub: sinon.SinonStub;
   let consoleErrorStub: sinon.SinonStub;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     consoleLogStub = sinon.stub(console, "log");
     consoleErrorStub = sinon.stub(console, "error");
-    await recycleRedisClient(); // Ensure we start with a fresh client for each test
+    recycleRedisClient(); // Ensure we start with a fresh client for each test
   });
 
   afterEach(() => {
@@ -146,7 +146,7 @@ describe("createRedisClient", () => {
     assert(consoleErrorStub.calledWithMatch("Redis Client Error:"));
   });
 
-  it("should reuse same redis client", async () => {
+  it("should reuse same redis client", () => {
     const config: RedisConfig = {
       host: "localhost",
       port: 6379,
@@ -157,7 +157,7 @@ describe("createRedisClient", () => {
     const client1 = createRedisClient(config);
     const client2 = createRedisClient(config);
     assert.equal(client1, client2);
-    await recycleRedisClient();
+    recycleRedisClient();
     const client3 = createRedisClient(config);
     assert.notEqual(client1, client3);
   });
