@@ -91,6 +91,49 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
     },
   },
+  // Eligibility module boundary rules
+  {
+    files: ["src/eligibility/**/*.ts", "!src/eligibility/**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "#src/*",
+                "#utils/*",
+                "#types/*",
+                "#routes/*",
+                "#middleware/*",
+                "#helpers/*",
+                "../../*",
+              ],
+              message:
+                "The eligibility module must stay reusable. Import only from within src/eligibility/ or from @ministryofjustice/hmpps-forge.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Host code must import eligibility only from index.ts
+  {
+    files: ["src/journeys/**/*.ts", "src/controllers/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["src/eligibility/*"],
+              message: "Import from src/eligibility/index.ts only",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Add a separate config for declaration files
   {
     files: ["**/*.d.ts"],
