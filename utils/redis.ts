@@ -28,7 +28,9 @@ export const recycleRedisClient = async (): Promise<void> => {
   const client = globalRedisClient;
   if (client !== null) {
     globalRedisClient = null;
-    await client.quit();
+    if (client.isOpen) {
+      await client.quit();
+    }
   }
 };
 

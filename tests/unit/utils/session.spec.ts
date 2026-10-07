@@ -73,7 +73,7 @@ describe("session", () => {
       await buildSessionConfig(config);
 
       assert(redisConnectStub.calledOnce, "Redis connect not called");
-      redisConnectStub.restore()
+      redisConnectStub.restore();
     });
   });
 });
