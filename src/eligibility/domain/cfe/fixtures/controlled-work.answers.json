@@ -1,0 +1,44 @@
+{
+  "level_of_help": "controlled",
+  "client_age": "standard",
+  "date_of_birth": "1978-03-15",
+  "passporting": false,
+  "employment_status": "in_work",
+  "incomes": [
+    {
+      "income_type": "employment",
+      "income_frequency": "monthly",
+      "gross_income": 2500,
+      "income_tax": 400,
+      "national_insurance": 250
+    }
+  ],
+  "housing_costs": true,
+  "housing_payments": 800,
+  "housing_payments_frequency": "monthly",
+  "housing_benefit_relevant": false,
+  "friends_or_family_relevant": false,
+  "maintenance_relevant": false,
+  "property_or_lodger_relevant": false,
+  "pension_relevant": false,
+  "student_finance_relevant": false,
+  "other_relevant": false,
+  "childcare_payments_relevant": false,
+  "maintenance_payments_relevant": false,
+  "legal_aid_payments_relevant": false,
+  "property_owned": "outright",
+  "house_value": 250000,
+  "percentage_owned": 100,
+  "investments": 5000,
+  "valuables": 0,
+  "bank_accounts": [
+    {
+      "amount": 10000
+    }
+  ],
+  "adult_dependants": false,
+  "child_dependants": false,
+  "vehicle_owned": false,
+  "immigration_or_asylum": false,
+  "domestic_abuse_applicant": false
+}
