@@ -213,3 +213,8 @@ envVars:
     value: "true"
   REDIS_TLS_ENABLED:
     value: "true"
+  OS_PLACES_API_KEY:
+    valueFrom:
+      secretKeyRef:
+        name: os-places
+        key: api_key
