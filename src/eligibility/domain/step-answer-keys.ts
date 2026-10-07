@@ -23,8 +23,14 @@
 //   simple attributes.
 //
 // Pinned at the same CCQ commit as logic.ts and the section ports (1a30ea3f).
+//
+// `date_of_birth` and `partner_date_of_birth` are not from CCQ: CCQ only
+// collects an age bracket (`client_age`, `partner_over_60`) and fakes a date
+// of birth for CFE. This reusable component collects a real date of birth
+// instead, so the CFE payload builders (domain/cfe/) can pass it straight
+// through rather than synthesising one (see the CFE payload builders plan).
 export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
-  client_age: ["client_age"],
+  client_age: ["client_age", "date_of_birth"],
   level_of_help: ["level_of_help"],
   under_18_clr: ["controlled_legal_representation"],
   aggregated_means: ["aggregated_means"],
@@ -97,7 +103,7 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
     "valuables_in_dispute",
     "bank_accounts",
   ],
-  partner_details: ["partner_over_60"],
+  partner_details: ["partner_over_60", "partner_date_of_birth"],
   partner_employment_status: ["partner_employment_status"],
   partner_income: ["partner_incomes"],
   partner_benefits: ["partner_receives_benefits"],
