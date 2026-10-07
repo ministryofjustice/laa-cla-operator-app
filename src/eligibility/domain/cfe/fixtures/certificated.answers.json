@@ -1,0 +1,39 @@
+{
+  "level_of_help": "certificated",
+  "client_age": "standard",
+  "date_of_birth": "1985-07-22",
+  "passporting": false,
+  "immigration_or_asylum": true,
+  "immigration_or_asylum_type_upper_tribunal": "immigration_upper",
+  "asylum_support": false,
+  "employment_status": "unemployed",
+  "housing_costs": true,
+  "housing_payments": 1200,
+  "housing_payments_frequency": "monthly",
+  "housing_benefit_relevant": true,
+  "housing_benefit_value": 400,
+  "housing_benefit_frequency": "monthly",
+  "friends_or_family_relevant": false,
+  "maintenance_relevant": false,
+  "property_or_lodger_relevant": false,
+  "pension_relevant": false,
+  "student_finance_relevant": false,
+  "other_relevant": false,
+  "childcare_payments_relevant": false,
+  "maintenance_payments_relevant": false,
+  "legal_aid_payments_relevant": false,
+  "property_owned": "outright",
+  "house_value": 150000,
+  "percentage_owned": 100,
+  "investments": 0,
+  "valuables": 1000,
+  "bank_accounts": [
+    {
+      "amount": 2000
+    }
+  ],
+  "adult_dependants": false,
+  "child_dependants": false,
+  "vehicle_owned": false,
+  "domestic_abuse_applicant": false
+}
