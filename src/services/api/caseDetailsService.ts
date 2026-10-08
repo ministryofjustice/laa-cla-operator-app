@@ -110,7 +110,7 @@ export async function createCase(
 }
 
 /**
- * Creates or updates a client's adoption details.
+ * Creates or updates a client's adaptation details.
  *
  * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
  * @param {boolean} isUpdate Whether to create (POST) or update (PATCH) the adoption details.
@@ -118,7 +118,7 @@ export async function createCase(
  * @param {Record<string, unknown>} body The adoption details payload to send.
  * @returns {Promise<void>} Resolves when the request completes.
  */
-export async function adaptationDetails(
+export async function saveAdaptationDetails(
   axiosMiddleware: AxiosInstanceWrapper,
   isUpdate: boolean,
   caseId: string,

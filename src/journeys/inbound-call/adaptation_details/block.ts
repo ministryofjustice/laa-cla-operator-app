@@ -26,7 +26,6 @@ export const adaptationDetailsNeed = CollectionBlock({
   collection: [
     GovUKBody({
       text: "A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult.",
-      size: "s",
     }),
     HtmlBlock({
       content: `

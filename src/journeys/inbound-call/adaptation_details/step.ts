@@ -21,7 +21,7 @@ export const adaptationDetails = step({
     submit({
       validate: true,
       onValid: {
-        effects: [InboundCallEffects.adaptationDetails()],
+        effects: [InboundCallEffects.AdaptationEffects()],
         next: [
           redirect({
             when: Data("adaptationDetailsSaved").match(Condition.Equals(true)),

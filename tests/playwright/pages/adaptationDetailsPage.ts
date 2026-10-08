@@ -1,7 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 import { TEST_CONFIG } from "../playwright.config.js";
 
-export class adaptationDetailsWebPage {
+export class AdaptationDetailPage {
   private readonly page: Page;
   private readonly adaptationDetailsUrl: string;
 

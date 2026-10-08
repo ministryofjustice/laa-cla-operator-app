@@ -4,7 +4,7 @@ import {
   updatePersonalDetails,
   searchCases,
   loadCase,
-  adaptationDetails,
+  saveAdaptationDetails,
 } from "./caseDetailsService.js";
 
 export * from "./baseApiService.js";
@@ -16,7 +16,7 @@ export const apiService = {
   searchCases,
   createCase,
   loadCase,
-  adaptationDetails,
+  saveAdaptationDetails,
 
   /* c8 ignore next */
 };
