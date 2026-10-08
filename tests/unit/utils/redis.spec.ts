@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 import sinon from "sinon";
-import { createRedisClient, recycleRedisClient } from "#utils/redis.js";
+import { buildConnectionUrl, createRedisClient, recycleRedisClient } from "#utils/redis.js";
 import type { RedisConfig } from "#types/config-types.js";
 
 describe("createRedisClient", () => {
@@ -16,6 +16,18 @@ describe("createRedisClient", () => {
   afterEach(() => {
     sinon.restore();
   });
+
+it("test buildConnectionUrl", () => {
+    const config: RedisConfig = {
+      host: "redis.example.com",
+      port: 6380,
+      tls_enabled: true,
+      enabled: true,
+    };
+
+    assert.equal(buildConnectionUrl(config), "rediss://redis.example.com:6380");
+  });
+
 
   it("should create a redis client using redis protocol when TLS is disabled", () => {
     const config: RedisConfig = {
