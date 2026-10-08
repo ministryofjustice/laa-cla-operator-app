@@ -6,11 +6,11 @@ import type { Request, Response } from "express";
 
 import config from "#config.js";
 import type { AccessTokenClaims } from "#types/auth-types.js";
-import jsonwebtoken from 'jsonwebtoken';
+import jsonwebtoken from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 
 const EPHEMERAL_SUFFIX =
-"laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
+  "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
 const NONCE_BYTES = 32;
 const DEFAULT_SESSION_MINUTES = 30;
 const MILLISECONDS_PER_SECOND = 1000;
@@ -155,17 +155,17 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
  * @throws {Error} When the token cannot be decoded.
  */
 async function decodeToken(token: string): Promise<AccessTokenClaims> {
-  const kid = getAccessTokenKID(token)
-  const pubKey = await getPublicKey(kid)
+  const kid = getAccessTokenKID(token);
+  const pubKey = await getPublicKey(kid);
   const claims = jsonwebtoken.verify(token, pubKey, {
     audience: config.silas.expectedAudience,
     issuer: `https://login.microsoftonline.com/${config.silas.tenantId}/v2.0`,
     algorithms: ["RS256"],
-  })
-  if(typeof claims === "string") {
-    throw new Error("Access token could not be decoded")
+  });
+  if (typeof claims === "string") {
+    throw new Error("Access token could not be decoded");
   }
-  return claims as AccessTokenClaims
+  return claims as AccessTokenClaims;
 }
 
 /**
@@ -344,7 +344,7 @@ export async function callbackAction(
       scopes: config.silas.scopes,
       redirectUri: config.silas.redirectUri,
     });
-    
+
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;
@@ -392,10 +392,10 @@ async function getPublicKey(kid: string) {
   const client = jwksClient({
     jwksUri: `https://login.microsoftonline.com/${config.silas.tenantId}/discovery/v2.0/keys`,
     cache: true,
-    cacheMaxAge: ENTRA_KEY_CACHE_TTL_MS
-  })
+    cacheMaxAge: ENTRA_KEY_CACHE_TTL_MS,
+  });
   const key = await client.getSigningKey(kid);
-  return key.getPublicKey()
+  return key.getPublicKey();
 }
 
 /**
@@ -403,13 +403,13 @@ async function getPublicKey(kid: string) {
  * @param {string} accessToken - Access token
  * @returns {string} - The Key ID used in the access token
  */
-function getAccessTokenKID(accessToken: string) : string {
+function getAccessTokenKID(accessToken: string): string {
   const parts = accessToken.split(".");
-  const header = JSON.parse(Buffer.from(parts[0], "base64url").toString())
-  if(header.kid === undefined) {
-    throw new Error("Access token is missing a valid header")
+  const header = JSON.parse(Buffer.from(parts[0], "base64url").toString());
+  if (header.kid === undefined) {
+    throw new Error("Access token is missing a valid header");
   }
-  return header.kid
+  return header.kid;
 }
 
 /**
