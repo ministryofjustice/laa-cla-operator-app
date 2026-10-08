@@ -83,7 +83,7 @@ export const searchClientFormBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "phone",
-      classes: "govuk-input--width-30",
+      classes: "govuk-input--width-20",
       label: {
         text: "Client's phone number",
         classes: "govuk-label--s",
@@ -103,7 +103,7 @@ export const searchClientFormBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "postcode",
-      classes: "govuk-input--width-30",
+      classes: "govuk-input--width-10",
       label: {
         text: "Client's postcode",
         classes: "govuk-label--s",
@@ -170,7 +170,7 @@ export const createCaseButtonBlock = GovUKButton({
       Condition.IsRequired(),
       Format("Start a new case for %1", Answer("fullName")),
     )
-    .otherwise("Start a new case"),
+    .otherwise("Start a new case using the details entered"),
   classes: "govuk-button--secondary",
   name: "action",
   value: "createCase",
