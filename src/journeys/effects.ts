@@ -14,6 +14,8 @@ import {
   ZERO,
 } from "#src/journeys/helpers/effectHelpers.js";
 import type { CaseDetails } from "#types/api-types.js";
+import type { Session } from "express-session";
+import type { Address } from "#src/services/postcodeLookup.js";
 
 /**
  * Get the current case
@@ -21,8 +23,7 @@ import type { CaseDetails } from "#types/api-types.js";
  * @returns {CaseDetails} - Returns the current case
  */
 function getCase(context: EffectFunctionContext): CaseDetails {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This will be a case object
-  return context.getData("case") as CaseDetails;
+  return context.getData<CaseDetails>("case");
 }
 
 /**
@@ -74,6 +75,9 @@ export interface InboundCallEffectShape {
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
   AdaptationEffects: () => EffectFunctionExpr;
+  PostcodeLookup: () => EffectFunctionExpr;
+  SaveToSession: () => EffectFunctionExpr;
+  SaveAddressLookup: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
@@ -280,6 +284,83 @@ export const InboundCallEffectsImplementation: Record<
     );
     context.setData("createdCaseRef", reference);
   },
+
+  /**
+   * Implementation of the effect for looking a postcode
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  PostcodeLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge context returns a session compatible with express-session
+    const session = context.getSession() as Session;
+    const postcode = session.forms?.postcodeLookup?.postcode;
+    const building = session.forms?.postcodeLookup?.building;
+    const data = {
+      building,
+      postcode,
+      //eslint-disable-next-line  @typescript-eslint/no-magic-numbers -- counter starts at zero
+      count: 0,
+      result: [] as Array<{ address: string; uprn: string }> | null,
+      error: null as string | null,
+    };
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- this will capture all untruthy including null and undefined
+    if (!postcode) {
+      context.setData("lookup", data);
+      return;
+    }
+    try {
+      const addresses = await deps.postCodeApi.byPostcode(postcode, building);
+      data.result = addresses.map((address: Address) => ({
+        address: address.address,
+        uprn: address.uprn,
+      }));
+      // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+      data.count = data.result.length;
+      context.setData("lookup", data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
+        data.error = error.message;
+        context.setData("lookup", data);
+      }
+    }
+  },
+  /**
+   * Implementation of the effect for saving form data to session
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await -- Forge expects methods to be async
+  SaveToSession: (deps: Deps) => async (context: EffectFunctionContext) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge context returns a session compatible with express-session
+    const session = context.getSession() as Session;
+    session.forms ??= {};
+    session.forms.postcodeLookup = {
+      building: context.getPostData("building"),
+      postcode: context.getPostData("postcode"),
+    };
+    session.save();
+  },
+
+  /**
+   * Implementation of the effect for saving form data to the api
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  SaveAddressLookup: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context);
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const uprn = context.getPostData("address");
+    const address = await deps.postCodeApi.byUPRN(String(uprn));
+    await deps.caseApi.updatePersonalDetails(
+      authenticatedAxiosState,
+      _case.reference,
+      {
+        postcode: address?.postcode,
+        street: address?.address,
+      },
+    );
+  },
 };
 
 export const InboundCallEffectsRegistry = new EffectRegistry<Deps>();
@@ -316,5 +397,17 @@ export const InboundCallEffects: InboundCallEffectShape = {
   CreateCase: InboundCallEffectsRegistry.register(
     "CreateCase",
     InboundCallEffectsImplementation.CreateCase,
+  ),
+  PostcodeLookup: InboundCallEffectsRegistry.register(
+    "PostcodeLookup",
+    InboundCallEffectsImplementation.PostcodeLookup,
+  ),
+  SaveToSession: InboundCallEffectsRegistry.register(
+    "SaveToSession",
+    InboundCallEffectsImplementation.SaveToSession,
+  ),
+  SaveAddressLookup: InboundCallEffectsRegistry.register(
+    "SaveAddressLookup",
+    InboundCallEffectsImplementation.SaveAddressLookup,
   ),
 };

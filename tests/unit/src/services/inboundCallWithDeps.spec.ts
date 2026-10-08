@@ -2,6 +2,7 @@ import { strict as assert } from "assert";
 import sinon from "sinon";
 import { InboundCallEffectsImplementation } from "#src/journeys/effects.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
+import { PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
 const AXIOS_MISSING_MESSAGE =
   "Axios middleware is not available in the context.";
@@ -69,6 +70,15 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: makeCaseApi({ getAllCases }),
     } as any);
+      caseApi: {
+        getAllCases,
+        updatePersonalDetails,
+        searchCases,
+        createCase: createCase,
+        loadCase,
+      },
+      postCodeApi: new PostcodeLookupService(),
+    });
 
     const context = makeContextWithAxios(axiosWrapper);
 
@@ -86,6 +96,15 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: makeCaseApi({ getAllCases }),
     } as any);
+      caseApi: {
+        getAllCases: sinon.stub(),
+        updatePersonalDetails: sinon.stub(),
+        searchCases: sinon.stub(),
+        createCase: sinon.stub(),
+        loadCase: sinon.stub(),
+      },
+      postCodeApi: new PostcodeLookupService(),
+    });
 
     const context = makeContextWithAxios(undefined);
 

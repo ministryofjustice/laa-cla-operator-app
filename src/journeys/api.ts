@@ -6,9 +6,11 @@ import type {
   SearchCasesResponse,
   saveAdaptationDetailsParams,
 } from "#types/api-types.js";
+import type { PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
 export interface Deps {
   caseApi: CaseApiService;
+  postCodeApi: PostcodeLookupService;
 }
 
 export interface CaseApiService {

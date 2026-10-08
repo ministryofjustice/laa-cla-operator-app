@@ -49,6 +49,7 @@
                     {{ block | safe }}
                 {% endfor %}
             </form>
+            {% block afterForm %} {% endblock %}
         </div>
     </div>
 {% endblock %}
