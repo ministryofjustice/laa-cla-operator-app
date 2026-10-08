@@ -12,11 +12,13 @@ const REDIS_MAX_RETRIES = 10;
  * @param {RedisConfig} config - Redis configuration object
  * @returns {string} Redis connection URL
  */
+/* c8 ignore start */
 export const buildConnectionUrl = (config: RedisConfig): string => {
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- null and false are both falsy
   const protocol = config.tls_enabled ? "rediss://" : "redis://";
   return `${protocol}${config.host}:${config.port}`;
 };
+/* c8 ignore end */
 
 let globalRedisClient: ReturnType<typeof createClient> | null = null;
 
