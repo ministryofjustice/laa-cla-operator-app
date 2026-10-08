@@ -153,9 +153,20 @@ export function requireAuth(
   res: Response,
   next: NextFunction,
 ): void {
+  const AUTH_EXEMPT_PATHS = [
+    /\/login/,
+    /\/redirect/,
+    /\/sign-in/,
+    /\/privacy/,
+    /\/cookies/,
+    /^\/js/,
+    /^\/cs/,
+  ];
+  if (AUTH_EXEMPT_PATHS.some((pattern) => pattern.test(req.path))) {
+    return next();
+  }
   const { session } = req;
   const { silasAuth } = session;
-
   if (!hasValidSilasToken(silasAuth)) {
     res.redirect("/sign-in");
     return;

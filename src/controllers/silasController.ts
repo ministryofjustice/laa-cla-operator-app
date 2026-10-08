@@ -6,23 +6,24 @@ import type { Request, Response } from "express";
 
 import config from "#config.js";
 import type { AccessTokenClaims } from "#types/auth-types.js";
+import jsonwebtoken from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
 const NONCE_BYTES = 32;
-const TOKEN_PARTS_COUNT = 3;
 const DEFAULT_SESSION_MINUTES = 30;
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 const INTERNAL_SERVER_ERROR = 500;
 const EMPTY_LENGTH = 0;
-const TOKEN_CLAIMS_INDEX = 1;
 const LAST_SEGMENT_INDEX = -1;
 
 const TOKEN_EXPIRY_OFFSET_MS =
   DEFAULT_SESSION_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 const OIDC_SCOPES = new Set(["openid", "profile", "offline_access"]);
+const ENTRA_KEY_CACHE_TTL_MS = 3600000; // 1 hour
 
 const msalClient = new ConfidentialClientApplication({
   auth: {
@@ -149,46 +150,22 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
 
 /**
  * Decodes the claims portion of a JWT access token.
- *
  * @param {string} token JWT access token to decode.
  * @returns {AccessTokenClaims} The decoded access-token claims.
  * @throws {Error} When the token cannot be decoded.
  */
-function decodeToken(token: string): AccessTokenClaims {
-  const parts = token.split(".");
-
-  if (parts.length !== TOKEN_PARTS_COUNT) {
-    throw new Error("SILAS token failed to decode: not 3 parts");
+async function decodeToken(token: string): Promise<AccessTokenClaims> {
+  const kid = getAccessTokenKID(token);
+  const pubKey = await getPublicKey(kid);
+  const claims = jsonwebtoken.verify(token, pubKey, {
+    audience: config.silas.expectedAudience,
+    issuer: `https://login.microsoftonline.com/${config.silas.tenantId}/v2.0`,
+    algorithms: ["RS256"],
+  });
+  if (typeof claims === "string") {
+    throw new Error("Access token could not be decoded");
   }
-
-  try {
-    const decoded: unknown = JSON.parse(
-      Buffer.from(parts[TOKEN_CLAIMS_INDEX], "base64url").toString("utf8"),
-    );
-
-    if (!isAccessTokenClaims(decoded)) {
-      throw new Error("Invalid SILAS access-token claims");
-    }
-
-    return decoded;
-  } catch (error) {
-    throw new Error(
-      `Failed to decode SILAS access token claims: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-      { cause: error },
-    );
-  }
-}
-
-/**
- * Determines whether a decoded value represents access-token claims.
- *
- * @param {unknown} value Value to validate.
- * @returns {value is AccessTokenClaims} Whether the value is access-token claims.
- */
-function isAccessTokenClaims(value: unknown): value is AccessTokenClaims {
-  return typeof value === "object" && value !== null;
+  return claims as AccessTokenClaims;
 }
 
 /**
@@ -203,27 +180,13 @@ function normalizeScope(scope: string): string {
 }
 
 /**
- * Validates the issuer, audience, and delegated scopes in SILAS claims.
+ * Validates access token scopes.
  *
  * @param {AccessTokenClaims} claims Decoded access-token claims.
  * @returns {void} Nothing when all required claims are valid.
  * @throws {Error} When a required claim is invalid.
  */
-function validateAccessTokenClaims(claims: AccessTokenClaims): void {
-  const expectedIss = `https://login.microsoftonline.com/${config.silas.tenantId}/v2.0`;
-
-  if (claims.iss !== expectedIss) {
-    throw new Error(
-      `Unexpected SILAS token issuer. Expected '${expectedIss}', got '${claims.iss ?? "undefined"}'`,
-    );
-  }
-
-  if (claims.aud !== config.silas.expectedAudience) {
-    throw new Error(
-      `Unexpected SILAS token audience. Expected '${config.silas.expectedAudience}', got '${claims.aud ?? "undefined"}'`,
-    );
-  }
-
+function validateAccessTokenScopes(claims: AccessTokenClaims): void {
   const requiredScopes = config.silas.scopes
     .filter((scope) => !OIDC_SCOPES.has(scope.toLowerCase()))
     .map(normalizeScope);
@@ -387,9 +350,9 @@ export async function callbackAction(
       return;
     }
 
-    const claims = decodeToken(response.accessToken);
+    const claims = await decodeToken(response.accessToken);
 
-    validateAccessTokenClaims(claims);
+    validateAccessTokenScopes(claims);
 
     await regenerateSession(req);
 
@@ -418,6 +381,35 @@ export async function callbackAction(
   } catch {
     res.status(INTERNAL_SERVER_ERROR).send("Authentication failed");
   }
+}
+
+/**
+ * Get public key for given key id.
+ * @param {string} kid - Key ID
+ * @returns {string} - The entra public key for the given key id
+ */
+async function getPublicKey(kid: string) {
+  const client = jwksClient({
+    jwksUri: `https://login.microsoftonline.com/${config.silas.tenantId}/discovery/v2.0/keys`,
+    cache: true,
+    cacheMaxAge: ENTRA_KEY_CACHE_TTL_MS,
+  });
+  const key = await client.getSigningKey(kid);
+  return key.getPublicKey();
+}
+
+/**
+ * Get key id used in a given access token.
+ * @param {string} accessToken - Access token
+ * @returns {string} - The Key ID used in the access token
+ */
+function getAccessTokenKID(accessToken: string): string {
+  const parts = accessToken.split(".");
+  const header = JSON.parse(Buffer.from(parts[0], "base64url").toString());
+  if (header.kid === undefined) {
+    throw new Error("Access token is missing a valid header");
+  }
+  return header.kid;
 }
 
 /**
