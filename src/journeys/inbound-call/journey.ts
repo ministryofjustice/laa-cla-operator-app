@@ -4,6 +4,7 @@ import { searchClientStep } from "./search-client/step.js";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
 import { addAddressStep } from "./add-address/step.js";
+import { adaptationDetails } from "./adaptation_details/step.js";
 import {
   addressLookupStep1,
   addressLookupStep2,
@@ -37,5 +38,6 @@ export const caseJourney = journey({
     addAddressStep,
     addressLookupStep1,
     addressLookupStep2,
+    adaptationDetails,
   ],
 });
