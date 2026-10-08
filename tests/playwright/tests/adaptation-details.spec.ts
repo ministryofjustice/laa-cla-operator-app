@@ -38,16 +38,12 @@ test.describe("select client support needs", () => {
     const { AdaptationDetailPage } = pages;
 
     await expect(AdaptationDetailPage.welshCheckbox).not.toBeChecked();
-    await expect(
-      AdaptationDetailPage.otherLanguageCheckbox,
-    ).not.toBeChecked();
+    await expect(AdaptationDetailPage.otherLanguageCheckbox).not.toBeChecked();
     await expect(
       AdaptationDetailPage.britishSignLanguageCheckBox,
     ).not.toBeChecked();
     await expect(AdaptationDetailPage.relayUKCheckbox).not.toBeChecked();
-    await expect(
-      AdaptationDetailPage.otherSupportCheckbox,
-    ).not.toBeChecked();
+    await expect(AdaptationDetailPage.otherSupportCheckbox).not.toBeChecked();
   });
 
   test("conditional inputs are hidden until their checkbox is selected", async ({
@@ -106,9 +102,7 @@ test.describe("select client support needs", () => {
     await AdaptationDetailPage.clickContinue();
 
     await expect(
-      AdaptationDetailPage.errorSummaryLink(
-        "Enter the client’s support needs",
-      ),
+      AdaptationDetailPage.errorSummaryLink("Enter the client’s support needs"),
     ).toBeVisible();
   });
 

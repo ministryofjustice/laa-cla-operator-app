@@ -11,6 +11,20 @@ import { strict as assert } from "assert";
 import { expect } from "chai";
 import sinon from "sinon";
 
+import type { saveAdaptationDetailsResponse } from "#types/api-types.js";
+
+const mockResponse: saveAdaptationDetailsResponse = {
+  bsl_webcam: true,
+  minicom: false,
+  text_relay: false,
+  skype_webcam: false,
+  language: "WELSH",
+  notes: "some random notes",
+  reference: "e8a50520439842f6be4cccd315103f47",
+  callback_preference: false,
+  no_adaptations_required: false,
+};
+
 describe("caseDetailsService", () => {
   // Declared ONCE, shared by every nested describe
   let axiosMiddlewareStub: AxiosInstanceWrapper;
@@ -52,23 +66,25 @@ describe("caseDetailsService", () => {
     sinon.restore();
   });
 
-  describe("updateAdoptionDetails", () => {
-    it("should update adoption details for a case", async () => {
+  describe("updateAdaptationDetails", () => {
+    it("should update adaptation details for a case", async () => {
       // Arrange
       const caseId = "TX-123-FR5";
       const body = {
-        // Language choice
         language: "WELSH",
-
-        // Communication needs
         bsl_webcam: true,
         text_relay: false,
         notes: "some random notes",
       };
-      patchStub.resolves();
+      patchStub.resolves({ data: mockResponse });
 
       // Act
-      await saveAdaptationDetails(axiosMiddlewareStub, true, caseId, body);
+      const result = await saveAdaptationDetails(
+        axiosMiddlewareStub,
+        true,
+        caseId,
+        body,
+      );
 
       // Assert
       expect(patchStub.calledOnce).to.be.true;
@@ -76,26 +92,29 @@ describe("caseDetailsService", () => {
         `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
       );
       expect(patchStub.firstCall.args[1]).to.deep.equal(body);
+      expect(result).to.deep.equal(mockResponse);
     });
   });
 
-  describe("createAdoptionDetails", () => {
-    it("should create new adoption details for a case", async () => {
+  describe("createAdaptationDetails", () => {
+    it("should create new adaptation details for a case", async () => {
       // Arrange
       const caseId = "TX-123-FR5";
       const body = {
-        // Language choice
         language: "WELSH",
-
-        // Communication needs
         bsl_webcam: true,
         text_relay: false,
         notes: "some random notes",
       };
-      postStub.resolves();
+      postStub.resolves({ data: mockResponse });
 
       // Act
-      await saveAdaptationDetails(axiosMiddlewareStub, false, caseId, body);
+      const result = await saveAdaptationDetails(
+        axiosMiddlewareStub,
+        false,
+        caseId,
+        body,
+      );
 
       // Assert
       expect(postStub.calledOnce).to.be.true;
@@ -103,6 +122,7 @@ describe("caseDetailsService", () => {
         `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
       );
       expect(postStub.firstCall.args[1]).to.deep.equal(body);
+      expect(result).to.deep.equal(mockResponse);
     });
   });
 

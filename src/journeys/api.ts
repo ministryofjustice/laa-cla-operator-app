@@ -4,6 +4,7 @@ import type {
   SearchCasesParams,
   CaseDetails,
   SearchCasesResponse,
+  saveAdaptationDetailsParams,
 } from "#types/api-types.js";
 
 export interface Deps {
@@ -34,5 +35,5 @@ export interface CaseApiService {
     isCreate: boolean,
     caseId: string,
     body: Record<string, unknown>,
-  ) => Promise<void>;
+  ) => Promise<saveAdaptationDetailsParams>;
 }

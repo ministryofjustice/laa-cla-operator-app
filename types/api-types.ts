@@ -50,3 +50,27 @@ export interface SearchCasesParams {
   pageSize?: number;
   pageNumber?: number;
 }
+
+export interface saveAdaptationDetailsParams {
+  bsl_webcam?: boolean;
+  minicom?: boolean;
+  text_relay?: boolean;
+  skype_webcam?: boolean;
+
+  language?: string | null;
+  notes?: string;
+  callback_preference?: boolean;
+  no_adaptations_required?: boolean | null;
+}
+
+export interface saveAdaptationDetailsResponse {
+  bsl_webcam: boolean;
+  minicom: boolean;
+  text_relay: boolean;
+  skype_webcam: boolean;
+  language: string | null;
+  notes: string;
+  reference: string;
+  callback_preference: boolean;
+  no_adaptations_required: boolean | null;
+}
