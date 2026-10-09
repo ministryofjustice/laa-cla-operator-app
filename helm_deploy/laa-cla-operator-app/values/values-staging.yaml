@@ -41,4 +41,4 @@ envVars:
   NODE_ENV:
     value: "staging"
   ENTRA_REDIRECT_URI:
-    value: "https://laa-cla-operator-app-staging.cloud-platform.service.justice.gov.uk/redirect"
+    value: "https://laa-cla-operator-app-staging.cloud-platform.service.justice.gov.uk/entra-callback"
