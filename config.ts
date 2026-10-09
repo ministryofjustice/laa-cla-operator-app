@@ -70,6 +70,13 @@ const config: Config = {
   api: {
     baseUrl: process.env.BACKEND_BASE_URL ?? "",
   },
+  redis: {
+    host: process.env.REDIS_HOST ?? "localhost",
+    port: Number(process.env.REDIS_PORT ?? "6379"),
+    enabled: process.env.REDIS_ENABLED === "true",
+    auth_token: process.env.REDIS_AUTH_TOKEN,
+    tls_enabled: process.env.REDIS_TLS_ENABLED === "true",
+  },
 };
 
 export default config;

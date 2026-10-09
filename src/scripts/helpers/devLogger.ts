@@ -12,6 +12,7 @@
 export function devLog(message: string): void {
   if (
     process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test" ||
     process.env.NODE_ENV === undefined
   ) {
     console.log(message);
@@ -25,6 +26,7 @@ export function devLog(message: string): void {
 export function devWarn(message: string): void {
   if (
     process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test" ||
     process.env.NODE_ENV === undefined
   ) {
     console.warn(message);
@@ -38,6 +40,7 @@ export function devWarn(message: string): void {
 export function devError(message: string): void {
   if (
     process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test" ||
     process.env.NODE_ENV === undefined
   ) {
     console.error(message);
