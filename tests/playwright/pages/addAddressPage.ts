@@ -11,7 +11,7 @@ export class AddressPage {
   }
 
   get url(): string {
-    return "/case/ED-0001-0002/add-address"; // was '/receive/add-address', which didn't match
+    return "/case/ED-0001-0002/add-address";
   }
 
   get heading(): Locator {

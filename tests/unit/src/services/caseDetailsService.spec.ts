@@ -5,10 +5,25 @@ import {
   updatePersonalDetails,
   searchCases,
   loadCase,
+  saveAdaptationDetails,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
 import sinon from "sinon";
+
+import type { saveAdaptationDetailsResponse } from "#types/api-types.js";
+
+const mockResponse: saveAdaptationDetailsResponse = {
+  bsl_webcam: true,
+  minicom: false,
+  text_relay: false,
+  skype_webcam: false,
+  language: "WELSH",
+  notes: "some random notes",
+  reference: "e8a50520439842f6be4cccd315103f47",
+  callback_preference: false,
+  no_adaptations_required: false,
+};
 
 describe("caseDetailsService", () => {
   // Declared ONCE, shared by every nested describe
@@ -49,6 +64,66 @@ describe("caseDetailsService", () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  describe("updateAdaptationDetails", () => {
+    it("should update adaptation details for a case", async () => {
+      // Arrange
+      const caseId = "TX-123-FR5";
+      const body = {
+        language: "WELSH",
+        bsl_webcam: true,
+        text_relay: false,
+        notes: "some random notes",
+      };
+      patchStub.resolves({ data: mockResponse });
+
+      // Act
+      const result = await saveAdaptationDetails(
+        axiosMiddlewareStub,
+        true,
+        caseId,
+        body,
+      );
+
+      // Assert
+      expect(patchStub.calledOnce).to.be.true;
+      expect(patchStub.firstCall.args[0]).to.equal(
+        `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
+      );
+      expect(patchStub.firstCall.args[1]).to.deep.equal(body);
+      expect(result).to.deep.equal(mockResponse);
+    });
+  });
+
+  describe("createAdaptationDetails", () => {
+    it("should create new adaptation details for a case", async () => {
+      // Arrange
+      const caseId = "TX-123-FR5";
+      const body = {
+        language: "WELSH",
+        bsl_webcam: true,
+        text_relay: false,
+        notes: "some random notes",
+      };
+      postStub.resolves({ data: mockResponse });
+
+      // Act
+      const result = await saveAdaptationDetails(
+        axiosMiddlewareStub,
+        false,
+        caseId,
+        body,
+      );
+
+      // Assert
+      expect(postStub.calledOnce).to.be.true;
+      expect(postStub.firstCall.args[0]).to.equal(
+        `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/adaptation_details/`,
+      );
+      expect(postStub.firstCall.args[1]).to.deep.equal(body);
+      expect(result).to.deep.equal(mockResponse);
+    });
   });
 
   describe("updatePersonalDetails", () => {

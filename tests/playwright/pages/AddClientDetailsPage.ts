@@ -1,7 +1,6 @@
 import type { Page, Locator } from "@playwright/test";
 import { TEST_CONFIG } from "../playwright.config.js";
 const MAIN_HEADING_LEVEL = 1;
-
 /**
  * Page object for the "Client's details" page (/receive-call/add-client-details)
  */

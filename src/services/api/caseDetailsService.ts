@@ -4,6 +4,8 @@ import type {
   GetAllCasesResponse,
   SearchCasesParams,
   SearchCasesResponse,
+  saveAdaptationDetailsResponse,
+  saveAdaptationDetailsParams,
 } from "#types/api-types.js";
 import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
 
@@ -107,4 +109,29 @@ export async function createCase(
     );
     return response.data;
   }, "Error creating case");
+}
+
+/**
+ * Creates or updates a client's adaptation details.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {boolean} isUpdate Whether to create (POST) or update (PATCH) the adaptation details.
+ * @param {string} caseId The ID of the case the adaptation details belong to.
+ * @param {saveAdaptationDetailsParams} body The adaptation details payload to send.
+ * @returns {Promise<saveAdaptationDetailsResponse>} The saved adaptation details.
+ */
+export async function saveAdaptationDetails(
+  axiosMiddleware: AxiosInstanceWrapper,
+  isUpdate: boolean,
+  caseId: string,
+  body: saveAdaptationDetailsParams,
+): Promise<saveAdaptationDetailsResponse> {
+  const configuredAxios = configureAxiosInstance(axiosMiddleware);
+  const url = `/call_centre/api/v1/case/${caseId}/adaptation_details/`;
+
+  const response = isUpdate
+    ? await configuredAxios.patch<saveAdaptationDetailsResponse>(url, body)
+    : await configuredAxios.post<saveAdaptationDetailsResponse>(url, body);
+
+  return response.data;
 }

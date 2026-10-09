@@ -1,0 +1,175 @@
+import {
+  CollectionBlock,
+  HtmlBlock,
+} from "@ministryofjustice/hmpps-forge/core/components";
+import {
+  GovUKButton,
+  GovUKCheckboxInput,
+  GovUKTextareaInput,
+  GovUKHeading,
+  GovUKBody,
+  GovUKUtilityClasses,
+  GovUKTextInput,
+} from "@ministryofjustice/hmpps-forge/govuk-components";
+import {
+  Condition,
+  Self,
+  validation,
+  Answer,
+  or,
+  and,
+} from "@ministryofjustice/hmpps-forge/core/authoring";
+
+import { allowedLanguages } from "./languages.js";
+
+const LANGUAGE_DATALIST_ID = "language-options";
+
+/**
+ * Escapes HTML special characters so the value is safe to embed in markup.
+ *
+ * @param {string} value - The raw string to escape.
+ * @returns {string} The escaped string.
+ */
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/gu, "&amp;")
+    .replace(/</gu, "&lt;")
+    .replace(/>/gu, "&gt;")
+    .replace(/"/gu, "&quot;");
+
+/**
+ * Builds the condition that checks the current answer is one of the allowed languages.
+ *
+ * @returns {boolean} A condition that matches only values in `allowedLanguages`.
+ */
+const languageIsAllowed = (): ReturnType<ReturnType<typeof Self>["match"]> =>
+  Self().match(Condition.Equals(allowedLanguages));
+
+export const adaptationDetailsNeed = CollectionBlock({
+  collection: [
+    GovUKBody({
+      text: "A client may need translation services, a Welsh language speaker or extra support due to a disability or condition which makes communication difficult.",
+    }),
+    HtmlBlock({
+      content: `
+        <div class="govuk-inset-text taking-call-inset">
+          <p class="govuk-body">Is there anything we can do to make it easier to communicate with us?</p>
+        </div>
+      `,
+    }),
+    GovUKHeading({
+      text: "Client’s language requirements (optional)",
+      size: "m",
+    }),
+
+    GovUKCheckboxInput({
+      code: "languageChoice",
+      items: [
+        {
+          value: "welsh",
+          text: "Welsh language service needed",
+        },
+        {
+          value: "otherLanguage",
+          text: "Other language – interpreter needed",
+          block: GovUKTextInput({
+            code: "otherLanguageChoice",
+            classes: GovUKUtilityClasses.Input.Width10,
+            label: "Start typing to select the language",
+            id: "language",
+            inputType: "text",
+            attributes: { list: LANGUAGE_DATALIST_ID },
+            dependentWhen: Answer("languageChoice").match(
+              Condition.Array.Contains("otherLanguage"),
+            ),
+            validWhen: [
+              validation({
+                condition: languageIsAllowed(),
+                message: "Select a language",
+              }),
+            ],
+          }),
+        },
+      ],
+      validWhen: [
+        validation({
+          condition: or(
+            Self().not.match(Condition.Array.Contains("welsh")),
+            Self().not.match(Condition.Array.Contains("otherLanguage")),
+          ),
+          message: "Select only one language option",
+        }),
+      ],
+    }),
+
+    HtmlBlock({
+      content: `
+    <datalist id="${LANGUAGE_DATALIST_ID}">
+      ${allowedLanguages
+        .map((language) => `<option value="${escapeHtml(language)}"></option>`)
+        .join("\n      ")}
+    </datalist>
+      `,
+    }),
+
+    GovUKHeading({
+      text: "Client’s communication and support needs (optional)",
+      size: "m",
+    }),
+
+    GovUKCheckboxInput({
+      code: "communicationNeeds",
+      items: [
+        {
+          value: "britishSignLanguage",
+          text: "British Sign Language (BSL)",
+        },
+        {
+          value: "relayUK",
+          text: "Relay UK",
+        },
+        {
+          value: "otherSupport",
+          text: "Any other support or accessibility needs",
+          block: GovUKTextareaInput({
+            code: "otherSupportDetails",
+            rows: "6",
+            classes: GovUKUtilityClasses.Input.Width20,
+            label: `Enter client’s preferences, for example, ‘Client is hard of hearing, please speak distinctly’.
+        ‘Client has an ADHD diagnosis and may need questions to be repeated’.`,
+            dependentWhen: Answer("communicationNeeds").match(
+              Condition.Array.Contains("otherSupport"),
+            ),
+            validWhen: [
+              validation({
+                condition: Self().match(Condition.IsRequired()),
+                message: "Enter the client’s support need",
+              }),
+            ],
+          }),
+        },
+      ],
+      validWhen: [
+        validation({
+          condition: or(
+            and(
+              Self().not.match(Condition.Array.Contains("britishSignLanguage")),
+              Self().not.match(Condition.Array.Contains("relayUK")),
+            ),
+            and(
+              Self().not.match(Condition.Array.Contains("britishSignLanguage")),
+              Self().not.match(Condition.Array.Contains("otherSupport")),
+            ),
+            and(
+              Self().not.match(Condition.Array.Contains("relayUK")),
+              Self().not.match(Condition.Array.Contains("otherSupport")),
+            ),
+          ),
+          message: "Select only one communication or support need",
+        }),
+      ],
+    }),
+
+    GovUKButton({ text: "Continue" }),
+  ],
+});

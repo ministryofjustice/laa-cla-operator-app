@@ -28,6 +28,7 @@ export interface CaseDetails {
   flagged_with_eod: boolean;
   is_urgent: boolean;
   organisation_name: string | null;
+  adaptation_details?: string | null;
 }
 
 export interface GetAllCasesResponse {
@@ -48,4 +49,28 @@ export interface SearchCasesParams {
   query: string;
   pageSize?: number;
   pageNumber?: number;
+}
+
+export interface saveAdaptationDetailsParams {
+  bsl_webcam?: boolean;
+  minicom?: boolean;
+  text_relay?: boolean;
+  skype_webcam?: boolean;
+
+  language?: string | null;
+  notes?: string;
+  callback_preference?: boolean;
+  no_adaptations_required?: boolean | null;
+}
+
+export interface saveAdaptationDetailsResponse {
+  bsl_webcam: boolean;
+  minicom: boolean;
+  text_relay: boolean;
+  skype_webcam: boolean;
+  language: string | null;
+  notes: string;
+  reference: string;
+  callback_preference: boolean;
+  no_adaptations_required: boolean | null;
 }
