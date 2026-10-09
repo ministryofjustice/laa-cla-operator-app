@@ -20,7 +20,10 @@ import {
   and,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
+import { allowedLanguages } from "./languages.js";
+
 const MAX_LANGUAGE_LENGTH = 30;
+const LANGUAGE_DATALIST_ID = "language-options";
 
 export const adaptationDetailsNeed = CollectionBlock({
   collection: [
@@ -53,7 +56,9 @@ export const adaptationDetailsNeed = CollectionBlock({
             code: "otherLanguageChoice",
             classes: GovUKUtilityClasses.Input.Width10,
             label: "Start typing to select the language",
+            id: "language",
             inputType: "text",
+            attributes: { list: LANGUAGE_DATALIST_ID },
             dependentWhen: Answer("languageChoice").match(
               Condition.Array.Contains("otherLanguage"),
             ),
@@ -66,7 +71,7 @@ export const adaptationDetailsNeed = CollectionBlock({
                 condition: Self().match(
                   Condition.String.HasMaxLength(MAX_LANGUAGE_LENGTH),
                 ),
-                message: "Language must be 30 characters or fewer",
+                message: `Language must be ${MAX_LANGUAGE_LENGTH} characters or fewer`,
               }),
             ],
           }),
@@ -75,12 +80,20 @@ export const adaptationDetailsNeed = CollectionBlock({
       validWhen: [
         validation({
           condition: or(
-            Self().not.match(Condition.Array.Contains("britishSignLanguage")),
+            Self().not.match(Condition.Array.Contains("welsh")),
             Self().not.match(Condition.Array.Contains("otherLanguage")),
           ),
           message: "Select only one language option",
         }),
       ],
+    }),
+
+    HtmlBlock({
+      content: `
+    <datalist id="${LANGUAGE_DATALIST_ID}">
+      ${allowedLanguages.map((allowedLanguages) => `<option value="${allowedLanguages}"></option>`).join("\n      ")}
+    </datalist>
+      `,
     }),
 
     GovUKHeading({
