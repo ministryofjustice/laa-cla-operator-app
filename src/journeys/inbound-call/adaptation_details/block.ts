@@ -22,8 +22,17 @@ import {
 
 import { allowedLanguages } from "./languages.js";
 
-const MAX_LANGUAGE_LENGTH = 30;
 const LANGUAGE_DATALIST_ID = "language-options";
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const languageIsAllowed = () =>
+  Self().match(Condition.Equals(allowedLanguages));
 
 export const adaptationDetailsNeed = CollectionBlock({
   collection: [
@@ -64,14 +73,8 @@ export const adaptationDetailsNeed = CollectionBlock({
             ),
             validWhen: [
               validation({
-                condition: Self().match(Condition.IsRequired()),
-                message: "Enter a language",
-              }),
-              validation({
-                condition: Self().match(
-                  Condition.String.HasMaxLength(MAX_LANGUAGE_LENGTH),
-                ),
-                message: `Language must be ${MAX_LANGUAGE_LENGTH} characters or fewer`,
+                condition: languageIsAllowed(),
+                message: "Select a language",
               }),
             ],
           }),
@@ -91,7 +94,9 @@ export const adaptationDetailsNeed = CollectionBlock({
     HtmlBlock({
       content: `
     <datalist id="${LANGUAGE_DATALIST_ID}">
-      ${allowedLanguages.map((allowedLanguages) => `<option value="${allowedLanguages}"></option>`).join("\n      ")}
+      ${allowedLanguages
+        .map((language) => `<option value="${escapeHtml(language)}"></option>`)
+        .join("\n      ")}
     </datalist>
       `,
     }),
@@ -127,7 +132,7 @@ export const adaptationDetailsNeed = CollectionBlock({
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
-                message: "Enter the client’s support needs",
+                message: "Enter the client’s support need",
               }),
             ],
           }),
