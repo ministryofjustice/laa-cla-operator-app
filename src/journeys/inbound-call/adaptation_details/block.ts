@@ -24,14 +24,25 @@ import { allowedLanguages } from "./languages.js";
 
 const LANGUAGE_DATALIST_ID = "language-options";
 
+/**
+ * Escapes HTML special characters so the value is safe to embed in markup.
+ *
+ * @param {string} value - The raw string to escape.
+ * @returns {string} The escaped string.
+ */
 const escapeHtml = (value: string): string =>
   value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/gu, "&amp;")
+    .replace(/</gu, "&lt;")
+    .replace(/>/gu, "&gt;")
+    .replace(/"/gu, "&quot;");
 
-const languageIsAllowed = () =>
+/**
+ * Builds the condition that checks the current answer is one of the allowed languages.
+ *
+ * @returns {boolean} A condition that matches only values in `allowedLanguages`.
+ */
+const languageIsAllowed = (): ReturnType<ReturnType<typeof Self>["match"]> =>
   Self().match(Condition.Equals(allowedLanguages));
 
 export const adaptationDetailsNeed = CollectionBlock({
