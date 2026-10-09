@@ -1,0 +1,26 @@
+{% extends "base.njk" %}
+
+{% block content %}
+    <a href="/receive-call/add-client-details" class="govuk-back-link govuk-!-margin-bottom-6">Back</a>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-three-quarters">
+            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
+
+            {% if fieldValidationErrors | length %}
+                {{ govukErrorSummary({
+                    titleText: "There is a problem",
+                    errorList: fieldValidationErrors
+                }) }}
+            {% endif %}
+
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% for block in blocks %}
+                    {{ block | safe }}
+                {% endfor %}
+            </form>
+        </div>
+    </div>
+{% endblock %}

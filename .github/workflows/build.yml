@@ -24,7 +24,7 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
     permissions:
       id-token: write # This is required for requesting the JWT
-      contents: read  # This is required for actions/checkout
+      contents: read # This is required for actions/checkout
     steps:
       - name: Checkout GitHub repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -58,6 +58,6 @@ jobs:
         with:
           context: .
           push: true
-          tags:  ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

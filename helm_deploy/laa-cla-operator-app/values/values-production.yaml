@@ -23,7 +23,7 @@ ingress:
       hosts:
         - laa-cla-operator-app.cloud-platform.service.justice.gov.uk
   whitelist:
-    enabled: true
+    enabled: false
 
 resources: {}
 
@@ -36,7 +36,7 @@ autoscaling:
 
 # Environment variables can be added here
 envVars:
-  BACKEND_BASE_URI:
+  BACKEND_BASE_URL:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-production.svc.cluster.local"
   NODE_ENV:

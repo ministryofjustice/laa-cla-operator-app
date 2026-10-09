@@ -1,16 +1,46 @@
 {% extends "base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block content %}
+    {% block backLink %}{% endblock %}
+
     <div class="govuk-grid-row">
+
         <div class="govuk-grid-column-three-quarters">
-            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
-            
-            {% if fieldValidationErrors | length %}
+        {% if fieldValidationErrors | length or domainValidationErrors | length %}
+                {% set errorList = [] %}
+
+                {% for error in fieldValidationErrors %}
+                    {% set errorText = error.text or error.message %}
+                    {% set errorHref = error.href or ((error.anchor or error.blockCode) and ("#" + (error.anchor or error.blockCode))) %}
+
+                    {% if errorHref %}
+                        {% set errorList = (errorList.push({
+                            text: errorText,
+                            href: errorHref
+                        }), errorList) %}
+                    {% else %}
+                        {% set errorList = (errorList.push({
+                            text: errorText
+                        }), errorList) %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for error in domainValidationErrors %}
+                    {% set errorList = (errorList.push({
+                        text: error.message,
+                        href: "#fullName"
+                    }), errorList) %}
+                {% endfor %}
+
                 {{ govukErrorSummary({
                     titleText: "There is a problem",
-                    errorList: fieldValidationErrors
+                    errorList: errorList
                 }) }}
             {% endif %}
+            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
+            
+
 
             <form method="post" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -19,6 +49,7 @@
                     {{ block | safe }}
                 {% endfor %}
             </form>
+            {% block afterForm %} {% endblock %}
         </div>
     </div>
 {% endblock %}
