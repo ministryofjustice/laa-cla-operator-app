@@ -1,5 +1,5 @@
 import { journey, access } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { whosCallingStep } from "./whos-calling/step.js";
+import { dashboardStep } from "./dashboard/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
@@ -11,7 +11,17 @@ import {
 } from "./address-lookup/step.js";
 import { requireSilasAuth } from "../auth.js";
 
-// Define the journey
+// Define the journeys
+export const dashboardJourney = journey({
+  code: "dashboard",
+  title: "Dashboard",
+  path: "/dashboard",
+  view: {
+    template: "partials/form-step",
+  },
+  steps: [dashboardStep],
+});
+
 export const inboundCallJourney = journey({
   code: "inboundCallJourney",
   title: "Inbound Call Journey",
@@ -19,10 +29,9 @@ export const inboundCallJourney = journey({
   view: {
     template: "main/forms/form.njk",
   },
-  steps: [whosCallingStep, searchClientStep],
+  steps: [searchClientStep],
 });
 
-// Define the journey
 export const caseJourney = journey({
   code: "case",
   title: "Case",

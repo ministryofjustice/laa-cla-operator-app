@@ -14,6 +14,7 @@ import {
   ZERO,
 } from "#src/journeys/helpers/effectHelpers.js";
 import type { CaseDetails } from "#types/api-types.js";
+import type { InboundCallContext } from "./types.js";
 import type { Session } from "express-session";
 import type { Address } from "#src/services/postcodeLookup.js";
 
@@ -29,6 +30,7 @@ function getCase(context: EffectFunctionContext): CaseDetails {
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
+  SetAgentName: () => EffectFunctionExpr;
   /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress: () => EffectFunctionExpr;
@@ -42,7 +44,7 @@ export interface InboundCallEffectShape {
 
 type InboundCallEffectsImplementation = (
   deps: Deps,
-) => (context: EffectFunctionContext) => Promise<void>;
+) => (context: InboundCallContext) => Promise<void>;
 
 export const InboundCallEffectsImplementation: Record<
   keyof InboundCallEffectShape,
@@ -73,6 +75,19 @@ export const InboundCallEffectsImplementation: Record<
     const authenticatedAxiosState = getAuthenticatedAxios(context);
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
+  },
+
+  /**
+   * Store the signed-in agent name in step data for UI rendering.
+   * @param {Deps} _deps - Unused dependencies parameter required by effect signature.
+   * @returns {(context: InboundCallContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await -- Forge requires async functions even if not awaited
+  SetAgentName: (_deps: Deps) => async (context: InboundCallContext) => {
+    const session = context.getSession();
+    if (session !== undefined) {
+      context.setData("userName", session.user?.name ?? "[agent's name]");
+    }
   },
 
   /**
@@ -282,6 +297,10 @@ export const InboundCallEffects: InboundCallEffectShape = {
   LoadCase: InboundCallEffectsRegistry.register(
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
+  ),
+  SetAgentName: InboundCallEffectsRegistry.register(
+    "SetAgentName",
+    InboundCallEffectsImplementation.SetAgentName,
   ),
   saveClientAddress: InboundCallEffectsRegistry.register(
     "saveClientAddress",

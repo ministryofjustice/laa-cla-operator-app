@@ -414,7 +414,7 @@ export async function callbackAction(
 
     await saveSession(req);
 
-    res.redirect("/receive-call");
+    res.redirect("/dashboard");
   } catch {
     res.status(INTERNAL_SERVER_ERROR).send("Authentication failed");
   }
