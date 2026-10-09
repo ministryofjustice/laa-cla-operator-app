@@ -1,7 +1,7 @@
 services:
   redis:
     image: redis:7-alpine
-    container_name: mcc-redis-local
+    container_name: redis-local
     ports:
       - "6379:6379"
     command: redis-server --save "" --appendonly no --loglevel warning
@@ -14,7 +14,7 @@ services:
 
   redisinsight:
     image: redis/redisinsight:latest
-    container_name: mcc-redisinsight-local
+    container_name: redisinsight-local
     ports:
       - "5540:5540"
     volumes:
