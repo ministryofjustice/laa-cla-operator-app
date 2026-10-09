@@ -5,50 +5,52 @@ $moj-page-width: 1280px;
 @import "@ministryofjustice/frontend/moj/all";
 @import "@ministryofjustice/hmpps-forge/dist/moj-components/all";
 
-// UCD bespoke desktop layout:
-// - 2/3 and 1/3 columns
-// - fixed 50px gap between columns
-// - remove default GOV.UK side gutters for this layout
+// UCD desktop layout
+$ucd-content-width: 1280px;
+$ucd-gutter: 50px;
+
 @include govuk-media-query($from: desktop) {
-  .govuk-width-container {
-    padding-left: 0;
-    padding-right: 0;
+  .govuk-width-container,
+  .moj-header__container {
+    max-width: $ucd-content-width;
+    padding-inline: $ucd-gutter;
+    box-sizing: content-box;
   }
 
-  .govuk-grid-row {
+  .govuk-width-container .govuk-grid-row {
     display: flex;
-    gap: 50px;
-    margin-left: 0;
-    margin-right: 0;
+    gap: $ucd-gutter;
+    margin-inline: 0;
+
+    > .govuk-grid-column-two-thirds,
+    > .govuk-grid-column-one-third {
+      float: none;
+      padding-inline: 0;
+    }
+
+    > .govuk-grid-column-two-thirds {
+      width: calc((100% - #{$ucd-gutter}) * 2 / 3);
+    }
+
+    > .govuk-grid-column-one-third {
+      width: calc((100% - #{$ucd-gutter}) / 3);
+    }
   }
 
-  .govuk-grid-row > .govuk-grid-column-two-thirds,
-  .govuk-grid-row > .govuk-grid-column-one-third {
-    float: none;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .govuk-grid-row > .govuk-grid-column-two-thirds {
-    width: calc((100% - 50px) * 2 / 3);
-  }
-
-  .govuk-grid-row > .govuk-grid-column-one-third {
-    width: calc((100% - 50px) * 1 / 3);
+  .govuk-width-container > .govuk-phase-banner {
+    padding-inline: 0;
   }
 }
 
-
-// who's-calling step styling
-.taking-call-inset {
-  border-left-color: govuk-functional-colour(brand);
-  background-color: govuk-functional-colour(template-background);
-}
-
-// search-client step styling
+// Shared inset styling
+.taking-call-inset,
 .search-client-box {
   border-left-color: govuk-functional-colour(brand);
   background-color: govuk-functional-colour(template-background);
+}
+
+// Search client
+.search-client-box {
   padding: govuk-spacing(5) govuk-spacing(5) govuk-spacing(1);
   margin: govuk-spacing(6) 0;
 }

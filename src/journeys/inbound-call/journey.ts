@@ -3,6 +3,7 @@ import { dashboardStep } from "./dashboard/step.js";
 import { searchClientStep } from "./search-client/step.js";
 import { addClientDetailsStep } from "./client-details/step.js";
 import { InboundCallEffects } from "../effects.js";
+
 import { addAddressStep } from "./add-address/step.js";
 import {
   addressLookupStep1,
@@ -10,7 +11,17 @@ import {
 } from "./address-lookup/step.js";
 import { requireSilasAuth } from "../auth.js";
 
-// Define the journey
+// Define the journeys
+export const dashboardJourney = journey({
+  code: "dashboard",
+  title: "Dashboard",
+  path: "/dashboard",
+  view: {
+    template: "partials/form-step",
+  },
+  steps: [dashboardStep],
+});
+
 export const inboundCallJourney = journey({
   code: "inboundCallJourney",
   title: "Inbound Call Journey",
