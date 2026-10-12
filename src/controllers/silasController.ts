@@ -1,37 +1,23 @@
-import { randomBytes, randomUUID } from "node:crypto";
-import { promisify } from "node:util";
+import { randomUUID } from "node:crypto";
 
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import type { Request, Response } from "express";
 
 import config from "#config.js";
-import type { AccessTokenClaims } from "#types/auth-types.js";
-import jsonwebtoken from "jsonwebtoken";
-import jwksClient from "jwks-rsa";
+import { SilasService } from "#src/services/api/silasService.js";
+import { destroySession, regenerateSession, saveSession } from "#src/helpers/session.js";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
-const NONCE_BYTES = 32;
 const DEFAULT_SESSION_MINUTES = 30;
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 const INTERNAL_SERVER_ERROR = 500;
 const EMPTY_LENGTH = 0;
-const LAST_SEGMENT_INDEX = -1;
 
 const TOKEN_EXPIRY_OFFSET_MS =
   DEFAULT_SESSION_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
-const OIDC_SCOPES = new Set(["openid", "profile", "offline_access"]);
-const ENTRA_KEY_CACHE_TTL_MS = 3600000; // 1 hour
-
-const msalClient = new ConfidentialClientApplication({
-  auth: {
-    clientId: config.silas.clientId,
-    authority: config.silas.authority,
-    clientSecret: config.silas.clientSecret,
-  },
-});
 
 /**
  * Get a querystring as a string
@@ -110,23 +96,6 @@ export async function processUATRedirect(
 }
 
 /**
- * Tries to find auth nonce in req.session.auth_nonce otherwise creates and saves in the session and returns it
- * @param {Request} req - Express Request object
- * @returns {Promise<string>} - Returns the nonce to use for the auth
- */
-async function getAuthNonce(req: Request): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
-  let authNonce = req.session.auth_nonce;
-  if (authNonce === undefined) {
-    authNonce = randomBytes(NONCE_BYTES).toString("base64url");
-    req.session.auth_nonce = authNonce;
-    await saveSession(req);
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- nonce will be a string
-  return authNonce as string;
-}
-
-/**
  * Handles the initial SILAS login request and redirects the user to Microsoft.
  *
  * @param {Request} req Express request containing the authenticated session.
@@ -138,75 +107,9 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
   if (userRedirected) {
     return;
   }
-  const authNonce = await getAuthNonce(req);
-  const authUrl = await msalClient.getAuthCodeUrl({
-    scopes: config.silas.scopes,
-    redirectUri: config.silas.redirectUri,
-    state: authNonce,
-  });
+  const authUrl = await SilasService.Singleton(config.silas).getAuthUrl(req)
 
   res.redirect(authUrl);
-}
-
-/**
- * Decodes the claims portion of a JWT access token.
- * @param {string} token JWT access token to decode.
- * @returns {AccessTokenClaims} The decoded access-token claims.
- * @throws {Error} When the token cannot be decoded.
- */
-async function decodeToken(token: string): Promise<AccessTokenClaims> {
-  const kid = getAccessTokenKID(token);
-  const pubKey = await getPublicKey(kid);
-  const claims = jsonwebtoken.verify(token, pubKey, {
-    audience: config.silas.expectedAudience,
-    issuer: `https://login.microsoftonline.com/${config.silas.tenantId}/v2.0`,
-    algorithms: ["RS256"],
-  });
-  if (typeof claims === "string") {
-    throw new Error("Access token could not be decoded");
-  }
-  return claims as AccessTokenClaims;
-}
-
-/**
- * Normalizes a configured OAuth scope to its final path segment.
- *
- * @param {string} scope OAuth scope to normalize.
- * @returns {string} The final segment of the scope.
- */
-function normalizeScope(scope: string): string {
-  const segments = scope.split("/").filter(Boolean);
-  return segments.at(LAST_SEGMENT_INDEX) ?? scope;
-}
-
-/**
- * Validates access token scopes.
- *
- * @param {AccessTokenClaims} claims Decoded access-token claims.
- * @returns {void} Nothing when all required claims are valid.
- * @throws {Error} When a required claim is invalid.
- */
-function validateAccessTokenScopes(claims: AccessTokenClaims): void {
-  const requiredScopes = config.silas.scopes
-    .filter((scope) => !OIDC_SCOPES.has(scope.toLowerCase()))
-    .map(normalizeScope);
-
-  if (requiredScopes.length === EMPTY_LENGTH) {
-    return;
-  }
-
-  const tokenScopes =
-    typeof claims.scp === "string" ? claims.scp.split(" ").filter(Boolean) : [];
-
-  const hasRequiredScope = requiredScopes.some((scope) =>
-    tokenScopes.includes(scope),
-  );
-
-  if (!hasRequiredScope) {
-    throw new Error(
-      `SILAS token missing expected delegated scope. Expected one of: ${requiredScopes.join(", ")}`,
-    );
-  }
 }
 
 /**
@@ -217,48 +120,6 @@ function validateAccessTokenScopes(claims: AccessTokenClaims): void {
  */
 function sendAuthenticationFailure(res: Response): void {
   res.status(INTERNAL_SERVER_ERROR).send("");
-}
-
-/**
- * Saves the current request session.
- *
- * @param {Request} req Express request containing the session to save.
- * @returns {Promise<void>} A promise resolving after the session is saved.
- */
-async function saveSession(req: Request): Promise<void> {
-  const save = promisify((callback: (error?: unknown) => void): void => {
-    req.session.save(callback);
-  });
-
-  await save();
-}
-
-/**
- * Regenerates the current request session.
- *
- * @param {Request} req Express request containing the session to regenerate.
- * @returns {Promise<void>} A promise resolving after the session is regenerated.
- */
-async function regenerateSession(req: Request): Promise<void> {
-  const regenerate = promisify((callback: (error?: unknown) => void): void => {
-    req.session.regenerate(callback);
-  });
-
-  await regenerate();
-}
-
-/**
- * Destroys the current request session.
- *
- * @param {Request} req Express request containing the session to destroy.
- * @returns {Promise<void>} A promise resolving after the session is destroyed.
- */
-async function destroySession(req: Request): Promise<void> {
-  const destroy = promisify((callback: (error?: unknown) => void): void => {
-    req.session.destroy(callback);
-  });
-
-  await destroy();
 }
 
 /**
@@ -339,21 +200,15 @@ export async function callbackAction(
   }
 
   try {
-    const response = await msalClient.acquireTokenByCode({
-      code,
-      scopes: config.silas.scopes,
-      redirectUri: config.silas.redirectUri,
-    });
-
+    const service = SilasService.Singleton(config.silas)
+    const response = await service.exchangeAuthCode(code)
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;
     }
 
-    const claims = await decodeToken(response.accessToken);
-
-    validateAccessTokenScopes(claims);
-
+    const claims = await service.decodeToken(response.accessToken);
+    service.validateAccessTokenScopes(claims)
     await regenerateSession(req);
 
     const { session } = req;
@@ -381,35 +236,6 @@ export async function callbackAction(
   } catch {
     res.status(INTERNAL_SERVER_ERROR).send("Authentication failed");
   }
-}
-
-/**
- * Get public key for given key id.
- * @param {string} kid - Key ID
- * @returns {string} - The entra public key for the given key id
- */
-async function getPublicKey(kid: string) {
-  const client = jwksClient({
-    jwksUri: `https://login.microsoftonline.com/${config.silas.tenantId}/discovery/v2.0/keys`,
-    cache: true,
-    cacheMaxAge: ENTRA_KEY_CACHE_TTL_MS,
-  });
-  const key = await client.getSigningKey(kid);
-  return key.getPublicKey();
-}
-
-/**
- * Get key id used in a given access token.
- * @param {string} accessToken - Access token
- * @returns {string} - The Key ID used in the access token
- */
-function getAccessTokenKID(accessToken: string): string {
-  const parts = accessToken.split(".");
-  const header = JSON.parse(Buffer.from(parts[0], "base64url").toString());
-  if (header.kid === undefined) {
-    throw new Error("Access token is missing a valid header");
-  }
-  return header.kid;
 }
 
 /**
