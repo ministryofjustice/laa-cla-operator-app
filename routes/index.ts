@@ -19,18 +19,18 @@ const AUTH_SESSION_TTL_MS =
 
 /**
  * Returns a safe relative redirect path for test login flows.
- * Falls back to /receive-call when the input is not a local path.
+ * Falls back to /dashboard when the input is not a local path.
  *
  * @param {unknown} next Potential next path from query string.
  * @returns {string} A safe relative path.
  */
 const getSafeRelativeNextPath = (next: unknown): string => {
   if (typeof next !== "string") {
-    return "/receive-call";
+    return "/dashboard";
   }
 
   if (!next.startsWith("/") || next.startsWith("//")) {
-    return "/receive-call";
+    return "/dashboard";
   }
 
   return next;
@@ -85,7 +85,7 @@ router.get("/", (req: Request, res: Response): void => {
     res.redirect("/sign-in");
     return;
   }
-  res.redirect("/receive-call");
+  res.redirect("/dashboard");
 });
 
 router.get("/privacy", (req: Request, res: Response): void => {

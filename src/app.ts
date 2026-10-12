@@ -25,6 +25,7 @@ import { Forge } from "@ministryofjustice/hmpps-forge/core";
 import type { Deps } from "./journeys/api.js";
 import { apiService } from "./services/api/index.js";
 import { govukComponents } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { MOJCardGroup } from "@ministryofjustice/hmpps-forge/moj-components";
 import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunjucks";
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
@@ -42,7 +43,7 @@ const TRUST_FIRST_PROXY = 1;
  *
  * @returns {import('express').Application} The configured Express application
  */
-const createApp = (): express.Application => {
+const createApp = async (): Promise<express.Application> => {
   // Initialise i18next synchronously before setting up the app
   initializeI18nextSync();
 
@@ -53,7 +54,7 @@ const createApp = (): express.Application => {
 
   // Set up cookie security for sessions
   app.set("trust proxy", TRUST_FIRST_PROXY);
-  app.use(session(buildSessionConfig(config)));
+  app.use(session(await buildSessionConfig(config)));
 
   app.use(axiosMiddleware);
   app.use(requireAuth);
@@ -121,7 +122,10 @@ const createApp = (): express.Application => {
   // Set up Nunjucks as the template engine
   const nunjucksEnv = nunjucksSetup(app);
 
-  const forge = new Forge({}).registerGlobalComponents(govukComponents);
+  const forge = new Forge({})
+    .registerGlobalComponents(govukComponents)
+    // MoJ components don't have an "all" option, so we need to register them individually
+    .registerGlobalComponents([MOJCardGroup]);
 
   // Everytime a new journey is added to the project,
   // it'll be automatically registered with Forge here.
@@ -185,7 +189,7 @@ const createApp = (): express.Application => {
 };
 
 // Self-execute the app directly to allow app.js to be executed directly
-createApp();
+await createApp();
 
 // Export the createApp function for testing/import purposes
 export default createApp;

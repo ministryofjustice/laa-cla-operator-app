@@ -77,6 +77,8 @@ const externalModules: string[] = [
   "*.node",
   "jwks-rsa",
   "jsonwebtoken",
+  "redis",
+  "connect-redis",
 ];
 
 /**
