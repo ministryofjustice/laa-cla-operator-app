@@ -31,21 +31,25 @@ export const bankAccountsTableBlock = CollectionBlock({
         collection: [
           HtmlBlock({
             tag: "h3",
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Loop.Index() is Forge runtime binding
             content: `Bank account ${Loop.Index()}`,
             classes: "govuk-heading-s",
           }),
           GovUKTextInput({
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Item().path() is Forge runtime binding
             code: `bank_accounts_${Item().path("index")}_amount`,
             label: { text: "Amount" },
             hint: { text: "In pounds" },
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Loop.Index() is Forge runtime binding
                 message: `Enter the amount in bank account ${Loop.Index()}`,
               }),
             ],
           }),
           GovUKRadioInput({
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Item().path() is Forge runtime binding
             code: `bank_accounts_${Item().path("index")}_joint`,
             fieldset: {
               legend: {
@@ -60,6 +64,7 @@ export const bankAccountsTableBlock = CollectionBlock({
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Loop.Index() is Forge runtime binding
                 message: `Select whether bank account ${Loop.Index()} is joint`,
               }),
             ],

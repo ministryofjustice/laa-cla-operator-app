@@ -32,6 +32,7 @@ const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, Eff
     if (Object.keys(answers).length === 0 && deps.caseApi) {
       try {
         // Get the axios middleware from the request (Forge provides this in context)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Forge context type is not fully typed
         const axiosMiddleware = (context as any).axiosMiddleware;
         if (axiosMiddleware) {
           const caseData = await deps.caseApi.loadCase(axiosMiddleware, String(checkId));
