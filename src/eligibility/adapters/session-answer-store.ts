@@ -2,9 +2,14 @@ import type { Request } from "express";
 import type { AnswerStore } from "../ports/answer-store.js";
 import type { Answers } from "../domain/logic.js";
 
-export class SessionAnswerStore implements AnswerStore {
-  constructor(private getRequest: () => Request) {}
+// Thread-local storage for the current request (set by middleware)
+let currentRequest: Request | undefined;
 
+export function setCurrentRequest(req: Request): void {
+  currentRequest = req;
+}
+
+export class SessionAnswerStore implements AnswerStore {
   async load(checkId: unknown): Promise<Answers> {
     const session = this.getSession();
     const saved = session.eligibility?.[String(checkId)];
@@ -39,7 +44,10 @@ export class SessionAnswerStore implements AnswerStore {
   }
 
   private getSession(): Record<string, unknown> & { eligibility?: Record<string, unknown> } {
-    return this.getRequest().session;
+    if (!currentRequest) {
+      throw new Error("SessionAnswerStore: no request context available");
+    }
+    return currentRequest.session;
   }
 
   private normalizeAddAnotherFields(answers: Answers): Answers {
@@ -82,3 +90,5 @@ export class SessionAnswerStore implements AnswerStore {
     return result;
   }
 }
+
+

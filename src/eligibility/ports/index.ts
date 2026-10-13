@@ -10,4 +10,7 @@ export interface EligibilityDeps {
   assessor: Assessor;
   resultHandler: ResultHandler;
   answerStore?: AnswerStore;
+  caseApi?: {
+    loadCase(axiosMiddleware: any, caseId: string): Promise<{ date_of_birth?: string }>;
+  };
 }

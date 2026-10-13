@@ -26,7 +26,26 @@ const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, Eff
       throw new Error("answerStore not provided to eligibility package");
     }
 
-    const answers = await answerStore.load(checkId);
+    let answers = await answerStore.load(checkId);
+
+    // On first access, preload date_of_birth from case data
+    if (Object.keys(answers).length === 0 && deps.caseApi) {
+      try {
+        // Get the axios middleware from the request (Forge provides this in context)
+        const axiosMiddleware = (context as any).axiosMiddleware;
+        if (axiosMiddleware) {
+          const caseData = await deps.caseApi.loadCase(axiosMiddleware, String(checkId));
+          if (caseData.date_of_birth) {
+            answers.date_of_birth = caseData.date_of_birth;
+            // Save the preloaded DOB to session
+            await answerStore.save(checkId, { date_of_birth: caseData.date_of_birth });
+          }
+        }
+      } catch (error) {
+        // Log but don't fail - DOB can be entered manually if fetch fails
+        console.warn(`Failed to preload DOB from case: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
 
     // Set each answer in Forge
     for (const [key, value] of Object.entries(answers)) {
