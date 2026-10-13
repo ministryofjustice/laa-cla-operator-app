@@ -1,8 +1,8 @@
 {% extends "base.njk" %}
 
-{% block content %}
-    <a href="/receive-call/add-client-details" class="govuk-back-link govuk-!-margin-bottom-6">Back</a>
+{% set backLinkUrl = "/receive-call/add-client-details" %}
 
+{% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-three-quarters">
             <h1 class="govuk-heading-xl">{{ step.title }}</h1>
