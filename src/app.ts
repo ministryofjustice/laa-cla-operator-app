@@ -151,8 +151,7 @@ const createApp = async (): Promise<express.Application> => {
     }
 
     if (journeyPackage.journey.code === "eligibility") {
-      // Type assertion needed due to dependency injection mismatch
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Type assertion needed due to dependency injection mismatch
       forge.registerPackage(journeyPackage as never, {
         assessor: cfeHttpClient,
         resultHandler: new CaseResultHandler(apiService),

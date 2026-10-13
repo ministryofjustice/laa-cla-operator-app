@@ -15,8 +15,7 @@ export class CaseResultHandler implements ResultHandler {
    *
    * @param caseApi - Optional API client for saving to case
    */
-  // apiService is a large object with many methods, we only use updateEligibilityCheck
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- apiService is large, we only use updateEligibilityCheck
   constructor(private readonly caseApi?: any) {}
 
   /**
@@ -25,8 +24,7 @@ export class CaseResultHandler implements ResultHandler {
    * @param input - The assessment result to handle
    * @returns A promise that resolves when handling is complete
    */
-  // ESLint: disabled because TypeScript already ensures parameter types
-  // eslint-disable-next-line jsdoc/require-param-type, complexity
+  // eslint-disable-next-line complexity -- Method complexity is inherent to this business logic
   async handle(input: {
     checkId: unknown;
     answers: unknown;
@@ -52,8 +50,10 @@ export class CaseResultHandler implements ResultHandler {
 
     // Save to case through existing endpoint
     // WARNING: This causes a double CFE call (D9 optimization pending)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- caseApi is intentionally typed as any to avoid large apiService type
     if (this.caseApi?.updateEligibilityCheck !== undefined) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- caseApi is intentionally typed as any to avoid large apiService type
         await this.caseApi.updateEligibilityCheck(null, String(checkId), {
           state: result.result,
           calculations: {

@@ -24,8 +24,7 @@ export class SessionAnswerStore implements AnswerStore {
    * @param checkId - The eligibility check ID
    * @returns The saved answers or empty object if none exist
    */
-  // Async required by AnswerStore interface
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await -- Async required by AnswerStore interface
   async load(checkId: unknown): Promise<Answers> {
     const session = this.getSession();
     const saved = session.eligibility?.[String(checkId)];
@@ -35,8 +34,7 @@ export class SessionAnswerStore implements AnswerStore {
       typeof saved === "object" &&
       !Array.isArray(saved)
     ) {
-      // Type guard: verified this is an Answers object
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Type guard verified this is Answers
       return saved as Answers;
     }
     return {};
@@ -48,8 +46,7 @@ export class SessionAnswerStore implements AnswerStore {
    * @param checkId - The eligibility check ID
    * @param partial - The answers to save
    */
-  // Async required by AnswerStore interface
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await -- Async required by AnswerStore interface
   async save(checkId: unknown, partial: Answers): Promise<void> {
     const session = this.getSession();
     const checkIdStr = String(checkId);
@@ -70,15 +67,12 @@ export class SessionAnswerStore implements AnswerStore {
    *
    * @param checkId - The eligibility check ID
    */
-  // Async required by AnswerStore interface
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // eslint-disable-next-line @typescript-eslint/require-await -- Async required by AnswerStore interface
   async clear(checkId: unknown): Promise<void> {
     const session = this.getSession();
-    // Only delete if eligibility object exists
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Explicit null check for clarity
     if (session.eligibility !== null && session.eligibility !== undefined) {
-      // Dynamic delete needed for session cleanup
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Dynamic delete needed for session cleanup
       delete session.eligibility[String(checkId)];
     }
   }
@@ -89,7 +83,9 @@ export class SessionAnswerStore implements AnswerStore {
    * @returns The session object
    * @throws Error if no request context is available
    */
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Uses currentRequest from thread-local closure
   private getSession(): Record<string, unknown> & { eligibility?: Record<string, unknown> } {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive check for thread-local access safety
     if (currentRequest === null || currentRequest === undefined) {
       throw new Error("SessionAnswerStore: no request context available");
     }
@@ -104,6 +100,7 @@ export class SessionAnswerStore implements AnswerStore {
    * @param answers - The answers object with flat field names
    * @returns The normalized answers with list arrays
    */
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Shared normalization logic not tied to instance state
   private normalizeAddAnotherFields(answers: Answers): Answers {
     const result = { ...answers };
 
@@ -115,6 +112,7 @@ export class SessionAnswerStore implements AnswerStore {
     for (const [key, value] of Object.entries(result)) {
       const match = fieldPattern.exec(key);
       if (match?.groups !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct assignment is clearer for single destructured value
         const { listName, index: indexStr, fieldName } = match.groups;
         const index = Number(indexStr);
 
@@ -134,7 +132,7 @@ export class SessionAnswerStore implements AnswerStore {
           }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Dynamic delete needed to remove converted flat field names
         delete result[key];
       }
     }
