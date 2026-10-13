@@ -117,6 +117,17 @@ export default [
       ],
     },
   },
+  // Eligibility adapter-specific rules: relax JSDoc for complex nested types (TypeScript covers the typing)
+  {
+    files: ["src/eligibility/adapters/**/*.ts"],
+    rules: {
+      "jsdoc/require-param": "off", // TypeScript types cover this
+      "jsdoc/require-param-type": "off", // TypeScript types cover this
+      "jsdoc/require-param-description": "off", // Optional for adapters
+      "jsdoc/require-returns-type": "off", // TypeScript return types cover this
+      "jsdoc/check-param-names": "off", // TypeScript covers this
+    },
+  },
   // Host code must import eligibility only from index.ts
   {
     files: ["src/journeys/**/*.ts", "src/controllers/**/*.ts"],

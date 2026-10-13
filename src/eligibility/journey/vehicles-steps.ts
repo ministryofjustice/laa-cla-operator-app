@@ -1,6 +1,6 @@
 import { step, submit, access, redirect, Data, validation, Post, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import { vehiclesBlock, vehicleDetailsBlock } from "../vehicles-blocks.js";
+import { EligibilityEffects } from "../registries/effects.js";
+import { vehiclesBlock, vehicleDetailsBlock } from "./vehicles-blocks.js";
 
 export const VEHICLES_STEP_CODE = "vehicles";
 export const VEHICLE_DETAILS_STEP_CODE = "vehicle_details";

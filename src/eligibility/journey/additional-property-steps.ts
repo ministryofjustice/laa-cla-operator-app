@@ -1,6 +1,6 @@
 import { step, submit, access, redirect, Data, validation, Post, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import { additionalPropertyBlock, additionalPropertyDetailsBlock } from "../additional-property-blocks.js";
+import { EligibilityEffects } from "../registries/effects.js";
+import { additionalPropertyBlock, additionalPropertyDetailsBlock } from "./additional-property-blocks.js";
 
 export const ADDITIONAL_PROPERTY_STEP_CODE = "additional_property";
 export const ADDITIONAL_PROPERTY_DETAILS_STEP_CODE = "additional_property_details";

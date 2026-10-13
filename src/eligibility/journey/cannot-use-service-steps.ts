@@ -1,5 +1,5 @@
 import { step, access } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { cannotUseServiceBlock } from "../cannot-use-service-blocks.js";
+import { cannotUseServiceBlock } from "./cannot-use-service-blocks.js";
 
 export const CANNOT_USE_SERVICE_STEP_CODE = "cannot_use_service";
 
