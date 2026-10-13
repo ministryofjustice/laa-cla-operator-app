@@ -4022,10 +4022,10 @@ __metadata:
     helmet: "npm:^8.1.0"
     http-errors: "npm:~2.0.0"
     husky: "npm:^9.1.7"
-    jsonwebtoken: "npm:^9.0.3"
-    jwks-rsa: "npm:^4.1.0"
     i18next: "npm:^26.4.2"
     jsdom: "npm:^30.1.1"
+    jsonwebtoken: "npm:^9.0.3"
+    jwks-rsa: "npm:^4.1.0"
     libphonenumber-js: "npm:^1.13.14"
     lint-staged: "npm:^17.6.0"
     livereload: "npm:^0.10.2"
@@ -4192,7 +4192,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^11.5.2, lru-cache@npm:^11.5.3":
+"lru-cache@npm:^11.0.1, lru-cache@npm:^11.5.2, lru-cache@npm:^11.5.3":
   version: 11.5.3
   resolution: "lru-cache@npm:11.5.3"
   checksum: 10c0/2ad9bce6343a3544a1fd15364d8b35609aa52b2593d21fdc4877cabfe003b0f3deca4f9d6e9d13262f06e9e3d159de45c0a2f3edfc3adb46192333b5f146d8ed

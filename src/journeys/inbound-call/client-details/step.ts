@@ -1,4 +1,3 @@
-import { requireSilasAuth } from "#src/journeys/auth.js";
 import {
   step,
   submit,
@@ -14,7 +13,6 @@ export const addClientDetailsStep = step({
   path: "add-client-details",
   title: "Client's details",
   reachability: { entryWhen: true },
-  onAccess: [requireSilasAuth],
   view: { template: "main/add-client-details.njk" },
   blocks: [clientDetailsBlock],
   onSubmission: [

@@ -12,7 +12,6 @@ import {
   Answer,
   or,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { requireSilasAuth } from "#src/journeys/auth.js";
 import {
   displaySearchClientBlock,
   searchClientFormBlock,
@@ -41,7 +40,6 @@ export const searchClientStep = step({
     }),
   ],
   onAccess: [
-    requireSilasAuth,
     access({ effects: [InboundCallEffects.SetAgentName()] }),
     access({
       when: Query("page").match(Condition.IsRequired()),

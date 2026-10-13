@@ -1,6 +1,7 @@
 import {Request} from "express"
-import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
-import { SilasConfig } from "#types/config-types.js";
+import type { RedisClientType } from "redis";
+import { AuthenticationResult, ConfidentialClientApplication, ICachePlugin, TokenCacheContext, AccountInfo } from "@azure/msal-node";
+import { RedisConfig, SilasConfig } from "#types/config-types.js";
 import { saveSession } from "#src/helpers/session.js";
 
 import type { AccessTokenClaims } from "#types/auth-types.js";
@@ -8,37 +9,110 @@ import jsonwebtoken from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 
 import { randomBytes } from "node:crypto";
+import { createRedisClient } from "#utils/redis.js";
+import config from "#config.js";
+import { EMPTY_LENGTH } from "#src/constants.js";
 
 const NONCE_BYTES = 32;
 const ENTRA_KEY_CACHE_TTL_MS = 3600000; // 1 hour
 const OIDC_SCOPES = new Set(["openid", "profile", "offline_access"]);
 
-let service: SilasService | null = null
+/**
+ * Builds the Redis key used to persist an MSAL cache blob for a session.
+ * @param sessionId - The express-session ID.
+ * @returns Redis key for this session's MSAL token cache.
+ */
+export function getMsalCacheKey(sessionId: string): string {
+  return `msal:${sessionId}`;
+}
+
+export interface TokenExchangeResult {
+  accessToken: string;
+  account: AccountInfo | null;
+  idToken: string;
+}
+
+
+/**
+ * MSAL cache plugin that persists the token cache to Redis.
+ * Implements the ICachePlugin interface to intercept MSAL cache operations
+ * and store the serialized cache blob in Redis keyed by session ID.
+ */
+export class RedisCachePlugin implements ICachePlugin {
+  private readonly key: string;
+
+  /**
+   * Creates a RedisCachePlugin instance.
+   * @param redisClient - The Redis client instance.
+   * @param sessionId - The express-session ID to use as the cache key suffix.
+   * @param ttlSeconds - The TTL for the Redis key (should match session TTL).
+   */
+  constructor(
+    private readonly redisClient: RedisClientType,
+    sessionId: string,
+    private readonly ttlSeconds: number,
+  ) {
+    this.key = getMsalCacheKey(sessionId);
+  }
+
+  /**
+   * Called by MSAL after it accesses the cache.
+   * If the cache has changed, serializes it and stores in Redis with the configured TTL.
+   * @param cacheContext - The MSAL token cache context.
+   */
+  async afterCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
+    if (cacheContext.cacheHasChanged) {
+      await this.redisClient.set(
+        this.key,
+        cacheContext.tokenCache.serialize(),
+        {
+          EX: this.ttlSeconds,
+        },
+      );
+    }
+  }
+
+  /**
+   * Called by MSAL before it accesses the cache.
+   * Retrieves the serialized cache blob from Redis and deserializes it into the cache context.
+   * @param cacheContext - The MSAL token cache context.
+   */
+  async beforeCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
+    const cached = await this.redisClient.get(this.key);
+    if (cached) {
+      cacheContext.tokenCache.deserialize(cached);
+      await this.redisClient.expire(this.key, this.ttlSeconds);
+    }
+  }
+}
+
+
 export class SilasService {
     private config: SilasConfig
     private msalClient: ConfidentialClientApplication
 
-    constructor(config: SilasConfig) {
-        this.config = config
+    constructor(silasConfig: SilasConfig, cachePlugin?: RedisCachePlugin) {
+        this.config = silasConfig
         this.msalClient = new ConfidentialClientApplication({
             auth: {
-                clientId: config.clientId,
-                authority: config.authority,
-                clientSecret: config.clientSecret
+                clientId: silasConfig.clientId,
+                authority: silasConfig.authority,
+                clientSecret: silasConfig.clientSecret
             },
+            cache: {
+                cachePlugin: cachePlugin
+            }
         });
     }
 
-    /**
-     * Factory method to create a singleton of a silas service
-     * @param {SilasConfig} config - The silas config
-     * @returns {SilasService} - The single silas service.
-     */
-    public static Singleton(config: SilasConfig): SilasService {
-        if(service === null) {
-            service = new SilasService(config)
+    static factory(sessionId?: string): SilasService {
+        if(sessionId !== undefined && config.redis.enabled) {
+            console.log(`factory called with sesssionId: ${sessionId}`)
+            const redisClient = createRedisClient(config.redis)
+            const cachePlugin = new RedisCachePlugin(redisClient, sessionId, config.redis.maxAge)
+            return new SilasService(config.silas, cachePlugin)
         }
-        return service
+        return new SilasService(config.silas)
     }
 
     /**
@@ -80,6 +154,36 @@ export class SilasService {
             redirectUri: this.config.redirectUri,
         });
     }
+
+  /**
+   * Acquire a downstream API access token using the MSAL account resolved from
+   * the session-scoped token cache partition.
+   *
+   * @param homeAccountId - Session-persisted MSAL homeAccountId reference.
+   * @returns {string} - The access token
+   */
+  async acquireDownstreamAccessToken(homeAccountId: string): Promise<string> {
+    const result = await this.refreshToken(homeAccountId)
+    return result.accessToken
+  }
+
+    async refreshToken(homeAccountId: string): Promise<AuthenticationResult> {
+        if (homeAccountId.trim().length === EMPTY_LENGTH) {
+            throw new Error("The authenticated session has no MSAL account reference")
+        }
+        const account = await this.msalClient.getTokenCache().getAccountByHomeId(homeAccountId)
+        if(account === null) {
+            throw new Error("Could not find account to refresh")
+        }
+
+        try {
+            return await this.msalClient.acquireTokenSilent({account, scopes: [...this.config.scopes]})
+        }
+        catch(err) {
+            throw new Error("Could not refresh token", {cause: err})
+        }
+    }
+
 
     /**
      * Get public key for given key id.

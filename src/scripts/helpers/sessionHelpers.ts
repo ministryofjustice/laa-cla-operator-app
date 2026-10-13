@@ -1,5 +1,15 @@
 import type { Request } from "express";
 import type { SilasSessionAuth, SilasUserInfo } from "types/auth-types.js";
+import type {
+  AccountInfo,
+} from "@azure/msal-node";
+
+interface KnownClaims {
+  idTokenClaims?: {
+    APP_ROLES?: string;
+    LAA_ACCOUNTS?: string | string[];
+  };
+}
 
 // Extend the Express session interface to support dynamic namespaces
 declare module "express-session" {
@@ -18,9 +28,13 @@ declare module "express-session" {
     // This allows both specific properties and dynamic namespace access
     silasAuth?: SilasSessionAuth;
     user?: SilasUserInfo;
+    account?: AccountInfo & KnownClaims;
+    isAuthenticated?: boolean
     return_to?: string | undefined | null;
   }
 }
+
+
 
 /**
  * Store a hash of key-value pairs in the session under a specific namespace

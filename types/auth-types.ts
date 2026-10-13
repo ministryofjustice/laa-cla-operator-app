@@ -13,9 +13,7 @@ export interface SilasSessionAuth {
 export interface SilasUserInfo {
   email: string;
   name: string;
-  oid?: string;
-  roles?: string[];
-  providerId?: number;
+  homeAccountId: string;
 }
 
 export interface AccessTokenClaims {

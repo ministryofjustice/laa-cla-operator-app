@@ -34,6 +34,19 @@ export function devWarn(message: string): void {
 }
 
 /**
+ * Development-only Info helper
+ * @param {string} message Information message to output in development mode
+ */
+export function devInfo(message: string): void {
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test" ||
+    process.env.NODE_ENV === undefined
+  ) {
+    console.info(message);
+  }
+}
+/**
  * Development-only error helper
  * @param {string} message Error message to output in development mode
  */

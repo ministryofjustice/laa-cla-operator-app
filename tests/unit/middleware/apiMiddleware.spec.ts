@@ -5,7 +5,6 @@ import type { Request, Response, NextFunction } from "express";
 import {
   axiosMiddleware,
   createApiMiddleware,
-  hasValidSilasToken,
   requireAuth,
   setAuthStatus,
 } from "#src/middleware/apiMiddleware.js";
@@ -233,35 +232,6 @@ describe("requireAuth", () => {
   });
 });
 
-describe("hasValidSilasToken", () => {
-  it("returns false for undefined", () => {
-    assert.equal(hasValidSilasToken(undefined), false);
-  });
-
-  it("returns false for expired token", () => {
-    const token = {
-      accessToken: "token",
-      idToken: "id-token",
-      expiresAt: Date.now() - 1,
-      email: "user@example.com",
-      name: "User",
-    };
-
-    assert.equal(hasValidSilasToken(token), false);
-  });
-
-  it("returns true for unexpired token", () => {
-    const token = {
-      accessToken: "token",
-      idToken: "id-token",
-      expiresAt: Date.now() + 1_000,
-      email: "user@example.com",
-      name: "User",
-    };
-
-    assert.equal(hasValidSilasToken(token), true);
-  });
-});
 
 describe("setAuthStatus", () => {
   it("sets locals for unauthenticated users without silasAuth in session", () => {

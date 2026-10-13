@@ -5,7 +5,11 @@ dotenv.config();
 
 const DEFAULT_RATE_LIMIT_MAX = 100;
 const DEFAULT_RATE_WINDOW_MS_MINUTE = 15;
-const MILLISECONDS_IN_A_MINUTE = 60000;
+const MILLISECONDS_IN_A_SECOND = 1000;
+const MILLISECONDS_IN_A_MINUTE = MILLISECONDS_IN_A_SECOND * 60;
+const MILLISECONDS_IN_A_HOUR = MILLISECONDS_IN_A_MINUTE * 60;
+const SESSION_AGE_MAX_MS = 12 * MILLISECONDS_IN_A_HOUR // 12 HOURS
+const REDIS_AGE_MAX_SECONDS = SESSION_AGE_MAX_MS / MILLISECONDS_IN_A_SECOND  // 12 HOURS
 const DEFAULT_PORT = 3000;
 const { env } = process;
 const { SESSION_SECRET, SESSION_NAME } = env;
@@ -41,6 +45,7 @@ const config: Config = {
     name: SESSION_NAME,
     resave: false,
     saveUninitialized: false,
+    maxAge: SESSION_AGE_MAX_MS,
   },
   app: {
     port: Number(process.env.PORT ?? DEFAULT_PORT),
@@ -76,6 +81,7 @@ const config: Config = {
     enabled: process.env.REDIS_ENABLED === "true",
     auth_token: process.env.REDIS_AUTH_TOKEN,
     tls_enabled: process.env.REDIS_TLS_ENABLED === "true",
+    maxAge: REDIS_AGE_MAX_SECONDS,
   },
 };
 

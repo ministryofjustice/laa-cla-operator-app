@@ -1,4 +1,4 @@
-import { createClient } from "redis";
+import { createClient, RedisClientType } from "redis";
 import chalk from "chalk";
 import type { RedisConfig } from "#types/config-types.js";
 import { devError, devLog } from "#src/scripts/helpers/index.js";
@@ -18,7 +18,7 @@ export const buildConnectionUrl = (config: RedisConfig): string => {
   return `${protocol}${config.host}:${config.port}`;
 };
 
-let globalRedisClient: ReturnType<typeof createClient> | null = null;
+let globalRedisClient: RedisClientType | null = null;
 
 /**
  * Recycle the global Redis client by quitting the connection and clearing the reference.
@@ -35,11 +35,11 @@ export const recycleRedisClient = (): void => {
 /**
  * Create and configure Redis client
  * @param {RedisConfig} config - Redis configuration from environment variables
- * @returns {ReturnType<typeof createClient>} Configured Redis client
+ * @returns {RedisClientType} Configured Redis client
  */
 export const createRedisClient = (
   config: RedisConfig,
-): ReturnType<typeof createClient> => {
+): RedisClientType => {
   if (globalRedisClient !== null) {
     return globalRedisClient;
   }

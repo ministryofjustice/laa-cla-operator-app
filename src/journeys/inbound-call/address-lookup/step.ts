@@ -6,7 +6,6 @@ import {
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import { InboundCallEffects } from "#src/journeys/effects.js";
-import { requireSilasAuth } from "#src/journeys/auth.js";
 import { addressLookupStep1Blocks, addressLookupStep2Blocks } from "./block.js";
 
 export const ADDRESS_LOOKUP_STEP_CODE = "address-lookup";
@@ -14,7 +13,6 @@ export const addressLookupStep1 = step({
   code: ADDRESS_LOOKUP_STEP_CODE,
   path: ADDRESS_LOOKUP_STEP_CODE,
   title: "Search client's address",
-  onAccess: [requireSilasAuth],
   reachability: { entryWhen: true },
   view: {
     template: "main/forms/address-lookup-form.njk",
@@ -41,7 +39,6 @@ export const addressLookupStep2 = step({
     template: "main/forms/address-lookup-select.njk",
   },
   onAccess: [
-    requireSilasAuth,
     access({
       effects: [InboundCallEffects.PostcodeLookup()],
     }),

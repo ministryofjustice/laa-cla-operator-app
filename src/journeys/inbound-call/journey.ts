@@ -9,7 +9,6 @@ import {
   addressLookupStep1,
   addressLookupStep2,
 } from "./address-lookup/step.js";
-import { requireSilasAuth } from "../auth.js";
 
 // Define the journeys
 export const dashboardJourney = journey({
@@ -37,7 +36,6 @@ export const caseJourney = journey({
   title: "Case",
   path: "/case/:caseId",
   onAccess: [
-    requireSilasAuth,
     access({
       effects: [InboundCallEffects.LoadCase()],
     }),

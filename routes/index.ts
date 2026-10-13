@@ -73,6 +73,7 @@ if (process.env.NODE_ENV === "test") {
     req.session.user = {
       email: "test.user@justice.gov.uk",
       name: "Test User",
+      homeAccountId: "1"
     };
 
     res.redirect(next);
@@ -81,10 +82,6 @@ if (process.env.NODE_ENV === "test") {
 
 /* GET home page. */
 router.get("/", (req: Request, res: Response): void => {
-  if (req.session.silasAuth === undefined) {
-    res.redirect("/sign-in");
-    return;
-  }
   res.redirect("/dashboard");
 });
 

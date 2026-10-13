@@ -107,7 +107,7 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
   if (userRedirected) {
     return;
   }
-  const authUrl = await SilasService.Singleton(config.silas).getAuthUrl(req)
+  const authUrl = await SilasService.factory().getAuthUrl(req)
 
   res.redirect(authUrl);
 }
@@ -199,9 +199,11 @@ export async function callbackAction(
     return;
   }
 
+  await regenerateSession(req);
   try {
-    const service = SilasService.Singleton(config.silas)
+    const service = SilasService.factory(req.session.id)
     const response = await service.exchangeAuthCode(code)
+    console.log(response)
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;
@@ -209,26 +211,11 @@ export async function callbackAction(
 
     const claims = await service.decodeToken(response.accessToken);
     service.validateAccessTokenScopes(claims)
-    await regenerateSession(req);
 
     const { session } = req;
-
     session.auth_nonce = undefined;
-
-    session.silasAuth = {
-      accessToken: response.accessToken,
-      idToken: response.idToken,
-      expiresAt:
-        response.expiresOn?.getTime() ?? Date.now() + TOKEN_EXPIRY_OFFSET_MS,
-      email: claims.USER_EMAIL,
-      name: claims.name,
-    };
-
-    session.user = {
-      email: response.account.username,
-      name: response.account.name,
-      oid: response.account.homeAccountId,
-    };
+    session.account = response.account
+    session.isAuthenticated = true;
 
     await saveSession(req);
 
