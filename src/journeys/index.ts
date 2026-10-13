@@ -1,4 +1,5 @@
 import {
+  dashboardJourneyPackage,
   inboundCallJourneyPackage,
   caseJourneyPackage,
 } from "./inbound-call/index.js";
@@ -6,6 +7,7 @@ import {
 type JourneyPackage = typeof inboundCallJourneyPackage;
 
 const journeyPackages: JourneyPackage[] = [
+  dashboardJourneyPackage,
   inboundCallJourneyPackage,
   caseJourneyPackage,
 ];

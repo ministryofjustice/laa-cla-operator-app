@@ -26,13 +26,49 @@ import {
   and,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
-export const searchClientBlock = CollectionBlock({
+export const searchClientIntroBlock = CollectionBlock({
+  collection: [
+    HtmlBlock({
+      tag: "div",
+      classes: "govuk-inset-text taking-call-inset govuk-!-margin-bottom-7",
+      content: Format(
+        `<p class="govuk-body">Thank you for calling the Civil Legal Advice helpline, my name is %1.</p>
+        <p class="govuk-body">I'm going to ask you some questions about your legal problem and your financial situation to check if you are eligible for legal aid.</p>
+        <p class="govuk-body">I am not trained to give legal advice. If you are likely to be eligible for legal aid, I'll refer you to a legal professional at the end of this call. Depending on your problem, they may need to complete further checks before they can help.</p>
+        <p class="govuk-body">If you are not eligible for legal aid, I'll try to direct you to someone else who can help you.</p>
+        <p class="govuk-body">As a first step, I'm going to take a few details from you. The information you give me will be stored on our system to help us assess your case.</p>`,
+        match(Data("userName"))
+          .branch(Condition.IsRequired(), Data("userName"))
+          .otherwise("[agent's name]"),
+      ),
+    }),
+    HtmlBlock({
+      tag: "h2",
+      content: "Search for client’s details",
+      classes: "govuk-heading-l govuk-!-margin-bottom-6",
+    }),
+    HtmlBlock({
+      tag: "div",
+      content: `<p class="govuk-body">Ask the caller if they are phoning on their own behalf, or acting as a third party for another person (the ‘client’).</p>
+        <p class="govuk-body">Then, take the client’s details and search for any existing records before starting a new case.</p>`,
+      classes: "govuk-!-margin-bottom-7",
+    }),
+    HtmlBlock({
+      tag: "div",
+      classes: "govuk-!-margin-bottom-7",
+      content: `<p class="govuk-body govuk-!-font-weight-bold">Find a client using one or more of the search terms below.</p>`,
+    }),
+  ],
+});
+
+export const searchClientFormBlock = CollectionBlock({
   classes: "search-client-box",
   collection: [
     GovUKTextInput({
       code: "fullName",
+      classes: "govuk-input--width-30",
       label: {
-        text: "What's your name?",
+        text: "Client's name",
         classes: "govuk-label--s",
       },
       validWhen: [
@@ -47,12 +83,13 @@ export const searchClientBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "phone",
+      classes: "govuk-input--width-20",
       label: {
-        text: "What's your phone number?",
+        text: "Client's phone number",
         classes: "govuk-label--s",
       },
       hint: {
-        text: "If the client is uncomfortable sharing their number, explain they'll only be contacted when it is safe and convenient to do so.",
+        text: "You can explain the client will only be contacted when it’s safe to do so.",
       },
       validWhen: [
         validation({
@@ -66,8 +103,9 @@ export const searchClientBlock = CollectionBlock({
     }),
     GovUKTextInput({
       code: "postcode",
+      classes: "govuk-input--width-10",
       label: {
-        text: "What's your postcode?",
+        text: "Client's postcode",
         classes: "govuk-label--s",
       },
       validWhen: [
@@ -84,7 +122,7 @@ export const searchClientBlock = CollectionBlock({
       code: "dateOfBirth",
       fieldset: {
         legend: {
-          text: "What's your date of birth?",
+          text: "Client's date of birth",
           classes: "govuk-fieldset__legend--s",
         },
       },
@@ -132,7 +170,7 @@ export const createCaseButtonBlock = GovUKButton({
       Condition.IsRequired(),
       Format("Start a new case for %1", Answer("fullName")),
     )
-    .otherwise("Start a new case"),
+    .otherwise("Start a new case using the details entered"),
   classes: "govuk-button--secondary",
   name: "action",
   value: "createCase",
@@ -142,8 +180,8 @@ export const displaySearchClientBlock = CollectionBlock({
   collection: [
     GovUKTable({
       head: [
-        { text: "Full Name" },
-        { text: "Phone" },
+        { text: "Name" },
+        { text: "Phone number" },
         { text: "Postcode" },
         { text: "Date of Birth" },
       ],

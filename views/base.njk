@@ -1,5 +1,6 @@
 {% extends "govuk/template.njk" %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 {% from "moj/components/header/macro.njk" import mojHeader %}
 
@@ -47,6 +48,15 @@
     },
     html: t('components.phaseBanner.feedbackText') + t('components.phaseBanner.feedbackLinkTextHTML')
   }) }}
+
+  {% if backLinkUrl %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backLinkUrl,
+      classes: "govuk-!-margin-bottom-6"
+    }) }}
+  {% endif %}
+  
 {% endblock %}
 
 {% block content %}
