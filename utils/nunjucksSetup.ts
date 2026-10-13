@@ -37,6 +37,7 @@ export const nunjucksSetup = (app: Application): nunjucks.Environment => {
   const nunjucksEnv = nunjucks.configure(
     [
       path.join(path.resolve(), "views"), // Main views directory
+      path.join(path.resolve(), "src/eligibility/views"), // Eligibility module views
       "node_modules/govuk-frontend/dist", // GOV.UK Frontend templates
       "node_modules/govuk-frontend/dist/components/", // GOV.UK components
       "node_modules/@ministryofjustice/frontend", // MoJ Design System components
