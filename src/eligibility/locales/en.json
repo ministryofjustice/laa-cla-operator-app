@@ -10,5 +10,18 @@
   "applicant": {
     "question": "Partner details",
     "legend": "Does the client have a partner?"
+  },
+  "dependant_details": {
+    "question": "Does the client have any dependants?",
+    "legend": "Select whether the client has dependants"
+  },
+  "dependant_income": {
+    "question": "Do the dependants have their own income?",
+    "legend": "Select whether the dependants have income"
+  },
+  "dependant_income_details": {
+    "question": "What is the dependants' total monthly income?",
+    "legend": "Enter the dependants' monthly income"
   }
 }
+
