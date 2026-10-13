@@ -25,6 +25,12 @@ import { partnerOutgoingsStep } from "./partner-outgoings/index.js";
 import { sharedOwnershipHousingCostsStep } from "./shared-ownership-housing-costs/index.js";
 import { mortgageOrLoanPaymentStep } from "./mortgage-or-loan-payment/index.js";
 import { housingCostsStep } from "./housing-costs/index.js";
+import { partnerDetailsStep } from "./partner-details/index.js";
+import { partnerEmploymentStatusStep } from "./partner-employment-status/index.js";
+import { partnerIncomeStep } from "./partner-income/index.js";
+import { partnerBenefitsStep } from "./partner-benefits/index.js";
+import { partnerBenefitDetailsStep } from "./partner-benefit-details/index.js";
+import { partnerOtherIncomeStep } from "./partner-other-income/index.js";
 import { checkYourAnswersStep } from "./check-your-answers/index.js";
 
 export interface CreateEligibilityPackageOptions {
@@ -67,6 +73,12 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       sharedOwnershipHousingCostsStep,
       mortgageOrLoanPaymentStep,
       housingCostsStep,
+      partnerDetailsStep,
+      partnerEmploymentStatusStep,
+      partnerIncomeStep,
+      partnerBenefitsStep,
+      partnerBenefitDetailsStep,
+      partnerOtherIncomeStep,
       checkYourAnswersStep,
     ],
   });
