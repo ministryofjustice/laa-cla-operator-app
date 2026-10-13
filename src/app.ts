@@ -33,7 +33,7 @@ import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
 import { CfeHttpClient } from "./eligibility/adapters/cfe-http-client.js";
 import { caseResultHandler } from "./eligibility/adapters/case-result-handler.js";
-import { SessionAnswerStore } from "./eligibility/adapters/session-answer-store.js";
+import { SessionAnswerStore, setCurrentRequest } from "./eligibility/adapters/session-answer-store.js";
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -120,6 +120,12 @@ const createApp = async (): Promise<express.Application> => {
   // Set up Nunjucks as the template engine
   const nunjucksEnv = nunjucksSetup(app);
 
+  // Middleware to set current request context for SessionAnswerStore
+  app.use((req, _res, next) => {
+    setCurrentRequest(req);
+    next();
+  });
+
   const forge = new Forge({})
     .registerGlobalComponents(govukComponents)
     // MoJ components don't have an "all" option, so we need to register them individually
@@ -149,6 +155,7 @@ const createApp = async (): Promise<express.Application> => {
         assessor: cfeHttpClient,
         resultHandler: caseResultHandler,
         answerStore: sessionAnswerStore,
+        caseApi: apiService,
       });
     } else {
       forge.registerPackage<Deps>(journeyPackage, {
