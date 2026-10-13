@@ -1,12 +1,23 @@
 {% extends "base.njk" %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
     {% block backLink %}{% endblock %}
 
     <div class="govuk-grid-row">
 
-        <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-column-three-quarters">
+            {% if caseId %}
+            <div class="govuk-inset-text govuk-!-margin-bottom-6">
+                {{ govukButton({
+                    text: "Check financial eligibility",
+                    href: "/case/" + caseId + "/eligibility/",
+                    classes: "govuk-button--secondary"
+                }) }}
+            </div>
+            {% endif %}
+
         {% if fieldValidationErrors | length or domainValidationErrors | length %}
                 {% set errorList = [] %}
 
