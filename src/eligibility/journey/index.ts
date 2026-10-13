@@ -6,6 +6,7 @@ import {
 import type { EligibilityDeps } from "../ports/index.js";
 import { EligibilityEffectsRegistry, EligibilityConditionsRegistry } from "../registries/index.js";
 import { EligibilityEffects } from "../registries/effects.js";
+import { levelOfHelpStep } from "./level-of-help/index.js";
 
 export interface CreateEligibilityPackageOptions {
   path: string;
@@ -27,7 +28,9 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       }),
     ],
     view: options.template ? { template: options.template.layout } : undefined,
-    steps: [],
+    steps: [
+      levelOfHelpStep,
+    ],
   });
 
   return createForgePackage<EligibilityDeps>({

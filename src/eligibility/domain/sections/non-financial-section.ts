@@ -32,7 +32,6 @@ const CASE_TYPE_STEPS = [
   "asylum_support",
 ];
 const CASE_DETAILS_STEPS = [
-  "client_age",
   "level_of_help",
   ...UNDER_18_STEPS,
   ...CASE_TYPE_STEPS,
@@ -184,11 +183,12 @@ function applicantGroupedStepsFor(answers: Answers): Group[] {
 }
 
 /**
- * The client-age and level-of-help groups, always asked first.
+ * The level-of-help group, asked first. Client age is calculated from DOB
+ * provided by the earlier journey, so the client_age step is skipped.
  * @returns {Group[]} the initial groups
  */
 function initialSteps(): Group[] {
-  return [["client_age"], ["level_of_help"]];
+  return [["level_of_help"]];
 }
 
 /**
