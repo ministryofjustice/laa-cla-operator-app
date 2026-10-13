@@ -31,6 +31,9 @@ import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
 import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
+import { CfeHttpClient } from "./eligibility/adapters/cfe-http-client.js";
+import { caseResultHandler } from "./eligibility/adapters/case-result-handler.js";
+import { SessionAnswerStore } from "./eligibility/adapters/session-answer-store.js";
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -125,6 +128,11 @@ const createApp = async (): Promise<express.Application> => {
   // Everytime a new journey is added to the project,
   // it'll be automatically registered with Forge here.
   const postcodeServiceInstance = new PostcodeLookupService();
+  const cfeHttpClient = new CfeHttpClient({
+    baseUrl: config.cfe.baseUrl,
+  });
+  const sessionAnswerStore = new SessionAnswerStore();
+
   const pathLookup: Record<string, string> = {};
   for (const journeyPackage of journeyPackages) {
     const steps = journeyPackage.journey.steps ?? [];
@@ -135,10 +143,19 @@ const createApp = async (): Promise<express.Application> => {
       const stepPath = step.path.replace(/^\/+|\/+$/gu, "");
       pathLookup[code] = `/${journeyPath}/${stepPath}`;
     }
-    forge.registerPackage<Deps>(journeyPackage, {
-      caseApi: apiService,
-      postCodeApi: postcodeServiceInstance,
-    });
+
+    if (journeyPackage.journey.code === "eligibility") {
+      forge.registerPackage(journeyPackage, {
+        assessor: cfeHttpClient,
+        resultHandler: caseResultHandler,
+        answerStore: sessionAnswerStore,
+      });
+    } else {
+      forge.registerPackage<Deps>(journeyPackage, {
+        caseApi: apiService,
+        postCodeApi: postcodeServiceInstance,
+      });
+    }
   }
 
   /**
