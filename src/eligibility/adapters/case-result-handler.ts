@@ -1,10 +1,5 @@
 import type { ResultHandler } from "../ports/result-handler.js";
 
-// API interface for case operations - only used for updateEligibilityCheck if available
-// The actual apiService is a larger object with many methods
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type CaseApi = any;
-
 /**
  * Handles CFE assessment results by saving them to the case.
  *
@@ -20,6 +15,7 @@ export class CaseResultHandler implements ResultHandler {
    *
    * @param caseApi - Optional API client for saving to case
    */
+  // apiService is a large object with many methods, we only use updateEligibilityCheck
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(private readonly caseApi?: any) {}
 

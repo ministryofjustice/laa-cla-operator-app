@@ -5,6 +5,8 @@ interface CfeConfig {
   baseUrl: string;
 }
 
+const EMPTY_LENGTH = 0;
+
 /**
  * HTTP client for communicating with the CFE (Check Financial Eligibility) service.
  */
@@ -19,7 +21,7 @@ export class CfeHttpClient implements Assessor {
    */
   constructor(private readonly config: CfeConfig) {
     const baseUrl = config.baseUrl.trim();
-    if (baseUrl.length === 0) {
+    if (baseUrl.length === EMPTY_LENGTH) {
       throw new Error("CfeHttpClient requires config.baseUrl (CFE_HOST environment variable)");
     }
   }
