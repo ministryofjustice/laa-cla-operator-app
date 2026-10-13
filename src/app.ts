@@ -32,7 +32,7 @@ import { buildSessionConfig } from "#utils/session.js";
 import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
 import { CfeHttpClient } from "./eligibility/adapters/cfe-http-client.js";
-import { caseResultHandler } from "./eligibility/adapters/case-result-handler.js";
+import { caseResultHandler, CaseResultHandler } from "./eligibility/adapters/case-result-handler.js";
 import { SessionAnswerStore, setCurrentRequest } from "./eligibility/adapters/session-answer-store.js";
 
 const TRUST_FIRST_PROXY = 1;
@@ -153,7 +153,7 @@ const createApp = async (): Promise<express.Application> => {
     if (journeyPackage.journey.code === "eligibility") {
       forge.registerPackage(journeyPackage, {
         assessor: cfeHttpClient,
-        resultHandler: caseResultHandler,
+        resultHandler: new CaseResultHandler(apiService),
         answerStore: sessionAnswerStore,
         caseApi: apiService,
       });

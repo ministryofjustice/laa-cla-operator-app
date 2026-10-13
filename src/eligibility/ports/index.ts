@@ -12,5 +12,8 @@ export interface EligibilityDeps {
   answerStore?: AnswerStore;
   caseApi?: {
     loadCase(axiosMiddleware: any, caseId: string): Promise<{ date_of_birth?: string }>;
+    // Temporary: save eligibility result through existing endpoint (causes double CFE call)
+    // TODO (D9): Replace with dedicated endpoint that saves without re-calling CFE
+    updateEligibilityCheck?(axiosMiddleware: any, caseId: string, data: any): Promise<void>;
   };
 }
