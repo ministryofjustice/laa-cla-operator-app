@@ -73,7 +73,7 @@ if (process.env.NODE_ENV === "test") {
     req.session.user = {
       email: "test.user@justice.gov.uk",
       name: "Test User",
-      homeAccountId: "1"
+      homeAccountId: "1",
     };
 
     res.redirect(next);

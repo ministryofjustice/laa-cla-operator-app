@@ -232,7 +232,6 @@ describe("requireAuth", () => {
   });
 });
 
-
 describe("setAuthStatus", () => {
   it("sets locals for unauthenticated users without silasAuth in session", () => {
     const req = { session: {} } as unknown as Request;

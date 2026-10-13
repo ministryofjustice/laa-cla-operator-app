@@ -1,4 +1,4 @@
-import {Request} from "express"
+import { Request } from "express";
 import { promisify } from "node:util";
 /**
  * Saves the current request session.

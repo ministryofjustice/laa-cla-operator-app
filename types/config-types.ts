@@ -19,7 +19,7 @@ export interface SessionConfig {
   name: string;
   resave: boolean;
   saveUninitialized: boolean;
-  maxAge: number,
+  maxAge: number;
 }
 
 export interface PathsConfig {
@@ -70,5 +70,5 @@ export interface RedisConfig {
   auth_token?: string;
   port?: number;
   tls_enabled?: boolean;
-  maxAge: number
+  maxAge: number;
 }

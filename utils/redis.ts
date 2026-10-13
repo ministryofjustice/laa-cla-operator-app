@@ -37,9 +37,7 @@ export const recycleRedisClient = (): void => {
  * @param {RedisConfig} config - Redis configuration from environment variables
  * @returns {RedisClientType} Configured Redis client
  */
-export const createRedisClient = (
-  config: RedisConfig,
-): RedisClientType => {
+export const createRedisClient = (config: RedisConfig): RedisClientType => {
   if (globalRedisClient !== null) {
     return globalRedisClient;
   }

@@ -95,7 +95,11 @@ export function createApiMiddleware(
     useSessionSilasAuth = true,
   } = config;
 
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     /**
      * Create an Axios instance using the configured defaults.
      */
@@ -124,9 +128,11 @@ export function createApiMiddleware(
 
     if (useSessionSilasAuth) {
       const { homeAccountId } = req.session.account ?? {};
-      if(homeAccountId) {
-        const accessToken = await SilasService.factory(req.session.id).acquireDownstreamAccessToken(homeAccountId);
-        if(accessToken.length > EMPTY_LENGTH) {
+      if (homeAccountId) {
+        const accessToken = await SilasService.factory(
+          req.session.id,
+        ).acquireDownstreamAccessToken(homeAccountId);
+        if (accessToken.length > EMPTY_LENGTH) {
           addSessionSilasTokenInterceptor(
             axiosWrapper,
             accessToken,
@@ -193,14 +199,15 @@ export async function requireAuth(
   if (exp === undefined || exp <= NOW) {
     devInfo("requireAuth(): User auth expired, attempting refresh");
     try {
-      const result = await SilasService.factory(session.id).refreshToken(homeAccountId)
-      if(result.account === null) {
-        throw new Error("requireAuth(): Could not find account")
+      const result = await SilasService.factory(session.id).refreshToken(
+        homeAccountId,
+      );
+      if (result.account === null) {
+        throw new Error("requireAuth(): Could not find account");
       }
-      session.account = result.account
-    }
-    catch(err) {
-      await destroySession(req)
+      session.account = result.account;
+    } catch (err) {
+      await destroySession(req);
       return res.redirect("/sign-in");
     }
   }
@@ -234,7 +241,7 @@ export const setAuthStatus = (
   const { session } = req;
   const { account, isAuthenticated } = session;
 
-  res.locals.isAuthenticated = isAuthenticated
+  res.locals.isAuthenticated = isAuthenticated;
 
   res.locals.userEmail = account?.username ?? null;
   res.locals.userName = account?.name ?? null;

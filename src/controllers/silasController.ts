@@ -5,7 +5,11 @@ import type { Request, Response } from "express";
 
 import config from "#config.js";
 import { SilasService } from "#src/services/api/silasService.js";
-import { destroySession, regenerateSession, saveSession } from "#src/helpers/session.js";
+import {
+  destroySession,
+  regenerateSession,
+  saveSession,
+} from "#src/helpers/session.js";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
@@ -17,7 +21,6 @@ const EMPTY_LENGTH = 0;
 
 const TOKEN_EXPIRY_OFFSET_MS =
   DEFAULT_SESSION_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
-
 
 /**
  * Get a querystring as a string
@@ -107,7 +110,7 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
   if (userRedirected) {
     return;
   }
-  const authUrl = await SilasService.factory().getAuthUrl(req)
+  const authUrl = await SilasService.factory().getAuthUrl(req);
 
   res.redirect(authUrl);
 }
@@ -201,20 +204,20 @@ export async function callbackAction(
 
   await regenerateSession(req);
   try {
-    const service = SilasService.factory(req.session.id)
-    const response = await service.exchangeAuthCode(code)
-    console.log(response)
+    const service = SilasService.factory(req.session.id);
+    const response = await service.exchangeAuthCode(code);
+    console.log(response);
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;
     }
 
     const claims = await service.decodeToken(response.accessToken);
-    service.validateAccessTokenScopes(claims)
+    service.validateAccessTokenScopes(claims);
 
     const { session } = req;
     session.auth_nonce = undefined;
-    session.account = response.account
+    session.account = response.account;
     session.isAuthenticated = true;
 
     await saveSession(req);

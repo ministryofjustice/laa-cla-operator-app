@@ -1,1 +1,1 @@
-export const EMPTY_LENGTH = 0
+export const EMPTY_LENGTH = 0;

@@ -1,8 +1,6 @@
 import type { Request } from "express";
 import type { SilasSessionAuth, SilasUserInfo } from "types/auth-types.js";
-import type {
-  AccountInfo,
-} from "@azure/msal-node";
+import type { AccountInfo } from "@azure/msal-node";
 
 interface KnownClaims {
   idTokenClaims?: {
@@ -29,12 +27,10 @@ declare module "express-session" {
     silasAuth?: SilasSessionAuth;
     user?: SilasUserInfo;
     account?: AccountInfo & KnownClaims;
-    isAuthenticated?: boolean
+    isAuthenticated?: boolean;
     return_to?: string | undefined | null;
   }
 }
-
-
 
 /**
  * Store a hash of key-value pairs in the session under a specific namespace
