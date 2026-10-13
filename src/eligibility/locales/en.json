@@ -38,6 +38,10 @@
   "vehicle_details": {
     "question": "Provide details of the vehicles",
     "legend": "Enter details of the vehicles"
+  },
+  "cannot_use_service": {
+    "question": "Cannot use this service",
+    "legend": "We cannot process your application"
   }
 }
 

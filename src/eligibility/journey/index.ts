@@ -37,6 +37,7 @@ import { immigrationOrAsylumTypeUpperTribunalStep, asylumSupportStep, domesticAb
 import { dependantDetailsStep, dependantIncomeStep, dependantIncomeDetailsStep } from "./dependants/index.js";
 import { additionalPropertyStep, additionalPropertyDetailsStep } from "./additional-property/index.js";
 import { vehiclesStep, vehicleDetailsStep } from "./vehicles/index.js";
+import { cannotUseServiceStep } from "./cannot-use-service/index.js";
 import { checkYourAnswersStep } from "./check-your-answers/index.js";
 
 export interface CreateEligibilityPackageOptions {
@@ -97,6 +98,7 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       additionalPropertyDetailsStep,
       vehiclesStep,
       vehicleDetailsStep,
+      cannotUseServiceStep,
       checkYourAnswersStep,
     ],
   });
