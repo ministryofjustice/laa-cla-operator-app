@@ -11,7 +11,7 @@ const journeyPackages: JourneyPackage[] = [
   dashboardJourneyPackage,
   inboundCallJourneyPackage,
   caseJourneyPackage,
-  createEligibilityJourneyPackage(),
+  createEligibilityJourneyPackage() as any,
 ];
 
 export default journeyPackages;

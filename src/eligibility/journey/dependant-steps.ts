@@ -1,6 +1,6 @@
 import { step, submit, access, redirect, Data, validation, Post, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import { dependantDetailsBlock, dependantIncomeBlock, dependantIncomeDetailsBlock } from "../dependant-blocks.js";
+import { EligibilityEffects } from "../registries/effects.js";
+import { dependantDetailsBlock, dependantIncomeBlock, dependantIncomeDetailsBlock } from "./dependant-blocks.js";
 
 export const DEPENDANT_DETAILS_STEP_CODE = "dependant_details";
 export const DEPENDANT_INCOME_STEP_CODE = "dependant_income";

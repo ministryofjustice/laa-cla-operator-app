@@ -1,6 +1,6 @@
 import { step, submit, access, redirect, Data, validation, Post, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import { immigrationOrAsylumTypeUpperTribunalBlock, asylumSupportBlock, domesticAbuseApplicantBlock } from "../matter-type-blocks.js";
+import { EligibilityEffects } from "../registries/effects.js";
+import { immigrationOrAsylumTypeUpperTribunalBlock, asylumSupportBlock, domesticAbuseApplicantBlock } from "./matter-type-blocks.js";
 
 export const IMMIGRATION_OR_ASYLUM_TYPE_UPPER_TRIBUNAL_STEP_CODE = "immigration_or_asylum_type_upper_tribunal";
 export const ASYLUM_SUPPORT_STEP_CODE = "asylum_support";

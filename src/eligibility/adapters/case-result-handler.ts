@@ -10,8 +10,21 @@ import type { ResultHandler } from "../ports/result-handler.js";
  * this should be updated to use that instead (see decision D9 and question Q3 in the plan).
  */
 export class CaseResultHandler implements ResultHandler {
-  constructor(private caseApi?: any) {}
+  /**
+   * Creates a new CaseResultHandler.
+   *
+   * @param caseApi - Optional API client for saving to case
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- apiService is large, we only use updateEligibilityCheck
+  constructor(private readonly caseApi?: any) {}
 
+  /**
+   * Handles a CFE assessment result by logging and persisting it.
+   *
+   * @param input - The assessment result to handle
+   * @returns A promise that resolves when handling is complete
+   */
+  // eslint-disable-next-line complexity -- Method complexity is inherent to this business logic
   async handle(input: {
     checkId: unknown;
     answers: unknown;
@@ -37,8 +50,10 @@ export class CaseResultHandler implements ResultHandler {
 
     // Save to case through existing endpoint
     // WARNING: This causes a double CFE call (D9 optimization pending)
-    if (this.caseApi?.updateEligibilityCheck) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- caseApi is intentionally typed as any to avoid large apiService type
+    if (this.caseApi?.updateEligibilityCheck !== undefined) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- caseApi is intentionally typed as any to avoid large apiService type
         await this.caseApi.updateEligibilityCheck(null, String(checkId), {
           state: result.result,
           calculations: {
@@ -51,6 +66,7 @@ export class CaseResultHandler implements ResultHandler {
         console.error("Failed to save eligibility result:", error);
         throw new Error(
           `Failed to save assessment result: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
         );
       }
     }

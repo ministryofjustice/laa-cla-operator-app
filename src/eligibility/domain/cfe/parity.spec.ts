@@ -5,10 +5,10 @@
 import { strict as assert } from "assert";
 import { buildAssessment } from "./payload.js";
 import { stepsFor } from "../navigation.js";
-import controlledWorkFixture from "./fixtures/controlled-work.json" assert { type: "json" };
-import certificatedFixture from "./fixtures/certificated.json" assert { type: "json" };
-import passportedFixture from "./fixtures/passported.json" assert { type: "json" };
-import partnerWithAssetsFixture from "./fixtures/partner-with-assets.json" assert { type: "json" };
+import controlledWorkFixture from "./fixtures/controlled-work.json" with { type: "json" };
+import certificatedFixture from "./fixtures/certificated.json" with { type: "json" };
+import passportedFixture from "./fixtures/passported.json" with { type: "json" };
+import partnerWithAssetsFixture from "./fixtures/partner-with-assets.json" with { type: "json" };
 
 const FIXED_TODAY = new Date(Date.UTC(2024, 5, 1));
 

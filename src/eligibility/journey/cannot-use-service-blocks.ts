@@ -9,7 +9,8 @@ import {
 export const cannotUseServiceBlock = CollectionBlock({
   collection: [
     HtmlBlock({
-      html: `
+      tag: "div",
+      content: `
         <div class="govuk-panel govuk-panel--confirmation" style="background-color: #d4351c;">
           <h1 class="govuk-panel__title">
             We cannot process your application
@@ -31,8 +32,6 @@ export const cannotUseServiceBlock = CollectionBlock({
     }),
     GovUKButton({
       text: "Exit",
-      href: "/",
-      classes: "govuk-button--secondary",
     }),
   ],
 });
