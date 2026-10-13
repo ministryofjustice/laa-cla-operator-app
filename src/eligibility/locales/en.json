@@ -22,6 +22,14 @@
   "dependant_income_details": {
     "question": "What is the dependants' total monthly income?",
     "legend": "Enter the dependants' monthly income"
+  },
+  "additional_property": {
+    "question": "Does the client own any additional properties?",
+    "legend": "Select whether the client owns additional properties"
+  },
+  "additional_property_details": {
+    "question": "Provide details of the additional properties",
+    "legend": "Enter details of the additional properties"
   }
 }
 
