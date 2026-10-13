@@ -36,6 +36,7 @@ import { immigrationOrAsylumTypeStep } from "./immigration-or-asylum-type/index.
 import { immigrationOrAsylumTypeUpperTribunalStep, asylumSupportStep, domesticAbuseApplicantStep } from "./matter-type-steps.js";
 import { dependantDetailsStep, dependantIncomeStep, dependantIncomeDetailsStep } from "./dependants/index.js";
 import { additionalPropertyStep, additionalPropertyDetailsStep } from "./additional-property/index.js";
+import { vehiclesStep, vehicleDetailsStep } from "./vehicles/index.js";
 import { checkYourAnswersStep } from "./check-your-answers/index.js";
 
 export interface CreateEligibilityPackageOptions {
@@ -94,6 +95,8 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       dependantIncomeDetailsStep,
       additionalPropertyStep,
       additionalPropertyDetailsStep,
+      vehiclesStep,
+      vehicleDetailsStep,
       checkYourAnswersStep,
     ],
   });

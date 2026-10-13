@@ -30,6 +30,14 @@
   "additional_property_details": {
     "question": "Provide details of the additional properties",
     "legend": "Enter details of the additional properties"
+  },
+  "vehicles": {
+    "question": "Does the client own any vehicles?",
+    "legend": "Select whether the client owns vehicles"
+  },
+  "vehicle_details": {
+    "question": "Provide details of the vehicles",
+    "legend": "Enter details of the vehicles"
   }
 }
 
