@@ -8,7 +8,7 @@ import { requireSilasAuth } from "../auth.js";
  */
 export function createEligibilityJourneyPackage() {
   return createEligibilityPackage({
-    path: "eligibility",
+    path: "/case/:caseId/eligibility",
     onAccess: [requireSilasAuth],
     checkId: Params("caseId"),
     onComplete: Format("/case/%1", Params("caseId")),
