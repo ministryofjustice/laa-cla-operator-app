@@ -107,7 +107,6 @@ export default [
                 "#routes/*",
                 "#middleware/*",
                 "#helpers/*",
-                "../../*",
               ],
               message:
                 "The eligibility module must stay reusable. Import only from within src/eligibility/ or from @ministryofjustice/hmpps-forge.",
