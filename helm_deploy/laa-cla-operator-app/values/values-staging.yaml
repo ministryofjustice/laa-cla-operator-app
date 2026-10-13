@@ -39,8 +39,9 @@ envVars:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-staging.svc.cluster.local"
   CFE_HOST:
-    # CFE staging in every environment until production (eligibility journey)
-    value: "http://cfe-civil.cfe-civil-staging.svc.cluster.local"
+    # Using public HTTPS endpoint for staging (no network policy needed)
+    # Can switch to internal cluster URL once network policy is approved
+    value: "https://cfe-civil-staging.cloud-platform.service.justice.gov.uk"
   NODE_ENV:
     value: "staging"
   ENTRA_REDIRECT_URI:

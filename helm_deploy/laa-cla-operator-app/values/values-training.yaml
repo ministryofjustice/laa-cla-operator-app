@@ -34,8 +34,9 @@ envVars:
   BACKEND_BASE_URL:
     value: "http://cla-backend-app.laa-cla-backend-training.svc.cluster.local"
   CFE_HOST:
-    # CFE staging in every environment until production (eligibility journey)
-    value: "http://cfe-civil.cfe-civil-staging.svc.cluster.local"
+    # Using public HTTPS endpoint for training (no network policy needed)
+    # Can switch to internal cluster URL once network policy is approved
+    value: "https://cfe-civil-staging.cloud-platform.service.justice.gov.uk"
   NODE_ENV:
     value: "production"
   ENTRA_REDIRECT_URI:
