@@ -15,6 +15,11 @@ import { underEighteenAssetsStep } from "./under-eighteen-assets/index.js";
 import { applicantStep } from "./applicant/index.js";
 import { propertyStep } from "./property/index.js";
 import { bankAccountsStep } from "./bank-accounts/index.js";
+import { employmentStatusStep } from "./employment-status/index.js";
+import { incomeStep } from "./income/index.js";
+import { benefitsStep } from "./benefits/index.js";
+import { benefitDetailsStep } from "./benefit-details/index.js";
+import { otherIncomeStep } from "./other-income/index.js";
 import { checkYourAnswersStep } from "./check-your-answers/index.js";
 
 export interface CreateEligibilityPackageOptions {
@@ -47,6 +52,11 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       applicantStep,
       propertyStep,
       bankAccountsStep,
+      employmentStatusStep,
+      incomeStep,
+      benefitsStep,
+      benefitDetailsStep,
+      otherIncomeStep,
       checkYourAnswersStep,
     ],
   });
