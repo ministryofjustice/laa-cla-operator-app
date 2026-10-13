@@ -92,8 +92,8 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
   property: ["property_owned"],
   property_landlord: ["property_landlord"],
   property_entry: ["house_value", "mortgage", "percentage_owned", "house_in_dispute"],
-  vehicle: ["vehicle_owned"],
-  vehicles_details: ["vehicles"],
+  vehicles: ["vehicles"],
+  vehicle_details: ["vehicle_details"],
   assets: [
     "investments",
     "valuables",

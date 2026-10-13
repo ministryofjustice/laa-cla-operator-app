@@ -10,7 +10,7 @@ import type { Group, Section } from "./shared.js";
 import { compactGroups } from "./shared.js";
 
 /** Vehicle-related step codes. */
-export const VEHICLE_STEPS: readonly string[] = ["vehicle", "vehicles_details"];
+export const VEHICLE_STEPS: readonly string[] = ["vehicles", "vehicle_details"];
 /** Asset-related step codes. */
 export const ASSET_STEPS: readonly string[] = ["assets", "partner_assets"];
 
@@ -24,7 +24,7 @@ export const ALL_STEPS: readonly string[] = [...ASSET_STEPS, ...VEHICLE_STEPS];
  */
 function vehicleSteps(answers: Answers): Group | undefined {
   if (controlled(answers)) return undefined;
-  return ownsVehicle(answers) ? ["vehicle", "vehicles_details"] : ["vehicle"];
+  return ownsVehicle(answers) ? ["vehicles", "vehicle_details"] : ["vehicles"];
 }
 
 /**
