@@ -12,6 +12,9 @@ import { aggregatedMeansStep } from "./aggregated-means/index.js";
 import { howToAggregateStep } from "./how-to-aggregate/index.js";
 import { regularIncomeStep } from "./regular-income/index.js";
 import { underEighteenAssetsStep } from "./under-eighteen-assets/index.js";
+import { applicantStep } from "./applicant/index.js";
+import { propertyStep } from "./property/index.js";
+import { bankAccountsStep } from "./bank-accounts/index.js";
 
 export interface CreateEligibilityPackageOptions {
   path: string;
@@ -40,6 +43,9 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       howToAggregateStep,
       regularIncomeStep,
       underEighteenAssetsStep,
+      applicantStep,
+      propertyStep,
+      bankAccountsStep,
     ],
   });
 
