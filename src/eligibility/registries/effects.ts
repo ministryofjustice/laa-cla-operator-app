@@ -74,7 +74,8 @@ const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, Eff
       for (let i = 0; i < steps.length; i++) {
         const currentStep = steps[i];
         const nextStep = steps[i + 1];
-        navigationMap[currentStep] = nextStep;
+        // Convert underscore step codes to hyphen paths for URL routing
+        navigationMap[currentStep] = nextStep ? nextStep.replace(/_/g, "-") : undefined;
       }
 
       context.setData("nav", navigationMap);
@@ -119,7 +120,8 @@ const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, Eff
     for (let i = 0; i < steps.length; i++) {
       const currentStep = steps[i];
       const nextStep = steps[i + 1];
-      navigationMap[currentStep] = nextStep;
+      // Convert underscore step codes to hyphen paths for URL routing
+      navigationMap[currentStep] = nextStep ? nextStep.replace(/_/g, "-") : undefined;
     }
 
     context.setData("nav", navigationMap);
