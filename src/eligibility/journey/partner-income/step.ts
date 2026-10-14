@@ -10,7 +10,7 @@ export const partnerIncomeStep = step({
   title: "Partner income",
   validWhen: [validation({ condition: Post("partner_income").match(Condition.IsRequired()), message: "Enter the partner's monthly income" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [partnerIncomeBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.partner_income") })] } })],
 });

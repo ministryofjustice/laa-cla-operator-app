@@ -12,7 +12,7 @@ export const immigrationOrAsylumTypeUpperTribunalStep = step({
   title: "Immigration or asylum type (upper tribunal)",
   validWhen: [validation({ condition: Post("immigration_or_asylum_type_upper_tribunal").match(Condition.IsRequired()), message: "Select the type of matter" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [immigrationOrAsylumTypeUpperTribunalBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.immigration_or_asylum_type_upper_tribunal") })] } })],
 });
@@ -23,7 +23,7 @@ export const asylumSupportStep = step({
   title: "Asylum support",
   validWhen: [validation({ condition: Post("asylum_support").match(Condition.IsRequired()), message: "Select whether the client is receiving asylum support" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [asylumSupportBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.asylum_support") })] } })],
 });
@@ -34,7 +34,7 @@ export const domesticAbuseApplicantStep = step({
   title: "Domestic abuse",
   validWhen: [validation({ condition: Post("domestic_abuse_applicant").match(Condition.IsRequired()), message: "Select whether this is a domestic abuse case" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [domesticAbuseApplicantBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.domestic_abuse_applicant") })] } })],
 });

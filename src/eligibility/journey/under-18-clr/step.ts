@@ -28,7 +28,7 @@ export const under18ClrStep = step({
       effects: [EligibilityEffects.LoadAnswers()],
     }),
   ],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [under18ClrBlock],
   onSubmission: [
     submit({

@@ -10,7 +10,7 @@ export const immigrationOrAsylumTypeStep = step({
   title: "Immigration or asylum type",
   validWhen: [validation({ condition: Post("immigration_or_asylum_type").match(Condition.IsRequired()), message: "Select the type of immigration or asylum matter" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [immigrationOrAsylumTypeBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.immigration_or_asylum_type") })] } })],
 });

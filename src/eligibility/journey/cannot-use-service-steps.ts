@@ -7,6 +7,6 @@ export const cannotUseServiceStep = step({
   code: CANNOT_USE_SERVICE_STEP_CODE,
   path: "/cannot-use-service",
   title: "Cannot use this service",
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [cannotUseServiceBlock],
 });

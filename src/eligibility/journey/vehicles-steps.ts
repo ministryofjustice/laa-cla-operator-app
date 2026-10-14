@@ -11,7 +11,7 @@ export const vehiclesStep = step({
   title: "Vehicles",
   validWhen: [validation({ condition: Post("vehicles").match(Condition.IsRequired()), message: "Select whether the client owns vehicles" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [vehiclesBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.vehicles") })] } })],
 });
@@ -22,7 +22,7 @@ export const vehicleDetailsStep = step({
   title: "Vehicle details",
   validWhen: [validation({ condition: Post("vehicle_details").match(Condition.IsRequired()), message: "Enter details of the vehicles" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [vehicleDetailsBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.vehicle_details") })] } })],
 });
