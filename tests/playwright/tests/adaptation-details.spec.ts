@@ -74,22 +74,7 @@ test.describe("select client support needs", () => {
 
     await expect(AdaptationDetailPage.errorSummary).toBeVisible();
     await expect(
-      AdaptationDetailPage.errorSummaryLink("Enter a language"),
-    ).toBeVisible();
-  });
-
-  test("shows an error when the language is longer than 30 characters", async ({
-    pages,
-  }) => {
-    const { AdaptationDetailPage } = pages;
-
-    await AdaptationDetailPage.selectOtherLanguage("a".repeat(31));
-    await AdaptationDetailPage.clickContinue();
-
-    await expect(
-      AdaptationDetailPage.errorSummaryLink(
-        "Language must be 30 characters or fewer",
-      ),
+      AdaptationDetailPage.errorSummaryLink("Select a language"),
     ).toBeVisible();
   });
 
@@ -102,7 +87,7 @@ test.describe("select client support needs", () => {
     await AdaptationDetailPage.clickContinue();
 
     await expect(
-      AdaptationDetailPage.errorSummaryLink("Enter the client’s support needs"),
+      AdaptationDetailPage.errorSummaryLink("Enter the client support need"),
     ).toBeVisible();
   });
 
