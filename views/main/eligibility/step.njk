@@ -1,50 +1,48 @@
-{% extends "base.njk" %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
-{% block content %}
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-three-quarters">
-            {% if fieldValidationErrors | length or domainValidationErrors | length %}
-                {% set errorList = [] %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-three-quarters">
+        {% if fieldValidationErrors | length or domainValidationErrors | length %}
+            {% set errorList = [] %}
 
-                {% for error in fieldValidationErrors %}
-                    {% set errorText = error.text or error.message %}
-                    {% set errorHref = error.href or ((error.anchor or error.blockCode) and ("#" + (error.anchor or error.blockCode))) %}
+            {% for error in fieldValidationErrors %}
+                {% set errorText = error.text or error.message %}
+                {% set errorHref = error.href or ((error.anchor or error.blockCode) and ("#" + (error.anchor or error.blockCode))) %}
 
-                    {% if errorHref %}
-                        {% set errorList = (errorList.push({
-                            text: errorText,
-                            href: errorHref
-                        }), errorList) %}
-                    {% else %}
-                        {% set errorList = (errorList.push({
-                            text: errorText
-                        }), errorList) %}
-                    {% endif %}
-                {% endfor %}
-
-                {% for error in domainValidationErrors %}
+                {% if errorHref %}
                     {% set errorList = (errorList.push({
-                        text: error.message,
-                        href: "#" + error.anchor
+                        text: errorText,
+                        href: errorHref
                     }), errorList) %}
-                {% endfor %}
+                {% else %}
+                    {% set errorList = (errorList.push({
+                        text: errorText
+                    }), errorList) %}
+                {% endif %}
+            {% endfor %}
 
-                {{ govukErrorSummary({
-                    titleText: "There is a problem",
-                    errorList: errorList
-                }) }}
-            {% endif %}
+            {% for error in domainValidationErrors %}
+                {% set errorList = (errorList.push({
+                    text: error.message,
+                    href: "#" + error.anchor
+                }), errorList) %}
+            {% endfor %}
 
-            <h1 class="govuk-heading-xl">{{ step.title }}</h1>
+            {{ govukErrorSummary({
+                titleText: "There is a problem",
+                errorList: errorList
+            }) }}
+        {% endif %}
 
-            <form method="post" novalidate>
-                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <h1 class="govuk-heading-xl">{{ step.title }}</h1>
 
-                {% for block in blocks %}
-                    {{ block | safe }}
-                {% endfor %}
-            </form>
-        </div>
+        <form method="post" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+            {% for block in blocks %}
+                {{ block | safe }}
+            {% endfor %}
+        </form>
     </div>
-{% endblock %}
+</div>
+
