@@ -37,14 +37,6 @@ const escapeHtml = (value: string): string =>
     .replace(/>/gu, "&gt;")
     .replace(/"/gu, "&quot;");
 
-/**
- * Builds the condition that checks the current answer is one of the allowed languages.
- *
- * @returns {boolean} A condition that matches only values in `allowedLanguages`.
- */
-const languageIsAllowed = (): ReturnType<ReturnType<typeof Self>["match"]> =>
-  Self().match(Condition.Equals(allowedLanguages));
-
 export const adaptationDetailsNeed = CollectionBlock({
   collection: [
     GovUKBody({
@@ -84,21 +76,12 @@ export const adaptationDetailsNeed = CollectionBlock({
             ),
             validWhen: [
               validation({
-                condition: languageIsAllowed(),
+                condition: Self().match(Condition.IsRequired()),
                 message: "Select a language",
               }),
             ],
           }),
         },
-      ],
-      validWhen: [
-        validation({
-          condition: or(
-            Self().not.match(Condition.Array.Contains("welsh")),
-            Self().not.match(Condition.Array.Contains("otherLanguage")),
-          ),
-          message: "Select only one language option",
-        }),
       ],
     }),
 

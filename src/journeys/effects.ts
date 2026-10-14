@@ -70,7 +70,6 @@ export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
   SetAgentName: () => EffectFunctionExpr;
-  /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress: () => EffectFunctionExpr;
   SearchCases: () => EffectFunctionExpr;
@@ -163,8 +162,12 @@ export const InboundCallEffectsImplementation: Record<
         adoptionBody,
       );
       context.setData("adaptationDetailsSaved", true);
-    } catch (error) {
+    } catch {
       context.setData("adaptationDetailsSaved", false);
+    }
+  },
+
+  /**
    * Store the signed-in agent name in step data for UI rendering.
    * @param {Deps} _deps - Unused dependencies parameter required by effect signature.
    * @returns {(context: InboundCallContext) => Promise<void>} Effect function bound to dependencies.
@@ -198,7 +201,7 @@ export const InboundCallEffectsImplementation: Record<
         address,
       );
       context.setData("addressSaved", true);
-    } catch (error) {
+    } catch {
       context.setData("addressSaved", false);
     }
   },
@@ -336,6 +339,7 @@ export const InboundCallEffectsImplementation: Record<
       }
     }
   },
+
   /**
    * Implementation of the effect for saving form data to session
    * @param {Deps} deps - The dependencies required for the effect.
@@ -388,6 +392,7 @@ export const InboundCallEffects: InboundCallEffectShape = {
   AdaptationEffects: InboundCallEffectsRegistry.register(
     "AdaptationEffects",
     InboundCallEffectsImplementation.AdaptationEffects,
+  ),
   SetAgentName: InboundCallEffectsRegistry.register(
     "SetAgentName",
     InboundCallEffectsImplementation.SetAgentName,
