@@ -143,7 +143,7 @@ export const adaptationDetailsNeed = CollectionBlock({
             validWhen: [
               validation({
                 condition: Self().match(Condition.IsRequired()),
-                message: "Enter the client’s support need",
+                message: "Enter the client support need",
               }),
             ],
           }),
