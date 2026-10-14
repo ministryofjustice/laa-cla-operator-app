@@ -1,5 +1,7 @@
+{% extends "base.njk" %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
+{% block content %}
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-three-quarters">
         {% if fieldValidationErrors | length or domainValidationErrors | length %}
@@ -45,4 +47,5 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
