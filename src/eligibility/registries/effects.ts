@@ -4,6 +4,7 @@ import {
   type EffectFunctionExpr,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { EligibilityDeps } from "../ports/index.js";
+import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import { stepsFor, relevantAnswers, cannotUseService } from "../domain/navigation.js";
 import type { Answers } from "../domain/logic.js";
 
@@ -32,8 +33,8 @@ const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, Eff
     if (Object.keys(answers).length === 0 && deps.caseApi) {
       try {
         // Get the axios middleware from the request (Forge provides this in context)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Forge context type is not fully typed
-        const axiosMiddleware = (context as any).axiosMiddleware;
+        const forgeContext = context as EffectFunctionContext & { axiosMiddleware?: AxiosInstanceWrapper };
+        const axiosMiddleware = forgeContext.axiosMiddleware;
         if (axiosMiddleware) {
           const caseData = await deps.caseApi.loadCase(axiosMiddleware, String(checkId));
           if (caseData.date_of_birth) {

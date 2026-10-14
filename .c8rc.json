@@ -29,6 +29,7 @@
     "src/eligibility/journey/**",
     "src/eligibility/adapters/**",
     "src/eligibility/registries/**",
+    "src/eligibility/tests/**",
     "src/services/exampleApiService.ts",
     "src/middlewares/personSchema.ts",
     "utils/displayAsciiBanner.ts",
