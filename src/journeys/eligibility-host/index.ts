@@ -11,6 +11,5 @@ export function createEligibilityJourneyPackage() {
     onAccess: [],
     checkId: Params("caseId"),
     onComplete: Format("/case/%1", Params("caseId")),
-    template: { layout: "layouts/operator.njk" },
   });
 }
