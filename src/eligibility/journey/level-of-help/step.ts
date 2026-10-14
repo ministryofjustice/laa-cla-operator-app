@@ -5,7 +5,6 @@ import {
   redirect,
   Data,
   validation,
-  Answer,
   Condition,
   Post,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
