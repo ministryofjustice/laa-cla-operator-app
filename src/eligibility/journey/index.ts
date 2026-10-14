@@ -50,7 +50,7 @@ export interface CreateEligibilityPackageOptions {
 }
 
 export function createEligibilityPackage(options: CreateEligibilityPackageOptions) {
-  const eligibilityJourney = journey({
+  const journeyConfig: Record<string, unknown> = {
     code: "eligibility",
     title: "Financial Eligibility Check",
     path: options.path,
@@ -59,7 +59,6 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
         effects: [EligibilityEffects.LoadAnswers()],
       }),
     ],
-    view: options.template ? { template: options.template.layout } : undefined,
     steps: [
       levelOfHelpStep,
       under18ClrStep,
@@ -101,7 +100,14 @@ export function createEligibilityPackage(options: CreateEligibilityPackageOption
       cannotUseServiceStep,
       checkYourAnswersStep,
     ],
-  });
+  };
+
+  // Only add view if template is provided
+  if (options.template) {
+    journeyConfig.view = { template: options.template.layout };
+  }
+
+  const eligibilityJourney = journey(journeyConfig);
 
   return createForgePackage<EligibilityDeps>({
     journey: eligibilityJourney,
