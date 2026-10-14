@@ -8,8 +8,8 @@ export interface CfeResult {
 }
 
 export interface Assessor {
-  assess(payload: unknown): Promise<CfeResult>;
-  stateBenefitTypes(): Promise<StateBenefitType[]>;
+  assess: (payload: unknown) => Promise<CfeResult>;
+  stateBenefitTypes: () => Promise<StateBenefitType[]>;
 }
 
 export interface StateBenefitType {
