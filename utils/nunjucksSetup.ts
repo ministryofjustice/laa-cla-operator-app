@@ -40,6 +40,7 @@ export const nunjucksSetup = (app: Application): nunjucks.Environment => {
       "node_modules/govuk-frontend/dist", // GOV.UK Frontend templates
       "node_modules/govuk-frontend/dist/components/", // GOV.UK components
       "node_modules/@ministryofjustice/frontend", // MoJ Design System components
+      "node_modules/@ministryofjustice/hmpps-forge/dist/moj-components", // MoJ Forge components
     ],
     {
       autoescape: true, // Enable auto escaping to prevent XSS attacks
