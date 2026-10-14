@@ -8,6 +8,11 @@ export interface EligibilityConditionShape {
 }
 
 const EligibilityConditionsImplementation = {
+  /**
+   * Checks if a step is relevant based on current answers.
+   * @param stepCode - The step code to check
+   * @returns A function that evaluates step relevance
+   */
   StepIsRelevant: (stepCode: string) => (_deps: EligibilityDeps) => (answers: Answers): boolean => {
     const relevantSteps = stepsFor(answers);
     return relevantSteps.includes(stepCode);
@@ -17,6 +22,11 @@ const EligibilityConditionsImplementation = {
 export const EligibilityConditionsRegistry = new ConditionRegistry<EligibilityDeps>();
 
 export const EligibilityConditions: EligibilityConditionShape = {
+  /**
+   * Registers a condition to check if a step is relevant.
+   * @param stepCode - The step code to check
+   * @returns The registered condition
+   */
   StepIsRelevant: (stepCode: string) =>
     EligibilityConditionsRegistry.register(
       `StepIsRelevant_${stepCode}`,
