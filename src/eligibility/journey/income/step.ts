@@ -28,7 +28,7 @@ export const incomeStep = step({
       effects: [EligibilityEffects.LoadAnswers()],
     }),
   ],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [incomeBlock],
   onSubmission: [
     submit({

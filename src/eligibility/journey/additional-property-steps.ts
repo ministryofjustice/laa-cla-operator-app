@@ -11,7 +11,7 @@ export const additionalPropertyStep = step({
   title: "Additional properties",
   validWhen: [validation({ condition: Post("additional_property").match(Condition.IsRequired()), message: "Select whether the client owns additional properties" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [additionalPropertyBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.additional_property") })] } })],
 });
@@ -22,7 +22,7 @@ export const additionalPropertyDetailsStep = step({
   title: "Additional property details",
   validWhen: [validation({ condition: Post("additional_property_details").match(Condition.IsRequired()), message: "Enter details of the additional properties" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [additionalPropertyDetailsBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.additional_property_details") })] } })],
 });

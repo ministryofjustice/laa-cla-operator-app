@@ -10,7 +10,7 @@ export const partnerBenefitsStep = step({
   title: "Partner benefits",
   validWhen: [validation({ condition: Post("partner_benefits").match(Condition.IsRequired()), message: "Select whether the partner receives benefits" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [partnerBenefitsBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.partner_benefits") })] } })],
 });

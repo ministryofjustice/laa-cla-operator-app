@@ -10,7 +10,7 @@ export const partnerEmploymentStatusStep = step({
   title: "Partner employment status",
   validWhen: [validation({ condition: Post("partner_employment_status").match(Condition.IsRequired()), message: "Select the partner's employment status" })],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [partnerEmploymentStatusBlock],
   onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.partner_employment_status") })] } })],
 });

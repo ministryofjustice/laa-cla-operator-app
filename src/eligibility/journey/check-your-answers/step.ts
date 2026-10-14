@@ -21,7 +21,7 @@ export const checkYourAnswersStep = step({
       effects: [EligibilityEffects.LoadAnswers()],
     }),
   ],
-  view: { template: "eligibility/step.njk" },
+  view: { template: "main/eligibility/step.njk" },
   blocks: [
     checkYourAnswersHeadingBlock,
     checkYourAnswersSummaryBlock,
