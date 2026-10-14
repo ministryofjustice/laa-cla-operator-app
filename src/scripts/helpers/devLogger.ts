@@ -41,6 +41,7 @@ export function devError(message: string): void {
   if (
     process.env.NODE_ENV === "development" ||
     process.env.NODE_ENV === "test" ||
+    process.env.NODE_ENV === "uat" ||
     process.env.NODE_ENV === undefined
   ) {
     console.error(message);

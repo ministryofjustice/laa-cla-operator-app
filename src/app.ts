@@ -195,7 +195,36 @@ const createApp = async (): Promise<express.Application> => {
   };
 
   app.use(express.urlencoded({ extended: true }));
-  app.use("/", createExpressRouter(forge, { nunjucksEnv }));
+
+  // Wrap Forge router with error catching middleware
+  let forgeRouter: any;
+  try {
+    console.error("[Forge] Creating Forge Express router...");
+    forgeRouter = createExpressRouter(forge, { nunjucksEnv });
+    console.error("[Forge] Forge Express router created successfully");
+  } catch (error) {
+    console.error(`[Forge] Error creating router: ${error instanceof Error ? error.stack : String(error)}`);
+    throw error;
+  }
+
+  app.use((req, res, next) => {
+    try {
+      console.error(`[Forge] Processing request: ${req.method} ${req.path}`);
+      next();
+    } catch (error) {
+      console.error(`[Forge] Request error: ${error instanceof Error ? error.stack : String(error)}`);
+      next(error);
+    }
+  });
+
+  app.use("/", forgeRouter);
+
+  // Catch any errors from Forge router
+  app.use((error: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(`[Forge] Error handler caught: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`[Forge] Full error: ${error instanceof Error ? error.stack : String(error)}`);
+    next(error);
+  });
 
   // Register last to catch errors from routes, controllers, and services.
   setupGlobalErrorHandler(app);

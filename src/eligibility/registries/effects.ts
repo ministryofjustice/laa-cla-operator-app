@@ -20,54 +20,70 @@ type EffectImplementation = (
 
 const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, EffectImplementation> = {
   LoadAnswers: (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
-    const checkId = context.getRequestParam("caseId");
-    const answerStore = deps.answerStore;
+    try {
+      console.error("[LoadAnswers] Starting LoadAnswers effect");
+      const checkId = context.getRequestParam("caseId");
+      console.error(`[LoadAnswers] checkId: ${checkId}`);
+      const answerStore = deps.answerStore;
+      console.error(`[LoadAnswers] answerStore available: ${!!answerStore}`);
 
-    if (!answerStore) {
-      throw new Error("answerStore not provided to eligibility package");
-    }
+      if (!answerStore) {
+        throw new Error("answerStore not provided to eligibility package");
+      }
 
-    let answers = await answerStore.load(checkId);
+      let answers = await answerStore.load(checkId);
+      console.error(`[LoadAnswers] answers loaded: ${JSON.stringify(answers)}`);
 
-    // On first access, preload date_of_birth from case data
-    if (Object.keys(answers).length === 0 && deps.caseApi) {
-      try {
-        // Get the axios middleware from the request (Forge provides this in context)
-        const forgeContext = context as EffectFunctionContext & { axiosMiddleware?: AxiosInstanceWrapper };
-        const axiosMiddleware = forgeContext.axiosMiddleware;
-        if (axiosMiddleware) {
-          const caseData = await deps.caseApi.loadCase(axiosMiddleware, String(checkId));
-          if (caseData.date_of_birth) {
-            answers.date_of_birth = caseData.date_of_birth;
-            // Save the preloaded DOB to session
-            await answerStore.save(checkId, { date_of_birth: caseData.date_of_birth });
+      // On first access, preload date_of_birth from case data
+      if (Object.keys(answers).length === 0 && deps.caseApi) {
+        try {
+          console.error("[LoadAnswers] Attempting to preload DOB from case data");
+          // Get the axios middleware from the request (Forge provides this in context)
+          const forgeContext = context as EffectFunctionContext & { axiosMiddleware?: AxiosInstanceWrapper };
+          const axiosMiddleware = forgeContext.axiosMiddleware;
+          console.error(`[LoadAnswers] axiosMiddleware available: ${!!axiosMiddleware}`);
+          if (axiosMiddleware) {
+            const caseData = await deps.caseApi.loadCase(axiosMiddleware, String(checkId));
+            console.error(`[LoadAnswers] caseData loaded: ${JSON.stringify(caseData)}`);
+            if (caseData.date_of_birth) {
+              answers.date_of_birth = caseData.date_of_birth;
+              // Save the preloaded DOB to session
+              await answerStore.save(checkId, { date_of_birth: caseData.date_of_birth });
+              console.error("[LoadAnswers] DOB preloaded and saved");
+            }
           }
+        } catch (error) {
+          // Log but don't fail - DOB can be entered manually if fetch fails
+          console.warn(`Failed to preload DOB from case: ${error instanceof Error ? error.message : String(error)}`);
         }
-      } catch (error) {
-        // Log but don't fail - DOB can be entered manually if fetch fails
-        console.warn(`Failed to preload DOB from case: ${error instanceof Error ? error.message : String(error)}`);
       }
-    }
 
-    // Set each answer in Forge
-    for (const [key, value] of Object.entries(answers)) {
-      if (value !== undefined && value !== null) {
-        context.setAnswer(key, value);
+      console.error("[LoadAnswers] Setting answers in Forge");
+      // Set each answer in Forge
+      for (const [key, value] of Object.entries(answers)) {
+        if (value !== undefined && value !== null) {
+          context.setAnswer(key, value);
+        }
       }
+
+      console.error("[LoadAnswers] Computing navigation");
+      // Compute navigation
+      const steps = stepsFor(answers);
+      const navigationMap: Record<string, string | undefined> = {};
+
+      for (let i = 0; i < steps.length; i++) {
+        const currentStep = steps[i];
+        const nextStep = steps[i + 1];
+        navigationMap[currentStep] = nextStep;
+      }
+
+      context.setData("nav", navigationMap);
+      context.setData("steps", steps);
+      console.error("[LoadAnswers] LoadAnswers effect completed successfully");
+    } catch (error) {
+      console.error(`[LoadAnswers] FATAL ERROR: ${error instanceof Error ? error.stack : String(error)}`);
+      throw error;
     }
-
-    // Compute navigation
-    const steps = stepsFor(answers);
-    const navigationMap: Record<string, string | undefined> = {};
-
-    for (let i = 0; i < steps.length; i++) {
-      const currentStep = steps[i];
-      const nextStep = steps[i + 1];
-      navigationMap[currentStep] = nextStep;
-    }
-
-    context.setData("nav", navigationMap);
-    context.setData("steps", steps);
   },
 
   SaveAnswers: (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
