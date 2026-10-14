@@ -1,15 +1,3 @@
-export interface SilasSessionAuth {
-  accessToken: string;
-  idToken?: string;
-  expiresAt: number;
-  oboAccessToken?: string;
-  oboExpiresAt?: number;
-  refreshToken?: string;
-  scopes?: string[];
-  email: string;
-  name: string;
-}
-
 export interface SilasUserInfo {
   email: string;
   name: string;

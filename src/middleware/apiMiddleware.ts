@@ -11,7 +11,6 @@
 import { create } from "middleware-axios";
 import type { Request, Response, NextFunction } from "express";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
-import type { SilasSessionAuth } from "#types/auth-types.js";
 import {
   addLoggingInterceptors,
   addAuthServiceInterceptors,
@@ -21,8 +20,6 @@ import {
 import { devInfo } from "#src/scripts/helpers/devLogger.js";
 import { destroySession } from "#src/helpers/session.js";
 import { SilasService } from "#src/services/api/silasService.js";
-import config from "#config.js";
-import session from "#node_modules/@types/express-session/index.js";
 import { EMPTY_LENGTH } from "#src/constants.js";
 
 const DEFAULT_TIMEOUT = 5000;
@@ -86,7 +83,7 @@ declare global {
  */
 export function createApiMiddleware(
   config: ApiMiddlewareConfig = {},
-): (req: Request, res: Response, next: NextFunction) => void {
+): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   const {
     timeout = DEFAULT_TIMEOUT,
     defaultHeaders = {},
@@ -127,27 +124,44 @@ export function createApiMiddleware(
     }
 
     if (useSessionSilasAuth) {
-      const { homeAccountId } = req.session.account ?? {};
-      if (homeAccountId) {
-        const accessToken = await SilasService.factory(
-          req.session.id,
-        ).acquireDownstreamAccessToken(homeAccountId);
-        if (accessToken.length > EMPTY_LENGTH) {
-          addSessionSilasTokenInterceptor(
-            axiosWrapper,
-            accessToken,
-            enableLogging,
-          );
-        }
+      const accessToken = await getAccessToken(req)
+      if (accessToken !== null && accessToken.length > EMPTY_LENGTH) {
+        addSessionSilasTokenInterceptor(
+          axiosWrapper,
+          accessToken,
+          enableLogging,
+        );
       }
     }
 
+    // eslint-disable-next-line require-atomic-updates -- Express req is request-scoped
     req.axiosMiddleware = axiosWrapper;
+    // eslint-disable-next-line require-atomic-updates -- Express req is request-scoped
     req.state = { authenticatedAxios: axiosWrapper };
 
     next();
   };
 }
+
+/**
+ * Get access token
+ * @param {Request} req - The express request
+ * @returns {string | null} - The access token or null
+ */
+async function getAccessToken(req: Request): Promise<string | null> {
+  const { homeAccountId } = req.session.account ?? {};
+  if (homeAccountId !== undefined) {
+    const accessToken = await SilasService.factory(
+      req.session.id,
+    ).acquireDownstreamAccessToken(homeAccountId);
+    if (accessToken.length > EMPTY_LENGTH) {
+      return accessToken
+    }
+  }
+  return null
+}
+
+
 
 /**
  * Authentication middleware that checks whether the user is logged in.
@@ -165,17 +179,10 @@ export async function requireAuth(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const AUTH_EXEMPT_PATHS = [
-    /\/login/,
-    /\/redirect/,
-    /\/sign-in/,
-    /\/privacy/,
-    /\/cookies/,
-    /^\/js/,
-    /^\/cs/,
-  ];
-  if (AUTH_EXEMPT_PATHS.some((pattern) => pattern.test(req.path))) {
-    return next();
+  
+  if (pathNeedsAuth(req.path)) {
+    next();
+    return;
   }
 
   const MS_PER_SECOND = 1000;
@@ -188,7 +195,7 @@ export async function requireAuth(
   devInfo("requireAuth(): Checking user auth");
 
   // Does the user have a valid auth token?
-  if (!homeAccountId || !idToken) {
+  if (homeAccountId === undefined || idToken === undefined) {
     devInfo("requireAuth(): No auth token");
     await destroySession(req);
     res.redirect("/sign-in");
@@ -199,22 +206,52 @@ export async function requireAuth(
   if (exp === undefined || exp <= NOW) {
     devInfo("requireAuth(): User auth expired, attempting refresh");
     try {
-      const result = await SilasService.factory(session.id).refreshToken(
-        homeAccountId,
-      );
-      if (result.account === null) {
-        throw new Error("requireAuth(): Could not find account");
-      }
-      session.account = result.account;
+      await refreshToken(req, homeAccountId)
     } catch (err) {
       await destroySession(req);
-      return res.redirect("/sign-in");
+      res.redirect("/sign-in");
+      return;
     }
   }
 
   next();
 }
 
+/**
+ * Refreshes the token
+ * @param {Request} req - The express request
+ * @param {string} homeAccountId - The home account id
+ */
+async function refreshToken(req: Request, homeAccountId: string): Promise<void> {
+  const {session} = req
+  const result = await SilasService.factory(session.id).acquireTokenSilent(
+    homeAccountId,
+  );
+  if (result.account === null) {
+    throw new Error("requireAuth(): Could not find account");
+  }
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access much clearer
+  session.account = result.account
+}
+
+
+/**
+ * Check if path needs authentication
+ * @param {string} path - The path to check
+ * @returns {boolean} - Returns true if path needs authentication
+ */
+function pathNeedsAuth(path: string): boolean {
+  const AUTH_EXEMPT_PATHS = [
+    /\/login/u,
+    /\/redirect/u,
+    /\/sign-in/u,
+    /\/privacy/u,
+    /\/cookies/u,
+    /^\/js/u,
+    /^\/cs/u,
+  ];
+  return AUTH_EXEMPT_PATHS.some((pattern) => pattern.test(path))
+}
 /**
  * Default API middleware using the standard configuration.
  *

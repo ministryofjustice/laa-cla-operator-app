@@ -1,4 +1,4 @@
-import { createClient, RedisClientType } from "redis";
+import { createClient, type RedisClientType } from "redis";
 import chalk from "chalk";
 import type { RedisConfig } from "#types/config-types.js";
 import { devError, devLog } from "#src/scripts/helpers/index.js";

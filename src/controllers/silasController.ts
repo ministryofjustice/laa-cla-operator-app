@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { ConfidentialClientApplication } from "@azure/msal-node";
+import type { ConfidentialClientApplication } from "@azure/msal-node";
 import type { Request, Response } from "express";
 
 import config from "#config.js";
@@ -10,17 +10,11 @@ import {
   regenerateSession,
   saveSession,
 } from "#src/helpers/session.js";
+import { EMPTY_LENGTH } from "#src/constants.js";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
-const DEFAULT_SESSION_MINUTES = 30;
-const MILLISECONDS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
 const INTERNAL_SERVER_ERROR = 500;
-const EMPTY_LENGTH = 0;
-
-const TOKEN_EXPIRY_OFFSET_MS =
-  DEFAULT_SESSION_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 /**
  * Get a querystring as a string
@@ -110,7 +104,7 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
   if (userRedirected) {
     return;
   }
-  const authUrl = await SilasService.factory().getAuthUrl(req);
+  const authUrl = await SilasService.factory().getAuthCodeUrl(req);
 
   res.redirect(authUrl);
 }
@@ -205,18 +199,16 @@ export async function callbackAction(
   await regenerateSession(req);
   try {
     const service = SilasService.factory(req.session.id);
-    const response = await service.exchangeAuthCode(code);
+    const response = await service.acquireTokenByCode(code);
     console.log(response);
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;
     }
 
-    const claims = await service.decodeToken(response.accessToken);
-    service.validateAccessTokenScopes(claims);
-
     const { session } = req;
     session.auth_nonce = undefined;
+    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access much clearer
     session.account = response.account;
     session.isAuthenticated = true;
 
