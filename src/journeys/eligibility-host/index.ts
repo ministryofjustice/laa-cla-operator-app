@@ -1,6 +1,5 @@
 import { createEligibilityPackage } from "#src/eligibility/index.js";
 import { Params, Format } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { requireSilasAuth } from "../auth.js";
 
 /**
  * Create the eligibility journey package for mounting under /case/:caseId/eligibility
@@ -9,7 +8,7 @@ import { requireSilasAuth } from "../auth.js";
 export function createEligibilityJourneyPackage() {
   return createEligibilityPackage({
     path: "/case/:caseId/eligibility",
-    onAccess: [requireSilasAuth],
+    onAccess: [],
     checkId: Params("caseId"),
     onComplete: Format("/case/%1", Params("caseId")),
     template: { layout: "layouts/operator.njk" },
