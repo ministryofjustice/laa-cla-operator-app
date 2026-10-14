@@ -197,32 +197,32 @@ const createApp = async (): Promise<express.Application> => {
   app.use(express.urlencoded({ extended: true }));
 
   // Wrap Forge router with error catching middleware
+  let forgeRouter: any;
+  try {
+    console.error("[Forge] Creating Forge Express router...");
+    forgeRouter = createExpressRouter(forge, { nunjucksEnv });
+    console.error("[Forge] Forge Express router created successfully");
+  } catch (error) {
+    console.error(`[Forge] Error creating router: ${error instanceof Error ? error.stack : String(error)}`);
+    throw error;
+  }
+
   app.use((req, res, next) => {
     try {
-      // Create a wrapped response to catch errors
-      const originalRender = res.render;
-      res.render = function(view: string, options?: Record<string, unknown>, callback?: (err: Error | null, html?: string) => void) {
-        console.error(`[ForgeRouter] Rendering view: ${view}`);
-        return originalRender.call(this, view, options, (err: Error | null, html?: string) => {
-          if (err) {
-            console.error(`[ForgeRouter] Render error for view ${view}: ${err.message}`);
-            console.error(`[ForgeRouter] Stack: ${err.stack}`);
-          }
-          if (callback) callback(err, html);
-        });
-      };
+      console.error(`[Forge] Processing request: ${req.method} ${req.path}`);
       next();
     } catch (error) {
-      console.error(`[ForgeRouter] Middleware error: ${error instanceof Error ? error.stack : String(error)}`);
+      console.error(`[Forge] Request error: ${error instanceof Error ? error.stack : String(error)}`);
       next(error);
     }
   });
 
-  app.use("/", createExpressRouter(forge, { nunjucksEnv }));
+  app.use("/", forgeRouter);
 
   // Catch any errors from Forge router
   app.use((error: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(`[ForgeRouter] Error caught by middleware: ${error instanceof Error ? error.stack : String(error)}`);
+    console.error(`[Forge] Error handler caught: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`[Forge] Full error: ${error instanceof Error ? error.stack : String(error)}`);
     next(error);
   });
 
