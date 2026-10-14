@@ -50,7 +50,8 @@ export interface CreateEligibilityPackageOptions {
 }
 
 export function createEligibilityPackage(options: CreateEligibilityPackageOptions) {
-  const journeyConfig: Record<string, unknown> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic config building requires flexible typing
+  const journeyConfig: any = {
     code: "eligibility",
     title: "Financial Eligibility Check",
     path: options.path,
