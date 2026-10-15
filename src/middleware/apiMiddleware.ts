@@ -97,6 +97,10 @@ export function createApiMiddleware(
     _res: Response,
     next: NextFunction,
   ): Promise<void> => {
+    if (!pathNeedsAuth(req.path)) {
+      next();
+      return;
+    }
     /**
      * Create an Axios instance using the configured defaults.
      */
@@ -224,7 +228,6 @@ async function refreshToken(
   homeAccountId: string,
 ): Promise<void> {
   const { session } = req;
-  console.log("REFRESH TOKEN CALLED");
   const result = await SilasService.factory(session.id).acquireTokenSilent(
     homeAccountId,
   );

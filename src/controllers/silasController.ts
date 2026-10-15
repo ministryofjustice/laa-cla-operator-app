@@ -84,7 +84,6 @@ export async function processUATRedirect(
       req.query as Record<string, string>,
     ).toString();
     const redirect = `${req.session.return_to}?${queryString}`;
-    console.log("Redirect is ", redirect);
     res.redirect(redirect);
     return true;
   }

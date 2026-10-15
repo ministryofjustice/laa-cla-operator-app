@@ -118,9 +118,7 @@ export class SilasService {
    * @returns {SilasService} - An instance of this service
    */
   static factory(sessionId?: string): SilasService {
-    console.log("I should not be here");
     if (sessionId !== undefined && config.redis.enabled) {
-      console.log(`factory called with sesssionId: ${sessionId}`);
       const redisClient = createRedisClient(config.redis);
       const cachePlugin = new RedisCachePlugin(
         redisClient,
@@ -198,7 +196,6 @@ export class SilasService {
   async acquireTokenSilent(
     homeAccountId: string,
   ): Promise<AuthenticationResult> {
-    console.log("I SHOULD NOT BE HERE");
     if (homeAccountId.trim().length === EMPTY_LENGTH) {
       throw new Error(
         "The authenticated session has no MSAL account reference",

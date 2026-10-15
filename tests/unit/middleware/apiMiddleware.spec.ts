@@ -2,7 +2,6 @@ import { strict as assert } from "assert";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import type { Request, Response, NextFunction } from "express";
-import esmock from "esmock";
 import sinon from "sinon";
 import {
   requireAuth,
@@ -15,13 +14,6 @@ import { MS_PER_SECOND } from "#src/constants.js";
 
 describe("axiosMiddleware", async () => {
   let sandbox = sinon.createSandbox();
-  const addSessionSilasTokenInterceptorStub = sinon.stub();
-  // const {axiosMiddleware, createApiMiddleware} = await esmock("#src/middleware/apiMiddleware.js", {
-  //   "./apiInterceptors.js": {
-  //     "addSessionSilasTokenInterceptor": addSessionSilasTokenInterceptorStub
-  //   }
-  // })
-
   beforeEach(() => {
     const acquireDownstreamAccessTokenStub = sandbox
       .stub()
