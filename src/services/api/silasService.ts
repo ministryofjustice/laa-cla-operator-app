@@ -120,14 +120,23 @@ export class SilasService {
   static factory(sessionId?: string): SilasService {
     if (sessionId !== undefined && config.redis.enabled) {
       const redisClient = createRedisClient(config.redis);
-      const cachePlugin = new RedisCachePlugin(
-        redisClient,
-        sessionId,
-        config.redis.maxAge,
-      );
+      const cachePlugin = this.createRedisCachePlugin(redisClient, sessionId);
       return new SilasService(config.silas, cachePlugin);
     }
     return new SilasService(config.silas);
+  }
+
+  /**
+   * Create redis cache plugin
+   * @param {RedisClientType} redisClient -- Redis client
+   * @param {string} sessionId -- the sesssion id
+   * @returns {RedisCachePlugin} an instance of RedisCachePlugin
+   */
+  static createRedisCachePlugin(
+    redisClient: RedisClientType,
+    sessionId: string,
+  ): RedisCachePlugin {
+    return new RedisCachePlugin(redisClient, sessionId, config.redis.maxAge);
   }
 
   /**
@@ -139,12 +148,20 @@ export class SilasService {
     // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
     let authNonce = req.session.auth_nonce;
     if (authNonce === undefined) {
-      authNonce = randomBytes(NONCE_BYTES).toString("base64url");
+      authNonce = this.generateNonce();
       req.session.auth_nonce = authNonce;
       await saveSession(req);
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- nonce will be a string
     return authNonce as string;
+  }
+
+  /**
+   * Generate a nonce
+   * @returns {string} - Generated nonce
+   */
+  private generateNonce(): string {
+    return randomBytes(NONCE_BYTES).toString("base64url");
   }
 
   /**
@@ -217,4 +234,5 @@ export class SilasService {
       throw new Error("Could not refresh token", { cause: err });
     }
   }
+  /* c8 ignore next */
 }
