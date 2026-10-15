@@ -253,15 +253,17 @@ async function refreshToken(
  */
 function isAuthExemptPath(path: string): boolean {
   const AUTH_EXEMPT_PATHS = [
-    /\/login/u,
-    /\/redirect/u,
-    /\/sign-in/u,
-    /^\/test-auth\/login/u,
-    /\/privacy/u,
-    /\/cookies/u,
-    /^\/js/u,
-    /^\/cs/u,
+    /^\/login$/u,
+    /^\/redirect$/u,
+    /^\/sign-in$/u,
+    /^\/privacy$/u,
+    /^\/cookies$/u,
+    /^\/js\//u,
+    /^\/cs\//u,
   ];
+  if (process.env.NODE_ENV === "test") {
+    AUTH_EXEMPT_PATHS.push(/^\/test-auth\/login$/u);
+  }
   return AUTH_EXEMPT_PATHS.some((pattern) => pattern.test(path));
 }
 /**
