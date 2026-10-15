@@ -97,10 +97,11 @@ export function createApiMiddleware(
     _res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    if (!pathNeedsAuth(req.path)) {
+    if (isAuthExemptPath(req.path)) {
       next();
       return;
     }
+
     /**
      * Create an Axios instance using the configured defaults.
      */
@@ -153,6 +154,13 @@ export function createApiMiddleware(
  * @returns {string | null} - The access token or null
  */
 async function getAccessToken(req: Request): Promise<string | null> {
+  if (
+    process.env.NODE_ENV === "test" &&
+    req.session.accessToken !== undefined
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- only used during testing so cannot add to session interface
+    return req.session.accessToken as string;
+  }
   const { homeAccountId } = req.session.account ?? {};
   if (homeAccountId !== undefined) {
     const accessToken = await SilasService.factory(
@@ -181,7 +189,7 @@ export async function requireAuth(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  if (pathNeedsAuth(req.path)) {
+  if (isAuthExemptPath(req.path)) {
     next();
     return;
   }
@@ -243,11 +251,12 @@ async function refreshToken(
  * @param {string} path - The path to check
  * @returns {boolean} - Returns true if path needs authentication
  */
-function pathNeedsAuth(path: string): boolean {
+function isAuthExemptPath(path: string): boolean {
   const AUTH_EXEMPT_PATHS = [
     /\/login/u,
     /\/redirect/u,
     /\/sign-in/u,
+    /^\/test-auth\/login/u,
     /\/privacy/u,
     /\/cookies/u,
     /^\/js/u,
