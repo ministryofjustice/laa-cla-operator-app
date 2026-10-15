@@ -10,11 +10,10 @@ import {
   regenerateSession,
   saveSession,
 } from "#src/helpers/session.js";
-import { EMPTY_LENGTH } from "#src/constants.js";
+import { EMPTY_LENGTH, INTERNAL_SERVER_ERROR } from "#src/constants.js";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
-const INTERNAL_SERVER_ERROR = 500;
 
 /**
  * Get a querystring as a string
@@ -200,7 +199,6 @@ export async function callbackAction(
   try {
     const service = SilasService.factory(req.session.id);
     const response = await service.acquireTokenByCode(code);
-    console.log(response);
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;

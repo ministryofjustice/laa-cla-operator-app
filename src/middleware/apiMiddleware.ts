@@ -124,7 +124,7 @@ export function createApiMiddleware(
     }
 
     if (useSessionSilasAuth) {
-      const accessToken = await getAccessToken(req)
+      const accessToken = await getAccessToken(req);
       if (accessToken !== null && accessToken.length > EMPTY_LENGTH) {
         addSessionSilasTokenInterceptor(
           axiosWrapper,
@@ -155,13 +155,11 @@ async function getAccessToken(req: Request): Promise<string | null> {
       req.session.id,
     ).acquireDownstreamAccessToken(homeAccountId);
     if (accessToken.length > EMPTY_LENGTH) {
-      return accessToken
+      return accessToken;
     }
   }
-  return null
+  return null;
 }
-
-
 
 /**
  * Authentication middleware that checks whether the user is logged in.
@@ -179,7 +177,6 @@ export async function requireAuth(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  
   if (pathNeedsAuth(req.path)) {
     next();
     return;
@@ -206,7 +203,7 @@ export async function requireAuth(
   if (exp === undefined || exp <= NOW) {
     devInfo("requireAuth(): User auth expired, attempting refresh");
     try {
-      await refreshToken(req, homeAccountId)
+      await refreshToken(req, homeAccountId);
     } catch (err) {
       await destroySession(req);
       res.redirect("/sign-in");
@@ -222,8 +219,12 @@ export async function requireAuth(
  * @param {Request} req - The express request
  * @param {string} homeAccountId - The home account id
  */
-async function refreshToken(req: Request, homeAccountId: string): Promise<void> {
-  const {session} = req
+async function refreshToken(
+  req: Request,
+  homeAccountId: string,
+): Promise<void> {
+  const { session } = req;
+  console.log("REFRESH TOKEN CALLED");
   const result = await SilasService.factory(session.id).acquireTokenSilent(
     homeAccountId,
   );
@@ -231,9 +232,8 @@ async function refreshToken(req: Request, homeAccountId: string): Promise<void> 
     throw new Error("requireAuth(): Could not find account");
   }
   // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access much clearer
-  session.account = result.account
+  session.account = result.account;
 }
-
 
 /**
  * Check if path needs authentication
@@ -250,7 +250,7 @@ function pathNeedsAuth(path: string): boolean {
     /^\/js/u,
     /^\/cs/u,
   ];
-  return AUTH_EXEMPT_PATHS.some((pattern) => pattern.test(path))
+  return AUTH_EXEMPT_PATHS.some((pattern) => pattern.test(path));
 }
 /**
  * Default API middleware using the standard configuration.

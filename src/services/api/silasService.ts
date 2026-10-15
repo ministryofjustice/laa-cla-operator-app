@@ -118,6 +118,7 @@ export class SilasService {
    * @returns {SilasService} - An instance of this service
    */
   static factory(sessionId?: string): SilasService {
+    console.log("I should not be here");
     if (sessionId !== undefined && config.redis.enabled) {
       console.log(`factory called with sesssionId: ${sessionId}`);
       const redisClient = createRedisClient(config.redis);
@@ -192,9 +193,12 @@ export class SilasService {
   /**
    * Acquires token silently either from cache or using the refresh token
    * @param {string} homeAccountId - The home account id
-   * @returns {AuthenticationResult} - The authentication result consisting of the access token and refresh token 
+   * @returns {AuthenticationResult} - The authentication result consisting of the access token and refresh token
    */
-  async acquireTokenSilent(homeAccountId: string): Promise<AuthenticationResult> {
+  async acquireTokenSilent(
+    homeAccountId: string,
+  ): Promise<AuthenticationResult> {
+    console.log("I SHOULD NOT BE HERE");
     if (homeAccountId.trim().length === EMPTY_LENGTH) {
       throw new Error(
         "The authenticated session has no MSAL account reference",
@@ -216,5 +220,4 @@ export class SilasService {
       throw new Error("Could not refresh token", { cause: err });
     }
   }
-
 }

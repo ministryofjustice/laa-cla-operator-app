@@ -2,24 +2,50 @@ import { strict as assert } from "assert";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import type { Request, Response, NextFunction } from "express";
+import esmock from "esmock";
+import sinon from "sinon";
 import {
-  axiosMiddleware,
-  createApiMiddleware,
   requireAuth,
   setAuthStatus,
+  axiosMiddleware,
+  createApiMiddleware,
 } from "#src/middleware/apiMiddleware.js";
+import { SilasService } from "#src/services/api/silasService.js";
+import { MS_PER_SECOND } from "#src/constants.js";
 
-describe("axiosMiddleware", () => {
-  it("attaches axios middleware to request and calls next", () => {
-    const req = { session: {} } as unknown as Request;
+describe("axiosMiddleware", async () => {
+  let sandbox = sinon.createSandbox();
+  const addSessionSilasTokenInterceptorStub = sinon.stub();
+  // const {axiosMiddleware, createApiMiddleware} = await esmock("#src/middleware/apiMiddleware.js", {
+  //   "./apiInterceptors.js": {
+  //     "addSessionSilasTokenInterceptor": addSessionSilasTokenInterceptorStub
+  //   }
+  // })
+
+  beforeEach(() => {
+    const acquireDownstreamAccessTokenStub = sandbox
+      .stub()
+      .returns("test-access-token");
+    const MockSilasService = {
+      acquireDownstreamAccessToken: acquireDownstreamAccessTokenStub,
+    };
+    sandbox
+      .stub(SilasService, "factory")
+      .returns(MockSilasService as unknown as SilasService);
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("attaches axios middleware to request and calls next", async () => {
+    const req = { session: {}, path: "/api" } as unknown as Request;
     const res = {} as Response;
     let nextCalled = false;
 
-    axiosMiddleware(req, res, () => {
+    await axiosMiddleware(req, res, () => {
       nextCalled = true;
     });
-
-    assert.equal(nextCalled, true);
+    assert.equal(nextCalled, true, "Call next method");
     assert.ok(req.axiosMiddleware);
     assert.equal(typeof req.axiosMiddleware.get, "function");
     assert.ok(req.state);
@@ -29,12 +55,22 @@ describe("axiosMiddleware", () => {
 
 describe("apiMiddleware", () => {
   const server = setupServer();
+  let sandbox = sinon.createSandbox();
 
   before(() => {
     server.listen({ onUnhandledRequest: "error" });
   });
-
+  beforeEach(() => {
+    const MockSilasService = {
+      acquireDownstreamAccessToken: sandbox.stub().returns("test-access-token"),
+      refreshToken: sandbox.stub(),
+    };
+    sandbox
+      .stub(SilasService, "factory")
+      .returns(MockSilasService as unknown as SilasService);
+  });
   afterEach(() => {
+    sandbox.restore();
     server.resetHandlers();
   });
 
@@ -42,39 +78,26 @@ describe("apiMiddleware", () => {
     server.close();
   });
 
-  it("attaches axios middleware to request and calls next", () => {
-    const middleware = createApiMiddleware({ enableLogging: false });
-    const req = { session: {} } as unknown as Request;
-    const res = {} as Response;
-    let nextCalled = false;
-
-    middleware(req, res, () => {
-      nextCalled = true;
-    });
-
-    assert.equal(nextCalled, true);
-    assert.ok(req.axiosMiddleware);
-    assert.equal(typeof req.axiosMiddleware.get, "function");
-    assert.ok(req.state);
-    assert.strictEqual(req.state.authenticatedAxios, req.axiosMiddleware);
-  });
-
   it("adds the SILAS session token from session by default", async () => {
     const middleware = createApiMiddleware();
     const req = {
+      path: "/api",
       session: {
-        silasAuth: { accessToken: "session-token" },
+        id: "1",
+        account: {
+          homeAccountId: "1",
+        },
       },
     } as unknown as Request;
     const res = {} as Response;
 
-    middleware(req, res, (() => undefined) as NextFunction);
+    await middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
       http.get("http://api.test/session-auth", ({ request }) => {
         assert.equal(
           request.headers.get("authorization"),
-          "Bearer session-token",
+          "Bearer test-access-token",
         );
         return HttpResponse.json({ ok: true });
       }),
@@ -86,6 +109,7 @@ describe("apiMiddleware", () => {
 
     assert.equal(response.status, 200);
   });
+
   it("adds authorization header from authService", async () => {
     const middleware = createApiMiddleware({
       enableLogging: false,
@@ -95,10 +119,18 @@ describe("apiMiddleware", () => {
       },
     });
 
-    const req = { session: {} } as unknown as Request;
+    const req = {
+      path: "/api",
+      session: {
+        id: "1",
+        account: {
+          homeAccountId: "1",
+        },
+      },
+    } as unknown as Request;
     const res = {} as Response;
 
-    middleware(req, res, (() => undefined) as NextFunction);
+    await middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
       http.get("http://api.test/auth-header", ({ request }) => {
@@ -136,7 +168,7 @@ describe("apiMiddleware", () => {
     const req = { session: {} } as unknown as Request;
     const res = {} as Response;
 
-    middleware(req, res, (() => undefined) as NextFunction);
+    await middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
       http.get("http://api.test/unauthorized", () => {
@@ -168,7 +200,7 @@ describe("apiMiddleware", () => {
     const req = { session: {} } as unknown as Request;
     const res = {} as Response;
 
-    middleware(req, res, (() => undefined) as NextFunction);
+    await middleware(req, res, (() => undefined) as NextFunction);
 
     server.use(
       http.get("http://api.test/no-auth-required", () => {
@@ -186,8 +218,31 @@ describe("apiMiddleware", () => {
 });
 
 describe("requireAuth", () => {
-  it("redirects to sign-in when silasAuth is missing from session", () => {
-    const req = { session: {} } as unknown as Request;
+  let sandbox: sinon.SinonSandbox;
+  const MockSilasService = {
+    acquireDownstreamAccessToken: sinon.stub().returns("test-access-token"),
+    acquireTokenSilent: sinon.stub().returns({
+      account: {
+        name: "Test user",
+      },
+    }),
+  };
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    sandbox
+      .stub(SilasService, "factory")
+      .returns(MockSilasService as unknown as SilasService);
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("redirects to sign-in when sessiong is missing", async () => {
+    const req = {
+      session: {
+        destroy: (callback: any) => callback(),
+      },
+    } as unknown as Request;
     let redirectedTo = "";
     let nextCalled = false;
 
@@ -197,7 +252,7 @@ describe("requireAuth", () => {
       },
     } as unknown as Response;
 
-    requireAuth(req, res, () => {
+    await requireAuth(req, res, () => {
       nextCalled = true;
     });
 
@@ -205,15 +260,18 @@ describe("requireAuth", () => {
     assert.equal(nextCalled, false);
   });
 
-  it("calls next when silasAuth token is valid", () => {
+  it("calls next when silasAuth token is valid", async () => {
+    const ONE_HOUR_SECONDS = 3600;
+    const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) + ONE_HOUR_SECONDS; // one hour from now
     const req = {
       session: {
-        silasAuth: {
-          accessToken: "token",
-          idToken: "id-token",
-          expiresAt: Date.now() + 10_000,
-          email: "user@example.com",
-          name: "User",
+        id: "1",
+        account: {
+          homeAccountId: "1",
+          idToken: {},
+          idTokenClaims: {
+            exp: EXPIRE,
+          },
         },
       },
     } as unknown as Request;
@@ -224,17 +282,52 @@ describe("requireAuth", () => {
 
     let nextCalled = false;
 
-    requireAuth(req, res, () => {
+    await requireAuth(req, res, () => {
       nextCalled = true;
     });
 
     assert.equal(nextCalled, true);
   });
+
+  it("refresh token after token has expired", async () => {
+    const ONE_HOUR_SECONDS = 3600;
+    const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) - ONE_HOUR_SECONDS; // one hour ago
+    const req = {
+      session: {
+        id: "1",
+        destroy: (callback: any) => callback(),
+        account: {
+          homeAccountId: "1",
+          idToken: {},
+          idTokenClaims: {
+            exp: EXPIRE,
+          },
+        },
+      },
+    } as unknown as Request;
+
+    const res = {
+      redirect: () => undefined,
+    } as unknown as Response;
+
+    let nextCalled = false;
+
+    await requireAuth(req, res, () => {
+      nextCalled = true;
+    });
+
+    assert.equal(nextCalled, true);
+    assert.equal(MockSilasService.acquireTokenSilent.called, true);
+  });
 });
 
 describe("setAuthStatus", () => {
   it("sets locals for unauthenticated users without silasAuth in session", () => {
-    const req = { session: {} } as unknown as Request;
+    const req = {
+      session: {
+        isAuthenticated: false,
+      },
+    } as unknown as Request;
     const res = { locals: {} as Record<string, unknown> } as Response;
 
     let nextCalled = false;
@@ -252,17 +345,10 @@ describe("setAuthStatus", () => {
   it("sets locals for authenticated users", () => {
     const req = {
       session: {
-        silasAuth: {
-          accessToken: "token",
-          idToken: "id-token",
-          expiresAt: Date.now() + 10_000,
-          email: "user@example.com",
+        isAuthenticated: true,
+        account: {
+          username: "user@example.com",
           name: "User",
-        },
-        user: {
-          email: "user@example.com",
-          name: "User",
-          oid: "oid-123",
         },
       },
     } as unknown as Request;

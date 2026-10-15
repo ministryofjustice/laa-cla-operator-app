@@ -11,11 +11,6 @@ const router = express.Router();
 
 const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;
-const MINUTES_PER_HOUR = 60;
-const SECONDS_PER_MINUTE = 60;
-const MILLISECONDS_PER_SECOND = 1000;
-const AUTH_SESSION_TTL_MS =
-  MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 /**
  * Returns a safe relative redirect path for test login flows.
@@ -63,12 +58,12 @@ if (process.env.NODE_ENV === "test") {
   router.get("/test-auth/login", (req: Request, res: Response): void => {
     const next = getSafeRelativeNextPath(req.query.next);
 
-    req.session.silasAuth = {
-      accessToken: TEST_ACCESS_TOKEN,
-      expiresAt: Date.now() + AUTH_SESSION_TTL_MS,
-      email: "test.user@justice.gov.uk",
-      name: "Test User",
-    };
+    // req.session.silasAuth = {
+    //   accessToken: TEST_ACCESS_TOKEN,
+    //   expiresAt: Date.now() + AUTH_SESSION_TTL_MS,
+    //   email: "test.user@justice.gov.uk",
+    //   name: "Test User",
+    // };
 
     req.session.user = {
       email: "test.user@justice.gov.uk",

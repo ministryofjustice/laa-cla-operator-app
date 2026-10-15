@@ -14,6 +14,8 @@ export function createTestRequest(): Request {
       // Creates a Sinon stub that, when called, calls its first argument with null
       // This is useful when the req.session.save is wrapped in a promise
       save: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
+      destroy: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
+      regenerate: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
     },
     query: {},
   } as unknown as Request;
@@ -24,9 +26,12 @@ export function createTestRequest(): Request {
  * @returns {Response} - Returns a test express response object
  */
 export function createTestResponse(): Response {
-  // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test response
-  return {
+  const response = {
     redirect: sinon.stub(),
     send: sinon.stub(),
-  } as unknown as Response;
+    status: sinon.stub(),
+  };
+  response.status.returns(response);
+  // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test response
+  return response as unknown as Response;
 }

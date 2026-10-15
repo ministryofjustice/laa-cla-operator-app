@@ -7,7 +7,7 @@ const DEFAULT_RATE_LIMIT_MAX = 100;
 const DEFAULT_RATE_WINDOW_MS_MINUTE = 15;
 const MILLISECONDS_IN_A_SECOND = 1000;
 //eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 60 seconds in a minute
-const MILLISECONDS_IN_A_MINUTE = MILLISECONDS_IN_A_SECOND * 60 
+const MILLISECONDS_IN_A_MINUTE = MILLISECONDS_IN_A_SECOND * 60;
 //eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 60 minutes in a hour
 const MILLISECONDS_IN_A_HOUR = MILLISECONDS_IN_A_MINUTE * 60;
 //eslint-disable-next-line @typescript-eslint/no-magic-numbers -- 12 hours

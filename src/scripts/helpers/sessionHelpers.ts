@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import type { SilasSessionAuth, SilasUserInfo } from "types/auth-types.js";
+import type { SilasUserInfo } from "types/auth-types.js";
 import type { AccountInfo } from "@azure/msal-node";
 
 interface KnownClaims {
@@ -24,7 +24,6 @@ declare module "express-session" {
     Record<string, string> | string | undefined
   > {
     // This allows both specific properties and dynamic namespace access
-    silasAuth?: SilasSessionAuth;
     user?: SilasUserInfo;
     account?: AccountInfo & KnownClaims;
     isAuthenticated?: boolean;
