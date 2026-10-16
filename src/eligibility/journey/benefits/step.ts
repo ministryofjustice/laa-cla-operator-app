@@ -12,9 +12,6 @@ export const BENEFITS_STEP_CODE = "benefits";
 
 export const benefitsStep = step({
   code: BENEFITS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/benefits",
   title: "Benefits",
   onAccess: [

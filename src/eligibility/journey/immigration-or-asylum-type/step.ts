@@ -13,9 +13,6 @@ export const IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE =
 
 export const immigrationOrAsylumTypeStep = step({
   code: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/immigration-or-asylum-type",
   title: "Immigration or asylum type",
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],

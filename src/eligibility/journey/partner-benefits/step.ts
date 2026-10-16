@@ -12,9 +12,6 @@ export const PARTNER_BENEFITS_STEP_CODE = "partner_benefits";
 
 export const partnerBenefitsStep = step({
   code: PARTNER_BENEFITS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/partner-benefits",
   title: "Partner benefits",
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],

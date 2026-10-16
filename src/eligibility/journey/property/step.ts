@@ -12,9 +12,6 @@ export const PROPERTY_STEP_CODE = "property";
 
 export const propertyStep = step({
   code: PROPERTY_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/property",
   title: "Property details",
   onAccess: [

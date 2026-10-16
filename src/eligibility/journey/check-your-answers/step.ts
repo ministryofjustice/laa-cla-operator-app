@@ -14,9 +14,6 @@ export const CHECK_YOUR_ANSWERS_STEP_CODE = "check_your_answers";
 
 export const checkYourAnswersStep = step({
   code: CHECK_YOUR_ANSWERS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/check-your-answers",
   title: "Check your answers",
   onAccess: [

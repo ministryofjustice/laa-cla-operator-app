@@ -20,9 +20,6 @@ export const DOMESTIC_ABUSE_APPLICANT_STEP_CODE = "domestic_abuse_applicant";
 export const immigrationOrAsylumTypeUpperTribunalStep = step({
   code: IMMIGRATION_OR_ASYLUM_TYPE_UPPER_TRIBUNAL_STEP_CODE,
   path: "/immigration-or-asylum-type-upper-tribunal",
-  reachability: {
-    entryWhen: true,
-  },
   title: "Immigration or asylum type (upper tribunal)",
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
@@ -45,9 +42,6 @@ export const immigrationOrAsylumTypeUpperTribunalStep = step({
 export const asylumSupportStep = step({
   code: ASYLUM_SUPPORT_STEP_CODE,
   path: "/asylum-support",
-  reachability: {
-    entryWhen: true,
-  },
   title: "Asylum support",
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
@@ -66,9 +60,6 @@ export const asylumSupportStep = step({
 export const domesticAbuseApplicantStep = step({
   code: DOMESTIC_ABUSE_APPLICANT_STEP_CODE,
   path: "/domestic-abuse-applicant",
-  reachability: {
-    entryWhen: true,
-  },
   title: "Domestic abuse",
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },

@@ -12,9 +12,6 @@ export const OUTGOINGS_STEP_CODE = "outgoings";
 
 export const outgoingsStep = step({
   code: OUTGOINGS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/outgoings",
   title: "Outgoings",
   onAccess: [

@@ -14,6 +14,8 @@ import { createEligibilityPackage } from "./index.js";
 
 const CASE_ID = "case-1";
 const BASE = `/cases/${CASE_ID}/eligibility`;
+const CHILD_AGE = 10;
+const CHILD_DATE_OF_BIRTH = `${new Date().getUTCFullYear() - CHILD_AGE}-01-01`;
 
 class InMemoryAnswerStore implements AnswerStore {
   answers: Answers = {};
@@ -121,6 +123,15 @@ describe("eligibility journey navigation", () => {
     await assertRenders("domestic-abuse-applicant");
   });
 
+  it("asks the under-18 questions when the date of birth makes the client a child", async () => {
+    answerStore.answers = { date_of_birth: CHILD_DATE_OF_BIRTH };
+
+    const next = await submit("level-of-help", { level_of_help: "controlled" });
+
+    assert.equal(next, `${BASE}/under-18-clr`);
+    await assertRenders("under-18-clr");
+  });
+
   it("does not loop back to level of help after the applicant step", async () => {
     await submit("level-of-help", { level_of_help: "controlled" });
     await submit("immigration-or-asylum", { immigration_or_asylum: "false" });
@@ -128,5 +139,43 @@ describe("eligibility journey navigation", () => {
 
     assert.equal(next, `${BASE}/dependant-details`);
     await assertRenders("dependant-details");
+  });
+
+  it("goes to check your answers after the last relevant step", async () => {
+    answerStore.answers = { date_of_birth: CHILD_DATE_OF_BIRTH };
+    await submit("level-of-help", { level_of_help: "controlled" });
+
+    const next = await submit("under-18-clr", {
+      controlled_legal_representation: "true",
+    });
+
+    assert.equal(next, `${BASE}/check-your-answers`);
+    await assertRenders("check-your-answers");
+  });
+
+  it("redirects a step the answers have not reached yet to the furthest step reached", async () => {
+    await submit("level-of-help", { level_of_help: "controlled" });
+
+    const result = await client.get(`${BASE}/partner-details`, { params });
+
+    assert.equal(redirectUrl(result), `${BASE}/immigration-or-asylum`);
+  });
+
+  it("redirects a step from a branch the client is no longer on", async () => {
+    await submit("level-of-help", { level_of_help: "controlled" });
+    await submit("immigration-or-asylum", { immigration_or_asylum: "true" });
+    await submit("level-of-help", { level_of_help: "certificated" });
+
+    const result = await client.get(`${BASE}/immigration-or-asylum-type`, {
+      params,
+    });
+
+    assert.equal(result.type, "redirect");
+  });
+
+  it("does not offer check your answers before the questions are answered", async () => {
+    const result = await client.get(`${BASE}/check-your-answers`, { params });
+
+    assert.equal(redirectUrl(result), `${BASE}/level-of-help`);
   });
 });

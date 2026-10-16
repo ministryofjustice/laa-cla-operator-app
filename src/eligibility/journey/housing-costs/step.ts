@@ -12,9 +12,6 @@ export const HOUSING_COSTS_STEP_CODE = "housing_costs";
 
 export const housingCostsStep = step({
   code: HOUSING_COSTS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/housing-costs",
   title: "Housing costs",
   onAccess: [

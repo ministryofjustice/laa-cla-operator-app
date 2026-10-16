@@ -12,9 +12,6 @@ export const HOW_TO_AGGREGATE_STEP_CODE = "how_to_aggregate";
 
 export const howToAggregateStep = step({
   code: HOW_TO_AGGREGATE_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/how-to-aggregate",
   title: "How to aggregate income",
   onAccess: [

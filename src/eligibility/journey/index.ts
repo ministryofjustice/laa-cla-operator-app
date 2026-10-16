@@ -75,6 +75,10 @@ export function createEligibilityPackage(
     code: "eligibility",
     title: "Financial Eligibility Check",
     path: options.path,
+    // Only level of help is an entry point; every other step is reached by
+    // following the saved answers, so send stray requests to the furthest
+    // step reached rather than back to the start.
+    reachability: { unreachableRedirect: "frontier" },
     onAccess: [
       access({
         effects: [EligibilityEffects.LoadAnswers()],

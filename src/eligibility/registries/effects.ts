@@ -6,9 +6,11 @@ import {
 import type { EligibilityDeps } from "../ports/index.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import {
+  cannotUseService,
   stepsFor,
   relevantAnswers,
 } from "../domain/navigation.js";
+import { withClientAge } from "../domain/client-age.js";
 import type { Answers } from "../domain/logic.js";
 
 // Yes/no radios post "true"/"false", but the domain logic (ported from CCQ)
@@ -19,6 +21,19 @@ const FORM_BOOLEANS: Readonly<Record<string, boolean>> = {
 };
 
 const NEXT_STEP_OFFSET = 1;
+
+// Journey steps outside the domain's step list
+const CHECK_YOUR_ANSWERS_PATH = "check-your-answers";
+const CANNOT_USE_SERVICE_PATH = "cannot-use-service";
+
+/**
+ * The URL path segment for a step code.
+ * @param {string} step - a step code
+ * @returns {string} the step's path segment
+ */
+function toPath(step: string): string {
+  return step.replace(/_/gu, "-");
+}
 
 /**
  * Converts answers as Forge holds them into the shape the domain expects.
@@ -46,6 +61,35 @@ function toFormValue(value: unknown): unknown {
 }
 
 /**
+ * Today's date, as the UTC midnight instant the domain's date logic expects.
+ * @returns {Date} today at UTC midnight
+ */
+function todayUtc(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+  );
+}
+
+/**
+ * Where a step goes once answered: off the service for an unsupported
+ * route, otherwise to the next relevant step, or to check your answers
+ * after the last one.
+ * @param {Answers} answers - all saved answers
+ * @param {string} step - the answered step code
+ * @param {string | undefined} nextStep - the next relevant step code, if any
+ * @returns {string} the path segment to go to
+ */
+function nextPath(
+  answers: Answers,
+  step: string,
+  nextStep: string | undefined,
+): string {
+  if (cannotUseService(answers, step)) return CANNOT_USE_SERVICE_PATH;
+  return nextStep === undefined ? CHECK_YOUR_ANSWERS_PATH : toPath(nextStep);
+}
+
+/**
  * Publishes the next-step map that each step's redirect reads via
  * `Data("nav.<step>")`, and that Forge's reachability walk follows.
  * Computed from all saved answers, as CCQ does: the section logic already
@@ -57,12 +101,12 @@ function publishNavigation(
   context: EffectFunctionContext,
   answers: Answers,
 ): void {
-  const steps = stepsFor(answers);
-  // Step codes use underscores; URL paths use hyphens
+  const domainAnswers = withClientAge(answers, todayUtc());
+  const steps = stepsFor(domainAnswers);
   const navigationMap = Object.fromEntries(
     steps.map((step, index) => [
       step,
-      steps.at(index + NEXT_STEP_OFFSET)?.replace(/_/gu, "-"),
+      nextPath(domainAnswers, step, steps.at(index + NEXT_STEP_OFFSET)),
     ]),
   );
 
@@ -225,12 +269,12 @@ const EligibilityEffectsImplementation: Record<
       // Import here to avoid circular dependencies
       const { buildAssessment } = await import("../domain/cfe/payload.js");
 
-      // Get all answers
-      const allAnswers = await answerStore.load(checkId);
+      const today = todayUtc();
+      const allAnswers = withClientAge(await answerStore.load(checkId), today);
       const filtered = relevantAnswers(allAnswers);
 
       // Build assessment payload
-      const payload = buildAssessment(filtered, new Date());
+      const payload = buildAssessment(filtered, today);
 
       // Call assessor
       const result = await deps.assessor.assess(payload);

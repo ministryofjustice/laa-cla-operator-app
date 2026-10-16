@@ -12,9 +12,6 @@ export const PARTNER_DETAILS_STEP_CODE = "partner_details";
 
 export const partnerDetailsStep = step({
   code: PARTNER_DETAILS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/partner-details",
   title: "Partner details",
   onAccess: [

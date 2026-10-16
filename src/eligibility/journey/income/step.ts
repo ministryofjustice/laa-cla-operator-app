@@ -12,9 +12,6 @@ export const INCOME_STEP_CODE = "income";
 
 export const incomeStep = step({
   code: INCOME_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/income",
   title: "Income",
   onAccess: [

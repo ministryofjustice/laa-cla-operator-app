@@ -12,9 +12,6 @@ export const MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE = "mortgage_or_loan_payment";
 
 export const mortgageOrLoanPaymentStep = step({
   code: MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/mortgage-or-loan-payment",
   title: "Mortgage or loan payment",
   onAccess: [

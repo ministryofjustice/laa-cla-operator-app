@@ -12,9 +12,6 @@ export const PARTNER_EMPLOYMENT_STATUS_STEP_CODE = "partner_employment_status";
 
 export const partnerEmploymentStatusStep = step({
   code: PARTNER_EMPLOYMENT_STATUS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/partner-employment-status",
   title: "Partner employment status",
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],

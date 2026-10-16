@@ -13,9 +13,6 @@ export const SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE =
 
 export const sharedOwnershipHousingCostsStep = step({
   code: SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/shared-ownership-housing-costs",
   title: "Shared ownership housing costs",
   onAccess: [

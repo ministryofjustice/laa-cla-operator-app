@@ -12,9 +12,6 @@ export const APPLICANT_STEP_CODE = "applicant";
 
 export const applicantStep = step({
   code: APPLICANT_STEP_CODE,
-  reachability: {
-    entryWhen: true,
-  },
   path: "/applicant",
   title: "Applicant details",
   onAccess: [
