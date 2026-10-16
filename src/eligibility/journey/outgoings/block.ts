@@ -38,6 +38,12 @@ export const outgoingsBlock = CollectionBlock({
         text: "Childcare payment amount",
       },
       hint: { text: "In pounds per month" },
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsNumeric()),
+          message: "Childcare payment amount must be a number",
+        }),
+      ],
     }),
     GovUKRadioInput({
       code: "childcare_payments_frequency",
@@ -78,6 +84,12 @@ export const outgoingsBlock = CollectionBlock({
         text: "Maintenance payment amount",
       },
       hint: { text: "In pounds per month" },
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsNumeric()),
+          message: "Maintenance payment amount must be a number",
+        }),
+      ],
     }),
     GovUKRadioInput({
       code: "maintenance_payments_frequency",
@@ -118,6 +130,12 @@ export const outgoingsBlock = CollectionBlock({
         text: "Legal aid payment amount",
       },
       hint: { text: "In pounds per month" },
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsNumeric()),
+          message: "Legal aid payment amount must be a number",
+        }),
+      ],
     }),
     GovUKRadioInput({
       code: "legal_aid_payments_frequency",
