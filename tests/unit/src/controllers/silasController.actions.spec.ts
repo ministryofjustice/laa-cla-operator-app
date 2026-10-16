@@ -1,6 +1,7 @@
 import {
   callbackAction,
   loginAction,
+  logOut,
 } from "#src/controllers/silasController.js";
 import assert from "node:assert/strict";
 import { describe } from "mocha";
@@ -9,6 +10,7 @@ import type { Request, Response } from "express";
 import { createTestRequest, createTestResponse } from "./index.js";
 import { SilasService } from "#src/services/api/silasService.js";
 import { INTERNAL_SERVER_ERROR } from "#src/constants.js";
+import config from "#config.js";
 
 describe("silasController:loginAction", () => {
   let sandbox: sinon.SinonSandbox;
@@ -154,20 +156,28 @@ describe("silasController:callbackAction", () => {
     );
   });
 
-  it("should exchange code for access token", async () => {
+  it("should validate token response body", async () => {
     req.query.state = "1111";
-    req.query.code = "2222";
-    req.session.auth_nonce = "1111";
-    mockSilasService.acquireTokenByCode.returns({});
+    req.query.code = "1111";
+    req.session.auth_nonce = "1111"
     const statusStub = res.status as sinon.SinonStub;
+    mockSilasService.acquireTokenByCode.returns({
+      accessToken: "",
+      idToken: "",
+      account: {}
+    });
     await callbackAction(req, res);
     assert.equal(
       statusStub.calledWith(INTERNAL_SERVER_ERROR),
       true,
-      "should return 500 for token exchange return invalid data",
+      "should return 500 error for missing auth_nonce",
     );
-
-    mockSilasService.acquireTokenByCode.returns(acquireTokenByCodeReturnValue);
+  })
+  
+  it("should exchange code for access token", async () => {
+    req.query.state = "1111";
+    req.query.code = "2222";
+    req.session.auth_nonce = "1111";
     const redirectStub = res.redirect as sinon.SinonStub;
     await callbackAction(req, res);
     assert.deepEqual(
@@ -192,3 +202,16 @@ describe("silasController:callbackAction", () => {
     );
   });
 });
+
+describe("silasController:logoutAction", async ()=>{
+  it("should log user out", async () => {
+    const req = createTestRequest()
+    const res = createTestResponse()
+    const destroySessionStub = req.session.destroy as sinon.SinonStub
+    const redirectStub = res.redirect as sinon.SinonStub
+    await logOut(req, res)
+    assert.equal(destroySessionStub.called, true, "should destroy the session when logging out")
+    assert.equal(redirectStub.called, true, "should redirect the user when logging out")
+    assert.equal(redirectStub.firstCall.args[0], `https://login.microsoftonline.com/${config.silas.tenantId}/oauth2/v2.0/logout`)
+  })
+})

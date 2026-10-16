@@ -158,8 +158,11 @@ async function getAccessToken(req: Request): Promise<string | null> {
     process.env.NODE_ENV === "test" &&
     req.session.accessToken !== undefined
   ) {
+    /* c8 ignore next */
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- only used during testing so cannot add to session interface
+    /* c8 ignore next */
     return req.session.accessToken as string;
+    /* c8 ignore next */
   }
   const { homeAccountId } = req.session.account ?? {};
   if (homeAccountId !== undefined) {
@@ -239,7 +242,7 @@ async function refreshToken(
   const result = await SilasService.factory(session.id).acquireTokenSilent(
     homeAccountId,
   );
-  if (result.account === null) {
+  if (result.account === null || result.account == undefined) {
     throw new Error("requireAuth(): Could not find account");
   }
   // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access much clearer

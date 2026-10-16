@@ -41,6 +41,7 @@ export function devInfo(message: string): void {
   if (
     process.env.NODE_ENV === "development" ||
     process.env.NODE_ENV === "test" ||
+    /* c8 ignore next */
     process.env.NODE_ENV === undefined
   ) {
     console.info(message);

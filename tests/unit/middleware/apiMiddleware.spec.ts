@@ -11,6 +11,7 @@ import {
 } from "#src/middleware/apiMiddleware.js";
 import { SilasService } from "#src/services/api/silasService.js";
 import { MS_PER_SECOND } from "#src/constants.js";
+import { createTestRequest, createTestResponse } from "../src/controllers/index.js";
 
 describe("axiosMiddleware", async () => {
   let sandbox = sinon.createSandbox();
@@ -69,6 +70,15 @@ describe("apiMiddleware", () => {
   after(() => {
     server.close();
   });
+
+  it("skip adding token headers for auth exempt urls", async () => {
+    const req = createTestRequest({path: "/sign-in"})
+    const res = createTestResponse()
+    const middleware = createApiMiddleware();
+    let nextCalled = false
+    await middleware(req, res, () => nextCalled=true)
+    assert.equal(nextCalled, true, "should call next middleware")
+  })
 
   it("adds the SILAS session token from session by default", async () => {
     const middleware = createApiMiddleware();
@@ -211,16 +221,20 @@ describe("apiMiddleware", () => {
 
 describe("requireAuth", () => {
   let sandbox: sinon.SinonSandbox;
-  const MockSilasService = {
-    acquireDownstreamAccessToken: sinon.stub().returns("test-access-token"),
-    acquireTokenSilent: sinon.stub().returns({
-      account: {
-        name: "Test user",
-      },
-    }),
+  let MockSilasService = {
+    acquireDownstreamAccessToken: sinon.stub(),
+    acquireTokenSilent: sinon.stub()
   };
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    MockSilasService = {
+      acquireDownstreamAccessToken: sandbox.stub().returns("test-access-token"),
+      acquireTokenSilent: sandbox.stub().returns({
+        account: {
+          name: "Test user",
+        },
+      }),
+    };
     sandbox
       .stub(SilasService, "factory")
       .returns(MockSilasService as unknown as SilasService);
@@ -229,33 +243,35 @@ describe("requireAuth", () => {
     sandbox.restore();
   });
 
-  it("redirects to sign-in when sessiong is missing", async () => {
-    const req = {
-      session: {
-        destroy: (callback: any) => callback(),
-      },
-    } as unknown as Request;
-    let redirectedTo = "";
-    let nextCalled = false;
+  it("skip adding token headers for auth exempt urls", async () => {
+    const req = createTestRequest({path: "/sign-in"})
+    const res = createTestResponse()
+    let nextCalled = false
+    await requireAuth(req, res, () => {
+      nextCalled = true;
+    });
+    assert.equal(nextCalled, true, "should call next middleware")
+  })
 
-    const res = {
-      redirect: (path: string) => {
-        redirectedTo = path;
-      },
-    } as unknown as Response;
+  it("redirects to sign-in when sessiong is missing", async () => {
+    const req = createTestRequest()
+    const res = createTestResponse()
+    const redirectStub = res.redirect as sinon.SinonStub
+    let nextCalled = false;
 
     await requireAuth(req, res, () => {
       nextCalled = true;
     });
 
-    assert.equal(redirectedTo, "/sign-in");
-    assert.equal(nextCalled, false);
+    assert.equal(redirectStub.called, true, "should redirect user")
+    assert.equal(redirectStub.firstCall.firstArg, "/sign-in", "should redirect user to /sign-in")
   });
 
   it("calls next when silasAuth token is valid", async () => {
     const ONE_HOUR_SECONDS = 3600;
     const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) + ONE_HOUR_SECONDS; // one hour from now
-    const req = {
+    const res = createTestResponse()
+    const req = createTestRequest({
       session: {
         id: "1",
         account: {
@@ -265,29 +281,21 @@ describe("requireAuth", () => {
             exp: EXPIRE,
           },
         },
-      },
-    } as unknown as Request;
-
-    const res = {
-      redirect: () => undefined,
-    } as unknown as Response;
-
+      }
+    })
     let nextCalled = false;
-
     await requireAuth(req, res, () => {
       nextCalled = true;
     });
-
-    assert.equal(nextCalled, true);
+    assert.equal(nextCalled, true, "next should be called");
   });
 
   it("refresh token after token has expired", async () => {
     const ONE_HOUR_SECONDS = 3600;
     const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) - ONE_HOUR_SECONDS; // one hour ago
-    const req = {
+    const req = createTestRequest({
       session: {
         id: "1",
-        destroy: (callback: any) => callback(),
         account: {
           homeAccountId: "1",
           idToken: {},
@@ -296,11 +304,9 @@ describe("requireAuth", () => {
           },
         },
       },
-    } as unknown as Request;
+    })
 
-    const res = {
-      redirect: () => undefined,
-    } as unknown as Response;
+    const res = createTestResponse()
 
     let nextCalled = false;
 
@@ -308,9 +314,35 @@ describe("requireAuth", () => {
       nextCalled = true;
     });
 
-    assert.equal(nextCalled, true);
-    assert.equal(MockSilasService.acquireTokenSilent.called, true);
+    assert.equal(nextCalled, true, "expect next function to be called");
+    assert.equal(MockSilasService.acquireTokenSilent.called, true, "expect acquireTokenSilent to be called");
   });
+
+  it("should redirect to sign in page when unable to refresh token", async () => {
+    MockSilasService.acquireTokenSilent.returns({
+      account: null
+    })
+    const ONE_HOUR_SECONDS = 3600;
+    const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) - ONE_HOUR_SECONDS; // one hour ago
+    const req = createTestRequest({
+      session: {
+        id: "1",
+        account: {
+          homeAccountId: "1",
+          idToken: {},
+          idTokenClaims: {
+            exp: EXPIRE,
+          },
+        },
+      },
+    })
+    const res = createTestResponse()
+    const redirectStub = res.redirect as sinon.SinonStub
+    await requireAuth(req, res, ()=>{})
+    assert.equal(redirectStub.called, true, "should redirect user")
+    assert.equal(redirectStub.firstCall.firstArg, "/sign-in", "should redirect user")
+  })
+
 });
 
 describe("setAuthStatus", () => {
