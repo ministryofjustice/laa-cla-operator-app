@@ -1,4 +1,4 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKTextInput,
@@ -11,15 +11,20 @@ import {
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { poundsAmountWhenAnswered } from "../amount-validation.js";
 
+export const outgoingsHeadingBlock = HtmlBlock({
+  tag: "h1",
+  content: "Monthly outgoings",
+  classes: "govuk-heading-xl",
+});
+
 export const outgoingsBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
       code: "childcare_payments_relevant",
       fieldset: {
         legend: {
-          text: "What are the client's monthly outgoings?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
+          text: "Does your client pay for childcare?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -51,6 +56,7 @@ export const outgoingsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "How often is the childcare payment made?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -66,6 +72,7 @@ export const outgoingsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does your client make maintenance payments to a former partner?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -97,6 +104,7 @@ export const outgoingsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "How often is the maintenance payment made?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -112,6 +120,7 @@ export const outgoingsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does your client make payments towards legal aid for a criminal case?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -143,6 +152,7 @@ export const outgoingsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "How often is the legal aid payment made?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [

@@ -1,4 +1,4 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKButton,
@@ -9,15 +9,20 @@ import {
   Self,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
+export const applicantHeadingBlock = HtmlBlock({
+  tag: "h1",
+  content: "About your client",
+  classes: "govuk-heading-xl",
+});
+
 export const applicantBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
       code: "applicant",
       fieldset: {
         legend: {
-          text: "Tell us about your client",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
+          text: "Does your client have a partner?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -42,6 +47,7 @@ export const applicantBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does your client receive a passporting benefit?",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       hint: {

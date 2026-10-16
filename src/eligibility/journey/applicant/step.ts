@@ -6,7 +6,7 @@ import {
   Data,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { applicantBlock } from "./block.js";
+import { applicantHeadingBlock, applicantBlock } from "./block.js";
 
 export const APPLICANT_STEP_CODE = "applicant";
 
@@ -20,7 +20,7 @@ export const applicantStep = step({
     }),
   ],
   view: { template: "main/eligibility/step.njk" },
-  blocks: [applicantBlock],
+  blocks: [applicantHeadingBlock, applicantBlock],
   onSubmission: [
     submit({
       validate: true,

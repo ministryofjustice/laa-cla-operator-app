@@ -1,4 +1,4 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKTextInput,
@@ -17,6 +17,12 @@ import {
   POUNDS_AMOUNT_MIN_500_PATTERN,
 } from "../amount-validation.js";
 
+export const assetsHeadingBlock = HtmlBlock({
+  tag: "h1",
+  content: "Assets",
+  classes: "govuk-heading-xl",
+});
+
 export const assetsQuestionsBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
@@ -24,8 +30,7 @@ export const assetsQuestionsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does your client have any investments?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       hint: {
@@ -61,6 +66,7 @@ export const assetsQuestionsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Investments",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -81,7 +87,7 @@ export const assetsQuestionsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does your client have valuable items worth £500 or more?",
-          classes: "govuk-fieldset__legend--l",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -114,6 +120,7 @@ export const assetsQuestionsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Valuable items",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [

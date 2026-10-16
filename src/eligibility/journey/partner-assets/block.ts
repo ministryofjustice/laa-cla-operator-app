@@ -1,4 +1,4 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKTextInput,
@@ -11,6 +11,12 @@ import {
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { poundsAmountWhenAnswered } from "../amount-validation.js";
 
+export const partnerAssetsHeadingBlock = HtmlBlock({
+  tag: "h1",
+  content: "Partner's assets",
+  classes: "govuk-heading-xl",
+});
+
 export const partnerAssetsBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
@@ -18,8 +24,7 @@ export const partnerAssetsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does the partner have any investments?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       hint: {
@@ -55,7 +60,7 @@ export const partnerAssetsBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Does the partner have valuable items worth £500 or more?",
-          classes: "govuk-fieldset__legend--l",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [

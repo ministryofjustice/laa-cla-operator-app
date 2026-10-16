@@ -13,7 +13,7 @@ import {
   bankAccountsTableBlock,
   bankAccountsButtonsBlock,
 } from "../bank-accounts/block.js";
-import { assetsQuestionsBlock } from "./block.js";
+import { assetsHeadingBlock, assetsQuestionsBlock } from "./block.js";
 
 export const ASSETS_STEP_CODE = "assets";
 
@@ -28,6 +28,7 @@ export const assetsStep = step({
   ],
   view: { template: "main/eligibility/step.njk" },
   blocks: [
+    assetsHeadingBlock,
     assetsQuestionsBlock,
     bankAccountsHeadingBlock,
     bankAccountsTableBlock,

@@ -6,7 +6,7 @@ import {
   Data,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { propertyEntryBlock } from "./block.js";
+import { propertyEntryHeadingBlock, propertyEntryBlock } from "./block.js";
 
 export const PROPERTY_ENTRY_STEP_CODE = "property_entry";
 
@@ -20,7 +20,7 @@ export const propertyEntryStep = step({
     }),
   ],
   view: { template: "main/eligibility/step.njk" },
-  blocks: [propertyEntryBlock],
+  blocks: [propertyEntryHeadingBlock, propertyEntryBlock],
   onSubmission: [
     submit({
       validate: true,
