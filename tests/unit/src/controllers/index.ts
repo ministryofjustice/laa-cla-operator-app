@@ -8,7 +8,9 @@ const FIRST_ARGUMENT = 0;
  * @param {Record<string, unknown>} overrides - additional request properties
  * @returns {Request} - Returns a test express request object
  */
-export function createTestRequest(overrides?: Record<string, unknown>): Request {
+export function createTestRequest(
+  overrides?: Record<string, unknown>,
+): Request {
   const req = {
     session: {
       // Creates a Sinon stub that, when called, calls its first argument with null
@@ -17,17 +19,17 @@ export function createTestRequest(overrides?: Record<string, unknown>): Request 
       destroy: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
       regenerate: sinon.stub().callsArgWith(FIRST_ARGUMENT, null),
     },
-    query: {}
-  }
-  if(overrides !== undefined) {
-    if(overrides.session !== undefined) {
-      Object.assign(req.session, overrides.session)
-      delete overrides.session
+    query: {},
+  };
+  if (overrides !== undefined) {
+    if (overrides.session !== undefined) {
+      Object.assign(req.session, overrides.session);
+      delete overrides.session;
     }
-    Object.assign(req, overrides)
+    Object.assign(req, overrides);
   }
   // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test request
-  return req as unknown as Request
+  return req as unknown as Request;
 }
 
 /**
@@ -35,16 +37,18 @@ export function createTestRequest(overrides?: Record<string, unknown>): Request 
  * @param {Record<string, unknown>} overrides - additional response properties
  * @returns {Response} - Returns a test express response object
  */
-export function createTestResponse(overrides?: Record<string, unknown>): Response {
+export function createTestResponse(
+  overrides?: Record<string, unknown>,
+): Response {
   const response = {
     redirect: sinon.stub(),
     send: sinon.stub(),
     status: sinon.stub(),
-    clearCookie: sinon.stub()
+    clearCookie: sinon.stub(),
   };
   response.status.returns(response);
-  if(overrides !== undefined) {
-    Object.assign(response, overrides)
+  if (overrides !== undefined) {
+    Object.assign(response, overrides);
   }
   // eslint-disable-next-line  @typescript-eslint/no-unsafe-type-assertion -- This test response
   return response as unknown as Response;

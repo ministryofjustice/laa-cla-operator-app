@@ -11,7 +11,10 @@ import {
 } from "#src/middleware/apiMiddleware.js";
 import { SilasService } from "#src/services/api/silasService.js";
 import { MS_PER_SECOND } from "#src/constants.js";
-import { createTestRequest, createTestResponse } from "../src/controllers/index.js";
+import {
+  createTestRequest,
+  createTestResponse,
+} from "../src/controllers/index.js";
 
 describe("axiosMiddleware", async () => {
   let sandbox = sinon.createSandbox();
@@ -72,13 +75,13 @@ describe("apiMiddleware", () => {
   });
 
   it("skip adding token headers for auth exempt urls", async () => {
-    const req = createTestRequest({path: "/sign-in"})
-    const res = createTestResponse()
+    const req = createTestRequest({ path: "/sign-in" });
+    const res = createTestResponse();
     const middleware = createApiMiddleware();
-    let nextCalled = false
-    await middleware(req, res, () => nextCalled=true)
-    assert.equal(nextCalled, true, "should call next middleware")
-  })
+    let nextCalled = false;
+    await middleware(req, res, () => (nextCalled = true));
+    assert.equal(nextCalled, true, "should call next middleware");
+  });
 
   it("adds the SILAS session token from session by default", async () => {
     const middleware = createApiMiddleware();
@@ -223,7 +226,7 @@ describe("requireAuth", () => {
   let sandbox: sinon.SinonSandbox;
   let MockSilasService = {
     acquireDownstreamAccessToken: sinon.stub(),
-    acquireTokenSilent: sinon.stub()
+    acquireTokenSilent: sinon.stub(),
   };
   beforeEach(() => {
     sandbox = sinon.createSandbox();
@@ -244,33 +247,37 @@ describe("requireAuth", () => {
   });
 
   it("skip adding token headers for auth exempt urls", async () => {
-    const req = createTestRequest({path: "/sign-in"})
-    const res = createTestResponse()
-    let nextCalled = false
+    const req = createTestRequest({ path: "/sign-in" });
+    const res = createTestResponse();
+    let nextCalled = false;
     await requireAuth(req, res, () => {
       nextCalled = true;
     });
-    assert.equal(nextCalled, true, "should call next middleware")
-  })
+    assert.equal(nextCalled, true, "should call next middleware");
+  });
 
   it("redirects to sign-in when sessiong is missing", async () => {
-    const req = createTestRequest()
-    const res = createTestResponse()
-    const redirectStub = res.redirect as sinon.SinonStub
+    const req = createTestRequest();
+    const res = createTestResponse();
+    const redirectStub = res.redirect as sinon.SinonStub;
     let nextCalled = false;
 
     await requireAuth(req, res, () => {
       nextCalled = true;
     });
 
-    assert.equal(redirectStub.called, true, "should redirect user")
-    assert.equal(redirectStub.firstCall.firstArg, "/sign-in", "should redirect user to /sign-in")
+    assert.equal(redirectStub.called, true, "should redirect user");
+    assert.equal(
+      redirectStub.firstCall.firstArg,
+      "/sign-in",
+      "should redirect user to /sign-in",
+    );
   });
 
   it("calls next when silasAuth token is valid", async () => {
     const ONE_HOUR_SECONDS = 3600;
     const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) + ONE_HOUR_SECONDS; // one hour from now
-    const res = createTestResponse()
+    const res = createTestResponse();
     const req = createTestRequest({
       session: {
         id: "1",
@@ -281,8 +288,8 @@ describe("requireAuth", () => {
             exp: EXPIRE,
           },
         },
-      }
-    })
+      },
+    });
     let nextCalled = false;
     await requireAuth(req, res, () => {
       nextCalled = true;
@@ -304,9 +311,9 @@ describe("requireAuth", () => {
           },
         },
       },
-    })
+    });
 
-    const res = createTestResponse()
+    const res = createTestResponse();
 
     let nextCalled = false;
 
@@ -315,13 +322,17 @@ describe("requireAuth", () => {
     });
 
     assert.equal(nextCalled, true, "expect next function to be called");
-    assert.equal(MockSilasService.acquireTokenSilent.called, true, "expect acquireTokenSilent to be called");
+    assert.equal(
+      MockSilasService.acquireTokenSilent.called,
+      true,
+      "expect acquireTokenSilent to be called",
+    );
   });
 
   it("should redirect to sign in page when unable to refresh token", async () => {
     MockSilasService.acquireTokenSilent.returns({
-      account: null
-    })
+      account: null,
+    });
     const ONE_HOUR_SECONDS = 3600;
     const EXPIRE = Math.floor(Date.now() / MS_PER_SECOND) - ONE_HOUR_SECONDS; // one hour ago
     const req = createTestRequest({
@@ -335,14 +346,17 @@ describe("requireAuth", () => {
           },
         },
       },
-    })
-    const res = createTestResponse()
-    const redirectStub = res.redirect as sinon.SinonStub
-    await requireAuth(req, res, ()=>{})
-    assert.equal(redirectStub.called, true, "should redirect user")
-    assert.equal(redirectStub.firstCall.firstArg, "/sign-in", "should redirect user")
-  })
-
+    });
+    const res = createTestResponse();
+    const redirectStub = res.redirect as sinon.SinonStub;
+    await requireAuth(req, res, () => {});
+    assert.equal(redirectStub.called, true, "should redirect user");
+    assert.equal(
+      redirectStub.firstCall.firstArg,
+      "/sign-in",
+      "should redirect user",
+    );
+  });
 });
 
 describe("setAuthStatus", () => {

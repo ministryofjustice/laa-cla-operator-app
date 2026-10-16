@@ -233,7 +233,7 @@ export async function logOut(req: Request, res: Response): Promise<void> {
   } catch {
     /* c8 ignore next */
     // Local session cleanup failure should not prevent provider logout.
-  /* c8 ignore next */
+    /* c8 ignore next */
   }
 
   res.clearCookie("connect.sid");

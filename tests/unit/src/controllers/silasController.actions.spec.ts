@@ -159,12 +159,12 @@ describe("silasController:callbackAction", () => {
   it("should validate token response body", async () => {
     req.query.state = "1111";
     req.query.code = "1111";
-    req.session.auth_nonce = "1111"
+    req.session.auth_nonce = "1111";
     const statusStub = res.status as sinon.SinonStub;
     mockSilasService.acquireTokenByCode.returns({
       accessToken: "",
       idToken: "",
-      account: {}
+      account: {},
     });
     await callbackAction(req, res);
     assert.equal(
@@ -172,8 +172,8 @@ describe("silasController:callbackAction", () => {
       true,
       "should return 500 error for missing auth_nonce",
     );
-  })
-  
+  });
+
   it("should exchange code for access token", async () => {
     req.query.state = "1111";
     req.query.code = "2222";
@@ -203,15 +203,26 @@ describe("silasController:callbackAction", () => {
   });
 });
 
-describe("silasController:logoutAction", async ()=>{
+describe("silasController:logoutAction", async () => {
   it("should log user out", async () => {
-    const req = createTestRequest()
-    const res = createTestResponse()
-    const destroySessionStub = req.session.destroy as sinon.SinonStub
-    const redirectStub = res.redirect as sinon.SinonStub
-    await logOut(req, res)
-    assert.equal(destroySessionStub.called, true, "should destroy the session when logging out")
-    assert.equal(redirectStub.called, true, "should redirect the user when logging out")
-    assert.equal(redirectStub.firstCall.args[0], `https://login.microsoftonline.com/${config.silas.tenantId}/oauth2/v2.0/logout`)
-  })
-})
+    const req = createTestRequest();
+    const res = createTestResponse();
+    const destroySessionStub = req.session.destroy as sinon.SinonStub;
+    const redirectStub = res.redirect as sinon.SinonStub;
+    await logOut(req, res);
+    assert.equal(
+      destroySessionStub.called,
+      true,
+      "should destroy the session when logging out",
+    );
+    assert.equal(
+      redirectStub.called,
+      true,
+      "should redirect the user when logging out",
+    );
+    assert.equal(
+      redirectStub.firstCall.args[0],
+      `https://login.microsoftonline.com/${config.silas.tenantId}/oauth2/v2.0/logout`,
+    );
+  });
+});
