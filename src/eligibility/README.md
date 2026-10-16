@@ -41,6 +41,24 @@ The module requires an `EligibilityDeps` object with:
 - **resultHandler** (ResultHandler): Handles the eligibility result. Must be implemented by the host.
 - **answerStore** (AnswerStore, optional): Persists answers. Defaults to `SessionAnswerStore`.
 
+## Checking answers
+
+Before an assessment is sent to CFE, the check your answers page displays the
+answered questions on the client's current journey route. Question text and option
+labels come from the original form definitions; unanswered optional fields and
+answers from branches that no longer apply are omitted.
+
+Each answer has a Change link to its original, pre-filled form. Continuing from
+that form follows the current journey, including any questions required by the
+changed answer, and returns to check your answers. CFE is called only when the
+operator selects **Accept and continue** on the review page.
+
+## Subject matter of dispute
+
+The SMOD checkboxes for property, investments, and valuable items are optional.
+Leave a checkbox unchecked when the asset is not a subject matter of dispute;
+no explicit answer is required to continue.
+
 ## Boundaries
 
 The module is strictly bounded so it can be copied into another service:

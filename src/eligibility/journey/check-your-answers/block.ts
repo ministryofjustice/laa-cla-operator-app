@@ -2,7 +2,11 @@ import {
   CollectionBlock,
   HtmlBlock,
 } from "@ministryofjustice/hmpps-forge/core/components";
-import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
+import {
+  GovUKButton,
+  GovUKSummaryList,
+} from "@ministryofjustice/hmpps-forge/govuk-components";
+import { Data } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 export const checkYourAnswersHeadingBlock = HtmlBlock({
   tag: "h1",
@@ -18,4 +22,8 @@ export const checkYourAnswersSummaryBlock = HtmlBlock({
 
 export const checkYourAnswersButtonBlock = CollectionBlock({
   collection: [GovUKButton({ text: "Accept and continue" })],
+});
+
+export const checkYourAnswersListBlock = GovUKSummaryList({
+  rows: Data("answerSummary"),
 });

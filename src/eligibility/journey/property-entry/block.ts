@@ -1,4 +1,4 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKTextInput,
   GovUKButton,
@@ -12,9 +12,14 @@ import {
 import {
   WHOLE_PERCENTAGE_PATTERN,
   poundsAmountGreaterThanZeroWhenAnswered,
-  smodDisputeWhenApplicable,
   POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN,
 } from "../amount-validation.js";
+
+export const propertyEntryHeadingBlock = HtmlBlock({
+  tag: "h1",
+  content: "Property details",
+  classes: "govuk-heading-xl",
+});
 
 export const propertyEntryBlock = CollectionBlock({
   collection: [
@@ -22,8 +27,7 @@ export const propertyEntryBlock = CollectionBlock({
       code: "house_value",
       label: {
         text: "How much is the property worth?",
-        classes: "govuk-label--l",
-        isPageHeading: true,
+        classes: "govuk-label--m",
       },
       hint: { text: "In pounds" },
       validWhen: [
@@ -68,6 +72,7 @@ export const propertyEntryBlock = CollectionBlock({
       fieldset: {
         legend: {
           text: "Property details",
+          classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
@@ -76,14 +81,7 @@ export const propertyEntryBlock = CollectionBlock({
           text: "This asset is a subject matter of dispute",
         },
       ],
-      validWhen: [
-        validation({
-          condition: smodDisputeWhenApplicable(),
-          message: "Select whether this asset is a subject matter of dispute",
-        }),
-      ],
     }),
     GovUKButton({ text: "Continue" }),
   ],
 });
-

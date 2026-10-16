@@ -1,1 +1,4 @@
-export { checkYourAnswersStep, CHECK_YOUR_ANSWERS_STEP_CODE } from "./step.js";
+export {
+  createCheckYourAnswersStep,
+  CHECK_YOUR_ANSWERS_STEP_CODE,
+} from "./step.js";

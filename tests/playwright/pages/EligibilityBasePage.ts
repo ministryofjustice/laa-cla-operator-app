@@ -35,7 +35,9 @@ export abstract class EligibilityBasePage {
    * Get the continue/submit button
    */
   get submitButton() {
-    return this.page.locator('button:has-text("Save and continue"), button:has-text("Submit")');
+    return this.page.locator(
+      'button:has-text("Continue"), button:has-text("Save and continue"), button:has-text("Submit")',
+    );
   }
 
   /**
@@ -67,6 +69,15 @@ export abstract class EligibilityBasePage {
   }
 
   /**
+   * Select a checkbox by label text
+   */
+  async selectCheckbox(label: string): Promise<void> {
+    await this.page
+      .locator(`label:has-text("${label}") input[type="checkbox"]`)
+      .click();
+  }
+
+  /**
    * Fill a text input by label
    */
   async fillTextInput(label: string, value: string): Promise<void> {
@@ -78,6 +89,8 @@ export abstract class EligibilityBasePage {
    * Check if current URL matches pattern
    */
   async urlMatches(pattern: string | RegExp): Promise<boolean> {
-    return this.page.url().includes(typeof pattern === "string" ? pattern : pattern.source);
+    return this.page
+      .url()
+      .includes(typeof pattern === "string" ? pattern : pattern.source);
   }
 }

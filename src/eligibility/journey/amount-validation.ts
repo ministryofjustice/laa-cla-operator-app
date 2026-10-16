@@ -45,13 +45,3 @@ export const poundsAmountGreaterThanZeroWhenAnswered = (
     Answer(answerCode).not.match(Condition.Equals(expectedAnswer)),
     Self().match(Condition.String.MatchesRegex(POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN)),
   ]);
-
-/**
- * Requires a dispute answer only when SMOD applies (non-immigration/asylum cases).
- * @returns {PredicateExpr} Passes when SMOD doesn't apply or dispute is answered.
- */
-export const smodDisputeWhenApplicable = (): PredicateExpr =>
-  or([
-    Answer("immigration_or_asylum").match(Condition.Equals("true")),
-    Self().match(Condition.IsRequired()),
-  ]);

@@ -15,18 +15,16 @@ test.describe("Eligibility journey - Under 18", () => {
     const detailsPath = `/case/${caseId}/add-client-details`;
     // Authenticate via test-auth endpoint before navigating to protected page
     await page.goto(`/test-auth/login?next=${encodeURIComponent(detailsPath)}`);
-    await page.getByRole("button", { name: "Check financial eligibility" }).click();
+    await page
+      .getByRole("button", { name: "Check financial eligibility" })
+      .click();
   });
 
   test("under 18 with controlled legal representation (no means test required)", async ({
     page,
     pages,
   }) => {
-    const {
-      levelOfHelpPage,
-      under18ClrPage,
-      checkYourAnswersPage,
-    } = pages;
+    const { levelOfHelpPage, under18ClrPage, checkYourAnswersPage } = pages;
 
     // Level of help - select controlled
     await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
@@ -35,24 +33,74 @@ test.describe("Eligibility journey - Under 18", () => {
 
     // Under 18 CLR - select yes (has controlled legal representation)
     await under18ClrPage.navigate(`/eligibility/${caseId}/under-18-clr`);
-    await expect(under18ClrPage.heading).toContainText("Controlled legal representation");
+    await expect(under18ClrPage.heading).toContainText(
+      "Controlled legal representation",
+    );
     await under18ClrPage.selectYes();
     await under18ClrPage.submit();
 
     // Should go to check your answers (no means test needed)
     await expect(page).toHaveURL(/check-your-answers/);
-    await expect(checkYourAnswersPage.heading).toContainText("Check your answers");
+    await expect(checkYourAnswersPage.heading).toContainText(
+      "Check your answers",
+    );
+
+    const rows = page.locator(".govuk-summary-list__row");
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0).locator(".govuk-summary-list__key")).toHaveText(
+      "What type of legal aid is needed?",
+    );
+    await expect(rows.nth(0).locator(".govuk-summary-list__value")).toHaveText(
+      "Controlled work (advice only)",
+    );
+    await expect(rows.nth(1).locator(".govuk-summary-list__key")).toHaveText(
+      "Controlled legal representation",
+    );
+    await expect(rows.nth(1).locator(".govuk-summary-list__value")).toHaveText(
+      "Yes",
+    );
+    await expect(
+      rows
+        .nth(1)
+        .getByRole("link", { name: "Change Controlled legal representation" }),
+    ).toHaveAttribute("href", "under-18-clr#controlled_legal_representation");
+
+    await rows
+      .nth(1)
+      .getByRole("link", { name: "Change Controlled legal representation" })
+      .click();
+    await expect(page).toHaveURL(
+      /under-18-clr#controlled_legal_representation$/,
+    );
+    await expect(
+      page.getByRole("radio", { name: "Yes", exact: true }),
+    ).toBeChecked();
+    await under18ClrPage.selectNo();
+    await under18ClrPage.submit();
+
+    for (const path of [
+      "aggregated-means",
+      "regular-income",
+      "under-eighteen-assets",
+    ]) {
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await page.getByRole("radio", { name: "No", exact: true }).check();
+      await page.getByRole("button", { name: "Continue", exact: true }).click();
+    }
+
+    await expect(page).toHaveURL(/check-your-answers$/);
+    await expect(rows).toHaveCount(5);
+    await expect(rows.nth(1).locator(".govuk-summary-list__value")).toHaveText(
+      "No",
+    );
+    await expect(rows.getByRole("link", { name: /^Change/ })).toHaveCount(5);
   });
 
   test("under 18 without CLR - with aggregated means", async ({
     page,
     pages,
   }) => {
-    const {
-      levelOfHelpPage,
-      under18ClrPage,
-      aggregatedMeansPage,
-    } = pages;
+    const { levelOfHelpPage, under18ClrPage, aggregatedMeansPage } = pages;
 
     // Level of help - select controlled
     await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
@@ -65,7 +113,9 @@ test.describe("Eligibility journey - Under 18", () => {
     await under18ClrPage.submit();
 
     // Aggregated means - select yes
-    await aggregatedMeansPage.navigate(`/eligibility/${caseId}/aggregated-means`);
+    await aggregatedMeansPage.navigate(
+      `/eligibility/${caseId}/aggregated-means`,
+    );
     await expect(aggregatedMeansPage.heading).toContainText("aggregated means");
     await aggregatedMeansPage.selectYes();
     await aggregatedMeansPage.submit();

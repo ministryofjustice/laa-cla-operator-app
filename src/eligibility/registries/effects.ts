@@ -21,6 +21,11 @@ const FORM_BOOLEANS: Readonly<Record<string, boolean>> = {
 };
 
 const NEXT_STEP_OFFSET = 1;
+const BANK_ACCOUNT_FIELD_PATTERN =
+  /^bank_accounts_(?<index>\d+)_(?<field>amount|account_in_dispute)$/u;
+const MIN_BANK_ACCOUNT_ROWS = 1;
+const NO_BANK_ACCOUNT_FIELDS = 0;
+const BANK_ACCOUNT_ROW_POSITION_OFFSET = 1;
 
 // Journey steps outside the domain's step list
 const CHECK_YOUR_ANSWERS_PATH = "check-your-answers";
@@ -66,9 +71,7 @@ function toFormValue(value: unknown): unknown {
  */
 function todayUtc(): Date {
   const now = new Date();
-  return new Date(
-    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
-  );
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 }
 
 /**
@@ -114,9 +117,148 @@ function publishNavigation(
   context.setData("steps", steps);
 }
 
+interface BankAccountRow {
+  heading: string;
+  amountCode: string;
+  disputeCode: string;
+  requiredMessage: string;
+  numberMessage: string;
+}
+
+/**
+ * Builds the row definition used to render one client's bank account.
+ * @param {number} index - zero-based position of the account
+ * @returns {BankAccountRow} a row with input codes and validation messages
+ */
+function bankAccountRow(index: number): BankAccountRow {
+  const position = index + BANK_ACCOUNT_ROW_POSITION_OFFSET;
+  return {
+    heading: `Bank account ${position}`,
+    amountCode: `bank_accounts_${index}_amount`,
+    disputeCode: `bank_accounts_${index}_account_in_dispute`,
+    requiredMessage: `Enter total money in bank account ${position}. Enter 0 if this does not apply.`,
+    numberMessage: `Total money in bank account ${position} must be a number. Enter 0 if this does not apply.`,
+  };
+}
+
+/**
+ * Checks whether a saved bank account is a row object.
+ * @param {unknown} value - a saved bank account
+ * @returns {boolean} whether the value is a non-array object
+ */
+function isBankAccountRowAnswer(
+  value: unknown,
+): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Populates bank-account input rows and values from saved answers.
+ * @param {EffectFunctionContext} context - the Forge effect context
+ * @param {Answers} answers - all saved eligibility answers
+ */
+function setBankAccountFormData(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  const bankAccounts: unknown[] = Array.isArray(answers.bank_accounts)
+    ? Array.from(answers.bank_accounts, (account: unknown) => account)
+    : [];
+  context.setData(
+    "bankAccountRows",
+    Array.from(
+      { length: Math.max(bankAccounts.length, MIN_BANK_ACCOUNT_ROWS) },
+      (_, index) => bankAccountRow(index),
+    ),
+  );
+
+  bankAccounts.forEach((account, index) => {
+    if (!isBankAccountRowAnswer(account)) return;
+    const { amount, account_in_dispute: accountInDispute } = account;
+    context.setAnswer(
+      `bank_accounts_${index}_amount`,
+      typeof amount === "string" || typeof amount === "number"
+        ? String(amount)
+        : "",
+    );
+    if (accountInDispute === true) {
+      context.setAnswer(`bank_accounts_${index}_account_in_dispute`, "true");
+    }
+  });
+}
+
+/**
+ * Converts repeated bank-account form fields to the CFE answer structure.
+ * @param {Answers} answers - answers collected by Forge from the current form
+ * @returns {Answers} answers with bank-account rows grouped under one key
+ */
+function bankAccountsFromFormAnswers(answers: Answers): Answers {
+  const indexes = Object.keys(answers)
+    .map((key) => BANK_ACCOUNT_FIELD_PATTERN.exec(key)?.groups?.index)
+    .filter((index): index is string => index !== undefined)
+    .map(Number);
+
+  if (indexes.length === NO_BANK_ACCOUNT_FIELDS) return answers;
+
+  const normalizedAnswers = Object.fromEntries(
+    Object.entries(answers).filter(
+      ([key]) => !BANK_ACCOUNT_FIELD_PATTERN.test(key),
+    ),
+  );
+  normalizedAnswers.bank_accounts = Array.from(
+    { length: Math.max(...indexes) + BANK_ACCOUNT_ROW_POSITION_OFFSET },
+    (_, index) => {
+      const amountCode = `bank_accounts_${index}_amount`;
+      const disputeCode = `bank_accounts_${index}_account_in_dispute`;
+      const { [amountCode]: rawAmount, [disputeCode]: dispute } = answers;
+      const numericAmount =
+        typeof rawAmount === "string" && rawAmount.trim() !== ""
+          ? Number(rawAmount)
+          : Number.NaN;
+      const amount = Number.isFinite(numericAmount) ? numericAmount : rawAmount;
+      const checked =
+        dispute === true ||
+        dispute === "true" ||
+        (Array.isArray(dispute) && dispute.includes("true"));
+
+      return {
+        amount,
+        ...(checked ? { account_in_dispute: true } : {}),
+      };
+    },
+  );
+
+  return normalizedAnswers;
+}
+
+/**
+ * Appends an empty bank-account row after saving the submitted rows.
+ * @param {EligibilityDeps} deps - journey dependencies
+ * @param {EffectFunctionContext} context - the Forge effect context
+ */
+async function appendBankAccountRow(
+  deps: EligibilityDeps,
+  context: EffectFunctionContext,
+): Promise<void> {
+  const checkId = context.getRequestParam("caseId");
+  const { answerStore } = deps;
+  if (answerStore === undefined) {
+    throw new Error("answerStore not provided to eligibility package");
+  }
+
+  const answers = await answerStore.load(checkId);
+  const bankAccounts: unknown[] = Array.isArray(answers.bank_accounts)
+    ? Array.from(answers.bank_accounts, (account: unknown) => account)
+    : [];
+  await answerStore.save(checkId, {
+    bank_accounts: [...bankAccounts, { amount: "" }],
+  });
+}
+
 export interface EligibilityEffectShape {
   LoadAnswers: () => EffectFunctionExpr;
   SaveAnswers: () => EffectFunctionExpr;
+  AddBankAccountRow: () => EffectFunctionExpr;
   RunAssessment: () => EffectFunctionExpr;
 }
 
@@ -135,42 +277,27 @@ const EligibilityEffectsImplementation: Record<
   LoadAnswers:
     (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
       try {
-        console.error("[LoadAnswers] Starting LoadAnswers effect");
         const checkId = context.getRequestParam("caseId");
-        console.error(`[LoadAnswers] checkId: ${checkId}`);
-        const {answerStore} = deps;
-        console.error(`[LoadAnswers] answerStore available: ${!!answerStore}`);
+        const { answerStore } = deps;
 
         if (!answerStore) {
           throw new Error("answerStore not provided to eligibility package");
         }
 
         const answers = await answerStore.load(checkId);
-        console.error(
-          `[LoadAnswers] answers loaded: ${JSON.stringify(answers)}`,
-        );
 
         // On first access, preload date_of_birth from case data
         if (Object.keys(answers).length === 0 && deps.caseApi) {
           try {
-            console.error(
-              "[LoadAnswers] Attempting to preload DOB from case data",
-            );
             // Get the axios middleware from the request (Forge provides this in context)
             const forgeContext = context as EffectFunctionContext & {
               axiosMiddleware?: AxiosInstanceWrapper;
             };
-            const {axiosMiddleware} = forgeContext;
-            console.error(
-              `[LoadAnswers] axiosMiddleware available: ${!!axiosMiddleware}`,
-            );
+            const { axiosMiddleware } = forgeContext;
             if (axiosMiddleware) {
               const caseData = await deps.caseApi.loadCase(
                 axiosMiddleware,
                 String(checkId),
-              );
-              console.error(
-                `[LoadAnswers] caseData loaded: ${JSON.stringify(caseData)}`,
               );
               if (caseData.date_of_birth) {
                 answers.date_of_birth = caseData.date_of_birth;
@@ -178,7 +305,6 @@ const EligibilityEffectsImplementation: Record<
                 await answerStore.save(checkId, {
                   date_of_birth: caseData.date_of_birth,
                 });
-                console.error("[LoadAnswers] DOB preloaded and saved");
               }
             }
           } catch (error) {
@@ -189,7 +315,6 @@ const EligibilityEffectsImplementation: Record<
           }
         }
 
-        console.error("[LoadAnswers] Setting answers in Forge");
         // Set each answer in Forge
         for (const [key, value] of Object.entries(answers)) {
           if (value !== undefined && value !== null) {
@@ -197,22 +322,18 @@ const EligibilityEffectsImplementation: Record<
           }
         }
 
-        console.error("[LoadAnswers] Computing navigation");
+        setBankAccountFormData(context, answers);
+
         publishNavigation(context, answers);
-        console.error(
-          "[LoadAnswers] LoadAnswers effect completed successfully",
-        );
       } catch (error) {
-        console.error(
-          `[LoadAnswers] FATAL ERROR: ${error instanceof Error ? error.stack : String(error)}`,
-        );
         throw error;
       }
     },
 
   /**
-   *
-   * @param deps
+   * Registers the effect that saves submitted values and returns updated navigation.
+   * @param {EligibilityDeps} deps - dependencies for the eligibility journey
+   * @returns {EffectFunctionExpr} the save-answers effect
    */
   SaveAnswers:
     (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
@@ -220,7 +341,7 @@ const EligibilityEffectsImplementation: Record<
         console.error("[SaveAnswers] Starting SaveAnswers effect");
         const checkId = context.getRequestParam("caseId");
         console.error(`[SaveAnswers] checkId: ${checkId}`);
-        const {answerStore} = deps;
+        const { answerStore } = deps;
 
         if (!answerStore) {
           throw new Error("answerStore not provided to eligibility package");
@@ -233,7 +354,7 @@ const EligibilityEffectsImplementation: Record<
         // step after it.
         await answerStore.save(
           checkId,
-          toDomainAnswers(context.getAllAnswers()),
+          toDomainAnswers(bankAccountsFromFormAnswers(context.getAllAnswers())),
         );
 
         const allAnswers = await answerStore.load(checkId);
@@ -254,13 +375,23 @@ const EligibilityEffectsImplementation: Record<
     },
 
   /**
+   * Registers the effect that appends an empty bank-account row.
+   * @param {EligibilityDeps} deps - dependencies for the eligibility journey
+   * @returns {EffectFunctionExpr} the add-bank-account effect
+   */
+  AddBankAccountRow:
+    (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
+      await appendBankAccountRow(deps, context);
+    },
+
+  /**
    *
    * @param deps
    */
   RunAssessment:
     (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
       const checkId = context.getRequestParam("caseId");
-      const {answerStore} = deps;
+      const { answerStore } = deps;
 
       if (!answerStore) {
         throw new Error("answerStore not provided to eligibility package");
@@ -301,6 +432,10 @@ export const EligibilityEffects: EligibilityEffectShape = {
   SaveAnswers: EligibilityEffectsRegistry.register(
     "SaveAnswers",
     EligibilityEffectsImplementation.SaveAnswers,
+  ),
+  AddBankAccountRow: EligibilityEffectsRegistry.register(
+    "AddBankAccountRow",
+    EligibilityEffectsImplementation.AddBankAccountRow,
   ),
   RunAssessment: EligibilityEffectsRegistry.register(
     "RunAssessment",

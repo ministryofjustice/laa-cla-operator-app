@@ -2,6 +2,7 @@ import {
   createForgePackage,
   journey,
   access,
+  type JourneyDefinition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { EligibilityDeps } from "../ports/index.js";
 import {
@@ -55,7 +56,8 @@ import {
 } from "./additional-property/index.js";
 import { vehiclesStep, vehicleDetailsStep } from "./vehicles/index.js";
 import { cannotUseServiceStep } from "./cannot-use-service/index.js";
-import { checkYourAnswersStep } from "./check-your-answers/index.js";
+import { createCheckYourAnswersStep } from "./check-your-answers/index.js";
+import { createAnswerSummary } from "./check-your-answers/summary.js";
 
 export interface CreateEligibilityPackageOptions {
   path: string;
@@ -73,8 +75,7 @@ export interface CreateEligibilityPackageOptions {
 export function createEligibilityPackage(
   options: CreateEligibilityPackageOptions,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic config building requires flexible typing
-  const journeyConfig: any = {
+  const journeyConfig: Omit<JourneyDefinition, "type"> = {
     code: "eligibility",
     title: "Financial Eligibility Check",
     path: options.path,
@@ -129,7 +130,6 @@ export function createEligibilityPackage(
       vehiclesStep,
       vehicleDetailsStep,
       cannotUseServiceStep,
-      checkYourAnswersStep,
     ],
   };
 
@@ -138,10 +138,16 @@ export function createEligibilityPackage(
     journeyConfig.view = { template: options.template.layout };
   }
 
+  const summary = createAnswerSummary(journeyConfig.steps ?? []);
+  journeyConfig.steps?.push(createCheckYourAnswersStep(summary.load()));
   const eligibilityJourney = journey(journeyConfig);
 
   return createForgePackage<EligibilityDeps>({
     journey: eligibilityJourney,
-    functions: [EligibilityEffectsRegistry, EligibilityConditionsRegistry],
+    functions: [
+      EligibilityEffectsRegistry,
+      EligibilityConditionsRegistry,
+      summary.registry,
+    ],
   });
 }
