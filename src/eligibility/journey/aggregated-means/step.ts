@@ -15,6 +15,7 @@ export const AGGREGATED_MEANS_STEP_CODE = "aggregated_means";
 
 export const aggregatedMeansStep = step({
   code: AGGREGATED_MEANS_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/aggregated-means",
   title: "Aggregated means",
   validWhen: [

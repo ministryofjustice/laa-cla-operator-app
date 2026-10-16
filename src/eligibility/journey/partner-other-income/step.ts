@@ -6,6 +6,7 @@ export const PARTNER_OTHER_INCOME_STEP_CODE = "partner_other_income";
 
 export const partnerOtherIncomeStep = step({
   code: PARTNER_OTHER_INCOME_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/partner-other-income",
   title: "Partner other income",
   validWhen: [validation({ condition: Post("partner_other_income").match(Condition.IsRequired()), message: "Select whether the partner has other income" })],

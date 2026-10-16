@@ -52,6 +52,8 @@ export class SessionAnswerStore implements AnswerStore {
    */
   // eslint-disable-next-line @typescript-eslint/require-await -- Async required by AnswerStore interface
   async save(checkId: unknown, partial: Answers): Promise<void> {
+    console.error(`[SessionAnswerStore.save] Saving answers for checkId: ${checkId}`);
+    console.error(`[SessionAnswerStore.save] Partial answers: ${JSON.stringify(partial)}`);
     const session = this.getSession();
     const checkIdStr = String(checkId);
 
@@ -64,6 +66,7 @@ export class SessionAnswerStore implements AnswerStore {
     const normalized = this.normalizeAddAnotherFields(merged);
 
     session.eligibility[checkIdStr] = normalized;
+    console.error(`[SessionAnswerStore.save] Saved normalized answers: ${JSON.stringify(normalized)}`);
   }
 
   /**

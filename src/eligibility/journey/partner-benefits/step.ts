@@ -6,6 +6,7 @@ export const PARTNER_BENEFITS_STEP_CODE = "partner_benefits";
 
 export const partnerBenefitsStep = step({
   code: PARTNER_BENEFITS_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/partner-benefits",
   title: "Partner benefits",
   validWhen: [validation({ condition: Post("partner_benefits").match(Condition.IsRequired()), message: "Select whether the partner receives benefits" })],

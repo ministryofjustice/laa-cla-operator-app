@@ -88,44 +88,75 @@ const EligibilityEffectsImplementation: Record<keyof EligibilityEffectShape, Eff
   },
 
   SaveAnswers: (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
-    const checkId = context.getRequestParam("caseId");
-    const answerStore = deps.answerStore;
+    try {
+      console.error("[SaveAnswers] Starting SaveAnswers effect");
+      const checkId = context.getRequestParam("caseId");
+      console.error(`[SaveAnswers] checkId: ${checkId}`);
+      const answerStore = deps.answerStore;
 
-    if (!answerStore) {
-      throw new Error("answerStore not provided to eligibility package");
+      if (!answerStore) {
+        throw new Error("answerStore not provided to eligibility package");
+      }
+
+      // Load previous answers to merge with posted data
+      const previousAnswers = await answerStore.load(checkId);
+      console.error(`[SaveAnswers] previousAnswers: ${JSON.stringify(previousAnswers)}`);
+
+      // Get posted form data. Forge passes form fields as POST data.
+      // For now, we collect all posted data by checking common field names
+      const postedAnswers: Answers = {};
+
+      // Get all possible form field values from POST data
+      // This is a generic approach that works for simple form fields
+      const postDataKeys = [
+        "level_of_help",
+        "domestic_abuse_applicant",
+        "date_of_birth",
+        "client_age",
+        // Add other known field names as needed
+      ];
+
+      for (const key of postDataKeys) {
+        const value = context.getPostData(key);
+        if (value !== undefined && value !== null) {
+          postedAnswers[key] = value;
+          console.error(`[SaveAnswers] Posted data: ${key} = ${value}`);
+        }
+      }
+
+      // Merge posted answers with previous answers
+      const merged = { ...previousAnswers, ...postedAnswers };
+      console.error(`[SaveAnswers] Merged answers: ${JSON.stringify(merged)}`);
+
+      // Save merged answers to session
+      if (Object.keys(postedAnswers).length > 0) {
+        await answerStore.save(checkId, postedAnswers);
+        console.error("[SaveAnswers] Answers saved to session");
+      }
+
+      // Reload all answers to recompute navigation
+      const allAnswers = await answerStore.load(checkId);
+      console.error(`[SaveAnswers] Reloaded answers: ${JSON.stringify(allAnswers)}`);
+
+      // Recompute navigation
+      const steps = stepsFor(allAnswers);
+      const navigationMap: Record<string, string | undefined> = {};
+
+      for (let i = 0; i < steps.length; i++) {
+        const currentStep = steps[i];
+        const nextStep = steps[i + 1];
+        // Convert underscore step codes to hyphen paths for URL routing
+        navigationMap[currentStep] = nextStep ? nextStep.replace(/_/g, "-") : undefined;
+      }
+
+      console.error(`[SaveAnswers] Navigation map computed, next step for level_of_help: ${navigationMap.level_of_help}`);
+      context.setData("nav", navigationMap);
+      context.setData("steps", steps);
+      console.error("[SaveAnswers] SaveAnswers effect completed successfully");
+    } catch (error) {
+      console.error(`[SaveAnswers] FATAL ERROR: ${error instanceof Error ? error.stack : String(error)}`);
+      throw error;
     }
-
-    // Get all answers that Forge has stored from the form submission
-    // We need to iterate through all answers Forge has loaded
-    const postedAnswers: Answers = {};
-    // This is a simplification - in reality we need to track which fields are form fields
-    // For Phase 2a, we'll just save what we get from the storage reload
-    // In Phase 2b when we implement steps, we'll know exactly which fields are posted
-
-    // Save whatever we have to session (in practice, Forge will have set answers via setAnswer in blocks)
-    // Since we can't easily enumerate all current answers, we'll reload and compare
-    const previousAnswers = await answerStore.load(checkId);
-    // For now, just save what we know exists
-    if (Object.keys(previousAnswers).length > 0) {
-      await answerStore.save(checkId, previousAnswers);
-    }
-
-    // Reload all answers to recompute navigation
-    const allAnswers = await answerStore.load(checkId);
-
-    // Recompute navigation
-    const steps = stepsFor(allAnswers);
-    const navigationMap: Record<string, string | undefined> = {};
-
-    for (let i = 0; i < steps.length; i++) {
-      const currentStep = steps[i];
-      const nextStep = steps[i + 1];
-      // Convert underscore step codes to hyphen paths for URL routing
-      navigationMap[currentStep] = nextStep ? nextStep.replace(/_/g, "-") : undefined;
-    }
-
-    context.setData("nav", navigationMap);
-    context.setData("steps", steps);
   },
 
   RunAssessment: (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {

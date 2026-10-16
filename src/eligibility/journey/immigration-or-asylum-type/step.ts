@@ -6,6 +6,7 @@ export const IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE = "immigration_or_asylum_type"
 
 export const immigrationOrAsylumTypeStep = step({
   code: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/immigration-or-asylum-type",
   title: "Immigration or asylum type",
   validWhen: [validation({ condition: Post("immigration_or_asylum_type").match(Condition.IsRequired()), message: "Select the type of immigration or asylum matter" })],

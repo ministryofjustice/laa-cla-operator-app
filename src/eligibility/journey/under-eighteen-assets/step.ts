@@ -15,6 +15,7 @@ export const UNDER_EIGHTEEN_ASSETS_STEP_CODE = "under_eighteen_assets";
 
 export const underEighteenAssetsStep = step({
   code: UNDER_EIGHTEEN_ASSETS_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/under-eighteen-assets",
   title: "Assets",
   validWhen: [

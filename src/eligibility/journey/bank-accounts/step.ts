@@ -19,6 +19,7 @@ export const BANK_ACCOUNTS_STEP_CODE = "bank_accounts";
 
 export const bankAccountsStep = step({
   code: BANK_ACCOUNTS_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/bank-accounts",
   title: "Bank accounts",
   validWhen: [
