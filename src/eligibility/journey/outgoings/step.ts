@@ -9,7 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/conditions.js";
 import { outgoingsBlock } from "./block.js";
 
 export const OUTGOINGS_STEP_CODE = "outgoings";

@@ -9,7 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/conditions.js";
 import { mortgageOrLoanPaymentBlock } from "./block.js";
 
 export const MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE = "mortgage_or_loan_payment";

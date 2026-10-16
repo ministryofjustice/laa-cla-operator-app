@@ -9,7 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/conditions.js";
 import { partnerIncomeBlock } from "../partner-blocks.js";
 
 export const PARTNER_INCOME_STEP_CODE = "partner_income";

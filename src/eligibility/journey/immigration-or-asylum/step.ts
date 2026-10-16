@@ -9,7 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/conditions.js";
 import { immigrationOrAsylumBlock } from "./block.js";
 
 export const IMMIGRATION_OR_ASYLUM_STEP_CODE = "immigration_or_asylum";

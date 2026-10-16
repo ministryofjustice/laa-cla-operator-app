@@ -3,13 +3,19 @@ import { test, expect } from "../fixtures/index.js";
 
 /**
  * End-to-end tests for eligibility journey with controlled work and immigration/asylum
+ * TODO: Replace manual case navigation with direct `/eligibility/` entry point once it's implemented
  */
 test.describe("Eligibility journey - Controlled work with Immigration/Asylum", () => {
-  let checkId: string;
+  let caseId: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/eligibility/");
-    checkId = page.url().split("/").pop() || "";
+    // TODO: Replace with direct eligibility entry point when implemented
+    // Currently using the case page button as entry point
+    caseId = "ED-0001-0001";
+    const detailsPath = `/case/${caseId}/add-client-details`;
+    // Authenticate via test-auth endpoint before navigating to protected page
+    await page.goto(`/test-auth/login?next=${encodeURIComponent(detailsPath)}`);
+    await page.getByRole("button", { name: "Check financial eligibility" }).click();
   });
 
   test("adult - controlled work with immigration", async ({
@@ -22,12 +28,12 @@ test.describe("Eligibility journey - Controlled work with Immigration/Asylum", (
     } = pages;
 
     // Level of help - select controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
     // Immigration or asylum - select yes
-    await immigrationOrAsylumPage.navigate(`/eligibility/${checkId}/immigration-or-asylum`);
+    await immigrationOrAsylumPage.navigate(`/eligibility/${caseId}/immigration-or-asylum`);
     await expect(immigrationOrAsylumPage.heading).toContainText("Immigration or asylum");
     await immigrationOrAsylumPage.selectYes();
     await immigrationOrAsylumPage.submit();
@@ -47,12 +53,12 @@ test.describe("Eligibility journey - Controlled work with Immigration/Asylum", (
     } = pages;
 
     // Level of help - select controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
     // Immigration or asylum - select no
-    await immigrationOrAsylumPage.navigate(`/eligibility/${checkId}/immigration-or-asylum`);
+    await immigrationOrAsylumPage.navigate(`/eligibility/${caseId}/immigration-or-asylum`);
     await immigrationOrAsylumPage.selectNo();
     await immigrationOrAsylumPage.submit();
 
@@ -71,12 +77,12 @@ test.describe("Eligibility journey - Controlled work with Immigration/Asylum", (
     } = pages;
 
     // Navigate to level-of-help, select controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
     // Navigate to immigration, select yes
-    await immigrationOrAsylumPage.navigate(`/eligibility/${checkId}/immigration-or-asylum`);
+    await immigrationOrAsylumPage.navigate(`/eligibility/${caseId}/immigration-or-asylum`);
     await immigrationOrAsylumPage.selectYes();
     await immigrationOrAsylumPage.submit();
 

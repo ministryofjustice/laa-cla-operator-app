@@ -9,7 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/conditions.js";
 import { partnerEmploymentStatusBlock } from "../partner-blocks.js";
 
 export const PARTNER_EMPLOYMENT_STATUS_STEP_CODE = "partner_employment_status";

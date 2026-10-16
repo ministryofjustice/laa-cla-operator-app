@@ -1,10 +1,16 @@
-import { ConditionRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
+import {
+  ConditionRegistry,
+  type ConditionFunctionExpr,
+} from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { EligibilityDeps } from "../ports/index.js";
 import { stepsFor } from "../domain/navigation.js";
 import type { Answers } from "../domain/logic.js";
 
 export interface EligibilityConditionShape {
-  StepIsRelevant: (stepCode: string) => unknown;
+  // Type assertion needed due to Forge's condition typing incompatibility
+  // The condition correctly checks step relevance at runtime
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  StepIsRelevant: (stepCode: string) => any;
 }
 
 const EligibilityConditionsImplementation = {
