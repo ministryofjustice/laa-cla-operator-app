@@ -17,6 +17,10 @@ import { regularIncomeStep } from "./regular-income/index.js";
 import { underEighteenAssetsStep } from "./under-eighteen-assets/index.js";
 import { applicantStep } from "./applicant/index.js";
 import { propertyStep } from "./property/index.js";
+import { propertyLandlordStep } from "./property-landlord/index.js";
+import { propertyEntryStep } from "./property-entry/index.js";
+import { assetsStep } from "./assets/index.js";
+import { partnerAssetsStep } from "./partner-assets/index.js";
 import { bankAccountsStep } from "./bank-accounts/index.js";
 import { employmentStatusStep } from "./employment-status/index.js";
 import { incomeStep } from "./income/index.js";
@@ -93,6 +97,8 @@ export function createEligibilityPackage(
       underEighteenAssetsStep,
       applicantStep,
       propertyStep,
+      propertyLandlordStep,
+      propertyEntryStep,
       bankAccountsStep,
       employmentStatusStep,
       incomeStep,
@@ -120,6 +126,8 @@ export function createEligibilityPackage(
       dependantIncomeDetailsStep,
       additionalPropertyStep,
       additionalPropertyDetailsStep,
+      assetsStep,
+      partnerAssetsStep,
       vehiclesStep,
       vehicleDetailsStep,
       cannotUseServiceStep,

@@ -135,10 +135,82 @@ describe("eligibility journey navigation", () => {
   it("does not loop back to level of help after the applicant step", async () => {
     await submit("level-of-help", { level_of_help: "controlled" });
     await submit("immigration-or-asylum", { immigration_or_asylum: "false" });
-    const next = await submit("applicant", { applicant: "false" });
+    const next = await submit("applicant", {
+      applicant: "false",
+      passporting: "false",
+    });
 
     assert.equal(next, `${BASE}/dependant-details`);
     await assertRenders("dependant-details");
+  });
+
+  describe("property and assets", () => {
+    beforeEach(() => {
+      answerStore.answers = {
+        level_of_help: "controlled",
+        client_age: "standard",
+        immigration_or_asylum: false,
+        partner: false,
+        applicant: false,
+        passporting: false,
+        dependant_details: false,
+        employment_status: ["employed"],
+        benefits: "false",
+        other_income: "false",
+        childcare_payments: "false",
+        maintenance_payments: "false",
+        legal_aid_payments: "false",
+      };
+    });
+
+    it("sends an outright owner to property entry", async () => {
+      const next = await submit("property", { property_owned: "outright" });
+
+      assert.equal(next, `${BASE}/property-entry`);
+      await assertRenders("property-entry");
+    });
+
+    it("sends a shared owner to property landlord", async () => {
+      const next = await submit("property", {
+        property_owned: "shared_ownership",
+      });
+
+      assert.equal(next, `${BASE}/property-landlord`);
+      await assertRenders("property-landlord");
+    });
+
+    it("goes to additional property after property entry", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "outright",
+      };
+
+      const next = await submit("property-entry", {
+        house_value: "150000",
+        percentage_owned: "100",
+        house_in_dispute: "false",
+      });
+
+      assert.equal(next, `${BASE}/additional-property`);
+      await assertRenders("additional-property");
+    });
+
+    it("goes to assets after additional property", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "outright",
+        house_value: "150000",
+        percentage_owned: "100",
+        house_in_dispute: "false",
+      };
+
+      const next = await submit("additional-property", {
+        additional_property: "false",
+      });
+
+      assert.equal(next, `${BASE}/assets`);
+      await assertRenders("assets");
+    });
   });
 
   it("goes to check your answers after the last relevant step", async () => {

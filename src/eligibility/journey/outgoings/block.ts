@@ -5,10 +5,11 @@ import {
   GovUKButton,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import {
-  validation,
   Condition,
   Self,
+  validation,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { poundsAmountWhenAnswered } from "../amount-validation.js";
 
 export const outgoingsBlock = CollectionBlock({
   collection: [
@@ -40,7 +41,7 @@ export const outgoingsBlock = CollectionBlock({
       hint: { text: "In pounds per month" },
       validWhen: [
         validation({
-          condition: Self().match(Condition.IsNumeric()),
+          condition: poundsAmountWhenAnswered("childcare_payments", "true"),
           message: "Childcare payment amount must be a number",
         }),
       ],
@@ -86,7 +87,7 @@ export const outgoingsBlock = CollectionBlock({
       hint: { text: "In pounds per month" },
       validWhen: [
         validation({
-          condition: Self().match(Condition.IsNumeric()),
+          condition: poundsAmountWhenAnswered("maintenance_payments", "true"),
           message: "Maintenance payment amount must be a number",
         }),
       ],
@@ -132,7 +133,7 @@ export const outgoingsBlock = CollectionBlock({
       hint: { text: "In pounds per month" },
       validWhen: [
         validation({
-          condition: Self().match(Condition.IsNumeric()),
+          condition: poundsAmountWhenAnswered("legal_aid_payments", "true"),
           message: "Legal aid payment amount must be a number",
         }),
       ],

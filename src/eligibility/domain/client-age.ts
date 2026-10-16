@@ -1,9 +1,9 @@
 // CCQ asks for the client's age bracket (`ClientAgeForm`). Here the earlier
 // call-intake journey has already collected their date of birth, so the
 // bracket is derived from it instead of asked.
+import { yearsAgo } from "./cfe/dates.js";
 import type { Answers } from "./logic.js";
 import { CLIENT_AGE } from "./logic.js";
-import { yearsAgo } from "./cfe/dates.js";
 
 const ADULT_AGE = 18;
 const OVER_60_AGE = 60;
