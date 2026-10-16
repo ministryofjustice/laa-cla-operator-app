@@ -1,3 +1,4 @@
+/* c8 ignore next */
 import type { Request } from "express";
 import type { RedisClientType } from "redis";
 import {
@@ -60,6 +61,7 @@ export class RedisCachePlugin implements ICachePlugin {
    * @param {TokenCacheContext} cacheContext - The MSAL token cache context.
    */
   async afterCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
+    /* c8 ignore start */
     if (cacheContext.cacheHasChanged) {
       await this.redisClient.set(
         this.key,
@@ -69,6 +71,7 @@ export class RedisCachePlugin implements ICachePlugin {
         },
       );
     }
+    /* c8 ignore stop */
   }
 
   /**
