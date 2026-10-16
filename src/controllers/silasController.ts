@@ -1,36 +1,19 @@
-import { randomBytes, randomUUID } from "node:crypto";
-import { promisify } from "node:util";
+import { randomUUID } from "node:crypto";
 
-import { ConfidentialClientApplication } from "@azure/msal-node";
+import type { ConfidentialClientApplication } from "@azure/msal-node";
 import type { Request, Response } from "express";
 
 import config from "#config.js";
-import type { AccessTokenClaims } from "#types/auth-types.js";
+import { SilasService } from "#src/services/api/silasService.js";
+import {
+  destroySession,
+  regenerateSession,
+  saveSession,
+} from "#src/helpers/session.js";
+import { EMPTY_LENGTH, INTERNAL_SERVER_ERROR } from "#src/constants.js";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
-const NONCE_BYTES = 32;
-const TOKEN_PARTS_COUNT = 3;
-const DEFAULT_SESSION_MINUTES = 30;
-const MILLISECONDS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
-const INTERNAL_SERVER_ERROR = 500;
-const EMPTY_LENGTH = 0;
-const TOKEN_CLAIMS_INDEX = 1;
-const LAST_SEGMENT_INDEX = -1;
-
-const TOKEN_EXPIRY_OFFSET_MS =
-  DEFAULT_SESSION_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
-
-const OIDC_SCOPES = new Set(["openid", "profile", "offline_access"]);
-
-const msalClient = new ConfidentialClientApplication({
-  auth: {
-    clientId: config.silas.clientId,
-    authority: config.silas.authority,
-    clientSecret: config.silas.clientSecret,
-  },
-});
 
 /**
  * Get a querystring as a string
@@ -101,28 +84,10 @@ export async function processUATRedirect(
       req.query as Record<string, string>,
     ).toString();
     const redirect = `${req.session.return_to}?${queryString}`;
-    console.log("Redirect is ", redirect);
     res.redirect(redirect);
     return true;
   }
   return false;
-}
-
-/**
- * Tries to find auth nonce in req.session.auth_nonce otherwise creates and saves in the session and returns it
- * @param {Request} req - Express Request object
- * @returns {Promise<string>} - Returns the nonce to use for the auth
- */
-async function getAuthNonce(req: Request): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- Direct property access is clearer here
-  let authNonce = req.session.auth_nonce;
-  if (authNonce === undefined) {
-    authNonce = randomBytes(NONCE_BYTES).toString("base64url");
-    req.session.auth_nonce = authNonce;
-    await saveSession(req);
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- nonce will be a string
-  return authNonce as string;
 }
 
 /**
@@ -137,113 +102,9 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
   if (userRedirected) {
     return;
   }
-  const authNonce = await getAuthNonce(req);
-  const authUrl = await msalClient.getAuthCodeUrl({
-    scopes: config.silas.scopes,
-    redirectUri: config.silas.redirectUri,
-    state: authNonce,
-  });
+  const authUrl = await SilasService.factory().getAuthCodeUrl(req);
 
   res.redirect(authUrl);
-}
-
-/**
- * Decodes the claims portion of a JWT access token.
- *
- * @param {string} token JWT access token to decode.
- * @returns {AccessTokenClaims} The decoded access-token claims.
- * @throws {Error} When the token cannot be decoded.
- */
-function decodeToken(token: string): AccessTokenClaims {
-  const parts = token.split(".");
-
-  if (parts.length !== TOKEN_PARTS_COUNT) {
-    throw new Error("SILAS token failed to decode: not 3 parts");
-  }
-
-  try {
-    const decoded: unknown = JSON.parse(
-      Buffer.from(parts[TOKEN_CLAIMS_INDEX], "base64url").toString("utf8"),
-    );
-
-    if (!isAccessTokenClaims(decoded)) {
-      throw new Error("Invalid SILAS access-token claims");
-    }
-
-    return decoded;
-  } catch (error) {
-    throw new Error(
-      `Failed to decode SILAS access token claims: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-      { cause: error },
-    );
-  }
-}
-
-/**
- * Determines whether a decoded value represents access-token claims.
- *
- * @param {unknown} value Value to validate.
- * @returns {value is AccessTokenClaims} Whether the value is access-token claims.
- */
-function isAccessTokenClaims(value: unknown): value is AccessTokenClaims {
-  return typeof value === "object" && value !== null;
-}
-
-/**
- * Normalizes a configured OAuth scope to its final path segment.
- *
- * @param {string} scope OAuth scope to normalize.
- * @returns {string} The final segment of the scope.
- */
-function normalizeScope(scope: string): string {
-  const segments = scope.split("/").filter(Boolean);
-  return segments.at(LAST_SEGMENT_INDEX) ?? scope;
-}
-
-/**
- * Validates the issuer, audience, and delegated scopes in SILAS claims.
- *
- * @param {AccessTokenClaims} claims Decoded access-token claims.
- * @returns {void} Nothing when all required claims are valid.
- * @throws {Error} When a required claim is invalid.
- */
-function validateAccessTokenClaims(claims: AccessTokenClaims): void {
-  const expectedIss = `https://login.microsoftonline.com/${config.silas.tenantId}/v2.0`;
-
-  if (claims.iss !== expectedIss) {
-    throw new Error(
-      `Unexpected SILAS token issuer. Expected '${expectedIss}', got '${claims.iss ?? "undefined"}'`,
-    );
-  }
-
-  if (claims.aud !== config.silas.expectedAudience) {
-    throw new Error(
-      `Unexpected SILAS token audience. Expected '${config.silas.expectedAudience}', got '${claims.aud ?? "undefined"}'`,
-    );
-  }
-
-  const requiredScopes = config.silas.scopes
-    .filter((scope) => !OIDC_SCOPES.has(scope.toLowerCase()))
-    .map(normalizeScope);
-
-  if (requiredScopes.length === EMPTY_LENGTH) {
-    return;
-  }
-
-  const tokenScopes =
-    typeof claims.scp === "string" ? claims.scp.split(" ").filter(Boolean) : [];
-
-  const hasRequiredScope = requiredScopes.some((scope) =>
-    tokenScopes.includes(scope),
-  );
-
-  if (!hasRequiredScope) {
-    throw new Error(
-      `SILAS token missing expected delegated scope. Expected one of: ${requiredScopes.join(", ")}`,
-    );
-  }
 }
 
 /**
@@ -254,48 +115,6 @@ function validateAccessTokenClaims(claims: AccessTokenClaims): void {
  */
 function sendAuthenticationFailure(res: Response): void {
   res.status(INTERNAL_SERVER_ERROR).send("");
-}
-
-/**
- * Saves the current request session.
- *
- * @param {Request} req Express request containing the session to save.
- * @returns {Promise<void>} A promise resolving after the session is saved.
- */
-async function saveSession(req: Request): Promise<void> {
-  const save = promisify((callback: (error?: unknown) => void): void => {
-    req.session.save(callback);
-  });
-
-  await save();
-}
-
-/**
- * Regenerates the current request session.
- *
- * @param {Request} req Express request containing the session to regenerate.
- * @returns {Promise<void>} A promise resolving after the session is regenerated.
- */
-async function regenerateSession(req: Request): Promise<void> {
-  const regenerate = promisify((callback: (error?: unknown) => void): void => {
-    req.session.regenerate(callback);
-  });
-
-  await regenerate();
-}
-
-/**
- * Destroys the current request session.
- *
- * @param {Request} req Express request containing the session to destroy.
- * @returns {Promise<void>} A promise resolving after the session is destroyed.
- */
-async function destroySession(req: Request): Promise<void> {
-  const destroy = promisify((callback: (error?: unknown) => void): void => {
-    req.session.destroy(callback);
-  });
-
-  await destroy();
 }
 
 /**
@@ -375,48 +194,28 @@ export async function callbackAction(
     return;
   }
 
+  await regenerateSession(req);
   try {
-    const response = await msalClient.acquireTokenByCode({
-      code,
-      scopes: config.silas.scopes,
-      redirectUri: config.silas.redirectUri,
-    });
-
+    const service = SilasService.factory(req.session.id);
+    const response = await service.acquireTokenByCode(code);
     if (!hasValidAccountResponse(response)) {
       sendAuthenticationFailure(res);
       return;
     }
 
-    const claims = decodeToken(response.accessToken);
-
-    validateAccessTokenClaims(claims);
-
-    await regenerateSession(req);
-
     const { session } = req;
-
     session.auth_nonce = undefined;
-
-    session.silasAuth = {
-      accessToken: response.accessToken,
-      idToken: response.idToken,
-      expiresAt:
-        response.expiresOn?.getTime() ?? Date.now() + TOKEN_EXPIRY_OFFSET_MS,
-      email: claims.USER_EMAIL,
-      name: claims.name,
-    };
-
-    session.user = {
-      email: response.account.username,
-      name: response.account.name,
-      oid: response.account.homeAccountId,
-    };
+    // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access much clearer
+    session.account = response.account;
+    session.isAuthenticated = true;
 
     await saveSession(req);
 
     res.redirect("/dashboard");
   } catch {
+    /* c8 ignore next */
     res.status(INTERNAL_SERVER_ERROR).send("Authentication failed");
+    /* c8 ignore next */
   }
 }
 
@@ -432,7 +231,9 @@ export async function logOut(req: Request, res: Response): Promise<void> {
   try {
     await destroySession(req);
   } catch {
+    /* c8 ignore next */
     // Local session cleanup failure should not prevent provider logout.
+    /* c8 ignore next */
   }
 
   res.clearCookie("connect.sid");

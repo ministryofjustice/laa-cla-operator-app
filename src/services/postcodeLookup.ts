@@ -65,7 +65,6 @@ export class PostcodeLookupService {
    * @param {boolean} includePostcodeInAddess - Whether to include the postcode in the formatted address
    * @returns {Address[]} - Returns list of addresses found
    */
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Utility method
   async lookup(
     endpoint: "find" | "uprn" | "postcode",
     params: URLSearchParams,
