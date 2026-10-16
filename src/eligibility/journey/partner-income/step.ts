@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { partnerIncomeBlock } from "../partner-blocks.js";
 
 export const PARTNER_INCOME_STEP_CODE = "partner_income";
@@ -17,7 +16,7 @@ export const PARTNER_INCOME_STEP_CODE = "partner_income";
 export const partnerIncomeStep = step({
   code: PARTNER_INCOME_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(PARTNER_INCOME_STEP_CODE),
+    entryWhen: true,
   },
   path: "/partner-income",
   title: "Partner income",

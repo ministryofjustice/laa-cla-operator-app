@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { sharedOwnershipHousingCostsBlock } from "./block.js";
 
 export const SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE =
@@ -18,9 +17,7 @@ export const SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE =
 export const sharedOwnershipHousingCostsStep = step({
   code: SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(
-      SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE,
-    ),
+    entryWhen: true,
   },
   path: "/shared-ownership-housing-costs",
   title: "Shared ownership housing costs",

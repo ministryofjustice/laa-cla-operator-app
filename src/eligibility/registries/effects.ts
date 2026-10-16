@@ -183,8 +183,14 @@ const EligibilityEffectsImplementation: Record<
           `[SaveAnswers] Reloaded answers: ${JSON.stringify(allAnswers)}`,
         );
 
-        // Recompute navigation
-        const steps = stepsFor(allAnswers);
+        // Filter to only relevant answers for current path (removes stale answers from previous branches)
+        const currentPathAnswers = relevantAnswers(allAnswers);
+        console.error(
+          `[SaveAnswers] Filtered to relevant answers: ${JSON.stringify(currentPathAnswers)}`,
+        );
+
+        // Recompute navigation based only on relevant answers
+        const steps = stepsFor(currentPathAnswers);
         const navigationMap: Record<string, string | undefined> = {};
 
         for (let i = 0; i < steps.length; i++) {

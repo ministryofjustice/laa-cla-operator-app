@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { housingCostsBlock } from "./block.js";
 
 export const HOUSING_COSTS_STEP_CODE = "housing_costs";
@@ -17,7 +16,7 @@ export const HOUSING_COSTS_STEP_CODE = "housing_costs";
 export const housingCostsStep = step({
   code: HOUSING_COSTS_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(HOUSING_COSTS_STEP_CODE),
+    entryWhen: true,
   },
   path: "/housing-costs",
   title: "Housing costs",

@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { partnerOutgoingsBlock } from "./block.js";
 
 export const PARTNER_OUTGOINGS_STEP_CODE = "partner_outgoings";
@@ -17,7 +16,7 @@ export const PARTNER_OUTGOINGS_STEP_CODE = "partner_outgoings";
 export const partnerOutgoingsStep = step({
   code: PARTNER_OUTGOINGS_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(PARTNER_OUTGOINGS_STEP_CODE),
+    entryWhen: true,
   },
   path: "/partner-outgoings",
   title: "Partner outgoings",

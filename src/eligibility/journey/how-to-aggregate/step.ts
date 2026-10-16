@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { howToAggregateBlock } from "./block.js";
 
 export const HOW_TO_AGGREGATE_STEP_CODE = "how_to_aggregate";
@@ -17,7 +16,7 @@ export const HOW_TO_AGGREGATE_STEP_CODE = "how_to_aggregate";
 export const howToAggregateStep = step({
   code: HOW_TO_AGGREGATE_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(HOW_TO_AGGREGATE_STEP_CODE),
+    entryWhen: true,
   },
   path: "/how-to-aggregate",
   title: "How to aggregate income",

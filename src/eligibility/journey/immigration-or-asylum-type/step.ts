@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { immigrationOrAsylumTypeBlock } from "../matter-type-blocks.js";
 
 export const IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE =
@@ -18,9 +17,7 @@ export const IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE =
 export const immigrationOrAsylumTypeStep = step({
   code: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(
-      IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
-    ),
+    entryWhen: true,
   },
   path: "/immigration-or-asylum-type",
   title: "Immigration or asylum type",

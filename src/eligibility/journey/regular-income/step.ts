@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { regularIncomeBlock } from "./block.js";
 
 export const REGULAR_INCOME_STEP_CODE = "regular_income";
@@ -17,7 +16,7 @@ export const REGULAR_INCOME_STEP_CODE = "regular_income";
 export const regularIncomeStep = step({
   code: REGULAR_INCOME_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(REGULAR_INCOME_STEP_CODE),
+    entryWhen: true,
   },
   path: "/regular-income",
   title: "Regular income",

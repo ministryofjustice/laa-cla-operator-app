@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { mortgageOrLoanPaymentBlock } from "./block.js";
 
 export const MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE = "mortgage_or_loan_payment";
@@ -17,7 +16,7 @@ export const MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE = "mortgage_or_loan_payment";
 export const mortgageOrLoanPaymentStep = step({
   code: MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE),
+    entryWhen: true,
   },
   path: "/mortgage-or-loan-payment",
   title: "Mortgage or loan payment",

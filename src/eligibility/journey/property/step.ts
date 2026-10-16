@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/conditions.js";
 import { propertyBlock } from "./block.js";
 
 export const PROPERTY_STEP_CODE = "property";
@@ -17,7 +16,7 @@ export const PROPERTY_STEP_CODE = "property";
 export const propertyStep = step({
   code: PROPERTY_STEP_CODE,
   reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(PROPERTY_STEP_CODE),
+    entryWhen: true,
   },
   path: "/property",
   title: "Property details",
