@@ -4,6 +4,7 @@ import type {
   SearchCasesParams,
   CaseDetails,
   SearchCasesResponse,
+  saveAdaptationDetailsParams,
 } from "#types/api-types.js";
 import type { PostcodeLookupService } from "#src/services/postcodeLookup.js";
 
@@ -30,4 +31,11 @@ export interface CaseApiService {
     caseId: string,
     body: Record<string, unknown>,
   ) => Promise<void>;
+
+  saveAdaptationDetails: (
+    axiosMiddleware: AxiosInstanceWrapper,
+    isCreate: boolean,
+    caseId: string,
+    body: Record<string, unknown>,
+  ) => Promise<saveAdaptationDetailsParams>;
 }
