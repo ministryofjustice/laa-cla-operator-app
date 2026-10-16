@@ -67,6 +67,13 @@ export abstract class EligibilityBasePage {
   }
 
   /**
+   * Select a checkbox by label text
+   */
+  async selectCheckbox(label: string): Promise<void> {
+    await this.page.locator(`label:has-text("${label}") input[type="checkbox"]`).click();
+  }
+
+  /**
    * Fill a text input by label
    */
   async fillTextInput(label: string, value: string): Promise<void> {
