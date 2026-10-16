@@ -154,16 +154,17 @@ export function createApiMiddleware(
  * @returns {string | null} - The access token or null
  */
 async function getAccessToken(req: Request): Promise<string | null> {
+  /* c8 ignore start */
+  // The following is to accomodate the end to end tests
   if (
     process.env.NODE_ENV === "test" &&
     req.session.accessToken !== undefined
   ) {
-    /* c8 ignore next */
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- only used during testing so cannot add to session interface
-    /* c8 ignore next */
-    return req.session.accessToken as string;
-    /* c8 ignore next */
+    return typeof req.session.accessToken === "string"
+      ? req.session.accessToken
+      : "";
   }
+  /* c8 ignore stop */
   const { homeAccountId } = req.session.account ?? {};
   if (homeAccountId !== undefined) {
     const accessToken = await SilasService.factory(
@@ -242,7 +243,7 @@ async function refreshToken(
   const result = await SilasService.factory(session.id).acquireTokenSilent(
     homeAccountId,
   );
-  if (result.account === null || result.account == undefined) {
+  if (result.account === null) {
     throw new Error("requireAuth(): Could not find account");
   }
   // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- direct access much clearer
