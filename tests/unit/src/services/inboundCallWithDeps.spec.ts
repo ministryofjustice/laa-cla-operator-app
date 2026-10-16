@@ -36,6 +36,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
       .stub()
       .resolves({ count: 1, results: [{ reference: "FA-1" }] });
     const createCase = sinon.stub().resolves({ reference: "FA-1" });
+    const saveAdaptationDetails = sinon.stub().resolves({});
 
     const effect = InboundCallEffectsImplementation.GetAllCases({
       caseApi: {
@@ -44,6 +45,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         searchCases,
         createCase: createCase,
         loadCase,
+        saveAdaptationDetails,
       },
       postCodeApi: new PostcodeLookupService(),
     });
@@ -71,6 +73,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         searchCases: sinon.stub(),
         createCase: sinon.stub(),
         loadCase: sinon.stub(),
+        saveAdaptationDetails: sinon.stub(),
       },
       postCodeApi: new PostcodeLookupService(),
     });

@@ -27,16 +27,55 @@ function getCase(context: EffectFunctionContext): CaseDetails {
   return context.getData<CaseDetails>("case");
 }
 
+/**
+ * Safely read an answer as a string array
+ * @param {EffectFunctionContext} context - The forge context
+ * @param {string} key - The answer key
+ * @returns {string[]} The answer, or an empty array if it isn't a string array
+ */
+function getStringArrayAnswer(
+  context: EffectFunctionContext,
+  key: string,
+): string[] {
+  const value: unknown = context.getAnswer(key);
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+/**
+ * Safely read an answer as a string
+ * @param {EffectFunctionContext} context - The forge context
+ * @param {string} key - The answer key
+ * @returns {string} The answer, or an empty string if it isn't a string
+ */
+function getStringAnswer(context: EffectFunctionContext, key: string): string {
+  const value: unknown = context.getAnswer(key);
+  return typeof value === "string" ? value : "";
+}
+
+/**
+ * Whether the case already has adoption details saved
+ * @param {CaseDetails} _case - The current case
+ * @returns {boolean} True if adoption details already exist
+ */
+function hasAdoptionDetails(_case: CaseDetails): boolean {
+  const result =
+    typeof _case.adaptation_details === "string" &&
+    _case.adaptation_details !== "";
+  return result;
+}
+
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
   SetAgentName: () => EffectFunctionExpr;
-  /** Add a new one called save client details */
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress: () => EffectFunctionExpr;
   SearchCases: () => EffectFunctionExpr;
   SearchCasesPagination: () => EffectFunctionExpr;
   CreateCase: () => EffectFunctionExpr;
+  AdaptationEffects: () => EffectFunctionExpr;
   PostcodeLookup: () => EffectFunctionExpr;
   SaveToSession: () => EffectFunctionExpr;
   SaveAddressLookup: () => EffectFunctionExpr;
@@ -78,6 +117,57 @@ export const InboundCallEffectsImplementation: Record<
   },
 
   /**
+   * Update client adoption details
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  AdaptationEffects: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const _case = getCase(context);
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const isUpdate = hasAdoptionDetails(_case);
+
+    const otherLanguage = getStringAnswer(
+      context,
+      "otherLanguageChoice",
+    ).toUpperCase();
+
+    const languageChoice = getStringArrayAnswer(context, "languageChoice");
+    const comNeeds = getStringArrayAnswer(context, "communicationNeeds");
+
+    const hasNothingToSave =
+      languageChoice.length === ZERO &&
+      otherLanguage === "" &&
+      comNeeds.length === ZERO;
+
+    if (hasNothingToSave) {
+      context.setData("adaptationDetailsSaved", true);
+      return;
+    }
+
+    const adoptionBody = {
+      // Language choice
+      language: languageChoice.includes("welsh") ? "WELSH" : otherLanguage,
+
+      // Communication needs
+      bsl_webcam: comNeeds.includes("bsl_webcam"),
+      text_relay: comNeeds.includes("relayUK"),
+      notes: context.getAnswer("otherSupportDetails"),
+    };
+
+    try {
+      await deps.caseApi.saveAdaptationDetails(
+        authenticatedAxiosState,
+        isUpdate,
+        _case.reference,
+        adoptionBody,
+      );
+      context.setData("adaptationDetailsSaved", true);
+    } catch {
+      context.setData("adaptationDetailsSaved", false);
+    }
+  },
+
+  /**
    * Store the signed-in agent name in step data for UI rendering.
    * @param {Deps} _deps - Unused dependencies parameter required by effect signature.
    * @returns {(context: InboundCallContext) => Promise<void>} Effect function bound to dependencies.
@@ -111,7 +201,7 @@ export const InboundCallEffectsImplementation: Record<
         address,
       );
       context.setData("addressSaved", true);
-    } catch (error) {
+    } catch {
       context.setData("addressSaved", false);
     }
   },
@@ -249,6 +339,7 @@ export const InboundCallEffectsImplementation: Record<
       }
     }
   },
+
   /**
    * Implementation of the effect for saving form data to session
    * @param {Deps} deps - The dependencies required for the effect.
@@ -298,6 +389,10 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
   ),
+  AdaptationEffects: InboundCallEffectsRegistry.register(
+    "AdaptationEffects",
+    InboundCallEffectsImplementation.AdaptationEffects,
+  ),
   SetAgentName: InboundCallEffectsRegistry.register(
     "SetAgentName",
     InboundCallEffectsImplementation.SetAgentName,
@@ -306,7 +401,6 @@ export const InboundCallEffects: InboundCallEffectShape = {
     "saveClientAddress",
     InboundCallEffectsImplementation.saveClientAddress,
   ),
-
   saveClientDetails: InboundCallEffectsRegistry.register(
     "saveClientDetails",
     InboundCallEffectsImplementation.saveClientDetails,
