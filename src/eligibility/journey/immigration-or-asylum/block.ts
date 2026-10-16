@@ -1,6 +1,4 @@
-import {
-  CollectionBlock,
-} from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKButton,
@@ -29,7 +27,8 @@ export const immigrationOrAsylumBlock = CollectionBlock({
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the legal problem is related to immigration or asylum",
+          message:
+            "Select whether the legal problem is related to immigration or asylum",
         }),
       ],
     }),

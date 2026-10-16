@@ -28,7 +28,9 @@ function assumedAge(
   income: DependantIncomeItem | undefined,
 ): number {
   if (personType === "adult") return ADULT_AGE;
-  return income === undefined ? CHILD_WITHOUT_INCOME_AGE : CHILD_WITH_INCOME_AGE;
+  return income === undefined
+    ? CHILD_WITHOUT_INCOME_AGE
+    : CHILD_WITH_INCOME_AGE;
 }
 
 /**
@@ -71,10 +73,16 @@ export function buildDependants(
 ): DependantPayload[] {
   const people: PersonType[] = [
     ...Array.from<PersonType>({
-      length: form.adult_dependants === true ? (form.adult_dependants_count ?? ZERO) : ZERO,
+      length:
+        form.adult_dependants === true
+          ? (form.adult_dependants_count ?? ZERO)
+          : ZERO,
     }).fill("adult"),
     ...Array.from<PersonType>({
-      length: form.child_dependants === true ? (form.child_dependants_count ?? ZERO) : ZERO,
+      length:
+        form.child_dependants === true
+          ? (form.child_dependants_count ?? ZERO)
+          : ZERO,
     }).fill("child"),
   ];
 
@@ -84,7 +92,8 @@ export function buildDependants(
     const dependant: DependantPayload = {
       date_of_birth: toIsoDate(yearsAgo(age, today)),
       in_full_time_education: personType === "child",
-      relationship: personType === "adult" ? "adult_relative" : "child_relative",
+      relationship:
+        personType === "adult" ? "adult_relative" : "child_relative",
       assets_value: ZERO,
     };
     if (income !== undefined) {

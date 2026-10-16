@@ -46,7 +46,10 @@ describe("domain/cfe/employment-income (port of Cfe::EmploymentIncomePayloadServ
       ],
     };
 
-    const sections = buildEmploymentIncomeSections(answers, new Set(["income"]));
+    const sections = buildEmploymentIncomeSections(
+      answers,
+      new Set(["income"]),
+    );
 
     assert.deepEqual(sections.employment_details, [
       {

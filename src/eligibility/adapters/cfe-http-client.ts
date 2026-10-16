@@ -1,5 +1,9 @@
 import axios from "axios";
-import type { Assessor, CfeResult, StateBenefitType } from "../ports/assessor.js";
+import type {
+  Assessor,
+  CfeResult,
+  StateBenefitType,
+} from "../ports/assessor.js";
 
 interface CfeConfig {
   baseUrl: string;
@@ -22,7 +26,9 @@ export class CfeHttpClient implements Assessor {
   constructor(private readonly config: CfeConfig) {
     const baseUrl = config.baseUrl.trim();
     if (baseUrl.length === EMPTY_LENGTH) {
-      throw new Error("CfeHttpClient requires config.baseUrl (CFE_HOST environment variable)");
+      throw new Error(
+        "CfeHttpClient requires config.baseUrl (CFE_HOST environment variable)",
+      );
     }
   }
 
@@ -43,7 +49,9 @@ export class CfeHttpClient implements Assessor {
       }>(`${this.config.baseUrl}/v6/assessments`, payload);
 
       const { data } = response;
-      const result = CfeHttpClient.translateResult(data.assessment_result ?? "");
+      const result = CfeHttpClient.translateResult(
+        data.assessment_result ?? "",
+      );
 
       return {
         result,

@@ -26,11 +26,15 @@ export class SessionAnswerStore implements AnswerStore {
    */
   // eslint-disable-next-line @typescript-eslint/require-await -- Async required by AnswerStore interface
   async load(checkId: unknown): Promise<Answers> {
-    console.error(`[SessionAnswerStore.load] Loading answers for checkId: ${checkId}`);
+    console.error(
+      `[SessionAnswerStore.load] Loading answers for checkId: ${checkId}`,
+    );
     const session = this.getSession();
     console.error("[SessionAnswerStore.load] Successfully got session");
     const saved = session.eligibility?.[String(checkId)];
-    console.error(`[SessionAnswerStore.load] Saved answers: ${JSON.stringify(saved)}`);
+    console.error(
+      `[SessionAnswerStore.load] Saved answers: ${JSON.stringify(saved)}`,
+    );
     if (
       saved !== null &&
       saved !== undefined &&
@@ -52,8 +56,12 @@ export class SessionAnswerStore implements AnswerStore {
    */
   // eslint-disable-next-line @typescript-eslint/require-await -- Async required by AnswerStore interface
   async save(checkId: unknown, partial: Answers): Promise<void> {
-    console.error(`[SessionAnswerStore.save] Saving answers for checkId: ${checkId}`);
-    console.error(`[SessionAnswerStore.save] Partial answers: ${JSON.stringify(partial)}`);
+    console.error(
+      `[SessionAnswerStore.save] Saving answers for checkId: ${checkId}`,
+    );
+    console.error(
+      `[SessionAnswerStore.save] Partial answers: ${JSON.stringify(partial)}`,
+    );
     const session = this.getSession();
     const checkIdStr = String(checkId);
 
@@ -66,7 +74,9 @@ export class SessionAnswerStore implements AnswerStore {
     const normalized = this.normalizeAddAnotherFields(merged);
 
     session.eligibility[checkIdStr] = normalized;
-    console.error(`[SessionAnswerStore.save] Saved normalized answers: ${JSON.stringify(normalized)}`);
+    console.error(
+      `[SessionAnswerStore.save] Saved normalized answers: ${JSON.stringify(normalized)}`,
+    );
   }
 
   /**
@@ -91,14 +101,22 @@ export class SessionAnswerStore implements AnswerStore {
    * @throws Error if no request context is available
    */
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Uses currentRequest from thread-local closure
-  private getSession(): Record<string, unknown> & { eligibility?: Record<string, unknown> } {
+  private getSession(): Record<string, unknown> & {
+    eligibility?: Record<string, unknown>;
+  } {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive check for thread-local access safety
     if (currentRequest === null || currentRequest === undefined) {
-      console.error("[SessionAnswerStore] CRITICAL: currentRequest is null/undefined in getSession()");
-      console.error("[SessionAnswerStore] This means setCurrentRequest() middleware was not called or failed");
+      console.error(
+        "[SessionAnswerStore] CRITICAL: currentRequest is null/undefined in getSession()",
+      );
+      console.error(
+        "[SessionAnswerStore] This means setCurrentRequest() middleware was not called or failed",
+      );
       throw new Error("SessionAnswerStore: no request context available");
     }
-    console.error("[SessionAnswerStore] Successfully accessed currentRequest.session");
+    console.error(
+      "[SessionAnswerStore] Successfully accessed currentRequest.session",
+    );
     return currentRequest.session;
   }
 
@@ -116,7 +134,8 @@ export class SessionAnswerStore implements AnswerStore {
 
     // Collect flat field names into lists
     // Pattern: <list_name>_<index>_<field_name> -> { <list_name>: [{ <field_name>: value }] }
-    const fieldPattern = /^(?<listName>[a-z_]+)_(?<index>\d+)_(?<fieldName>[a-z_]+)$/u;
+    const fieldPattern =
+      /^(?<listName>[a-z_]+)_(?<index>\d+)_(?<fieldName>[a-z_]+)$/u;
     const listsByName = new Map<string, Map<number, Record<string, unknown>>>();
 
     for (const [key, value] of Object.entries(result)) {
@@ -158,4 +177,3 @@ export class SessionAnswerStore implements AnswerStore {
     return result;
   }
 }
-

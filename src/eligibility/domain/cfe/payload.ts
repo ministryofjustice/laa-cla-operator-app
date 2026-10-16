@@ -62,8 +62,10 @@ export function buildAssessment(answers: Answers, today: Date): CfePayload {
     buildProceedingTypes(answers, relevantSteps),
   );
 
-  const { employment_details: employmentDetails, self_employment_details: selfEmploymentDetails } =
-    buildEmploymentIncomeSections(answers, relevantSteps);
+  const {
+    employment_details: employmentDetails,
+    self_employment_details: selfEmploymentDetails,
+  } = buildEmploymentIncomeSections(answers, relevantSteps);
   assignIfDefined(payload, "employment_details", employmentDetails);
   assignIfDefined(payload, "self_employment_details", selfEmploymentDetails);
 
@@ -95,7 +97,11 @@ export function buildAssessment(answers: Answers, today: Date): CfePayload {
 
   payload.applicant = buildApplicant(answers, relevantSteps);
 
-  assignIfDefined(payload, "partner", buildPartnerSection(answers, relevantSteps));
+  assignIfDefined(
+    payload,
+    "partner",
+    buildPartnerSection(answers, relevantSteps),
+  );
 
   return payload;
 }

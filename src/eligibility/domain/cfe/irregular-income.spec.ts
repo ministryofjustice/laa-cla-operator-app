@@ -34,7 +34,11 @@ describe("domain/cfe/irregular-income (port of Cfe::IrregularIncomePayloadServic
       {
         payments: [
           { income_type: "student_loan", frequency: "annual", amount: 100 },
-          { income_type: "unspecified_source", frequency: "quarterly", amount: 200 },
+          {
+            income_type: "unspecified_source",
+            frequency: "quarterly",
+            amount: 200,
+          },
         ],
       },
     );
@@ -55,7 +59,11 @@ describe("domain/cfe/irregular-income (port of Cfe::IrregularIncomePayloadServic
       {
         payments: [
           { income_type: "student_loan", frequency: "annual", amount: 100 },
-          { income_type: "unspecified_source", frequency: "monthly", amount: 200 },
+          {
+            income_type: "unspecified_source",
+            frequency: "monthly",
+            amount: 200,
+          },
         ],
       },
     );

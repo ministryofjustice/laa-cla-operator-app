@@ -1,4 +1,13 @@
-import { step, submit, access, redirect, Data, validation, Post, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
+import {
+  step,
+  submit,
+  access,
+  redirect,
+  Data,
+  validation,
+  Post,
+  Condition,
+} from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { partnerIncomeBlock } from "../partner-blocks.js";
 
@@ -9,9 +18,22 @@ export const partnerIncomeStep = step({
   reachability: { entryWhen: true },
   path: "/partner-income",
   title: "Partner income",
-  validWhen: [validation({ condition: Post("partner_income").match(Condition.IsRequired()), message: "Enter the partner's monthly income" })],
+  validWhen: [
+    validation({
+      condition: Post("partner_income").match(Condition.IsRequired()),
+      message: "Enter the partner's monthly income",
+    }),
+  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerIncomeBlock],
-  onSubmission: [submit({ validate: true, onValid: { effects: [EligibilityEffects.SaveAnswers()], next: [redirect({ goto: Data("nav.partner_income") })] } })],
+  onSubmission: [
+    submit({
+      validate: true,
+      onValid: {
+        effects: [EligibilityEffects.SaveAnswers()],
+        next: [redirect({ goto: Data("nav.partner_income") })],
+      },
+    }),
+  ],
 });

@@ -4,7 +4,10 @@ import {
   access,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { EligibilityDeps } from "../ports/index.js";
-import { EligibilityEffectsRegistry, EligibilityConditionsRegistry } from "../registries/index.js";
+import {
+  EligibilityEffectsRegistry,
+  EligibilityConditionsRegistry,
+} from "../registries/index.js";
 import { EligibilityEffects } from "../registries/effects.js";
 import { levelOfHelpStep } from "./level-of-help/index.js";
 import { under18ClrStep } from "./under-18-clr/index.js";
@@ -33,9 +36,20 @@ import { partnerBenefitDetailsStep } from "./partner-benefit-details/index.js";
 import { partnerOtherIncomeStep } from "./partner-other-income/index.js";
 import { immigrationOrAsylumStep } from "./immigration-or-asylum/index.js";
 import { immigrationOrAsylumTypeStep } from "./immigration-or-asylum-type/index.js";
-import { immigrationOrAsylumTypeUpperTribunalStep, asylumSupportStep, domesticAbuseApplicantStep } from "./matter-type-steps.js";
-import { dependantDetailsStep, dependantIncomeStep, dependantIncomeDetailsStep } from "./dependants/index.js";
-import { additionalPropertyStep, additionalPropertyDetailsStep } from "./additional-property/index.js";
+import {
+  immigrationOrAsylumTypeUpperTribunalStep,
+  asylumSupportStep,
+  domesticAbuseApplicantStep,
+} from "./matter-type-steps.js";
+import {
+  dependantDetailsStep,
+  dependantIncomeStep,
+  dependantIncomeDetailsStep,
+} from "./dependants/index.js";
+import {
+  additionalPropertyStep,
+  additionalPropertyDetailsStep,
+} from "./additional-property/index.js";
 import { vehiclesStep, vehicleDetailsStep } from "./vehicles/index.js";
 import { cannotUseServiceStep } from "./cannot-use-service/index.js";
 import { checkYourAnswersStep } from "./check-your-answers/index.js";
@@ -49,7 +63,13 @@ export interface CreateEligibilityPackageOptions {
   template?: { layout: string };
 }
 
-export function createEligibilityPackage(options: CreateEligibilityPackageOptions) {
+/**
+ *
+ * @param options
+ */
+export function createEligibilityPackage(
+  options: CreateEligibilityPackageOptions,
+) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic config building requires flexible typing
   const journeyConfig: any = {
     code: "eligibility",

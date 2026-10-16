@@ -7,7 +7,11 @@ A reusable financial eligibility (means test) journey built with HMPPS Forge.
 ### Import
 
 ```typescript
-import { createEligibilityPackage, CfeHttpClient, SessionAnswerStore } from "src/eligibility";
+import {
+  createEligibilityPackage,
+  CfeHttpClient,
+  SessionAnswerStore,
+} from "src/eligibility";
 ```
 
 ### Create and Register Package

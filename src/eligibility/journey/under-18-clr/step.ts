@@ -19,7 +19,9 @@ export const under18ClrStep = step({
   title: "Controlled legal representation",
   validWhen: [
     validation({
-      condition: Post("controlled_legal_representation").match(Condition.IsRequired()),
+      condition: Post("controlled_legal_representation").match(
+        Condition.IsRequired(),
+      ),
       message: "Select whether the client has controlled legal representation",
     }),
   ],

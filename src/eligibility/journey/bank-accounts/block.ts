@@ -70,8 +70,8 @@ export const bankAccountsTableBlock = CollectionBlock({
             ],
           }),
         ],
-      })
-    )
+      }),
+    ),
   ),
 });
 

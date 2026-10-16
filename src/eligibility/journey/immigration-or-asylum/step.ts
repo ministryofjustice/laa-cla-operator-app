@@ -21,7 +21,8 @@ export const immigrationOrAsylumStep = step({
   validWhen: [
     validation({
       condition: Post("immigration_or_asylum").match(Condition.IsRequired()),
-      message: "Select whether the legal problem is related to immigration or asylum",
+      message:
+        "Select whether the legal problem is related to immigration or asylum",
     }),
   ],
   onAccess: [

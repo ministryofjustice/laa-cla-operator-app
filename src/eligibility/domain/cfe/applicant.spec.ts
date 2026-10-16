@@ -35,9 +35,12 @@ describe("domain/cfe/applicant (port of Cfe::ApplicantPayloadService)", () => {
 
   it("omits receives_qualifying_benefit when the applicant step is not relevant (client under 18)", () => {
     const dateOfBirth = toIsoDate(yearsAgo(17, TODAY));
-    assert.deepEqual(buildApplicant({ date_of_birth: dateOfBirth }, new Set()), {
-      date_of_birth: dateOfBirth,
-    });
+    assert.deepEqual(
+      buildApplicant({ date_of_birth: dateOfBirth }, new Set()),
+      {
+        date_of_birth: dateOfBirth,
+      },
+    );
   });
 
   it("includes receives_asylum_support when the asylum_support step is relevant", () => {

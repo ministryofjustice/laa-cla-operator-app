@@ -11,7 +11,8 @@ import {
 import { EligibilityEffects } from "../../registries/effects.js";
 import { sharedOwnershipHousingCostsBlock } from "./block.js";
 
-export const SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE = "shared_ownership_housing_costs";
+export const SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE =
+  "shared_ownership_housing_costs";
 
 export const sharedOwnershipHousingCostsStep = step({
   code: SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE,
@@ -20,7 +21,9 @@ export const sharedOwnershipHousingCostsStep = step({
   title: "Shared ownership housing costs",
   validWhen: [
     validation({
-      condition: Post("shared_ownership_housing_costs").match(Condition.IsRequired()),
+      condition: Post("shared_ownership_housing_costs").match(
+        Condition.IsRequired(),
+      ),
       message: "Enter the monthly housing costs",
     }),
   ],

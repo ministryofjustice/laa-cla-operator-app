@@ -22,7 +22,9 @@ function ccmsCodeFromCertificatedJourney(answers: Answers): string {
   if (answers.domestic_abuse_applicant === true) {
     return PROCEEDING_TYPES.domestic_abuse;
   }
-  if (answers.immigration_or_asylum_type_upper_tribunal === "immigration_upper") {
+  if (
+    answers.immigration_or_asylum_type_upper_tribunal === "immigration_upper"
+  ) {
     return PROCEEDING_TYPES.immigration;
   }
   if (answers.immigration_or_asylum_type_upper_tribunal === "asylum_upper") {
@@ -77,5 +79,7 @@ export function buildProceedingTypes(
 ): ProceedingTypePayload[] | undefined {
   const ccmsCode = resolveCcmsCode(answers, relevantSteps);
   if (ccmsCode === undefined) return undefined;
-  return [{ ccms_code: ccmsCode, client_involvement_type: CLIENT_INVOLVEMENT_TYPE }];
+  return [
+    { ccms_code: ccmsCode, client_involvement_type: CLIENT_INVOLVEMENT_TYPE },
+  ];
 }

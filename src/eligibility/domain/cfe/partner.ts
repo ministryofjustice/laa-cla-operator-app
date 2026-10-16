@@ -45,7 +45,9 @@ const NOT_RELEVANT: never[] = [];
  * @param {Answers} answers - the saved answers
  * @returns {IrregularIncomeAnswers} the partner's normalised irregular-income answers
  */
-function partnerIrregularIncomeAnswers(answers: Answers): IrregularIncomeAnswers {
+function partnerIrregularIncomeAnswers(
+  answers: Answers,
+): IrregularIncomeAnswers {
   return {
     student_finance_relevant: asOptionalBoolean(
       answers.partner_student_finance_relevant,
