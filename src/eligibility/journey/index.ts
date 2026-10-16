@@ -21,7 +21,6 @@ import { propertyLandlordStep } from "./property-landlord/index.js";
 import { propertyEntryStep } from "./property-entry/index.js";
 import { assetsStep } from "./assets/index.js";
 import { partnerAssetsStep } from "./partner-assets/index.js";
-import { bankAccountsStep } from "./bank-accounts/index.js";
 import { employmentStatusStep } from "./employment-status/index.js";
 import { incomeStep } from "./income/index.js";
 import { benefitsStep } from "./benefits/index.js";
@@ -99,7 +98,6 @@ export function createEligibilityPackage(
       propertyStep,
       propertyLandlordStep,
       propertyEntryStep,
-      bankAccountsStep,
       employmentStatusStep,
       incomeStep,
       benefitsStep,
