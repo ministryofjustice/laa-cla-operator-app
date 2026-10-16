@@ -4,6 +4,15 @@ import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
 import { AddressPage } from "./addAddressPage.js";
 import { SearchClientPage } from "./SearchClientPage.js";
 import { AdaptationDetailPage } from "./adaptationDetailsPage.js";
+import { LevelOfHelpPage } from "./LevelOfHelpPage.js";
+import {
+  Under18ClrPage,
+  AggregatedMeansPage,
+  ImmigrationOrAsylumPage,
+  DomesticAbuseApplicantPage,
+  ApplicantPage,
+  CheckYourAnswersPage,
+} from "./EligibilitySteps.js";
 
 /**
  * Factory class for creating page objects
@@ -46,4 +55,34 @@ export class PageFactory {
   get AdaptationDetailPage(): AdaptationDetailPage {
     return new AdaptationDetailPage(this.page);
   }
+
+  // Eligibility journey pages
+  get levelOfHelpPage(): LevelOfHelpPage {
+    return new LevelOfHelpPage(this.page);
+  }
+
+  get under18ClrPage(): Under18ClrPage {
+    return new Under18ClrPage(this.page);
+  }
+
+  get aggregatedMeansPage(): AggregatedMeansPage {
+    return new AggregatedMeansPage(this.page);
+  }
+
+  get immigrationOrAsylumPage(): ImmigrationOrAsylumPage {
+    return new ImmigrationOrAsylumPage(this.page);
+  }
+
+  get domesticAbuseApplicantPage(): DomesticAbuseApplicantPage {
+    return new DomesticAbuseApplicantPage(this.page);
+  }
+
+  get applicantPage(): ApplicantPage {
+    return new ApplicantPage(this.page);
+  }
+
+  get checkYourAnswersPage(): CheckYourAnswersPage {
+    return new CheckYourAnswersPage(this.page);
+  }
 }
+
