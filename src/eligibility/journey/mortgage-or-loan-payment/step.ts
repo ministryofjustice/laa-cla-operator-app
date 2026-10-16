@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { mortgageOrLoanPaymentBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const mortgageOrLoanPaymentStep = step({
   },
   path: "/mortgage-or-loan-payment",
   title: "Mortgage or loan payment",
-  validWhen: [
-    validation({
-      condition: Post("mortgage_or_loan_payment").match(Condition.IsRequired()),
-      message: "Enter the monthly mortgage or loan payment",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

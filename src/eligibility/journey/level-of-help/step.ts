@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Condition,
-  Post,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { levelOfHelpBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const levelOfHelpStep = step({
     entryWhen: true,
   },
   title: "Level of legal aid",
-  validWhen: [
-    validation({
-      condition: Post("level_of_help").match(Condition.IsRequired()),
-      message: "Select the type of legal aid needed",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

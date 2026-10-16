@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { partnerOutgoingsBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const partnerOutgoingsStep = step({
   },
   path: "/partner-outgoings",
   title: "Partner outgoings",
-  validWhen: [
-    validation({
-      condition: Post("partner_outgoings").match(Condition.IsRequired()),
-      message: "Enter the partner's monthly outgoings",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

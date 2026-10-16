@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../registries/effects.js";
 import {
@@ -27,14 +24,6 @@ export const immigrationOrAsylumTypeUpperTribunalStep = step({
     entryWhen: true,
   },
   title: "Immigration or asylum type (upper tribunal)",
-  validWhen: [
-    validation({
-      condition: Post("immigration_or_asylum_type_upper_tribunal").match(
-        Condition.IsRequired(),
-      ),
-      message: "Select the type of matter",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [immigrationOrAsylumTypeUpperTribunalBlock],
@@ -60,12 +49,6 @@ export const asylumSupportStep = step({
     entryWhen: true,
   },
   title: "Asylum support",
-  validWhen: [
-    validation({
-      condition: Post("asylum_support").match(Condition.IsRequired()),
-      message: "Select whether the client is receiving asylum support",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [asylumSupportBlock],
@@ -87,12 +70,6 @@ export const domesticAbuseApplicantStep = step({
     entryWhen: true,
   },
   title: "Domestic abuse",
-  validWhen: [
-    validation({
-      condition: Post("domestic_abuse_applicant").match(Condition.IsRequired()),
-      message: "Select whether this is a domestic abuse case",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [domesticAbuseApplicantBlock],

@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { sharedOwnershipHousingCostsBlock } from "./block.js";
@@ -21,14 +18,6 @@ export const sharedOwnershipHousingCostsStep = step({
   },
   path: "/shared-ownership-housing-costs",
   title: "Shared ownership housing costs",
-  validWhen: [
-    validation({
-      condition: Post("shared_ownership_housing_costs").match(
-        Condition.IsRequired(),
-      ),
-      message: "Enter the monthly housing costs",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

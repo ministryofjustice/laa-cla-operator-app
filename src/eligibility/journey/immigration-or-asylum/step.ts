@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { immigrationOrAsylumBlock } from "./block.js";
@@ -20,13 +17,6 @@ export const immigrationOrAsylumStep = step({
   reachability: {
     entryWhen: true,
   },
-  validWhen: [
-    validation({
-      condition: Post("immigration_or_asylum").match(Condition.IsRequired()),
-      message:
-        "Select whether the legal problem is related to immigration or asylum",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

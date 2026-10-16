@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { partnerEmploymentStatusBlock } from "../partner-blocks.js";
@@ -20,14 +17,6 @@ export const partnerEmploymentStatusStep = step({
   },
   path: "/partner-employment-status",
   title: "Partner employment status",
-  validWhen: [
-    validation({
-      condition: Post("partner_employment_status").match(
-        Condition.IsRequired(),
-      ),
-      message: "Select the partner's employment status",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerEmploymentStatusBlock],

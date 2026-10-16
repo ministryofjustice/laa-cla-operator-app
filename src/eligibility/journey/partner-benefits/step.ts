@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { partnerBenefitsBlock } from "../partner-blocks.js";
@@ -20,12 +17,6 @@ export const partnerBenefitsStep = step({
   },
   path: "/partner-benefits",
   title: "Partner benefits",
-  validWhen: [
-    validation({
-      condition: Post("partner_benefits").match(Condition.IsRequired()),
-      message: "Select whether the partner receives benefits",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerBenefitsBlock],

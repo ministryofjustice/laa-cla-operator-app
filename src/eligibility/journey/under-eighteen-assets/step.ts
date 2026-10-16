@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { underEighteenAssetsBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const underEighteenAssetsStep = step({
   },
   path: "/under-eighteen-assets",
   title: "Assets",
-  validWhen: [
-    validation({
-      condition: Post("under_eighteen_assets").match(Condition.IsRequired()),
-      message: "Select whether the client has assets",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

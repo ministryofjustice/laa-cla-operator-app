@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../registries/effects.js";
 import {
@@ -22,12 +19,6 @@ export const additionalPropertyStep = step({
   code: ADDITIONAL_PROPERTY_STEP_CODE,
   path: "/additional-property",
   title: "Additional properties",
-  validWhen: [
-    validation({
-      condition: Post("additional_property").match(Condition.IsRequired()),
-      message: "Select whether the client owns additional properties",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [additionalPropertyBlock],
@@ -46,14 +37,6 @@ export const additionalPropertyDetailsStep = step({
   code: ADDITIONAL_PROPERTY_DETAILS_STEP_CODE,
   path: "/additional-property-details",
   title: "Additional property details",
-  validWhen: [
-    validation({
-      condition: Post("additional_property_details").match(
-        Condition.IsRequired(),
-      ),
-      message: "Enter details of the additional properties",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [additionalPropertyDetailsBlock],

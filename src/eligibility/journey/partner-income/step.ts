@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { partnerIncomeBlock } from "../partner-blocks.js";
@@ -20,12 +17,6 @@ export const partnerIncomeStep = step({
   },
   path: "/partner-income",
   title: "Partner income",
-  validWhen: [
-    validation({
-      condition: Post("partner_income").match(Condition.IsRequired()),
-      message: "Enter the partner's monthly income",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerIncomeBlock],

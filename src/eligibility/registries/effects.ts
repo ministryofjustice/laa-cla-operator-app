@@ -11,6 +11,65 @@ import {
 } from "../domain/navigation.js";
 import type { Answers } from "../domain/logic.js";
 
+// Yes/no radios post "true"/"false", but the domain logic (ported from CCQ)
+// expects booleans: `truthy("false")` is true.
+const FORM_BOOLEANS: Readonly<Record<string, boolean>> = {
+  true: true,
+  false: false,
+};
+
+const NEXT_STEP_OFFSET = 1;
+
+/**
+ * Converts answers as Forge holds them into the shape the domain expects.
+ * @param {Answers} formAnswers - answers keyed by field code, as posted
+ * @returns {Answers} the same answers with yes/no strings as booleans
+ */
+function toDomainAnswers(formAnswers: Answers): Answers {
+  return Object.fromEntries(
+    Object.entries(formAnswers).map(([key, value]) => [
+      key,
+      typeof value === "string" && value in FORM_BOOLEANS
+        ? FORM_BOOLEANS[value]
+        : value,
+    ]),
+  );
+}
+
+/**
+ * Converts a saved domain answer back into the value its form field posts.
+ * @param {unknown} value - a saved answer
+ * @returns {unknown} the value as Forge's field expects it
+ */
+function toFormValue(value: unknown): unknown {
+  return typeof value === "boolean" ? String(value) : value;
+}
+
+/**
+ * Publishes the next-step map that each step's redirect reads via
+ * `Data("nav.<step>")`, and that Forge's reachability walk follows.
+ * Computed from all saved answers, as CCQ does: the section logic already
+ * ignores answers for branches the client is no longer on.
+ * @param {EffectFunctionContext} context - the effect context
+ * @param {Answers} answers - all saved answers
+ */
+function publishNavigation(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  const steps = stepsFor(answers);
+  // Step codes use underscores; URL paths use hyphens
+  const navigationMap = Object.fromEntries(
+    steps.map((step, index) => [
+      step,
+      steps.at(index + NEXT_STEP_OFFSET)?.replace(/_/gu, "-"),
+    ]),
+  );
+
+  context.setData("nav", navigationMap);
+  context.setData("steps", steps);
+}
+
 export interface EligibilityEffectShape {
   LoadAnswers: () => EffectFunctionExpr;
   SaveAnswers: () => EffectFunctionExpr;
@@ -90,26 +149,12 @@ const EligibilityEffectsImplementation: Record<
         // Set each answer in Forge
         for (const [key, value] of Object.entries(answers)) {
           if (value !== undefined && value !== null) {
-            context.setAnswer(key, value);
+            context.setAnswer(key, toFormValue(value));
           }
         }
 
         console.error("[LoadAnswers] Computing navigation");
-        // Compute navigation
-        const steps = stepsFor(answers);
-        const navigationMap: Record<string, string | undefined> = {};
-
-        for (let i = 0; i < steps.length; i++) {
-          const currentStep = steps[i];
-          const nextStep = steps[i + 1];
-          // Convert underscore step codes to hyphen paths for URL routing
-          navigationMap[currentStep] = nextStep
-            ? nextStep.replace(/_/gu, "-")
-            : undefined;
-        }
-
-        context.setData("nav", navigationMap);
-        context.setData("steps", steps);
+        publishNavigation(context, answers);
         console.error(
           "[LoadAnswers] LoadAnswers effect completed successfully",
         );
@@ -137,76 +182,22 @@ const EligibilityEffectsImplementation: Record<
           throw new Error("answerStore not provided to eligibility package");
         }
 
-        // Load previous answers to merge with posted data
-        const previousAnswers = await answerStore.load(checkId);
-        console.error(
-          `[SaveAnswers] previousAnswers: ${JSON.stringify(previousAnswers)}`,
+        // Forge has already parsed and validated every field on the step, so
+        // persist its answers rather than picking known fields off the POST.
+        // Forge's reachability walk only follows a step's redirect once that
+        // step's answer is loaded back, so an unsaved answer strands every
+        // step after it.
+        await answerStore.save(
+          checkId,
+          toDomainAnswers(context.getAllAnswers()),
         );
 
-        // Get posted form data. Forge passes form fields as POST data.
-        // For now, we collect all posted data by checking common field names
-        const postedAnswers: Answers = {};
-
-        // Get all possible form field values from POST data
-        // This is a generic approach that works for simple form fields
-        const postDataKeys = [
-          "level_of_help",
-          "domestic_abuse_applicant",
-          "date_of_birth",
-          "client_age",
-          // Add other known field names as needed
-        ];
-
-        for (const key of postDataKeys) {
-          const value = context.getPostData(key);
-          if (value !== undefined && value !== null) {
-            postedAnswers[key] = value;
-            console.error(`[SaveAnswers] Posted data: ${key} = ${value}`);
-          }
-        }
-
-        // Merge posted answers with previous answers
-        const merged = { ...previousAnswers, ...postedAnswers };
-        console.error(
-          `[SaveAnswers] Merged answers: ${JSON.stringify(merged)}`,
-        );
-
-        // Save merged answers to session
-        if (Object.keys(postedAnswers).length > 0) {
-          await answerStore.save(checkId, postedAnswers);
-          console.error("[SaveAnswers] Answers saved to session");
-        }
-
-        // Reload all answers to recompute navigation
         const allAnswers = await answerStore.load(checkId);
         console.error(
-          `[SaveAnswers] Reloaded answers: ${JSON.stringify(allAnswers)}`,
+          `[SaveAnswers] Saved answers: ${JSON.stringify(allAnswers)}`,
         );
 
-        // Filter to only relevant answers for current path (removes stale answers from previous branches)
-        const currentPathAnswers = relevantAnswers(allAnswers);
-        console.error(
-          `[SaveAnswers] Filtered to relevant answers: ${JSON.stringify(currentPathAnswers)}`,
-        );
-
-        // Recompute navigation based only on relevant answers
-        const steps = stepsFor(currentPathAnswers);
-        const navigationMap: Record<string, string | undefined> = {};
-
-        for (let i = 0; i < steps.length; i++) {
-          const currentStep = steps[i];
-          const nextStep = steps[i + 1];
-          // Convert underscore step codes to hyphen paths for URL routing
-          navigationMap[currentStep] = nextStep
-            ? nextStep.replace(/_/g, "-")
-            : undefined;
-        }
-
-        console.error(
-          `[SaveAnswers] Navigation map computed, next step for level_of_help: ${navigationMap.level_of_help}`,
-        );
-        context.setData("nav", navigationMap);
-        context.setData("steps", steps);
+        publishNavigation(context, allAnswers);
         console.error(
           "[SaveAnswers] SaveAnswers effect completed successfully",
         );

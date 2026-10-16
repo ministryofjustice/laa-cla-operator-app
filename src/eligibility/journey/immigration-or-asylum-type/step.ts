@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { immigrationOrAsylumTypeBlock } from "../matter-type-blocks.js";
@@ -21,14 +18,6 @@ export const immigrationOrAsylumTypeStep = step({
   },
   path: "/immigration-or-asylum-type",
   title: "Immigration or asylum type",
-  validWhen: [
-    validation({
-      condition: Post("immigration_or_asylum_type").match(
-        Condition.IsRequired(),
-      ),
-      message: "Select the type of immigration or asylum matter",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [immigrationOrAsylumTypeBlock],

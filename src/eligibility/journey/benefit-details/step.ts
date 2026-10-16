@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { benefitDetailsBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const benefitDetailsStep = step({
   },
   path: "/benefit-details",
   title: "Benefit details",
-  validWhen: [
-    validation({
-      condition: Post("benefit_details").match(Condition.IsRequired()),
-      message: "Enter which benefits the client receives",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { partnerDetailsBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const partnerDetailsStep = step({
   },
   path: "/partner-details",
   title: "Partner details",
-  validWhen: [
-    validation({
-      condition: Post("partner").match(Condition.IsRequired()),
-      message: "Select whether the client has a partner",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { aggregatedMeansBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const aggregatedMeansStep = step({
   },
   path: "/aggregated-means",
   title: "Aggregated means",
-  validWhen: [
-    validation({
-      condition: Post("aggregated_means").match(Condition.IsRequired()),
-      message: "Select whether income should be aggregated",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

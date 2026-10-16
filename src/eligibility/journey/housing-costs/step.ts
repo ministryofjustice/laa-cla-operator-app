@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
 import { housingCostsBlock } from "./block.js";
@@ -20,12 +17,6 @@ export const housingCostsStep = step({
   },
   path: "/housing-costs",
   title: "Housing costs",
-  validWhen: [
-    validation({
-      condition: Post("housing_costs").match(Condition.IsRequired()),
-      message: "Enter the monthly housing cost",
-    }),
-  ],
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],
