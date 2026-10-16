@@ -1,6 +1,4 @@
-import {
-  CollectionBlock,
-} from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKButton,
@@ -38,7 +36,8 @@ export const under18ClrBlock = CollectionBlock({
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the client has controlled legal representation",
+          message:
+            "Select whether the client has controlled legal representation",
         }),
       ],
     }),

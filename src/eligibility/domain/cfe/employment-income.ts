@@ -48,7 +48,9 @@ function expressAsNegativeFigure(figure: number): number {
  * @param {IncomeItem[]} incomes - the saved income rows
  * @returns {EmploymentDetail[]} the employment income rows
  */
-export function buildEmploymentDetails(incomes: IncomeItem[]): EmploymentDetail[] {
+export function buildEmploymentDetails(
+  incomes: IncomeItem[],
+): EmploymentDetail[] {
   return incomes
     .filter((item) => item.income_type !== SELF_EMPLOYMENT)
     .map((item) => ({

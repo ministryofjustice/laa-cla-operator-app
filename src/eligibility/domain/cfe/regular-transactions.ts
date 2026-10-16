@@ -157,7 +157,9 @@ function buildPayments(
     .map((fieldNames) => ({
       operation,
       category: fieldNames.category,
-      frequency: translateFrequency(assumeType<string>(form[fieldNames.frequency])),
+      frequency: translateFrequency(
+        assumeType<string>(form[fieldNames.frequency]),
+      ),
       amount: fieldValue(form, fieldNames),
     }));
 }
@@ -284,7 +286,10 @@ function buildBenefits(
 function buildHousingBenefits(
   housingForm: HousingForm | undefined,
 ): RegularTransactionPayload[] {
-  if (housingForm === undefined || housingForm.kind === "mortgage_or_loan_payment") {
+  if (
+    housingForm === undefined ||
+    housingForm.kind === "mortgage_or_loan_payment"
+  ) {
     return [];
   }
   if (housingForm.housing_benefit_relevant !== true) return [];
@@ -359,7 +364,8 @@ function buildHousingForm(
   }
   if (relevantSteps.has("shared_ownership_housing_costs")) {
     const rent = asOptionalNumber(answers.rent) ?? ZERO;
-    const mortgage = asOptionalNumber(answers.shared_ownership_mortgage) ?? ZERO;
+    const mortgage =
+      asOptionalNumber(answers.shared_ownership_mortgage) ?? ZERO;
     return {
       kind: "shared_ownership_housing_costs",
       combined_rent_and_mortgage: roundToPence(rent + mortgage),

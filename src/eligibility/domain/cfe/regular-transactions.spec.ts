@@ -41,13 +41,48 @@ describe("domain/cfe/regular-transactions (port of Cfe::RegularTransactionsPaylo
         new Set(["other_income", "outgoings"]),
       ),
       [
-        { operation: "credit", category: "friends_or_family", frequency: "weekly", amount: 45 },
-        { operation: "credit", category: "maintenance_in", frequency: "two_weekly", amount: 56 },
-        { operation: "credit", category: "property_or_lodger", frequency: "four_weekly", amount: 67 },
-        { operation: "credit", category: "pension", frequency: "monthly", amount: 78 },
-        { operation: "debit", category: "child_care", frequency: "two_weekly", amount: 23 },
-        { operation: "debit", category: "maintenance_out", frequency: "three_monthly", amount: 34 },
-        { operation: "debit", category: "legal_aid", frequency: "monthly", amount: 46 },
+        {
+          operation: "credit",
+          category: "friends_or_family",
+          frequency: "weekly",
+          amount: 45,
+        },
+        {
+          operation: "credit",
+          category: "maintenance_in",
+          frequency: "two_weekly",
+          amount: 56,
+        },
+        {
+          operation: "credit",
+          category: "property_or_lodger",
+          frequency: "four_weekly",
+          amount: 67,
+        },
+        {
+          operation: "credit",
+          category: "pension",
+          frequency: "monthly",
+          amount: 78,
+        },
+        {
+          operation: "debit",
+          category: "child_care",
+          frequency: "two_weekly",
+          amount: 23,
+        },
+        {
+          operation: "debit",
+          category: "maintenance_out",
+          frequency: "three_monthly",
+          amount: 34,
+        },
+        {
+          operation: "debit",
+          category: "legal_aid",
+          frequency: "monthly",
+          amount: 46,
+        },
       ],
     );
   });
@@ -93,15 +128,33 @@ describe("domain/cfe/regular-transactions (port of Cfe::RegularTransactionsPaylo
       buildRegularTransactionsSection(
         {
           benefits: [
-            { benefit_type: "Child Benefit", benefit_amount: 100, benefit_frequency: "every_two_weeks" },
-            { benefit_type: "Tax Credit", benefit_amount: 50, benefit_frequency: "every_week" },
+            {
+              benefit_type: "Child Benefit",
+              benefit_amount: 100,
+              benefit_frequency: "every_two_weeks",
+            },
+            {
+              benefit_type: "Tax Credit",
+              benefit_amount: 50,
+              benefit_frequency: "every_week",
+            },
           ],
         },
         new Set(["benefit_details"]),
       ),
       [
-        { operation: "credit", category: "benefits", frequency: "two_weekly", amount: 100 },
-        { operation: "credit", category: "benefits", frequency: "weekly", amount: 50 },
+        {
+          operation: "credit",
+          category: "benefits",
+          frequency: "two_weekly",
+          amount: 100,
+        },
+        {
+          operation: "credit",
+          category: "benefits",
+          frequency: "weekly",
+          amount: 50,
+        },
       ],
     );
   });
@@ -126,8 +179,18 @@ describe("domain/cfe/regular-transactions (port of Cfe::RegularTransactionsPaylo
         new Set(["housing_costs"]),
       ),
       [
-        { operation: "debit", category: "rent_or_mortgage", frequency: "monthly", amount: 120 },
-        { operation: "credit", category: "housing_benefit", frequency: "monthly", amount: 119 },
+        {
+          operation: "debit",
+          category: "rent_or_mortgage",
+          frequency: "monthly",
+          amount: 120,
+        },
+        {
+          operation: "credit",
+          category: "housing_benefit",
+          frequency: "monthly",
+          amount: 119,
+        },
       ],
     );
   });
@@ -145,17 +208,30 @@ describe("domain/cfe/regular-transactions (port of Cfe::RegularTransactionsPaylo
   it("adds the housing payment from the mortgage_or_loan_payment form, with no housing benefit", () => {
     assert.deepEqual(
       buildRegularTransactionsSection(
-        { housing_loan_payments: 140, housing_payments_loan_frequency: "monthly" },
+        {
+          housing_loan_payments: 140,
+          housing_payments_loan_frequency: "monthly",
+        },
         new Set(["mortgage_or_loan_payment"]),
       ),
-      [{ operation: "debit", category: "rent_or_mortgage", frequency: "monthly", amount: 140 }],
+      [
+        {
+          operation: "debit",
+          category: "rent_or_mortgage",
+          frequency: "monthly",
+          amount: 140,
+        },
+      ],
     );
   });
 
   it("adds nothing when the mortgage or loan payment is zero", () => {
     assert.deepEqual(
       buildRegularTransactionsSection(
-        { housing_loan_payments: 0, housing_payments_loan_frequency: "monthly" },
+        {
+          housing_loan_payments: 0,
+          housing_payments_loan_frequency: "monthly",
+        },
         new Set(["mortgage_or_loan_payment"]),
       ),
       [],
@@ -174,17 +250,35 @@ describe("domain/cfe/regular-transactions (port of Cfe::RegularTransactionsPaylo
         },
         new Set(["mortgage_or_loan_payment"]),
       ),
-      [{ operation: "debit", category: "rent_or_mortgage", frequency: "monthly", amount: 140 }],
+      [
+        {
+          operation: "debit",
+          category: "rent_or_mortgage",
+          frequency: "monthly",
+          amount: 140,
+        },
+      ],
     );
   });
 
   it("combines rent and mortgage from the shared_ownership_housing_costs form", () => {
     assert.deepEqual(
       buildRegularTransactionsSection(
-        { rent: 140, shared_ownership_mortgage: 140, combined_frequency: "monthly" },
+        {
+          rent: 140,
+          shared_ownership_mortgage: 140,
+          combined_frequency: "monthly",
+        },
         new Set(["shared_ownership_housing_costs"]),
       ),
-      [{ operation: "debit", category: "rent_or_mortgage", frequency: "monthly", amount: 280 }],
+      [
+        {
+          operation: "debit",
+          category: "rent_or_mortgage",
+          frequency: "monthly",
+          amount: 280,
+        },
+      ],
     );
   });
 
@@ -202,8 +296,18 @@ describe("domain/cfe/regular-transactions (port of Cfe::RegularTransactionsPaylo
         new Set(["shared_ownership_housing_costs"]),
       ),
       [
-        { operation: "debit", category: "rent_or_mortgage", frequency: "monthly", amount: 40 },
-        { operation: "credit", category: "housing_benefit", frequency: "monthly", amount: 10 },
+        {
+          operation: "debit",
+          category: "rent_or_mortgage",
+          frequency: "monthly",
+          amount: 40,
+        },
+        {
+          operation: "credit",
+          category: "housing_benefit",
+          frequency: "monthly",
+          amount: 10,
+        },
       ],
     );
   });

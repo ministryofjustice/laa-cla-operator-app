@@ -33,7 +33,10 @@ import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
 import { CfeHttpClient } from "./eligibility/adapters/cfe-http-client.js";
 import { CaseResultHandler } from "./eligibility/adapters/case-result-handler.js";
-import { SessionAnswerStore, setCurrentRequest } from "./eligibility/adapters/session-answer-store.js";
+import {
+  SessionAnswerStore,
+  setCurrentRequest,
+} from "./eligibility/adapters/session-answer-store.js";
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -203,7 +206,9 @@ const createApp = async (): Promise<express.Application> => {
     forgeRouter = createExpressRouter(forge, { nunjucksEnv });
     console.error("[Forge] Forge Express router created successfully");
   } catch (error) {
-    console.error(`[Forge] Error creating router: ${error instanceof Error ? error.stack : String(error)}`);
+    console.error(
+      `[Forge] Error creating router: ${error instanceof Error ? error.stack : String(error)}`,
+    );
     throw error;
   }
 
@@ -212,7 +217,9 @@ const createApp = async (): Promise<express.Application> => {
       console.error(`[Forge] Processing request: ${req.method} ${req.path}`);
       next();
     } catch (error) {
-      console.error(`[Forge] Request error: ${error instanceof Error ? error.stack : String(error)}`);
+      console.error(
+        `[Forge] Request error: ${error instanceof Error ? error.stack : String(error)}`,
+      );
       next(error);
     }
   });
@@ -220,11 +227,22 @@ const createApp = async (): Promise<express.Application> => {
   app.use("/", forgeRouter);
 
   // Catch any errors from Forge router
-  app.use((error: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(`[Forge] Error handler caught: ${error instanceof Error ? error.message : String(error)}`);
-    console.error(`[Forge] Full error: ${error instanceof Error ? error.stack : String(error)}`);
-    next(error);
-  });
+  app.use(
+    (
+      error: unknown,
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      console.error(
+        `[Forge] Error handler caught: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      console.error(
+        `[Forge] Full error: ${error instanceof Error ? error.stack : String(error)}`,
+      );
+      next(error);
+    },
+  );
 
   // Register last to catch errors from routes, controllers, and services.
   setupGlobalErrorHandler(app);

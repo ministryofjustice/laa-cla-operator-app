@@ -33,7 +33,11 @@ describe("domain/cfe/parity (comparing TS port to fixture expectations)", () => 
 
       it("produces the same CFE payload as the fixture", () => {
         const payload = buildAssessment(fixture.input, FIXED_TODAY);
-        assert.deepEqual(payload, fixture.payload, `payload mismatch for ${name}`);
+        assert.deepEqual(
+          payload,
+          fixture.payload,
+          `payload mismatch for ${name}`,
+        );
       });
     });
   }

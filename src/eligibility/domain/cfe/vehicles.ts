@@ -28,12 +28,15 @@ export function buildVehicles(
       : ZERO,
     date_of_purchase: toIsoDate(
       yearsAgo(
-        vehicle.vehicle_over_3_years_ago ? OVER_3_YEARS_AGO : RECENTLY_PURCHASED,
+        vehicle.vehicle_over_3_years_ago
+          ? OVER_3_YEARS_AGO
+          : RECENTLY_PURCHASED,
         today,
       ),
     ),
     in_regular_use: vehicle.vehicle_in_regular_use,
-    subject_matter_of_dispute: vehicle.vehicle_in_dispute === true && smodApplicable,
+    subject_matter_of_dispute:
+      vehicle.vehicle_in_dispute === true && smodApplicable,
   }));
 }
 
@@ -53,5 +56,9 @@ export function buildVehiclesSection(
   today: Date,
 ): VehiclePayload[] | undefined {
   if (!relevantSteps.has("vehicles_details")) return undefined;
-  return buildVehicles(asArray<VehicleItem>(answers.vehicles), smodApplicable, today);
+  return buildVehicles(
+    asArray<VehicleItem>(answers.vehicles),
+    smodApplicable,
+    today,
+  );
 }

@@ -91,7 +91,12 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
   ],
   property: ["property_owned"],
   property_landlord: ["property_landlord"],
-  property_entry: ["house_value", "mortgage", "percentage_owned", "house_in_dispute"],
+  property_entry: [
+    "house_value",
+    "mortgage",
+    "percentage_owned",
+    "house_in_dispute",
+  ],
   vehicles: ["vehicles"],
   vehicle_details: ["vehicle_details"],
   assets: [
@@ -162,7 +167,10 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
     "rent",
     "combined_frequency",
   ],
-  mortgage_or_loan_payment: ["housing_loan_payments", "housing_payments_loan_frequency"],
+  mortgage_or_loan_payment: [
+    "housing_loan_payments",
+    "housing_payments_loan_frequency",
+  ],
   additional_property: ["additional_property_owned"],
   additional_property_details: ["additional_properties"],
   partner_additional_property: ["partner_additional_property_owned"],

@@ -1,6 +1,5 @@
 import {
   CollectionBlock,
-  HtmlBlock,
 } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,

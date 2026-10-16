@@ -23,16 +23,35 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
         valuables: 400,
         valuables_in_dispute: false,
       };
-      assert.deepEqual(buildCapitalsSection(answers, new Set(["assets"]), true), {
-        bank_accounts: [
-          { value: 100, description: "Liquid Asset", subject_matter_of_dispute: true },
-          { value: 200, description: "Liquid Asset", subject_matter_of_dispute: false },
-        ],
-        non_liquid_capital: [
-          { value: 300, description: "Non Liquid Asset", subject_matter_of_dispute: true },
-          { value: 400, description: "Non Liquid Asset", subject_matter_of_dispute: false },
-        ],
-      });
+      assert.deepEqual(
+        buildCapitalsSection(answers, new Set(["assets"]), true),
+        {
+          bank_accounts: [
+            {
+              value: 100,
+              description: "Liquid Asset",
+              subject_matter_of_dispute: true,
+            },
+            {
+              value: 200,
+              description: "Liquid Asset",
+              subject_matter_of_dispute: false,
+            },
+          ],
+          non_liquid_capital: [
+            {
+              value: 300,
+              description: "Non Liquid Asset",
+              subject_matter_of_dispute: true,
+            },
+            {
+              value: 400,
+              description: "Non Liquid Asset",
+              subject_matter_of_dispute: false,
+            },
+          ],
+        },
+      );
     });
 
     it("keeps capital amounts under a pound", () => {
@@ -41,7 +60,11 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
         investments: 0.25,
         valuables: 0,
       };
-      const capitals = buildCapitalsSection(answers, new Set(["assets"]), false);
+      const capitals = buildCapitalsSection(
+        answers,
+        new Set(["assets"]),
+        false,
+      );
       assert.equal(capitals?.bank_accounts[0]?.value, 0.5);
       assert.equal(capitals?.non_liquid_capital[0]?.value, 0.25);
       assert.equal(capitals?.non_liquid_capital.length, 1);
@@ -80,7 +103,10 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
         false,
       );
       assert.equal(capitals.bank_accounts[0]?.subject_matter_of_dispute, false);
-      assert.equal(capitals.non_liquid_capital[0]?.subject_matter_of_dispute, false);
+      assert.equal(
+        capitals.non_liquid_capital[0]?.subject_matter_of_dispute,
+        false,
+      );
     });
   });
 
@@ -92,9 +118,7 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
         mortgage: 40_000,
         percentage_owned: 100,
         additional_property_owned: "outright",
-        additional_properties: [
-          { house_value: 50_000, percentage_owned: 100 },
-        ],
+        additional_properties: [{ house_value: 50_000, percentage_owned: 100 }],
       };
       assert.deepEqual(
         buildProperties(
@@ -147,16 +171,17 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
     it("builds a standalone additional property owned outright", () => {
       const answers = {
         additional_property_owned: "outright",
-        additional_properties: [
-          { house_value: 80_000, percentage_owned: 100 },
-        ],
+        additional_properties: [{ house_value: 80_000, percentage_owned: 100 }],
       };
       const properties = buildProperties(
         answers,
         new Set(["additional_property_details"]),
         true,
       );
-      assert.equal(properties?.additional_properties?.[0]?.outstanding_mortgage, 0);
+      assert.equal(
+        properties?.additional_properties?.[0]?.outstanding_mortgage,
+        0,
+      );
     });
 
     it("returns undefined when neither the main home nor additional properties are relevant", () => {
@@ -166,9 +191,7 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
     it("fills in an all-zero main home when only an additional property is relevant", () => {
       const answers = {
         additional_property_owned: "outright",
-        additional_properties: [
-          { house_value: 80_000, percentage_owned: 100 },
-        ],
+        additional_properties: [{ house_value: 80_000, percentage_owned: 100 }],
       };
       const properties = buildProperties(
         answers,
@@ -188,7 +211,11 @@ describe("domain/cfe/assets (port of Cfe::AssetsPayloadService)", () => {
       const answers = {
         additional_property_owned: "outright",
         additional_properties: [
-          { house_value: 80_000, percentage_owned: 100, house_in_dispute: true },
+          {
+            house_value: 80_000,
+            percentage_owned: 100,
+            house_in_dispute: true,
+          },
         ],
       };
       const properties = buildProperties(

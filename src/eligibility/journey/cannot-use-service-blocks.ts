@@ -2,9 +2,7 @@ import {
   CollectionBlock,
   HtmlBlock,
 } from "@ministryofjustice/hmpps-forge/core/components";
-import {
-  GovUKButton,
-} from "@ministryofjustice/hmpps-forge/govuk-components";
+import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 
 export const cannotUseServiceBlock = CollectionBlock({
   collection: [

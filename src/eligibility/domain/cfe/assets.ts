@@ -46,19 +46,22 @@ export function buildCapitals(
     .map((account) => ({
       value: account.amount,
       description: LIQUID_ASSET,
-      subject_matter_of_dispute: smodApplicable && account.account_in_dispute === true,
+      subject_matter_of_dispute:
+        smodApplicable && account.account_in_dispute === true,
     }));
 
   const nonLiquidCapital: CapitalPayload[] = [
     {
       value: form.investments,
       description: NON_LIQUID_ASSET,
-      subject_matter_of_dispute: smodApplicable && form.investments_in_dispute === true,
+      subject_matter_of_dispute:
+        smodApplicable && form.investments_in_dispute === true,
     },
     {
       value: form.valuables,
       description: NON_LIQUID_ASSET,
-      subject_matter_of_dispute: smodApplicable && form.valuables_in_dispute === true,
+      subject_matter_of_dispute:
+        smodApplicable && form.valuables_in_dispute === true,
     },
   ].filter((capital) => capital.value > ZERO);
 
@@ -72,7 +75,10 @@ export function buildCapitals(
  * @returns {boolean} whether the section has any entries
  */
 export function capitalsPresent(capitals: CapitalsPayload): boolean {
-  return capitals.bank_accounts.length > ZERO || capitals.non_liquid_capital.length > ZERO;
+  return (
+    capitals.bank_accounts.length > ZERO ||
+    capitals.non_liquid_capital.length > ZERO
+  );
 }
 
 /** The subset of a client's assets answers the capitals builder reads. */
@@ -236,7 +242,9 @@ export function buildProperties(
     return undefined;
   }
 
-  const properties: PropertiesPayload = { main_home: mainHome ?? DEFAULT_MAIN_HOME };
+  const properties: PropertiesPayload = {
+    main_home: mainHome ?? DEFAULT_MAIN_HOME,
+  };
   if (additionalProperties !== undefined) {
     properties.additional_properties = additionalProperties;
   }

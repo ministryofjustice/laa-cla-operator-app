@@ -1,6 +1,4 @@
-import {
-  CollectionBlock,
-} from "@ministryofjustice/hmpps-forge/core/components";
+import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKTextInput,
   GovUKButton,

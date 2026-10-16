@@ -19,7 +19,11 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
       partner_friends_or_family_conditional_value: 45,
       partner_friends_or_family_frequency: "every_week",
       partner_benefits: [
-        { benefit_type: "Child Benefit", benefit_amount: 100, benefit_frequency: "every_two_weeks" },
+        {
+          benefit_type: "Child Benefit",
+          benefit_amount: 100,
+          benefit_frequency: "every_two_weeks",
+        },
       ],
       partner_additional_property_owned: "outright",
       partner_additional_properties: [
@@ -49,8 +53,18 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
       employment_details: [],
       self_employment_details: [],
       regular_transactions: [
-        { operation: "credit", category: "friends_or_family", frequency: "weekly", amount: 45 },
-        { operation: "credit", category: "benefits", frequency: "two_weekly", amount: 100 },
+        {
+          operation: "credit",
+          category: "friends_or_family",
+          frequency: "weekly",
+          amount: 45,
+        },
+        {
+          operation: "credit",
+          category: "benefits",
+          frequency: "two_weekly",
+          amount: 100,
+        },
       ],
       additional_properties: [
         {
@@ -64,10 +78,18 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
       vehicles: [],
       capitals: {
         bank_accounts: [
-          { value: 1000, description: "Liquid Asset", subject_matter_of_dispute: false },
+          {
+            value: 1000,
+            description: "Liquid Asset",
+            subject_matter_of_dispute: false,
+          },
         ],
         non_liquid_capital: [
-          { value: 500, description: "Non Liquid Asset", subject_matter_of_dispute: false },
+          {
+            value: 500,
+            description: "Non Liquid Asset",
+            subject_matter_of_dispute: false,
+          },
         ],
       },
     });
@@ -76,16 +98,19 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
   it("builds an all-empty partner payload when only partner_details is relevant", () => {
     const answers = { partner: true, partner_date_of_birth: "1974-06-01" };
 
-    assert.deepEqual(buildPartnerSection(answers, new Set(["partner_details"])), {
-      partner: { date_of_birth: "1974-06-01", employed: false },
-      irregular_incomes: [],
-      employment_details: [],
-      self_employment_details: [],
-      regular_transactions: [],
-      additional_properties: [],
-      dependants: [],
-      vehicles: [],
-    });
+    assert.deepEqual(
+      buildPartnerSection(answers, new Set(["partner_details"])),
+      {
+        partner: { date_of_birth: "1974-06-01", employed: false },
+        irregular_incomes: [],
+        employment_details: [],
+        self_employment_details: [],
+        regular_transactions: [],
+        additional_properties: [],
+        dependants: [],
+        vehicles: [],
+      },
+    );
   });
 
   it("treats a passported client's partner as not employed, regardless of their employment status", () => {
@@ -96,7 +121,10 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
       partner_employment_status: "in_work",
     };
 
-    const partnerSection = buildPartnerSection(answers, new Set(["partner_details"]));
+    const partnerSection = buildPartnerSection(
+      answers,
+      new Set(["partner_details"]),
+    );
     assert.equal(partnerSection?.partner.employed, false);
   });
 
@@ -118,7 +146,12 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
       new Set(["partner_details", "partner_outgoings"]),
     );
     assert.deepEqual(partnerSection?.regular_transactions, [
-      { operation: "debit", category: "maintenance_out", frequency: "three_monthly", amount: 34 },
+      {
+        operation: "debit",
+        category: "maintenance_out",
+        frequency: "three_monthly",
+        amount: 34,
+      },
     ]);
   });
 
@@ -127,7 +160,11 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
       partner_additional_property_owned: "with_mortgage",
       partner_additional_properties: [
         { house_value: 100_000, mortgage: 40_000, percentage_owned: 100 },
-        { house_value: 50_000, percentage_owned: 100, inline_owned_with_mortgage: false },
+        {
+          house_value: 50_000,
+          percentage_owned: 100,
+          inline_owned_with_mortgage: false,
+        },
       ],
     };
 
@@ -149,7 +186,10 @@ describe("domain/cfe/partner (port of Cfe::PartnerPayloadService)", () => {
 
   it("builds no employment data when the partner's income is not relevant", () => {
     const answers = { partner: true, partner_date_of_birth: "1974-06-01" };
-    const partnerSection = buildPartnerSection(answers, new Set(["partner_details"]));
+    const partnerSection = buildPartnerSection(
+      answers,
+      new Set(["partner_details"]),
+    );
     assert.deepEqual(partnerSection?.employment_details, []);
     assert.deepEqual(partnerSection?.self_employment_details, []);
   });

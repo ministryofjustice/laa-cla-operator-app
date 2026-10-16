@@ -13,13 +13,17 @@ const EligibilityConditionsImplementation = {
    * @param stepCode - The step code to check
    * @returns A function that evaluates step relevance
    */
-  StepIsRelevant: (stepCode: string) => (_deps: EligibilityDeps) => (answers: Answers): boolean => {
-    const relevantSteps = stepsFor(answers);
-    return relevantSteps.includes(stepCode);
-  },
+  StepIsRelevant:
+    (stepCode: string) =>
+    (_deps: EligibilityDeps) =>
+    (answers: Answers): boolean => {
+      const relevantSteps = stepsFor(answers);
+      return relevantSteps.includes(stepCode);
+    },
 };
 
-export const EligibilityConditionsRegistry = new ConditionRegistry<EligibilityDeps>();
+export const EligibilityConditionsRegistry =
+  new ConditionRegistry<EligibilityDeps>();
 
 export const EligibilityConditions: EligibilityConditionShape = {
   /**
