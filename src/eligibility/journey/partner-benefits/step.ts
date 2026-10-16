@@ -9,13 +9,16 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/effects.js";
 import { partnerBenefitsBlock } from "../partner-blocks.js";
 
 export const PARTNER_BENEFITS_STEP_CODE = "partner_benefits";
 
 export const partnerBenefitsStep = step({
   code: PARTNER_BENEFITS_STEP_CODE,
-  reachability: { entryWhen: true },
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(PARTNER_BENEFITS_STEP_CODE),
+  },
   path: "/partner-benefits",
   title: "Partner benefits",
   validWhen: [

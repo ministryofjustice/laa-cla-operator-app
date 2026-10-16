@@ -9,6 +9,7 @@ import {
   Post,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/effects.js";
 import { levelOfHelpBlock } from "./block.js";
 
 export const LEVEL_OF_HELP_STEP_CODE = "level_of_help";
@@ -16,7 +17,9 @@ export const LEVEL_OF_HELP_STEP_CODE = "level_of_help";
 export const levelOfHelpStep = step({
   code: LEVEL_OF_HELP_STEP_CODE,
   path: "/level-of-help",
-  reachability: { entryWhen: true },
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(LEVEL_OF_HELP_STEP_CODE),
+  },
   title: "Level of legal aid",
   validWhen: [
     validation({
