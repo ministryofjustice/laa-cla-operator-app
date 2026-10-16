@@ -12,7 +12,7 @@ import {
 export const benefitsBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
-      code: "benefits",
+      code: "receives_benefits",
       fieldset: {
         legend: {
           text: "Does the client receive any state benefits?",
