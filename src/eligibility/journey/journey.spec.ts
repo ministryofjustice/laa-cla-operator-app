@@ -145,7 +145,7 @@ describe("eligibility journey navigation", () => {
   });
 
   describe("property and assets", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       answerStore.answers = {
         level_of_help: "controlled",
         client_age: "standard",
@@ -155,12 +155,15 @@ describe("eligibility journey navigation", () => {
         passporting: false,
         dependant_details: false,
         employment_status: ["employed"],
-        receives_benefits: "false",
-        other_income: "false",
+      };
+      // Navigate through income steps to reach property step
+      await submit("benefits", { receives_benefits: "false" });
+      await submit("other-income", { other_income: "false" });
+      await submit("outgoings", {
         childcare_payments_relevant: "false",
         maintenance_payments_relevant: "false",
         legal_aid_payments_relevant: "false",
-      };
+      });
     });
 
     it("sends an outright owner to property entry", async () => {
