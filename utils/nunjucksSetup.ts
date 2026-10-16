@@ -46,7 +46,7 @@ export const nunjucksSetup = (app: Application): nunjucks.Environment => {
     {
       autoescape: true, // Enable auto escaping to prevent XSS attacks
       express: appInstance, // Bind Nunjucks to the Express app instance
-      watch: true, // Watch for changes in template files during development
+      watch: false, // Disable watch due to chokidar version conflict
     },
   );
 

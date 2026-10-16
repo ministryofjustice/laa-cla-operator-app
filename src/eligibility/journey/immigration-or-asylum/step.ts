@@ -17,6 +17,7 @@ export const immigrationOrAsylumStep = step({
   code: IMMIGRATION_OR_ASYLUM_STEP_CODE,
   path: "/immigration-or-asylum",
   title: "Immigration or asylum",
+  reachability: { entryWhen: true },
   validWhen: [
     validation({
       condition: Post("immigration_or_asylum").match(Condition.IsRequired()),

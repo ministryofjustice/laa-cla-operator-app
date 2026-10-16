@@ -15,6 +15,7 @@ export const PARTNER_OUTGOINGS_STEP_CODE = "partner_outgoings";
 
 export const partnerOutgoingsStep = step({
   code: PARTNER_OUTGOINGS_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/partner-outgoings",
   title: "Partner outgoings",
   validWhen: [

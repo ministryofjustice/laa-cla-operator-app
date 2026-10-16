@@ -15,6 +15,7 @@ export const EMPLOYMENT_STATUS_STEP_CODE = "employment_status";
 
 export const employmentStatusStep = step({
   code: EMPLOYMENT_STATUS_STEP_CODE,
+  reachability: { entryWhen: true },
   path: "/employment-status",
   title: "Employment status",
   validWhen: [
