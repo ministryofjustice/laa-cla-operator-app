@@ -38,7 +38,11 @@ envVars:
   BACKEND_BASE_URL:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-staging.svc.cluster.local"
+  CFE_HOST:
+    # Using public HTTPS endpoint for staging (no network policy needed)
+    # Can switch to internal cluster URL once network policy is approved
+    value: "https://cfe-civil-staging.cloud-platform.service.justice.gov.uk"
   NODE_ENV:
     value: "staging"
   ENTRA_REDIRECT_URI:
-    value: "https://laa-cla-operator-app-staging.cloud-platform.service.justice.gov.uk/entra-callback"
+    value: "https://laa-cla-operator-app-staging.cloud-platform.service.justice.gov.uk/redirect"

@@ -14,8 +14,10 @@
     "path-to-regexp@npm:^8.0.0": "8.4.2",
     "picomatch": "4.0.7",
     "proxy-addr": "2.0.8",
+    "qs": "6.16.1",
     "tar": "7.5.22",
-    "ws": "8.21.3"
+    "ws": "8.21.3",
+    "zod": "4.6.6"
   },
   "overrides": {
     "@ministryofjustice/hmpps-forge": {
@@ -72,7 +74,7 @@
     "moment": "^2.31.0",
     "morgan": "~1.12.1",
     "nunjucks": "^3.2.4",
-    "redis": "^5.12.1",
+    "redis": "^6.3.0",
     "validator": "^13.15.22"
   },
   "devDependencies": {

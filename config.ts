@@ -77,6 +77,10 @@ const config: Config = {
     auth_token: process.env.REDIS_AUTH_TOKEN,
     tls_enabled: process.env.REDIS_TLS_ENABLED === "true",
   },
+  // Check Financial Eligibility (CFE) API, used by the eligibility journey.
+  cfe: {
+    baseUrl: process.env.CFE_HOST ?? "",
+  },
 };
 
 export default config;

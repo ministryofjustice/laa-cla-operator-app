@@ -1,0 +1,280 @@
+{
+  "input": {
+    "level_of_help": "certificated",
+    "client_age": "standard",
+    "date_of_birth": "1976-01-20",
+    "passporting": false,
+    "partner": true,
+    "partner_date_of_birth": "1978-05-10",
+    "partner_employment_status": "in_work",
+    "employment_status": "in_work",
+    "incomes": [
+      {
+        "income_type": "employment",
+        "income_frequency": "monthly",
+        "gross_income": 2000,
+        "income_tax": 300,
+        "national_insurance": 200
+      }
+    ],
+    "partner_incomes": [
+      {
+        "income_type": "employment",
+        "income_frequency": "monthly",
+        "gross_income": 1800,
+        "income_tax": 250,
+        "national_insurance": 180
+      }
+    ],
+    "housing_costs": true,
+    "housing_payments": 1000,
+    "housing_payments_frequency": "monthly",
+    "housing_benefit_relevant": false,
+    "friends_or_family_relevant": false,
+    "maintenance_relevant": false,
+    "property_or_lodger_relevant": false,
+    "pension_relevant": false,
+    "student_finance_relevant": false,
+    "other_relevant": false,
+    "childcare_payments_relevant": false,
+    "maintenance_payments_relevant": false,
+    "legal_aid_payments_relevant": false,
+    "partner_friends_or_family_relevant": false,
+    "partner_maintenance_relevant": false,
+    "partner_property_or_lodger_relevant": false,
+    "partner_pension_relevant": false,
+    "partner_student_finance_relevant": false,
+    "partner_other_relevant": false,
+    "partner_childcare_payments_relevant": false,
+    "partner_maintenance_payments_relevant": false,
+    "partner_legal_aid_payments_relevant": false,
+    "property_owned": "with_mortgage",
+    "house_value": 300000,
+    "percentage_owned": 100,
+    "mortgage": 200000,
+    "additional_property_owned": "with_mortgage",
+    "additional_properties": [
+      {
+        "house_value": 150000,
+        "percentage_owned": 50,
+        "mortgage": 75000
+      }
+    ],
+    "partner_additional_property_owned": "outright",
+    "partner_additional_properties": [
+      {
+        "house_value": 100000,
+        "percentage_owned": 100
+      }
+    ],
+    "investments": 8000,
+    "valuables": 2000,
+    "bank_accounts": [
+      {
+        "amount": 15000
+      }
+    ],
+    "partner_investments": 5000,
+    "partner_valuables": 0,
+    "partner_bank_accounts": [
+      {
+        "amount": 8000
+      }
+    ],
+    "vehicle_owned": true,
+    "vehicles": [
+      {
+        "vehicle_value": 12000,
+        "vehicle_pcp": false,
+        "vehicle_over_3_years_ago": false,
+        "vehicle_in_regular_use": true,
+        "vehicle_in_dispute": false
+      }
+    ],
+    "adult_dependants": true,
+    "adult_dependants_count": 1,
+    "child_dependants": true,
+    "child_dependants_count": 2,
+    "immigration_or_asylum": false,
+    "domestic_abuse_applicant": false
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "domestic_abuse_applicant",
+    "immigration_or_asylum_type_upper_tribunal",
+    "applicant",
+    "dependant_details",
+    "dependant_income",
+    "employment_status",
+    "income",
+    "benefits",
+    "other_income",
+    "partner_details",
+    "partner_employment_status",
+    "partner_income",
+    "partner_benefits",
+    "partner_other_income",
+    "outgoings",
+    "partner_outgoings",
+    "property",
+    "mortgage_or_loan_payment",
+    "property_entry",
+    "additional_property",
+    "additional_property_details",
+    "partner_additional_property",
+    "partner_additional_property_details",
+    "assets",
+    "partner_assets",
+    "vehicle",
+    "vehicles_details"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "certificated"
+    },
+    "dependants": [
+      {
+        "date_of_birth": "2003-06-01",
+        "in_full_time_education": false,
+        "relationship": "adult_relative",
+        "assets_value": 0
+      },
+      {
+        "date_of_birth": "2013-06-01",
+        "in_full_time_education": true,
+        "relationship": "child_relative",
+        "assets_value": 0
+      },
+      {
+        "date_of_birth": "2013-06-01",
+        "in_full_time_education": true,
+        "relationship": "child_relative",
+        "assets_value": 0
+      }
+    ],
+    "proceeding_types": [
+      {
+        "ccms_code": "SE003",
+        "client_involvement_type": "A"
+      }
+    ],
+    "employment_details": [
+      {
+        "income": {
+          "frequency": "monthly",
+          "gross": 2000,
+          "benefits_in_kind": 0,
+          "tax": -300,
+          "national_insurance": -200,
+          "receiving_only_statutory_sick_or_maternity_pay": false
+        }
+      }
+    ],
+    "self_employment_details": [],
+    "irregular_incomes": {
+      "payments": []
+    },
+    "vehicles": [
+      {
+        "value": 12000,
+        "loan_amount_outstanding": 0,
+        "date_of_purchase": "2022-06-01",
+        "in_regular_use": true,
+        "subject_matter_of_dispute": false
+      }
+    ],
+    "capitals": {
+      "bank_accounts": [
+        {
+          "value": 15000,
+          "description": "Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ],
+      "non_liquid_capital": [
+        {
+          "value": 8000,
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": false
+        },
+        {
+          "value": 2000,
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ]
+    },
+    "properties": {
+      "main_home": {
+        "value": 300000,
+        "outstanding_mortgage": 200000,
+        "percentage_owned": 100,
+        "subject_matter_of_dispute": false,
+        "shared_with_housing_assoc": false
+      },
+      "additional_properties": [
+        {
+          "value": 150000,
+          "outstanding_mortgage": 75000,
+          "percentage_owned": 50,
+          "subject_matter_of_dispute": false,
+          "shared_with_housing_assoc": false
+        }
+      ]
+    },
+    "regular_transactions": [],
+    "applicant": {
+      "date_of_birth": "1976-01-20",
+      "receives_qualifying_benefit": false
+    },
+    "partner": {
+      "partner": {
+        "date_of_birth": "1978-05-10",
+        "employed": true
+      },
+      "irregular_incomes": [],
+      "employment_details": [
+        {
+          "income": {
+            "frequency": "monthly",
+            "gross": 1800,
+            "benefits_in_kind": 0,
+            "tax": -250,
+            "national_insurance": -180,
+            "receiving_only_statutory_sick_or_maternity_pay": false
+          }
+        }
+      ],
+      "self_employment_details": [],
+      "regular_transactions": [],
+      "additional_properties": [
+        {
+          "value": 100000,
+          "outstanding_mortgage": 0,
+          "percentage_owned": 100,
+          "shared_with_housing_assoc": false
+        }
+      ],
+      "dependants": [],
+      "vehicles": [],
+      "capitals": {
+        "bank_accounts": [
+          {
+            "value": 8000,
+            "description": "Liquid Asset",
+            "subject_matter_of_dispute": false
+          }
+        ],
+        "non_liquid_capital": [
+          {
+            "value": 5000,
+            "description": "Non Liquid Asset",
+            "subject_matter_of_dispute": false
+          }
+        ]
+      }
+    }
+  }
+}

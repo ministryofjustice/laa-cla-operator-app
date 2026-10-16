@@ -1,0 +1,46 @@
+{
+  "client_age": {
+    "question": "How old is the client?",
+    "legend": "Select the client's age group"
+  },
+  "level_of_help": {
+    "question": "What type of legal aid is needed?",
+    "legend": "Select the type of legal aid"
+  },
+  "applicant": {
+    "question": "Partner details",
+    "legend": "Does the client have a partner?"
+  },
+  "dependant_details": {
+    "question": "Does the client have any dependants?",
+    "legend": "Select whether the client has dependants"
+  },
+  "dependant_income": {
+    "question": "Do the dependants have their own income?",
+    "legend": "Select whether the dependants have income"
+  },
+  "dependant_income_details": {
+    "question": "What is the dependants' total monthly income?",
+    "legend": "Enter the dependants' monthly income"
+  },
+  "additional_property": {
+    "question": "Does the client own any additional properties?",
+    "legend": "Select whether the client owns additional properties"
+  },
+  "additional_property_details": {
+    "question": "Provide details of the additional properties",
+    "legend": "Enter details of the additional properties"
+  },
+  "vehicles": {
+    "question": "Does the client own any vehicles?",
+    "legend": "Select whether the client owns vehicles"
+  },
+  "vehicle_details": {
+    "question": "Provide details of the vehicles",
+    "legend": "Enter details of the vehicles"
+  },
+  "cannot_use_service": {
+    "question": "Cannot use this service",
+    "legend": "We cannot process your application"
+  }
+}
