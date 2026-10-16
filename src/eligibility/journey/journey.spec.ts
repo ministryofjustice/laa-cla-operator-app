@@ -155,11 +155,11 @@ describe("eligibility journey navigation", () => {
         passporting: false,
         dependant_details: false,
         employment_status: ["employed"],
-        benefits: "false",
+        receives_benefits: "false",
         other_income: "false",
-        childcare_payments: "false",
-        maintenance_payments: "false",
-        legal_aid_payments: "false",
+        childcare_payments_relevant: "false",
+        maintenance_payments_relevant: "false",
+        legal_aid_payments_relevant: "false",
       };
     });
 

@@ -14,7 +14,7 @@ import { poundsAmountWhenAnswered } from "../amount-validation.js";
 export const outgoingsBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
-      code: "childcare_payments",
+      code: "childcare_payments_relevant",
       fieldset: {
         legend: {
           text: "What are the client's monthly outgoings?",
@@ -34,14 +34,14 @@ export const outgoingsBlock = CollectionBlock({
       ],
     }),
     GovUKTextInput({
-      code: "childcare_payments_amount",
+      code: "childcare_payments_conditional_value",
       label: {
         text: "Childcare payment amount",
       },
       hint: { text: "In pounds per month" },
       validWhen: [
         validation({
-          condition: poundsAmountWhenAnswered("childcare_payments", "true"),
+          condition: poundsAmountWhenAnswered("childcare_payments_relevant", "true"),
           message: "Childcare payment amount must be a number",
         }),
       ],
@@ -62,7 +62,7 @@ export const outgoingsBlock = CollectionBlock({
       ],
     }),
     GovUKRadioInput({
-      code: "maintenance_payments",
+      code: "maintenance_payments_relevant",
       fieldset: {
         legend: {
           text: "Does your client make maintenance payments to a former partner?",
@@ -80,14 +80,14 @@ export const outgoingsBlock = CollectionBlock({
       ],
     }),
     GovUKTextInput({
-      code: "maintenance_payments_amount",
+      code: "maintenance_payments_conditional_value",
       label: {
         text: "Maintenance payment amount",
       },
       hint: { text: "In pounds per month" },
       validWhen: [
         validation({
-          condition: poundsAmountWhenAnswered("maintenance_payments", "true"),
+          condition: poundsAmountWhenAnswered("maintenance_payments_relevant", "true"),
           message: "Maintenance payment amount must be a number",
         }),
       ],
@@ -108,7 +108,7 @@ export const outgoingsBlock = CollectionBlock({
       ],
     }),
     GovUKRadioInput({
-      code: "legal_aid_payments",
+      code: "legal_aid_payments_relevant",
       fieldset: {
         legend: {
           text: "Does your client make payments towards legal aid for a criminal case?",
@@ -126,14 +126,14 @@ export const outgoingsBlock = CollectionBlock({
       ],
     }),
     GovUKTextInput({
-      code: "legal_aid_payments_amount",
+      code: "legal_aid_payments_conditional_value",
       label: {
         text: "Legal aid payment amount",
       },
       hint: { text: "In pounds per month" },
       validWhen: [
         validation({
-          condition: poundsAmountWhenAnswered("legal_aid_payments", "true"),
+          condition: poundsAmountWhenAnswered("legal_aid_payments_relevant", "true"),
           message: "Legal aid payment amount must be a number",
         }),
       ],

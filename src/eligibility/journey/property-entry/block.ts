@@ -39,6 +39,10 @@ export const propertyEntryBlock = CollectionBlock({
       code: "mortgage",
       label: { text: "How much is left to pay on the mortgage?" },
       hint: { text: "In pounds" },
+      // TODO: This field is shown to all owners, but CCQ only shows it when property_owned = "with_mortgage".
+      // Forge blocks don't support conditional field rendering (only conditional validation via `when:`).
+      // Consider if field should be hidden via CSS or if the current approach (always visible, validated only
+      // when relevant) is acceptable. For now, validation handles the conditional requirement.
       validWhen: [
         validation({
           condition: poundsAmountGreaterThanZeroWhenAnswered("property_owned", "with_mortgage"),
