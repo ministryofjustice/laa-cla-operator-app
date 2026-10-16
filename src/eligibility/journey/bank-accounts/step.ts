@@ -1,3 +1,9 @@
+// TODO: Review if this step is required. Bank accounts are currently collected as part
+// of the assets and partner_assets steps via blocks (bankAccountsTableBlock, etc.).
+// This standalone step is not registered in the journey and is therefore unreachable.
+// If not needed, remove this file and bank-accounts/block.ts exports that are specific
+// to this step (e.g., bankAccountsStep definition).
+
 import {
   step,
   submit,
