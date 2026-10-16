@@ -6,10 +6,113 @@ import {
 import type { EligibilityDeps } from "../ports/index.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import {
+  cannotUseService,
   stepsFor,
   relevantAnswers,
 } from "../domain/navigation.js";
+import { withClientAge } from "../domain/client-age.js";
 import type { Answers } from "../domain/logic.js";
+
+// Yes/no radios post "true"/"false", but the domain logic (ported from CCQ)
+// expects booleans: `truthy("false")` is true.
+const FORM_BOOLEANS: Readonly<Record<string, boolean>> = {
+  true: true,
+  false: false,
+};
+
+const NEXT_STEP_OFFSET = 1;
+
+// Journey steps outside the domain's step list
+const CHECK_YOUR_ANSWERS_PATH = "check-your-answers";
+const CANNOT_USE_SERVICE_PATH = "cannot-use-service";
+
+/**
+ * The URL path segment for a step code.
+ * @param {string} step - a step code
+ * @returns {string} the step's path segment
+ */
+function toPath(step: string): string {
+  return step.replace(/_/gu, "-");
+}
+
+/**
+ * Converts answers as Forge holds them into the shape the domain expects.
+ * @param {Answers} formAnswers - answers keyed by field code, as posted
+ * @returns {Answers} the same answers with yes/no strings as booleans
+ */
+function toDomainAnswers(formAnswers: Answers): Answers {
+  return Object.fromEntries(
+    Object.entries(formAnswers).map(([key, value]) => [
+      key,
+      typeof value === "string" && value in FORM_BOOLEANS
+        ? FORM_BOOLEANS[value]
+        : value,
+    ]),
+  );
+}
+
+/**
+ * Converts a saved domain answer back into the value its form field posts.
+ * @param {unknown} value - a saved answer
+ * @returns {unknown} the value as Forge's field expects it
+ */
+function toFormValue(value: unknown): unknown {
+  return typeof value === "boolean" ? String(value) : value;
+}
+
+/**
+ * Today's date, as the UTC midnight instant the domain's date logic expects.
+ * @returns {Date} today at UTC midnight
+ */
+function todayUtc(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+  );
+}
+
+/**
+ * Where a step goes once answered: off the service for an unsupported
+ * route, otherwise to the next relevant step, or to check your answers
+ * after the last one.
+ * @param {Answers} answers - all saved answers
+ * @param {string} step - the answered step code
+ * @param {string | undefined} nextStep - the next relevant step code, if any
+ * @returns {string} the path segment to go to
+ */
+function nextPath(
+  answers: Answers,
+  step: string,
+  nextStep: string | undefined,
+): string {
+  if (cannotUseService(answers, step)) return CANNOT_USE_SERVICE_PATH;
+  return nextStep === undefined ? CHECK_YOUR_ANSWERS_PATH : toPath(nextStep);
+}
+
+/**
+ * Publishes the next-step map that each step's redirect reads via
+ * `Data("nav.<step>")`, and that Forge's reachability walk follows.
+ * Computed from all saved answers, as CCQ does: the section logic already
+ * ignores answers for branches the client is no longer on.
+ * @param {EffectFunctionContext} context - the effect context
+ * @param {Answers} answers - all saved answers
+ */
+function publishNavigation(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  const domainAnswers = withClientAge(answers, todayUtc());
+  const steps = stepsFor(domainAnswers);
+  const navigationMap = Object.fromEntries(
+    steps.map((step, index) => [
+      step,
+      nextPath(domainAnswers, step, steps.at(index + NEXT_STEP_OFFSET)),
+    ]),
+  );
+
+  context.setData("nav", navigationMap);
+  context.setData("steps", steps);
+}
 
 export interface EligibilityEffectShape {
   LoadAnswers: () => EffectFunctionExpr;
@@ -90,26 +193,12 @@ const EligibilityEffectsImplementation: Record<
         // Set each answer in Forge
         for (const [key, value] of Object.entries(answers)) {
           if (value !== undefined && value !== null) {
-            context.setAnswer(key, value);
+            context.setAnswer(key, toFormValue(value));
           }
         }
 
         console.error("[LoadAnswers] Computing navigation");
-        // Compute navigation
-        const steps = stepsFor(answers);
-        const navigationMap: Record<string, string | undefined> = {};
-
-        for (let i = 0; i < steps.length; i++) {
-          const currentStep = steps[i];
-          const nextStep = steps[i + 1];
-          // Convert underscore step codes to hyphen paths for URL routing
-          navigationMap[currentStep] = nextStep
-            ? nextStep.replace(/_/gu, "-")
-            : undefined;
-        }
-
-        context.setData("nav", navigationMap);
-        context.setData("steps", steps);
+        publishNavigation(context, answers);
         console.error(
           "[LoadAnswers] LoadAnswers effect completed successfully",
         );
@@ -137,70 +226,22 @@ const EligibilityEffectsImplementation: Record<
           throw new Error("answerStore not provided to eligibility package");
         }
 
-        // Load previous answers to merge with posted data
-        const previousAnswers = await answerStore.load(checkId);
-        console.error(
-          `[SaveAnswers] previousAnswers: ${JSON.stringify(previousAnswers)}`,
+        // Forge has already parsed and validated every field on the step, so
+        // persist its answers rather than picking known fields off the POST.
+        // Forge's reachability walk only follows a step's redirect once that
+        // step's answer is loaded back, so an unsaved answer strands every
+        // step after it.
+        await answerStore.save(
+          checkId,
+          toDomainAnswers(context.getAllAnswers()),
         );
 
-        // Get posted form data. Forge passes form fields as POST data.
-        // For now, we collect all posted data by checking common field names
-        const postedAnswers: Answers = {};
-
-        // Get all possible form field values from POST data
-        // This is a generic approach that works for simple form fields
-        const postDataKeys = [
-          "level_of_help",
-          "domestic_abuse_applicant",
-          "date_of_birth",
-          "client_age",
-          // Add other known field names as needed
-        ];
-
-        for (const key of postDataKeys) {
-          const value = context.getPostData(key);
-          if (value !== undefined && value !== null) {
-            postedAnswers[key] = value;
-            console.error(`[SaveAnswers] Posted data: ${key} = ${value}`);
-          }
-        }
-
-        // Merge posted answers with previous answers
-        const merged = { ...previousAnswers, ...postedAnswers };
-        console.error(
-          `[SaveAnswers] Merged answers: ${JSON.stringify(merged)}`,
-        );
-
-        // Save merged answers to session
-        if (Object.keys(postedAnswers).length > 0) {
-          await answerStore.save(checkId, postedAnswers);
-          console.error("[SaveAnswers] Answers saved to session");
-        }
-
-        // Reload all answers to recompute navigation
         const allAnswers = await answerStore.load(checkId);
         console.error(
-          `[SaveAnswers] Reloaded answers: ${JSON.stringify(allAnswers)}`,
+          `[SaveAnswers] Saved answers: ${JSON.stringify(allAnswers)}`,
         );
 
-        // Recompute navigation
-        const steps = stepsFor(allAnswers);
-        const navigationMap: Record<string, string | undefined> = {};
-
-        for (let i = 0; i < steps.length; i++) {
-          const currentStep = steps[i];
-          const nextStep = steps[i + 1];
-          // Convert underscore step codes to hyphen paths for URL routing
-          navigationMap[currentStep] = nextStep
-            ? nextStep.replace(/_/g, "-")
-            : undefined;
-        }
-
-        console.error(
-          `[SaveAnswers] Navigation map computed, next step for level_of_help: ${navigationMap.level_of_help}`,
-        );
-        context.setData("nav", navigationMap);
-        context.setData("steps", steps);
+        publishNavigation(context, allAnswers);
         console.error(
           "[SaveAnswers] SaveAnswers effect completed successfully",
         );
@@ -228,12 +269,12 @@ const EligibilityEffectsImplementation: Record<
       // Import here to avoid circular dependencies
       const { buildAssessment } = await import("../domain/cfe/payload.js");
 
-      // Get all answers
-      const allAnswers = await answerStore.load(checkId);
+      const today = todayUtc();
+      const allAnswers = withClientAge(await answerStore.load(checkId), today);
       const filtered = relevantAnswers(allAnswers);
 
       // Build assessment payload
-      const payload = buildAssessment(filtered, new Date());
+      const payload = buildAssessment(filtered, today);
 
       // Call assessor
       const result = await deps.assessor.assess(payload);

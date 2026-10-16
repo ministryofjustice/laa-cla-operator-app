@@ -8,13 +8,19 @@ import { test, expect } from "../fixtures/index.js";
  * - Steps should only be reachable when relevant
  * - Changing answers shouldn't cause 302 redirects or "service unavailable" errors
  * - Backtracking and re-answering should work correctly
+ * TODO: Replace manual case navigation with direct `/eligibility/` entry point once it's implemented
  */
 test.describe("Eligibility journey - Regression tests", () => {
-  let checkId: string;
+  let caseId: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/eligibility/");
-    checkId = page.url().split("/").pop() || "";
+    // TODO: Replace with direct eligibility entry point when implemented
+    // Currently using the case page button as entry point
+    caseId = "ED-0001-0004";
+    const detailsPath = `/case/${caseId}/add-client-details`;
+    // Authenticate via test-auth endpoint before navigating to protected page
+    await page.goto(`/test-auth/login?next=${encodeURIComponent(detailsPath)}`);
+    await page.getByRole("button", { name: "Check financial eligibility" }).click();
   });
 
   test("level-of-help step is always reachable", async ({
@@ -24,7 +30,7 @@ test.describe("Eligibility journey - Regression tests", () => {
     const { levelOfHelpPage } = pages;
 
     // Should be able to navigate directly to level-of-help
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await expect(page).toHaveURL(/level-of-help/);
     await expect(levelOfHelpPage.heading).toBeVisible();
   });
@@ -37,7 +43,7 @@ test.describe("Eligibility journey - Regression tests", () => {
 
     // Try to navigate directly to domestic-abuse-applicant without proper context
     // This will likely redirect or fail, which is correct behavior
-    const response = await page.goto(`/eligibility/${checkId}/domestic-abuse-applicant`, {
+    const response = await page.goto(`/eligibility/${caseId}/domestic-abuse-applicant`, {
       waitUntil: "networkidle",
     });
 
@@ -57,12 +63,12 @@ test.describe("Eligibility journey - Regression tests", () => {
     } = pages;
 
     // Level of help - select controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
     // Navigate to immigration step
-    await immigrationOrAsylumPage.navigate(`/eligibility/${checkId}/immigration-or-asylum`);
+    await immigrationOrAsylumPage.navigate(`/eligibility/${caseId}/immigration-or-asylum`);
     await immigrationOrAsylumPage.selectYes();
     await immigrationOrAsylumPage.submit();
 
@@ -70,7 +76,7 @@ test.describe("Eligibility journey - Regression tests", () => {
     await expect(page).toHaveURL(/immigration-or-asylum-type/);
 
     // Go back to level-of-help and change answer
-    await page.goto(`/eligibility/${checkId}/level-of-help`);
+    await page.goto(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
@@ -90,7 +96,7 @@ test.describe("Eligibility journey - Regression tests", () => {
       immigrationOrAsylumPage,
     } = pages;
 
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
 
     // First cycle: controlled → yes
     await levelOfHelpPage.selectControlled();
@@ -100,13 +106,13 @@ test.describe("Eligibility journey - Regression tests", () => {
     await expect(page).toHaveURL(/immigration-or-asylum-type/);
 
     // Back and change
-    await page.goto(`/eligibility/${checkId}/immigration-or-asylum`);
+    await page.goto(`/eligibility/${caseId}/immigration-or-asylum`);
     await immigrationOrAsylumPage.selectNo();
     await immigrationOrAsylumPage.submit();
     await expect(page).toHaveURL(/applicant/);
 
     // Back and change again
-    await page.goto(`/eligibility/${checkId}/immigration-or-asylum`);
+    await page.goto(`/eligibility/${caseId}/immigration-or-asylum`);
     await immigrationOrAsylumPage.selectYes();
     await immigrationOrAsylumPage.submit();
     await expect(page).toHaveURL(/immigration-or-asylum-type/);
@@ -122,7 +128,7 @@ test.describe("Eligibility journey - Regression tests", () => {
     const { applicantPage } = pages;
 
     // Try to navigate to partner-details without going through applicant
-    const response = await page.goto(`/eligibility/${checkId}/applicant`, {
+    const response = await page.goto(`/eligibility/${caseId}/applicant`, {
       waitUntil: "networkidle",
     });
 

@@ -21,7 +21,6 @@ describe("domain/navigation (port of Steps::Helper)", () => {
       employment_status: "in_work",
     };
     assert.deepEqual(stepsFor(answers), [
-      "client_age",
       "level_of_help",
       "domestic_abuse_applicant",
       "immigration_or_asylum_type_upper_tribunal",
@@ -36,7 +35,6 @@ describe("domain/navigation (port of Steps::Helper)", () => {
       employment_status: "in_work",
     };
     assert.deepEqual(stepsFor(answers), [
-      "client_age",
       "level_of_help",
       "domestic_abuse_applicant",
       "immigration_or_asylum_type_upper_tribunal",
@@ -52,15 +50,21 @@ describe("domain/navigation (port of Steps::Helper)", () => {
     const answers = { partner: false, passporting: true };
 
     it("moves forward through the relevant steps", () => {
-      assert.equal(nextStep(answers, "client_age"), "level_of_help");
       assert.equal(
         nextStep(answers, "level_of_help"),
         "domestic_abuse_applicant",
       );
+      assert.equal(
+        nextStep(answers, "domestic_abuse_applicant"),
+        "immigration_or_asylum_type_upper_tribunal",
+      );
     });
 
     it("moves backward through the relevant steps", () => {
-      assert.equal(previousStep(answers, "level_of_help"), "client_age");
+      assert.equal(
+        previousStep(answers, "immigration_or_asylum_type_upper_tribunal"),
+        "domestic_abuse_applicant",
+      );
       assert.equal(
         previousStep(answers, "domestic_abuse_applicant"),
         "level_of_help",
@@ -75,8 +79,8 @@ describe("domain/navigation (port of Steps::Helper)", () => {
 
     it("has no previous step before the first relevant step", () => {
       const first = firstStep(answers);
-      assert.equal(first, "client_age");
-      assert.equal(previousStep(answers, "client_age"), undefined);
+      assert.equal(first, "level_of_help");
+      assert.equal(previousStep(answers, "level_of_help"), undefined);
     });
 
     it("returns nothing either side of a step that is not relevant", () => {
@@ -143,6 +147,16 @@ describe("domain/navigation (port of Steps::Helper)", () => {
         property_owned: "outright",
         additional_property_owned: "none",
         vehicle_owned: false,
+      };
+      assert.deepEqual(relevantAnswers(answers), answers);
+    });
+
+    it("keeps the date of birth and age supplied by the earlier journey", () => {
+      const answers = {
+        date_of_birth: "1990-01-01",
+        client_age: "standard",
+        partner: false,
+        passporting: true,
       };
       assert.deepEqual(relevantAnswers(answers), answers);
     });

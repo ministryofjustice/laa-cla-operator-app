@@ -9,7 +9,6 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
-import { EligibilityConditions } from "../../registries/effects.js";
 import {
   bankAccountsHeadingBlock,
   bankAccountsTableBlock,
@@ -20,9 +19,6 @@ export const BANK_ACCOUNTS_STEP_CODE = "bank_accounts";
 
 export const bankAccountsStep = step({
   code: BANK_ACCOUNTS_STEP_CODE,
-  reachability: {
-    entryWhen: EligibilityConditions.StepIsRelevant(BANK_ACCOUNTS_STEP_CODE),
-  },
   path: "/bank-accounts",
   title: "Bank accounts",
   validWhen: [

@@ -30,7 +30,6 @@
 // instead, so the CFE payload builders (domain/cfe/) can pass it straight
 // through rather than synthesising one (see the CFE payload builders plan).
 export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
-  client_age: ["client_age", "date_of_birth"],
   level_of_help: ["level_of_help"],
   under_18_clr: ["controlled_legal_representation"],
   aggregated_means: ["aggregated_means"],
@@ -97,8 +96,8 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
     "percentage_owned",
     "house_in_dispute",
   ],
-  vehicles: ["vehicles"],
-  vehicle_details: ["vehicle_details"],
+  vehicle: ["vehicle_owned"],
+  vehicles_details: ["vehicles"],
   assets: [
     "investments",
     "valuables",
@@ -176,3 +175,10 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
   partner_additional_property: ["partner_additional_property_owned"],
   partner_additional_property_details: ["partner_additional_properties"],
 };
+
+// Supplied by the earlier call-intake journey rather than any step, so always
+// relevant. `client_age` is derived from `date_of_birth` (see client-age.ts).
+export const PRESET_ANSWER_KEYS: readonly string[] = [
+  "date_of_birth",
+  "client_age",
+];

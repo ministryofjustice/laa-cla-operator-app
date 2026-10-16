@@ -4,13 +4,19 @@ import { test, expect } from "../fixtures/index.js";
 /**
  * End-to-end tests for eligibility journey with domestic abuse
  * This tests the non-controlled (non-certificated, non-passported) paths
+ * TODO: Replace manual case navigation with direct `/eligibility/` entry point once it's implemented
  */
 test.describe("Eligibility journey - Domestic Abuse / Non-controlled", () => {
-  let checkId: string;
+  let caseId: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/eligibility/");
-    checkId = page.url().split("/").pop() || "";
+    // TODO: Replace with direct eligibility entry point when implemented
+    // Currently using the case page button as entry point
+    caseId = "ED-0001-0003";
+    const detailsPath = `/case/${caseId}/add-client-details`;
+    // Authenticate via test-auth endpoint before navigating to protected page
+    await page.goto(`/test-auth/login?next=${encodeURIComponent(detailsPath)}`);
+    await page.getByRole("button", { name: "Check financial eligibility" }).click();
   });
 
   test("navigating from level-of-help to domestic abuse (bug reproduction)", async ({
@@ -26,11 +32,11 @@ test.describe("Eligibility journey - Domestic Abuse / Non-controlled", () => {
     // then changing to certificated should show domestic abuse
 
     // Level of help - select controlled, then change to non-controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     // For now, navigate directly to domestic abuse to test it's reachable
     // In a real scenario, would need to trigger through non-controlled path
     await domesticAbuseApplicantPage.navigate(
-      `/eligibility/${checkId}/domestic-abuse-applicant`
+      `/eligibility/${caseId}/domestic-abuse-applicant`
     );
 
     // Verify the page loads without 302 redirect
@@ -48,7 +54,7 @@ test.describe("Eligibility journey - Domestic Abuse / Non-controlled", () => {
     } = pages;
 
     await domesticAbuseApplicantPage.navigate(
-      `/eligibility/${checkId}/domestic-abuse-applicant`
+      `/eligibility/${caseId}/domestic-abuse-applicant`
     );
     await domesticAbuseApplicantPage.selectYes();
     await domesticAbuseApplicantPage.submit();
@@ -68,7 +74,7 @@ test.describe("Eligibility journey - Domestic Abuse / Non-controlled", () => {
     } = pages;
 
     await domesticAbuseApplicantPage.navigate(
-      `/eligibility/${checkId}/domestic-abuse-applicant`
+      `/eligibility/${caseId}/domestic-abuse-applicant`
     );
     await domesticAbuseApplicantPage.selectNo();
     await domesticAbuseApplicantPage.submit();
@@ -88,7 +94,7 @@ test.describe("Eligibility journey - Domestic Abuse / Non-controlled", () => {
 
     // Navigate to domestic abuse
     await domesticAbuseApplicantPage.navigate(
-      `/eligibility/${checkId}/domestic-abuse-applicant`
+      `/eligibility/${caseId}/domestic-abuse-applicant`
     );
     await domesticAbuseApplicantPage.selectYes();
     await domesticAbuseApplicantPage.submit();

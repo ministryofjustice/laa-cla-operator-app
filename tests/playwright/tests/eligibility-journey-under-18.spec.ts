@@ -3,14 +3,19 @@ import { test, expect } from "../fixtures/index.js";
 
 /**
  * End-to-end tests for eligibility journey with under 18 clients
+ * TODO: Replace manual case navigation with direct `/eligibility/` entry point once it's implemented
  */
 test.describe("Eligibility journey - Under 18", () => {
-  let checkId: string;
+  let caseId: string;
 
   test.beforeEach(async ({ page }) => {
-    // Start a new eligibility check and capture the check ID from URL
-    await page.goto("/eligibility/");
-    checkId = page.url().split("/").pop() || "";
+    // TODO: Replace with direct eligibility entry point when implemented
+    // Currently using the case page button as entry point
+    caseId = "ED-0001-0002";
+    const detailsPath = `/case/${caseId}/add-client-details`;
+    // Authenticate via test-auth endpoint before navigating to protected page
+    await page.goto(`/test-auth/login?next=${encodeURIComponent(detailsPath)}`);
+    await page.getByRole("button", { name: "Check financial eligibility" }).click();
   });
 
   test("under 18 with controlled legal representation (no means test required)", async ({
@@ -24,12 +29,12 @@ test.describe("Eligibility journey - Under 18", () => {
     } = pages;
 
     // Level of help - select controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
     // Under 18 CLR - select yes (has controlled legal representation)
-    await under18ClrPage.navigate(`/eligibility/${checkId}/under-18-clr`);
+    await under18ClrPage.navigate(`/eligibility/${caseId}/under-18-clr`);
     await expect(under18ClrPage.heading).toContainText("Controlled legal representation");
     await under18ClrPage.selectYes();
     await under18ClrPage.submit();
@@ -50,17 +55,17 @@ test.describe("Eligibility journey - Under 18", () => {
     } = pages;
 
     // Level of help - select controlled
-    await levelOfHelpPage.navigate(`/eligibility/${checkId}/level-of-help`);
+    await levelOfHelpPage.navigate(`/eligibility/${caseId}/level-of-help`);
     await levelOfHelpPage.selectControlled();
     await levelOfHelpPage.submit();
 
     // Under 18 CLR - select no
-    await under18ClrPage.navigate(`/eligibility/${checkId}/under-18-clr`);
+    await under18ClrPage.navigate(`/eligibility/${caseId}/under-18-clr`);
     await under18ClrPage.selectNo();
     await under18ClrPage.submit();
 
     // Aggregated means - select yes
-    await aggregatedMeansPage.navigate(`/eligibility/${checkId}/aggregated-means`);
+    await aggregatedMeansPage.navigate(`/eligibility/${caseId}/aggregated-means`);
     await expect(aggregatedMeansPage.heading).toContainText("aggregated means");
     await aggregatedMeansPage.selectYes();
     await aggregatedMeansPage.submit();

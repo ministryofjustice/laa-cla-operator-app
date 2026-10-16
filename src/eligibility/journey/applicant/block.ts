@@ -15,13 +15,10 @@ export const applicantBlock = CollectionBlock({
       code: "applicant",
       fieldset: {
         legend: {
-          text: "Does the client have a partner?",
+          text: "Tell us about your client",
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
-      },
-      hint: {
-        text: "Include married couples, civil partners, and those in long-term relationships.",
       },
       items: [
         {
@@ -37,6 +34,33 @@ export const applicantBlock = CollectionBlock({
         validation({
           condition: Self().match(Condition.IsRequired()),
           message: "Select whether the client has a partner",
+        }),
+      ],
+    }),
+    GovUKRadioInput({
+      code: "passporting",
+      fieldset: {
+        legend: {
+          text: "Does your client receive a passporting benefit?",
+        },
+      },
+      hint: {
+        text: "Such as Universal Credit, Income Support, Income-based Jobseeker's Allowance, Income-related Employment and Support Allowance, Pension Credit, or Housing Benefit.",
+      },
+      items: [
+        {
+          value: "true",
+          text: "Yes",
+        },
+        {
+          value: "false",
+          text: "No",
+        },
+      ],
+      validWhen: [
+        validation({
+          condition: Self().match(Condition.IsRequired()),
+          message: "Select whether the client receives a passporting benefit",
         }),
       ],
     }),

@@ -4,9 +4,6 @@ import {
   access,
   redirect,
   Data,
-  validation,
-  Post,
-  Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../registries/effects.js";
 import {
@@ -23,12 +20,6 @@ export const dependantDetailsStep = step({
   code: DEPENDANT_DETAILS_STEP_CODE,
   path: "/dependant-details",
   title: "Dependant details",
-  validWhen: [
-    validation({
-      condition: Post("dependant_details").match(Condition.IsRequired()),
-      message: "Select whether the client has dependants",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [dependantDetailsBlock],
@@ -47,12 +38,6 @@ export const dependantIncomeStep = step({
   code: DEPENDANT_INCOME_STEP_CODE,
   path: "/dependant-income",
   title: "Dependant income",
-  validWhen: [
-    validation({
-      condition: Post("dependant_income").match(Condition.IsRequired()),
-      message: "Select whether the dependants have income",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [dependantIncomeBlock],
@@ -71,12 +56,6 @@ export const dependantIncomeDetailsStep = step({
   code: DEPENDANT_INCOME_DETAILS_STEP_CODE,
   path: "/dependant-income-details",
   title: "Dependant income details",
-  validWhen: [
-    validation({
-      condition: Post("dependant_income_details").match(Condition.IsRequired()),
-      message: "Enter the dependants' monthly income",
-    }),
-  ],
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [dependantIncomeDetailsBlock],

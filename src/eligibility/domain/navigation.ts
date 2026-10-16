@@ -3,7 +3,7 @@
 // questions about where a given step sits in it.
 import type { Answers } from "./logic.js";
 import { skipIncomeQuestions } from "./logic.js";
-import { STEP_ANSWER_KEYS } from "./step-answer-keys.js";
+import { PRESET_ANSWER_KEYS, STEP_ANSWER_KEYS } from "./step-answer-keys.js";
 import type { Group } from "./sections/shared.js";
 import { nonFinancialSection } from "./sections/non-financial-section.js";
 import { incomeSection } from "./sections/income-section.js";
@@ -68,9 +68,10 @@ export function stepsFor(answers: Answers): string[] {
  * @returns {Answers} only the answers for currently relevant steps
  */
 export function relevantAnswers(answers: Answers): Answers {
-  const relevantKeys = new Set(
-    stepsFor(answers).flatMap((step) => STEP_ANSWER_KEYS[step] ?? []),
-  );
+  const relevantKeys = new Set([
+    ...PRESET_ANSWER_KEYS,
+    ...stepsFor(answers).flatMap((step) => STEP_ANSWER_KEYS[step] ?? []),
+  ]);
   return Object.fromEntries(
     Object.entries(answers).filter(([key]) => relevantKeys.has(key)),
   );

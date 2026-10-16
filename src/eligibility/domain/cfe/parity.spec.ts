@@ -12,6 +12,10 @@ import partnerWithAssetsFixture from "./fixtures/partner-with-assets.json" with 
 
 const FIXED_TODAY = new Date(Date.UTC(2024, 5, 1));
 
+// CCQ asks for the client's age; this journey derives it from the date of
+// birth instead (see client-age.ts), so has no client_age step.
+const DERIVED_STEPS = new Set(["client_age"]);
+
 describe("domain/cfe/parity (comparing TS port to fixture expectations)", () => {
   const fixtures = [
     { name: "controlled-work case", fixture: controlledWorkFixture },
@@ -26,7 +30,9 @@ describe("domain/cfe/parity (comparing TS port to fixture expectations)", () => 
         const computed = Array.from(stepsFor(fixture.input));
         assert.deepEqual(
           computed.sort(),
-          fixture.relevant_steps.sort(),
+          fixture.relevant_steps
+            .filter((step) => !DERIVED_STEPS.has(step))
+            .sort(),
           `step mismatch for ${name}`,
         );
       });
