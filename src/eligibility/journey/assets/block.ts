@@ -8,10 +8,13 @@ import {
   validation,
   Condition,
   Self,
+  Answer,
+  or,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
-  poundsAmountWhenAnswered,
   smodDisputeWhenApplicable,
+  POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN,
+  POUNDS_AMOUNT_MIN_500_PATTERN,
 } from "../amount-validation.js";
 
 export const assetsQuestionsBlock = CollectionBlock({
@@ -45,8 +48,11 @@ export const assetsQuestionsBlock = CollectionBlock({
       hint: { text: "In pounds" },
       validWhen: [
         validation({
-          condition: poundsAmountWhenAnswered("investments_relevant", "true"),
-          message: "The total value of all investments must be a number",
+          condition: or([
+            Answer("investments_relevant").not.match(Condition.Equals("true")),
+            Self().match(Condition.String.MatchesRegex(POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN)),
+          ]),
+          message: "Enter the total value of investments as a number greater than 0",
         }),
       ],
     }),
@@ -95,8 +101,11 @@ export const assetsQuestionsBlock = CollectionBlock({
       hint: { text: "In pounds" },
       validWhen: [
         validation({
-          condition: poundsAmountWhenAnswered("valuables_relevant", "true"),
-          message: "The total value of all valuable items must be a number",
+          condition: or([
+            Answer("valuables_relevant").not.match(Condition.Equals("true")),
+            Self().match(Condition.String.MatchesRegex(POUNDS_AMOUNT_MIN_500_PATTERN)),
+          ]),
+          message: "Enter the total value of valuable items as at least £500",
         }),
       ],
     }),

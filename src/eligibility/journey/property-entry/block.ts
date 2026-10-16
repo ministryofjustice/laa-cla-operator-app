@@ -10,10 +10,10 @@ import {
   Self,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
-  POUNDS_AMOUNT_PATTERN,
   WHOLE_PERCENTAGE_PATTERN,
-  poundsAmountWhenAnswered,
+  poundsAmountGreaterThanZeroWhenAnswered,
   smodDisputeWhenApplicable,
+  POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN,
 } from "../amount-validation.js";
 
 export const propertyEntryBlock = CollectionBlock({
@@ -29,9 +29,9 @@ export const propertyEntryBlock = CollectionBlock({
       validWhen: [
         validation({
           condition: Self().match(
-            Condition.String.MatchesRegex(POUNDS_AMOUNT_PATTERN),
+            Condition.String.MatchesRegex(POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN),
           ),
-          message: "Enter how much the property is worth, as a number",
+          message: "Enter the property value as a number greater than 0",
         }),
       ],
     }),
@@ -41,8 +41,8 @@ export const propertyEntryBlock = CollectionBlock({
       hint: { text: "In pounds" },
       validWhen: [
         validation({
-          condition: poundsAmountWhenAnswered("property_owned", "with_mortgage"),
-          message: "Enter how much is left to pay on the mortgage, as a number",
+          condition: poundsAmountGreaterThanZeroWhenAnswered("property_owned", "with_mortgage"),
+          message: "Enter how much is left to pay on the mortgage, as a number greater than 0",
         }),
       ],
     }),
