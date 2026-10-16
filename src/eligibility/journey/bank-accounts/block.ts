@@ -86,3 +86,73 @@ export const bankAccountsButtonsBlock = CollectionBlock({
     GovUKButton({ text: "Continue" }),
   ],
 });
+
+export const partnerBankAccountsHeadingBlock = HtmlBlock({
+  tag: "h2",
+  content: "Partner's bank accounts and savings",
+  classes: "govuk-heading-l",
+});
+
+export const partnerBankAccountsTableBlock = CollectionBlock({
+  collection: Data("partnerBankAccountRows").each(
+    Iterator.Map(
+      CollectionBlock({
+        classes: "bank-account-row govuk-!-margin-bottom-6",
+        collection: [
+          HtmlBlock({
+            tag: "h3",
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- Loop.Index() is Forge runtime binding
+            content: `Partner's bank account ${Loop.Index()}`,
+            classes: "govuk-heading-s",
+          }),
+          GovUKTextInput({
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- Item().path() is Forge runtime binding
+            code: `partner_bank_accounts_${Item().path("index")}_amount`,
+            label: { text: "Amount" },
+            hint: { text: "In pounds" },
+            validWhen: [
+              validation({
+                condition: Self().match(Condition.IsRequired()),
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- Loop.Index() is Forge runtime binding
+                message: `Enter the amount in partner's bank account ${Loop.Index()}`,
+              }),
+            ],
+          }),
+          GovUKRadioInput({
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- Item().path() is Forge runtime binding
+            code: `partner_bank_accounts_${Item().path("index")}_joint`,
+            fieldset: {
+              legend: {
+                text: "Is this a joint account?",
+                classes: "govuk-fieldset__legend--s",
+              },
+            },
+            items: [
+              { value: "true", text: "Yes" },
+              { value: "false", text: "No" },
+            ],
+            validWhen: [
+              validation({
+                condition: Self().match(Condition.IsRequired()),
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions -- Loop.Index() is Forge runtime binding
+                message: `Select whether partner's bank account ${Loop.Index()} is joint`,
+              }),
+            ],
+          }),
+        ],
+      }),
+    ),
+  ),
+});
+
+export const partnerBankAccountsButtonsBlock = CollectionBlock({
+  collection: [
+    GovUKButton({
+      name: "action",
+      value: "add",
+      text: "Add another bank account",
+      classes: "govuk-button--secondary",
+    }),
+    GovUKButton({ text: "Continue" }),
+  ],
+});
