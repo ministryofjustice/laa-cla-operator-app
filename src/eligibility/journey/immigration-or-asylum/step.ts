@@ -9,6 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/effects.js";
 import { immigrationOrAsylumBlock } from "./block.js";
 
 export const IMMIGRATION_OR_ASYLUM_STEP_CODE = "immigration_or_asylum";
@@ -17,7 +18,9 @@ export const immigrationOrAsylumStep = step({
   code: IMMIGRATION_OR_ASYLUM_STEP_CODE,
   path: "/immigration-or-asylum",
   title: "Immigration or asylum",
-  reachability: { entryWhen: true },
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(IMMIGRATION_OR_ASYLUM_STEP_CODE),
+  },
   validWhen: [
     validation({
       condition: Post("immigration_or_asylum").match(Condition.IsRequired()),

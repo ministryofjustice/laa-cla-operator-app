@@ -9,13 +9,16 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../../registries/effects.js";
+import { EligibilityConditions } from "../../registries/effects.js";
 import { employmentStatusBlock } from "./block.js";
 
 export const EMPLOYMENT_STATUS_STEP_CODE = "employment_status";
 
 export const employmentStatusStep = step({
   code: EMPLOYMENT_STATUS_STEP_CODE,
-  reachability: { entryWhen: true },
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(EMPLOYMENT_STATUS_STEP_CODE),
+  },
   path: "/employment-status",
   title: "Employment status",
   validWhen: [

@@ -9,6 +9,7 @@ import {
   Condition,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { EligibilityEffects } from "../registries/effects.js";
+import { EligibilityConditions } from "../registries/conditions.js";
 import {
   immigrationOrAsylumTypeUpperTribunalBlock,
   asylumSupportBlock,
@@ -23,6 +24,11 @@ export const DOMESTIC_ABUSE_APPLICANT_STEP_CODE = "domestic_abuse_applicant";
 export const immigrationOrAsylumTypeUpperTribunalStep = step({
   code: IMMIGRATION_OR_ASYLUM_TYPE_UPPER_TRIBUNAL_STEP_CODE,
   path: "/immigration-or-asylum-type-upper-tribunal",
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(
+      IMMIGRATION_OR_ASYLUM_TYPE_UPPER_TRIBUNAL_STEP_CODE,
+    ),
+  },
   title: "Immigration or asylum type (upper tribunal)",
   validWhen: [
     validation({
@@ -53,6 +59,9 @@ export const immigrationOrAsylumTypeUpperTribunalStep = step({
 export const asylumSupportStep = step({
   code: ASYLUM_SUPPORT_STEP_CODE,
   path: "/asylum-support",
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(ASYLUM_SUPPORT_STEP_CODE),
+  },
   title: "Asylum support",
   validWhen: [
     validation({
@@ -77,6 +86,11 @@ export const asylumSupportStep = step({
 export const domesticAbuseApplicantStep = step({
   code: DOMESTIC_ABUSE_APPLICANT_STEP_CODE,
   path: "/domestic-abuse-applicant",
+  reachability: {
+    entryWhen: EligibilityConditions.StepIsRelevant(
+      DOMESTIC_ABUSE_APPLICANT_STEP_CODE,
+    ),
+  },
   title: "Domestic abuse",
   validWhen: [
     validation({
