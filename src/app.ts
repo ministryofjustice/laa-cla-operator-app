@@ -56,8 +56,8 @@ const createApp = async (): Promise<express.Application> => {
   app.set("trust proxy", TRUST_FIRST_PROXY);
   app.use(session(await buildSessionConfig(config)));
 
-  app.use(axiosMiddleware);
   app.use(requireAuth);
+  app.use(axiosMiddleware);
 
   // Response compression setup
   app.use(
