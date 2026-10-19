@@ -10,7 +10,20 @@ import { createTestRequest } from "../controllers/index.js";
 import type { AuthenticationResult } from "@azure/msal-node";
 import { createCachedMsalBlob } from "./silasService.cachedata.spec.js";
 import type { RedisClientType } from "#node_modules/redis/dist/index.js";
-import { ZERO } from "#src/constants.js";
+import crypto from "node:crypto";
+import jsonwebtoken, {
+  JsonWebTokenError,
+  SignOptions,
+  TokenExpiredError,
+} from "jsonwebtoken";
+
+interface GenerateAccessTokenOptions {
+  tenantId: string;
+  expires?: string;
+  audience?: string;
+  issuer?: string;
+  algorithm?: string;
+}
 
 function assertAuthCodeUrl(url: URL, expectedNonceValue?: string) {
   if (expectedNonceValue !== undefined) {
@@ -53,6 +66,32 @@ function assertAuthCodeUrl(url: URL, expectedNonceValue?: string) {
   );
 }
 
+function generateAccessToken(
+  args: GenerateAccessTokenOptions,
+): Record<string, string> {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  });
+  const payload = {
+    name: "Test user",
+    username: "test.user@justice.gov.uk",
+  };
+  const options = {
+    algorithm: args.algorithm ?? "RS256",
+    issuer:
+      args.issuer ?? `https://login.microsoftonline.com/${args.tenantId}/v2.0`,
+    audience: args.audience ?? "test-audience",
+    expiresIn: args.expires ?? "1h",
+    header: {
+      kid: "rsa-key-2026-01",
+      alg: args.algorithm ?? "RS256",
+    },
+  } as SignOptions;
+  const accessToken = jsonwebtoken.sign(payload, privateKey, options);
+  return { accessToken, publicKey };
+}
 describe("Silas Service", () => {
   it("factory:should return service instance without cache", () => {
     const redisEnabledStub = sinon.stub(config.redis, "enabled").value(false);
@@ -112,7 +151,10 @@ describe("Silas Service", () => {
 
   it("acquireTokenByCode: should exchange code for acces token", async () => {
     const service = SilasService.factory();
-    const acquireTokenByCodeStub = sinon.stub();
+    const verifyStub = sinon.stub(service, "verify").resolves();
+    const acquireTokenByCodeStub = sinon.stub().resolves({
+      accessToken: "test-access-token",
+    });
     sinon.stub(service, <any>"msalClient").value({
       acquireTokenByCode: acquireTokenByCodeStub,
     });
@@ -130,6 +172,16 @@ describe("Silas Service", () => {
         redirectUri: config.silas.redirectUri,
       },
       "should msal client with correct arguments",
+    );
+    assert.equal(
+      verifyStub.called,
+      true,
+      "should verify the access token after exchange",
+    );
+    assert.equal(
+      verifyStub.firstCall.firstArg,
+      "test-access-token",
+      "should verify the access token after exchange",
     );
   });
 
@@ -218,5 +270,125 @@ describe("Silas Service", () => {
     );
     const result = await service.acquireTokenSilent(homeAccountId);
     assert.equal(result.accessToken, "not-a-real-access-token");
+  });
+
+  it("verify: valid access token", async () => {
+    const silasConfig = { ...config.silas };
+    Object.assign(silasConfig, {
+      tenantId: "test-tenant-id",
+      expectedAudience: "test-audience",
+    });
+    const service = new SilasService(silasConfig);
+    const { accessToken, publicKey } = generateAccessToken({
+      tenantId: silasConfig.tenantId,
+    });
+    sinon.stub(service, "getPublicKey").resolves(publicKey);
+    try {
+      await service.verify(accessToken);
+    } catch (error: any) {
+      assert.fail(error.message);
+    }
+  });
+
+  it("verify: token has expired", async () => {
+    const silasConfig = { ...config.silas };
+    Object.assign(silasConfig, {
+      tenantId: "test-tenant-id",
+      expectedAudience: "test-audience",
+    });
+    const service = new SilasService(silasConfig);
+    const { accessToken, publicKey } = generateAccessToken({
+      tenantId: silasConfig.tenantId,
+      expires: "-1hr",
+    });
+    sinon.stub(service, "getPublicKey").resolves(publicKey);
+    await assert.rejects(
+      service.verify(accessToken),
+      TokenExpiredError,
+      "expected to raise token expired error for expired token",
+    );
+  });
+
+  it("verify: token has incorrect audience", async () => {
+    const silasConfig = { ...config.silas };
+    Object.assign(silasConfig, {
+      tenantId: "test-tenant-id",
+      expectedAudience: "test-audience",
+    });
+    const service = new SilasService(silasConfig);
+    const { accessToken, publicKey } = generateAccessToken({
+      tenantId: silasConfig.tenantId,
+      audience: "invalid-auidence",
+    });
+    sinon.stub(service, "getPublicKey").resolves(publicKey);
+    try {
+      await service.verify(accessToken);
+      assert.fail("Failed to throw error on token with invalid audience");
+    } catch (error: any) {
+      assert.equal(
+        error instanceof JsonWebTokenError,
+        true,
+        "expecting JsonWebTokenError to be raised",
+      );
+      assert.equal(
+        error.message,
+        "jwt audience invalid. expected: test-audience",
+        "expecting error message to be raised",
+      );
+    }
+  });
+
+  it("verify: token has incorrect issuer", async () => {
+    const silasConfig = { ...config.silas };
+    Object.assign(silasConfig, {
+      tenantId: "test-tenant-id",
+      expectedAudience: "test-audience",
+    });
+    const service = new SilasService(silasConfig);
+    const { accessToken, publicKey } = generateAccessToken({
+      tenantId: silasConfig.tenantId,
+      issuer: "invalid-issuer",
+    });
+    sinon.stub(service, "getPublicKey").resolves(publicKey);
+    try {
+      await service.verify(accessToken);
+      assert.fail("Failed to throw error on token with invalid issuer");
+    } catch (error: any) {
+      assert.equal(
+        error instanceof JsonWebTokenError,
+        true,
+        "expecting JsonWebTokenError to be raised",
+      );
+      assert.equal(
+        error.message,
+        `jwt issuer invalid. expected: https://login.microsoftonline.com/${silasConfig.tenantId}/v2.0`,
+      );
+    }
+  });
+
+  it("verify: token has algorithm", async () => {
+    const silasConfig = { ...config.silas };
+    Object.assign(silasConfig, {
+      tenantId: "test-tenant-id",
+      expectedAudience: "test-audience",
+    });
+    const service = new SilasService(silasConfig);
+    const { accessToken, publicKey } = generateAccessToken({
+      tenantId: silasConfig.tenantId,
+      algorithm: "RS512",
+    });
+    sinon.stub(service, "getPublicKey").resolves(publicKey);
+    try {
+      await service.verify(accessToken);
+      assert.fail("Failed to throw error on token with invalid issuer");
+    } catch (error: any) {
+      console.log(error.message);
+      assert.equal(
+        error instanceof JsonWebTokenError,
+        true,
+        "expecting JsonWebTokenError to be raised",
+      );
+      assert.equal(error.message, "invalid algorithm");
+    }
   });
 });

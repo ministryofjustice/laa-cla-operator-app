@@ -14,9 +14,16 @@ import { saveSession } from "#src/helpers/session.js";
 import { randomBytes } from "node:crypto";
 import { createRedisClient } from "#utils/redis.js";
 import config from "#config.js";
-import { EMPTY_LENGTH } from "#src/constants.js";
+import { EMPTY_LENGTH, ZERO } from "#src/constants.js";
+import jsonwebtoken, {
+  JsonWebTokenError,
+  TokenExpiredError,
+  NotBeforeError,
+} from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 const NONCE_BYTES = 32;
+const ENTRA_KEY_CACHE_TTL_MS = 3600000; // 1 hour
 
 /**
  * Builds the Redis key used to persist an MSAL cache blob for a session.
@@ -102,7 +109,7 @@ export class SilasService {
    * @param {RedisCachePlugin} cachePlugin - A redis cache plugin to cache the access token
    */
   constructor(silasConfig: SilasConfig, cachePlugin?: RedisCachePlugin) {
-    this.config = silasConfig;
+    this.config = { ...silasConfig };
     this.msalClient = new ConfidentialClientApplication({
       auth: {
         clientId: silasConfig.clientId,
@@ -189,11 +196,13 @@ export class SilasService {
    * @returns {AuthenticationResult} - The authentication result consisting of the access token and refresh token
    */
   async acquireTokenByCode(code: string): Promise<AuthenticationResult> {
-    return await this.msalClient.acquireTokenByCode({
+    const result = await this.msalClient.acquireTokenByCode({
       code,
       scopes: this.config.scopes,
       redirectUri: this.config.redirectUri,
     });
+    await this.verify(result.accessToken);
+    return result;
   }
 
   /**
@@ -236,6 +245,64 @@ export class SilasService {
     } catch (err) {
       throw new Error("Could not refresh token", { cause: err });
     }
+  }
+
+  /* c8 ignore start */
+  /**
+   * Get public key for given key id.
+   * @param {string} kid - Key ID
+   * @returns {string} - The entra public key for the given key id
+   */
+  async getPublicKey(kid: string): Promise<string> {
+    // we do not want to call this in our unit test as this will make request entra
+    const client = this.getJwksClient();
+    const key = await client.getSigningKey(kid);
+    return key.getPublicKey();
+  }
+  /* c8 ignore stop */
+
+  /* c8 ignore start */
+  /**
+   * Makes easier to mock the signing key
+   * @returns {jwksClient.JwksClient} - Gets a jwksClient
+   */
+  getJwksClient(): jwksClient.JwksClient {
+    // we do not want to call this in our unit test as this will make request entra
+    return jwksClient({
+      jwksUri: `https://login.microsoftonline.com/${this.config.tenantId}/discovery/v2.0/keys`,
+      cache: true,
+      cacheMaxAge: ENTRA_KEY_CACHE_TTL_MS,
+    });
+  }
+  /* c8 ignore stop */
+
+  /**
+   * Decodes the claims portion of a JWT access token.
+   * @param {string} token JWT access token to decode.
+   * @throws {JsonWebTokenError | TokenExpiredError | NotBeforeError | Error}
+   */
+  async verify(token: string): Promise<void> {
+    const kid = this.getAccessTokenKID(token);
+    const pubKey = await this.getPublicKey(kid);
+    jsonwebtoken.verify(token, pubKey, {
+      audience: this.config.expectedAudience,
+      issuer: `https://login.microsoftonline.com/${this.config.tenantId}/v2.0`,
+      algorithms: ["RS256"],
+    });
+  }
+
+  /**
+   * Get key id used in a given access token.
+   * @param {string} accessToken - Access token
+   * @returns {string} - The Key ID used in the access token
+   */
+  getAccessTokenKID(accessToken: string): string {
+    const parts = accessToken.split(".");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- this returns an object
+    const header = JSON.parse(
+      Buffer.from(parts[ZERO], "base64url").toString(),
+    ) as Record<string, string>;
+    return header.kid;
   }
   /* c8 ignore next */
 }
