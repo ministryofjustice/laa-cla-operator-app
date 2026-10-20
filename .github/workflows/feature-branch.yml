@@ -3,14 +3,9 @@ name: Feature Branch
 run-name: Feature - ${{ github.head_ref || github.ref_name }}
 
 on:
-  push:
-    branches-ignore:
-      - main
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
