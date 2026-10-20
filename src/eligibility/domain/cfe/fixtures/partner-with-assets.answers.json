@@ -25,10 +25,6 @@
       "national_insurance": 180
     }
   ],
-  "housing_costs": true,
-  "housing_payments": 1000,
-  "housing_payments_frequency": "monthly",
-  "housing_benefit_relevant": false,
   "friends_or_family_relevant": false,
   "maintenance_relevant": false,
   "property_or_lodger_relevant": false,
@@ -56,7 +52,8 @@
     {
       "house_value": 150000,
       "percentage_owned": 50,
-      "mortgage": 75000
+      "mortgage": 75000,
+      "house_in_dispute": false
     }
   ],
   "partner_additional_property_owned": "outright",
@@ -70,11 +67,11 @@
   "valuables": 2000,
   "bank_accounts": [
     {
-      "amount": 15000
+      "amount": 15000,
+      "account_in_dispute": false
     }
   ],
   "partner_investments": 5000,
-  "partner_valuables": 0,
   "partner_bank_accounts": [
     {
       "amount": 8000
@@ -94,6 +91,19 @@
   "adult_dependants_count": 1,
   "child_dependants": true,
   "child_dependants_count": 2,
-  "immigration_or_asylum": false,
-  "domestic_abuse_applicant": false
+  "domestic_abuse_applicant": false,
+  "immigration_or_asylum_type_upper_tribunal": "none",
+  "partner_over_60": false,
+  "receives_benefits": false,
+  "partner_receives_benefits": false,
+  "dependants_get_income": false,
+  "housing_loan_payments": 1000,
+  "housing_payments_loan_frequency": "monthly",
+  "house_in_dispute": false,
+  "investments_relevant": true,
+  "investments_in_dispute": false,
+  "valuables_relevant": true,
+  "valuables_in_dispute": false,
+  "partner_investments_relevant": true,
+  "partner_valuables_relevant": false
 }

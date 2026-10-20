@@ -21,6 +21,8 @@ export interface AddAnotherList {
   fields: Readonly<Record<string, FieldKind>>;
   /** What a newly added row holds before anything is entered. */
   blankRow?: Readonly<Record<string, unknown>>;
+  /** Maximum rows, when the list's size depends on earlier answers. */
+  maxRows?: (answers: Answers) => number;
   /** Builds the descriptor for the row at `index` in a list of `rowCount` rows. */
   describeRow: (
     index: number,
@@ -74,7 +76,23 @@ export function savedRows(list: AddAnotherList, answers: Answers): Row[] {
  * @returns {number} the row count
  */
 export function rowCountFor(list: AddAnotherList, answers: Answers): number {
-  return Math.max(savedRows(list, answers).length, MIN_ROWS);
+  const count = Math.max(savedRows(list, answers).length, MIN_ROWS);
+  return list.maxRows === undefined
+    ? count
+    : Math.min(count, Math.max(list.maxRows(answers), NO_ROWS));
+}
+
+/**
+ * Whether another row can be added without exceeding the list's limit.
+ * @param {AddAnotherList} list - the list
+ * @param {Answers} answers - the saved answers
+ * @returns {boolean} whether another row is available
+ */
+export function canAddRows(list: AddAnotherList, answers: Answers): boolean {
+  return (
+    list.maxRows === undefined ||
+    savedRows(list, answers).length < Math.max(list.maxRows(answers), NO_ROWS)
+  );
 }
 
 /**
@@ -108,7 +126,10 @@ export function formAnswersFor(
     for (const [field, kind] of Object.entries(list.fields)) {
       const { [field]: value } = row;
       if (kind === "checkbox") {
-        if (value === true) flat[rowFieldCode(list.key, index, field)] = "true";
+        // Forge only ticks a checkbox whose value is a list of its options.
+        if (value === true) {
+          flat[rowFieldCode(list.key, index, field)] = ["true"];
+        }
       } else if (kind === "boolean") {
         if (typeof value === "boolean") {
           flat[rowFieldCode(list.key, index, field)] = String(value);
@@ -184,8 +205,12 @@ function collapseList(list: AddAnotherList, answers: Answers): Answers {
   const collapsed = Object.fromEntries(
     Object.entries(answers).filter(([key]) => !pattern.test(key)),
   );
+  const rowLimit =
+    list.maxRows === undefined
+      ? Math.max(...indexes) + NEXT_INDEX
+      : Math.max(list.maxRows(answers), NO_ROWS);
   collapsed[list.key] = Array.from(
-    { length: Math.max(...indexes) + NEXT_INDEX },
+    { length: Math.min(Math.max(...indexes) + NEXT_INDEX, rowLimit) },
     (_, index) =>
       Object.fromEntries(
         Object.entries(list.fields)
@@ -219,7 +244,8 @@ export function collapseLists(
  * @returns {Row[]} the rows, with a new blank row last
  */
 export function withBlankRow(list: AddAnotherList, answers: Answers): Row[] {
-  return [...savedRows(list, answers), { ...list.blankRow }];
+  const rows = savedRows(list, answers);
+  return canAddRows(list, answers) ? [...rows, { ...list.blankRow }] : rows;
 }
 
 /**

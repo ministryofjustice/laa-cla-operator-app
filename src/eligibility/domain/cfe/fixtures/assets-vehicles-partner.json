@@ -1,0 +1,139 @@
+{
+  "input": {
+    "level_of_help": "certificated",
+    "client_age": "standard",
+    "domestic_abuse_applicant": false,
+    "date_of_birth": "1970-12-02",
+    "immigration_or_asylum_type_upper_tribunal": "none",
+    "partner": true,
+    "passporting": true,
+    "partner_date_of_birth": "1960-04-18",
+    "partner_over_60": true,
+    "property_owned": "none",
+    "additional_property_owned": "none",
+    "partner_additional_property_owned": "none",
+    "bank_accounts": [
+      {
+        "amount": 4000,
+        "account_in_dispute": false
+      }
+    ],
+    "investments_relevant": false,
+    "valuables_relevant": true,
+    "valuables": 900,
+    "valuables_in_dispute": true,
+    "partner_bank_accounts": [
+      {
+        "amount": 2200.4
+      },
+      {
+        "amount": 150
+      }
+    ],
+    "partner_investments_relevant": true,
+    "partner_investments": 6000,
+    "partner_valuables_relevant": false,
+    "vehicle_owned": true,
+    "vehicles": [
+      {
+        "vehicle_value": 12000,
+        "vehicle_pcp": true,
+        "vehicle_finance": 7000,
+        "vehicle_over_3_years_ago": false,
+        "vehicle_in_regular_use": true,
+        "vehicle_in_dispute": false
+      }
+    ],
+    "investments_in_dispute": false
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "domestic_abuse_applicant",
+    "immigration_or_asylum_type_upper_tribunal",
+    "applicant",
+    "partner_details",
+    "property",
+    "additional_property",
+    "partner_additional_property",
+    "assets",
+    "partner_assets",
+    "vehicle",
+    "vehicles_details"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "certificated"
+    },
+    "proceeding_types": [
+      {
+        "ccms_code": "SE003",
+        "client_involvement_type": "A"
+      }
+    ],
+    "vehicles": [
+      {
+        "value": "12000.0",
+        "loan_amount_outstanding": "7000.0",
+        "date_of_purchase": "2022-06-01",
+        "in_regular_use": true,
+        "subject_matter_of_dispute": false
+      }
+    ],
+    "capitals": {
+      "bank_accounts": [
+        {
+          "value": "4000.0",
+          "description": "Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ],
+      "non_liquid_capital": [
+        {
+          "value": "900.0",
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": true
+        }
+      ]
+    },
+    "applicant": {
+      "date_of_birth": "1974-06-01",
+      "receives_qualifying_benefit": true
+    },
+    "partner": {
+      "partner": {
+        "date_of_birth": "1954-06-01",
+        "employed": false
+      },
+      "irregular_incomes": [],
+      "employment_details": [],
+      "self_employment_details": [],
+      "regular_transactions": [],
+      "additional_properties": [],
+      "dependants": [],
+      "vehicles": [],
+      "capitals": {
+        "bank_accounts": [
+          {
+            "value": "2200.4",
+            "description": "Liquid Asset",
+            "subject_matter_of_dispute": false
+          },
+          {
+            "value": "150.0",
+            "description": "Liquid Asset",
+            "subject_matter_of_dispute": false
+          }
+        ],
+        "non_liquid_capital": [
+          {
+            "value": "6000.0",
+            "description": "Non Liquid Asset",
+            "subject_matter_of_dispute": false
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const IMMIGRATION_OR_ASYLUM_STEP_CODE = "immigration_or_asylum";
 export const immigrationOrAsylumStep = step({
   code: IMMIGRATION_OR_ASYLUM_STEP_CODE,
   path: "/immigration-or-asylum",
-  title: "Immigration or asylum",
+  title: eligibilityCopy.immigration_or_asylum,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

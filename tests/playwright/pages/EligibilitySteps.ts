@@ -221,3 +221,197 @@ export class AdditionalPropertyDetailsPage extends EligibilityBasePage {
       .click();
   }
 }
+
+export class OutgoingsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async answer(
+    type: string,
+    payment?: { amount: string; frequency: string },
+  ): Promise<void> {
+    const code = `${type}_payments`;
+    await this.page
+      .locator(
+        `input[name="${code}_relevant"][value="${String(payment !== undefined)}"]`,
+      )
+      .check();
+    if (payment === undefined) return;
+    await this.page.locator(`#${code}_conditional_value`).fill(payment.amount);
+    await this.page
+      .locator(`input[name="${code}_frequency"][value="${payment.frequency}"]`)
+      .check();
+  }
+}
+
+export class HousingCostsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fillPayments(amount: string, frequency?: string): Promise<void> {
+    await this.page.locator("#housing_payments").fill(amount);
+    if (frequency !== undefined) {
+      await this.page
+        .locator(
+          `input[name="housing_payments_frequency"][value="${frequency}"]`,
+        )
+        .check();
+    }
+  }
+
+  async answerHousingBenefit(benefit?: {
+    amount: string;
+    frequency: string;
+  }): Promise<void> {
+    await this.page
+      .locator(
+        `input[name="housing_benefit_relevant"][value="${String(benefit !== undefined)}"]`,
+      )
+      .check();
+    if (benefit === undefined) return;
+    await this.page.locator("#housing_benefit_value").fill(benefit.amount);
+    await this.page
+      .locator(
+        `input[name="housing_benefit_frequency"][value="${benefit.frequency}"]`,
+      )
+      .check();
+  }
+}
+
+export class DependantsDetailsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async answer(
+    code: "child_dependants" | "adult_dependants",
+    hasDependants: boolean,
+  ): Promise<void> {
+    await this.page
+      .locator(`input[name="${code}"][value="${String(hasDependants)}"]`)
+      .check();
+  }
+
+  async enterCount(
+    code: "child_dependants_count" | "adult_dependants_count",
+    count: string,
+  ): Promise<void> {
+    await this.page.locator(`#${code}`).fill(count);
+  }
+}
+
+export class DependantIncomePage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async answer(hasIncome: boolean): Promise<void> {
+    await this.page
+      .locator(
+        `input[name="dependants_get_income"][value="${String(hasIncome)}"]`,
+      )
+      .check();
+  }
+}
+
+export class DependantIncomeDetailsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fillRow(
+    index: number,
+    income: { amount: string; frequency: string },
+  ): Promise<void> {
+    await this.page
+      .locator(
+        `input[name="dependant_incomes_${index}_frequency"][value="${income.frequency}"]`,
+      )
+      .check();
+    await this.page
+      .locator(`#dependant_incomes_${index}_amount`)
+      .fill(income.amount);
+  }
+}
+
+export class AssetsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fillBankAccount(index: number, amount: string): Promise<void> {
+    await this.page.locator(`#bank_accounts_${index}_amount`).fill(amount);
+  }
+
+  async addBankAccount(): Promise<void> {
+    await this.page
+      .getByRole("button", { name: "Add another bank account" })
+      .click();
+  }
+
+  async answer(
+    asset: "investments" | "valuables",
+    amount: string | undefined,
+  ): Promise<void> {
+    await this.page
+      .locator(
+        `input[name="${asset}_relevant"][value="${String(amount !== undefined)}"]`,
+      )
+      .check();
+    if (amount !== undefined) {
+      await this.page.locator(`#${asset}`).fill(amount);
+    }
+  }
+}
+
+export class VehiclePage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async answer(owned: boolean): Promise<void> {
+    await this.page
+      .locator(`input[name="vehicle_owned"][value="${String(owned)}"]`)
+      .check();
+  }
+}
+
+export class VehiclesDetailsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fillRow(
+    index: number,
+    vehicle: {
+      value: string;
+      finance?: string;
+      overThreeYearsOld: boolean;
+      inRegularUse: boolean;
+    },
+  ): Promise<void> {
+    const radio = (field: string, value: boolean) =>
+      this.page.locator(
+        `input[name="vehicles_${index}_${field}"][value="${String(value)}"]`,
+      );
+    await this.page
+      .locator(`#vehicles_${index}_vehicle_value`)
+      .fill(vehicle.value);
+    await radio("vehicle_pcp", vehicle.finance !== undefined).check();
+    if (vehicle.finance !== undefined) {
+      await this.page
+        .locator(`#vehicles_${index}_vehicle_finance`)
+        .fill(vehicle.finance);
+    }
+    await radio("vehicle_over_3_years_ago", vehicle.overThreeYearsOld).check();
+    await radio("vehicle_in_regular_use", vehicle.inRegularUse).check();
+  }
+
+  async addAnother(): Promise<void> {
+    await this.page
+      .getByRole("button", { name: "Add another vehicle" })
+      .click();
+  }
+}

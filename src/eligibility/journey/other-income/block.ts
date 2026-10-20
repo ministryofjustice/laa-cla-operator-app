@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   CollectionBlock,
   HtmlBlock,
@@ -11,6 +12,7 @@ import {
   Answer,
   Condition,
   Data,
+  Format,
   Self,
   validation,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
@@ -37,95 +39,111 @@ interface OtherIncomeType {
   gets: string;
   hint?: string;
   /** The income as it reads in "Enter amount of ..." errors. */
-  described: (subject: IncomeSubject) => string;
+  described: (subject: IncomeSubject) => ResolvableString;
   /** The income as it reads in "Select frequency of ..." errors. */
-  frequencyDescribed?: (subject: IncomeSubject) => string;
+  frequencyDescribed?: (subject: IncomeSubject) => ResolvableString;
   amountLabel: ResolvableString;
   /** Overrides the amount errors, which depend on the level of help for "other". */
   amountMessages?: AmountMessages;
 }
 
-const OTHER_SOURCES = "income from other sources received in the last";
-
 const REGULAR_TYPES: readonly OtherIncomeType[] = [
   {
     type: "friends_or_family",
-    title: "Financial help from friends or family",
-    gets: "financial help from friends or family",
-    hint: "For example, money from a family member for rent or bills.",
-    described: () => "financial help from friends and family",
-    amountLabel: "Amount",
+    title: eligibilityCopy.financial_help_from_friends_or_family,
+    gets: eligibilityCopy.financial_help_from_friends_or_family_85e8d774,
+    hint: eligibilityCopy.for_example_money_from_a_family_member_for_rent_or_bills,
+    described: () =>
+      eligibilityCopy.dynamic.otherIncome.descriptionFriendsOrFamily,
+    amountLabel: eligibilityCopy.amount,
   },
   {
     type: "maintenance",
-    title: "Maintenance from a former partner",
-    gets: "maintenance from a former partner",
-    hint: "This includes child maintenance.",
-    described: () => "maintenance from a former partner",
-    frequencyDescribed: () => "maintenance payments from a former partner",
-    amountLabel: "Amount",
+    title: eligibilityCopy.maintenance_from_a_former_partner,
+    gets: eligibilityCopy.maintenance_from_a_former_partner_c60c9996,
+    hint: eligibilityCopy.this_includes_child_maintenance,
+    described: () => eligibilityCopy.dynamic.otherIncome.descriptionMaintenance,
+    frequencyDescribed: () =>
+      eligibilityCopy.dynamic.otherIncome.frequencyDescriptionMaintenance,
+    amountLabel: eligibilityCopy.amount,
   },
   {
     type: "property_or_lodger",
-    title: "Income from a property or lodger",
-    gets: "income from a property or lodger",
-    described: () => "income from a property or lodger",
-    amountLabel: "Amount",
+    title: eligibilityCopy.income_from_a_property_or_lodger,
+    gets: eligibilityCopy.income_from_a_property_or_lodger_80f0a625,
+    described: () =>
+      eligibilityCopy.dynamic.otherIncome.descriptionPropertyOrLodger,
+    amountLabel: eligibilityCopy.amount,
   },
   {
     type: "pension",
-    title: "Income from pensions",
-    gets: "income from pensions",
-    hint: "Include the total value of any pensions, including State Pension, workplace and personal pensions.",
-    described: (subject) => `income ${subject.noun} gets from pensions`,
-    amountLabel: "Amount",
+    title: eligibilityCopy.income_from_pensions,
+    gets: eligibilityCopy.income_from_pensions_bc842380,
+    hint: eligibilityCopy.include_the_total_value_of_any_pensions_including_state_a0a9ade115,
+    described: (subject) =>
+      Format(
+        eligibilityCopy.dynamic.otherIncome.descriptionPension,
+        subject.noun,
+      ),
+    amountLabel: eligibilityCopy.amount,
   },
 ];
 
 const STUDENT_FINANCE: OtherIncomeType = {
   type: "student_finance",
-  title: "Income from student finance",
-  gets: "income from student finance",
-  hint: "This includes any type of student loan, grant or bursary. Do not include any tuition fee loans.",
-  described: () => "student finance received this academic year",
-  amountLabel: "Amount received this academic year",
+  title: eligibilityCopy.income_from_student_finance,
+  gets: eligibilityCopy.income_from_student_finance_d017767f,
+  hint: eligibilityCopy.this_includes_any_type_of_student_loan_grant_or_bursary_eba9dc2404,
+  described: () =>
+    eligibilityCopy.dynamic.otherIncome.descriptionStudentFinance,
+  amountLabel: eligibilityCopy.amount_received_this_academic_year,
 };
 
 const OTHER: OtherIncomeType = {
   type: "other",
-  title: "Income from other sources",
-  gets: "income from other sources",
-  described: () => "income from other sources",
+  title: eligibilityCopy.income_from_other_sources,
+  gets: eligibilityCopy.income_from_other_sources_7b521263,
+  described: () => eligibilityCopy.dynamic.otherIncome.descriptionOther,
   amountLabel: byLevelOfHelp(
-    "Amount received in the last month",
-    "Amount received in the last 3 months",
+    eligibilityCopy.dynamic.otherIncome.otherAmountLabelControlled,
+    eligibilityCopy.dynamic.otherIncome.otherAmountLabelCertificated,
   ),
   amountMessages: {
     required: byLevelOfHelp(
-      `Enter amount of ${OTHER_SOURCES} month`,
-      `Enter amount of ${OTHER_SOURCES} 3 months`,
+      Format(eligibilityCopy.dynamic.income.otherRequired, "month"),
+      Format(eligibilityCopy.dynamic.income.otherRequired, "3 months"),
     ),
     notANumber: byLevelOfHelp(
-      `Amount of ${OTHER_SOURCES} month must be a number`,
-      `Amount of ${OTHER_SOURCES} 3 months must be a number`,
+      Format(eligibilityCopy.dynamic.income.otherNumber, "month"),
+      Format(eligibilityCopy.dynamic.income.otherNumber, "3 months"),
     ),
     outOfRange: byLevelOfHelp(
-      `Amount of ${OTHER_SOURCES} month must be more than 0`,
-      `Amount of ${OTHER_SOURCES} 3 months must be more than 0`,
+      Format(eligibilityCopy.dynamic.income.otherGreaterThanZero, "month"),
+      Format(eligibilityCopy.dynamic.income.otherGreaterThanZero, "3 months"),
     ),
   },
 };
-
-const OTHER_HINT_LEAD =
-  "For example, interest from savings or income bonds. Do not include any disregarded income or Cost of Living Payments.";
 
 /**
  * The guidance hint under the "other sources" question.
  * @returns {ResolvableString} the hint HTML, by level of help
  */
 function otherSourcesHintHtml(): ResolvableString {
-  const hint = (level: "controlled" | "certificated"): string =>
-    `${OTHER_HINT_LEAD}<br>Check the guidance for:<ul class="govuk-list govuk-list--bullet"><li>${guidanceLink(level, "disregardedPayments", "mandatory and discretionary disregarded payments")}</li><li>${guidanceLink(level, "income", "the principles for exercising discretion")}</li></ul>`;
+  const hint = (level: "controlled" | "certificated"): ResolvableString =>
+    Format(
+      eligibilityCopy.dynamic.otherIncome.hintHtml,
+      eligibilityCopy.dynamic.otherIncome.hintOther,
+      guidanceLink(
+        level,
+        "disregardedPayments",
+        eligibilityCopy.dynamic.otherIncome.disregardedLinkText,
+      ),
+      guidanceLink(
+        level,
+        "income",
+        eligibilityCopy.dynamic.otherIncome.discretionLinkText,
+      ),
+    );
   return byLevelOfHelp(hint("controlled"), hint("certificated"));
 }
 
@@ -147,9 +165,12 @@ function otherIncomeQuestions(
   const isRelevant = Answer(relevantCode).match(Condition.Equals("true"));
   const described = income.described(subject);
   const amountMessages = income.amountMessages ?? {
-    required: `Enter amount of ${described}`,
-    notANumber: `Amount of ${described} must be a number`,
-    outOfRange: `Amount of ${described} must be more than 0`,
+    required: Format(eligibilityCopy.dynamic.income.amountRequired, described),
+    notANumber: Format(eligibilityCopy.dynamic.income.amountNumber, described),
+    outOfRange: Format(
+      eligibilityCopy.dynamic.income.amountGreaterThanZero,
+      described,
+    ),
   };
   const frequencyDescribed = (income.frequencyDescribed ?? income.described)(
     subject,
@@ -162,7 +183,9 @@ function otherIncomeQuestions(
         code: relevantCode,
         fieldset: {
           legend: {
-            text: `Does ${subject.noun} get ${income.gets}?`,
+            text: eligibilityCopy.dynamic.otherIncome.question
+              .replace("%1", subject.noun)
+              .replace("%2", income.gets),
             classes: "govuk-fieldset__legend--m",
           },
         },
@@ -172,25 +195,35 @@ function otherIncomeQuestions(
             ? {}
             : { hint: { text: income.hint } }),
         items: [
-          { value: "true", text: "Yes" },
-          { value: "false", text: "No" },
+          { value: "true", text: eligibilityCopy.yes },
+          { value: "false", text: eligibilityCopy.no },
         ],
         classes: "govuk-radios--inline",
         validWhen: [
           validation({
             condition: Self().match(Condition.IsRequired()),
-            message: `Select yes if ${subject.noun} gets ${income.gets}`,
+            message: Format(
+              eligibilityCopy.dynamic.otherIncome.required,
+              subject.noun,
+              income.gets,
+            ),
           }),
         ],
       }),
       GovUKTextInput({
         code: `${subject.prefix}${income.type}_conditional_value`,
         label: { text: income.amountLabel, classes: "govuk-label--s" },
-        hint: { text: "If yes, enter amount" },
-        prefix: { text: "£" },
+        hint: { text: eligibilityCopy.if_yes_enter_amount },
+        prefix: { text: eligibilityCopy.copy },
         classes: "govuk-input--width-10",
         dependentWhen: isRelevant,
-        metadata: { summaryLabel: `${income.title}: amount` },
+        metadata: {
+          summaryLabel:
+            eligibilityCopy.dynamic.otherIncome.summaryAmount.replace(
+              "%1",
+              income.title,
+            ),
+        },
         validWhen: amountValidations(
           amountMessages,
           POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN,
@@ -202,17 +235,26 @@ function otherIncomeQuestions(
               code: `${subject.prefix}${income.type}_frequency`,
               fieldset: {
                 legend: {
-                  text: "Frequency",
+                  text: eligibilityCopy.frequency,
                   classes: "govuk-fieldset__legend--s",
                 },
               },
               items: Data("otherIncomeFrequencyOptions"),
               dependentWhen: isRelevant,
-              metadata: { summaryLabel: `${income.title}: frequency` },
+              metadata: {
+                summaryLabel:
+                  eligibilityCopy.dynamic.otherIncome.summaryFrequency.replace(
+                    "%1",
+                    income.title,
+                  ),
+              },
               validWhen: [
                 validation({
                   condition: Self().match(Condition.IsRequired()),
-                  message: `Select frequency of ${frequencyDescribed}`,
+                  message: Format(
+                    eligibilityCopy.dynamic.otherIncome.frequencyRequired,
+                    frequencyDescribed,
+                  ),
                 }),
               ],
             }),
@@ -238,8 +280,8 @@ export function createOtherIncomeBlock(
       HtmlBlock({
         tag: "h1",
         content: isClient
-          ? "Your client's other income"
-          : "The partner's other income",
+          ? eligibilityCopy.dynamic.otherIncome.headingClient
+          : eligibilityCopy.dynamic.otherIncome.headingPartner,
         classes: "govuk-heading-xl",
       }),
       ...(isClient
@@ -247,14 +289,15 @@ export function createOtherIncomeBlock(
         : [
             HtmlBlock({
               tag: "p",
-              content: "Do not include income already entered for your client.",
+              content:
+                eligibilityCopy.do_not_include_income_already_entered_for_your_client,
               classes: "govuk-body",
             }),
           ]),
       ...REGULAR_TYPES.map((type) => otherIncomeQuestions(type, subject, true)),
       otherIncomeQuestions(STUDENT_FINANCE, subject, false),
       otherIncomeQuestions(OTHER, subject, false),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }

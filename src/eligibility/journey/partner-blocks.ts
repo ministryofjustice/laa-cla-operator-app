@@ -14,6 +14,7 @@ import {
   createBenefitDetailsRowsBlock,
 } from "./benefit-details/block.js";
 import { createOtherIncomeBlock } from "./other-income/block.js";
+import { createOutgoingsBlock } from "./outgoings/block.js";
 import { PARTNER } from "./income-subject.js";
 import { PARTNER_BENEFITS_LIST, PARTNER_INCOMES_LIST } from "../lists/index.js";
 
@@ -39,3 +40,5 @@ export const partnerBenefitDetailsButtonsBlock =
   createBenefitDetailsButtonsBlock();
 
 export const partnerOtherIncomeBlock = createOtherIncomeBlock(PARTNER);
+
+export const partnerOutgoingsBlock = createOutgoingsBlock(PARTNER);

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import {
   CollectionBlock,
   HtmlBlock,
@@ -54,14 +55,14 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
             GovUKButton({
               name: "remove",
               value: Item().path("index"),
-              text: "Remove",
+              text: eligibilityCopy.remove,
               classes: "govuk-button--secondary",
               visibleWhen: Item().path("removable"),
             }),
             GovUKTextInput({
               code: code("house_value"),
               label: {
-                text: "How much is the property, holiday home or land worth?",
+                text: eligibilityCopy.how_much_is_the_property_holiday_home_or_land_worth,
                 classes: "govuk-label--m",
               },
               validWhen: amountValidations(
@@ -77,7 +78,7 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
               code: code("inline_owned_with_mortgage"),
               fieldset: {
                 legend: {
-                  text: "Is there an outstanding mortgage on the property, holiday home or land?",
+                  text: eligibilityCopy.is_there_an_outstanding_mortgage_on_the_property_holida_757134c789,
                   classes: "govuk-fieldset__legend--s",
                 },
               },
@@ -85,11 +86,11 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
               items: [
                 {
                   value: "true",
-                  text: "Yes",
+                  text: eligibilityCopy.yes,
                   block: GovUKTextInput({
                     code: code("mortgage"),
                     label: {
-                      text: "Enter the value of the outstanding mortgage",
+                      text: eligibilityCopy.enter_the_value_of_the_outstanding_mortgage,
                     },
                     validWhen: [
                       validation({
@@ -108,7 +109,7 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
                     ],
                   }),
                 },
-                { value: "false", text: "No" },
+                { value: "false", text: eligibilityCopy.no },
               ],
               validWhen: [
                 validation({
@@ -124,7 +125,9 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
             }),
             GovUKTextInput({
               code: code("mortgage"),
-              label: { text: "How much is left to pay on the mortgage?" },
+              label: {
+                text: eligibilityCopy.how_much_is_left_to_pay_on_the_mortgage,
+              },
               visibleWhen: Item().path("ownedWithMortgage"),
               validWhen: [
                 validation({
@@ -147,15 +150,19 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
               label: {
                 text:
                   subject === "client"
-                    ? "What percentage share does your client own?"
-                    : "What percentage share does the partner own?",
+                    ? eligibilityCopy.dynamic.additionalProperty
+                        .percentageLabelClient
+                    : eligibilityCopy.dynamic.additionalProperty
+                        .percentageLabelPartner,
                 classes: "govuk-label--m",
               },
               hint: {
                 text:
                   subject === "client"
-                    ? "If the property is shared with the partner, add the percentage the client and partner own together."
-                    : "Do not include any property or land already entered for your client.",
+                    ? eligibilityCopy.dynamic.additionalProperty
+                        .percentageHintClient
+                    : eligibilityCopy.dynamic.additionalProperty
+                        .percentageHintPartner,
               },
               validWhen: [
                 validation({
@@ -171,14 +178,14 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
               visibleWhen: Item().path("smodApplicable"),
               fieldset: {
                 legend: {
-                  text: "Property details",
+                  text: eligibilityCopy.property_details,
                   classes: "govuk-fieldset__legend--s",
                 },
               },
               items: [
                 {
                   value: "true",
-                  text: "This asset is a subject matter of dispute",
+                  text: eligibilityCopy.this_asset_is_a_subject_matter_of_dispute,
                 },
               ],
             }),
@@ -194,39 +201,39 @@ function detailsBlock(list: AddAnotherList, subject: "client" | "partner") {
       GovUKButton({
         name: "action",
         value: "add",
-        text: "Add another property, holiday home or land",
+        text: eligibilityCopy.add_another_property_holiday_home_or_land,
         classes: "govuk-button--secondary",
       }),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }
 
 export const additionalPropertyBlock = createPropertyOwnershipBlock(
   "additional_property_owned",
-  "Does your client own any other property, a holiday home or land?",
-  "Select if your client owns any other property",
-  "Does your client own any other property, a holiday home or land?",
+  eligibilityCopy.dynamic.additionalProperty.questionClient,
+  eligibilityCopy.dynamic.additionalProperty.requiredClient,
+  eligibilityCopy.dynamic.additionalProperty.questionClient,
 );
 
 export const partnerAdditionalPropertyBlock = createPropertyOwnershipBlock(
   "partner_additional_property_owned",
-  "Does the partner own any other property, a holiday home or land?",
-  "Select if the partner owns any other property",
-  "Does the partner own any other property, a holiday home or land?",
+  eligibilityCopy.dynamic.additionalProperty.questionPartner,
+  eligibilityCopy.dynamic.additionalProperty.requiredPartner,
+  eligibilityCopy.dynamic.additionalProperty.questionPartner,
 );
 
 export const additionalPropertyDetailsBlock = CollectionBlock({
   collection: [
     HtmlBlock({
       tag: "h1",
-      content: "Client's other property, holiday home or land",
+      content: eligibilityCopy.client_s_other_property_holiday_home_or_land,
       classes: "govuk-heading-xl",
     }),
     HtmlBlock({
       tag: "p",
       content:
-        "If your client and their partner share other property, a holiday home or land, include this here.",
+        eligibilityCopy.if_your_client_and_their_partner_share_other_property_a_74049aac27,
       classes: "govuk-body",
     }),
     detailsBlock(ADDITIONAL_PROPERTIES_LIST, "client"),
@@ -237,13 +244,14 @@ export const partnerAdditionalPropertyDetailsBlock = CollectionBlock({
   collection: [
     HtmlBlock({
       tag: "h1",
-      content: "The partner's other property, holiday home or land",
+      content:
+        eligibilityCopy.the_partner_s_other_property_holiday_home_or_land,
       classes: "govuk-heading-xl",
     }),
     HtmlBlock({
       tag: "p",
       content:
-        "Do not include any property or land already entered for your client.",
+        eligibilityCopy.do_not_include_any_property_or_land_already_entered_for_your_client,
       classes: "govuk-body",
     }),
     detailsBlock(PARTNER_ADDITIONAL_PROPERTIES_LIST, "partner"),

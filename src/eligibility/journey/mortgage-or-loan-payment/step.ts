@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE = "mortgage_or_loan_payment";
 export const mortgageOrLoanPaymentStep = step({
   code: MORTGAGE_OR_LOAN_PAYMENT_STEP_CODE,
   path: "/mortgage-or-loan-payment",
-  title: "Mortgage or loan payment",
+  title: eligibilityCopy.mortgage_or_loan_payment,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

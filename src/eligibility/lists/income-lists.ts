@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 // The income and benefit add-another lists. The error wording is CCQ's
 // (`activemodel.errors.models.{partner_}{income,benefit}_model`): once a list
 // has several rows, each message names the row it is about.
@@ -37,7 +38,7 @@ function describeRow(row: {
   return {
     index: row.index,
     position,
-    heading: `${row.heading} ${position}`,
+    heading: row.heading,
     removable: row.index > FIRST_ROW,
     codes: Object.fromEntries(
       row.fields.map((field) => [
@@ -94,86 +95,129 @@ function incomeList(key: string, wording: Wording): AddAnotherList {
         key,
         index,
         rowCount,
-        heading: "Employment income",
+        heading: eligibilityCopy.dynamic.lists.incomeHeading.replace(
+          "%1",
+          String(index + FIRST_POSITION),
+        ),
         fields: INCOME_FIELDS,
         messages: (position) => ({
           income_type: {
             required: named(
-              "Select the employment income type",
+              eligibilityCopy.dynamic.lists.employmentTypeRequired,
               (n) =>
-                `Select the employment income type for employment income ${n}`,
+                eligibilityCopy.dynamic.lists.employmentTypeRequiredMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
           },
           income_frequency: {
             required: named(
-              `Select when ${wording.subject} normally gets this income`,
-              (n) => `Select when ${wording.subject} normally gets income ${n}`,
+              eligibilityCopy.dynamic.lists.incomeFrequencyRequired.replace(
+                "%1",
+                wording.subject,
+              ),
+              (n) =>
+                eligibilityCopy.dynamic.lists.incomeFrequencyRequiredMany
+                  .replace("%1", wording.subject)
+                  .replace("%2", String(n)),
               position,
             ),
           },
           gross_income: {
             required: named(
-              "Enter the income before any deductions",
+              eligibilityCopy.dynamic.lists.grossRequired,
               (n) =>
-                `Enter the income before any deductions for employment income ${n}`,
+                eligibilityCopy.dynamic.lists.grossRequiredMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             notANumber: named(
-              "Income before any deductions must be a number",
+              eligibilityCopy.dynamic.lists.grossNumber,
               (n) =>
-                `Income before any deductions for employment income ${n} must be a number`,
+                eligibilityCopy.dynamic.lists.grossNumberMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             greaterThanZero: named(
-              "Income before any deductions must be more than 0",
+              eligibilityCopy.dynamic.lists.grossGreaterThanZero,
               (n) =>
-                `Income before any deductions for employment income ${n} must be more than 0`,
+                eligibilityCopy.dynamic.lists.grossGreaterThanZeroMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             netPositive: named(
-              "Income before any deductions must be more than income tax and National Insurance combined",
+              eligibilityCopy.dynamic.lists.grossNetPositive,
               (n) =>
-                `Income before any deductions for employment income ${n} must be more than income tax and National Insurance combined`,
+                eligibilityCopy.dynamic.lists.grossNetPositiveMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
           },
           income_tax: {
             required: named(
-              "Enter the income tax amount",
-              (n) => `Enter the income tax amount for employment income ${n}`,
+              eligibilityCopy.dynamic.lists.taxRequired,
+              (n) =>
+                eligibilityCopy.dynamic.lists.taxRequiredMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             notANumber: named(
-              "Income tax amount must be a number",
+              eligibilityCopy.dynamic.lists.taxNumber,
               (n) =>
-                `Income tax amount for employment income ${n} must be a number`,
+                eligibilityCopy.dynamic.lists.taxNumberMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             zeroOrMore: named(
-              "Income tax amount must be 0 or more",
+              eligibilityCopy.dynamic.lists.taxZeroOrMore,
               (n) =>
-                `Income tax amount for employment income ${n} must be 0 or more`,
+                eligibilityCopy.dynamic.lists.taxZeroOrMoreMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
           },
           national_insurance: {
             required: named(
-              "Enter the National Insurance amount",
+              eligibilityCopy.dynamic.lists.nationalInsuranceRequired,
               (n) =>
-                `Enter the National Insurance amount for employment income ${n}`,
+                eligibilityCopy.dynamic.lists.nationalInsuranceRequiredMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             notANumber: named(
-              "National Insurance amount must be a number",
+              eligibilityCopy.dynamic.lists.nationalInsuranceNumber,
               (n) =>
-                `National Insurance amount for employment income ${n} must be a number`,
+                eligibilityCopy.dynamic.lists.nationalInsuranceNumberMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             zeroOrMore: named(
-              "National Insurance amount must be 0 or more",
+              eligibilityCopy.dynamic.lists.nationalInsuranceZeroOrMore,
               (n) =>
-                `National Insurance amount for employment income ${n} must be 0 or more`,
+                eligibilityCopy.dynamic.lists.nationalInsuranceZeroOrMoreMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
           },
@@ -208,38 +252,62 @@ function benefitList(key: string, wording: Wording): AddAnotherList {
         key,
         index,
         rowCount,
-        heading: "Benefit",
+        heading: eligibilityCopy.dynamic.lists.benefitHeading.replace(
+          "%1",
+          String(index + FIRST_POSITION),
+        ),
         fields: BENEFIT_FIELDS,
         messages: (position) => ({
           benefit_type: {
             required: named(
-              "Select the benefit name",
-              (n) => `Select benefit ${n} name`,
+              eligibilityCopy.dynamic.lists.benefitTypeRequired,
+              (n) =>
+                eligibilityCopy.dynamic.lists.benefitTypeRequiredMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
           },
           benefit_amount: {
             required: named(
-              "Enter benefit amount",
-              (n) => `Enter benefit amount for benefit ${n}`,
+              eligibilityCopy.dynamic.lists.benefitAmountRequired,
+              (n) =>
+                eligibilityCopy.dynamic.lists.benefitAmountRequiredMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             notANumber: named(
-              "Benefit amount must be a number",
-              (n) => `Benefit amount for benefit ${n} must be a number`,
+              eligibilityCopy.dynamic.lists.benefitAmountNumber,
+              (n) =>
+                eligibilityCopy.dynamic.lists.benefitAmountNumberMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
             greaterThanZero: named(
-              "Benefit amount must be more than 0",
-              (n) => `Benefit amount for benefit ${n} must be more than 0`,
+              eligibilityCopy.dynamic.lists.benefitAmountGreaterThanZero,
+              (n) =>
+                eligibilityCopy.dynamic.lists.benefitAmountGreaterThanZeroMany.replace(
+                  "%1",
+                  String(n),
+                ),
               position,
             ),
           },
           benefit_frequency: {
             required: named(
-              `Select when ${wording.subject} normally gets this benefit`,
+              eligibilityCopy.dynamic.lists.benefitFrequencyRequired.replace(
+                "%1",
+                wording.subject,
+              ),
               (n) =>
-                `Select when ${wording.subject} normally gets benefit ${n}`,
+                eligibilityCopy.dynamic.lists.benefitFrequencyRequiredMany
+                  .replace("%1", wording.subject)
+                  .replace("%2", String(n)),
               position,
             ),
           },
@@ -249,16 +317,18 @@ function benefitList(key: string, wording: Wording): AddAnotherList {
 }
 
 /** The client's employment incomes. */
-export const INCOMES_LIST = incomeList("incomes", { subject: "your client" });
+export const INCOMES_LIST = incomeList("incomes", {
+  subject: eligibilityCopy.your_client,
+});
 /** The partner's employment incomes. */
 export const PARTNER_INCOMES_LIST = incomeList("partner_incomes", {
-  subject: "the partner",
+  subject: eligibilityCopy.the_partner,
 });
 /** The client's benefits. */
 export const BENEFITS_LIST = benefitList("benefits", {
-  subject: "your client",
+  subject: eligibilityCopy.your_client,
 });
 /** The partner's benefits. */
 export const PARTNER_BENEFITS_LIST = benefitList("partner_benefits", {
-  subject: "the partner",
+  subject: eligibilityCopy.the_partner,
 });

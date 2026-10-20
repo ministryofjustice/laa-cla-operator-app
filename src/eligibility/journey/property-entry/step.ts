@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -17,7 +18,7 @@ export const PROPERTY_ENTRY_STEP_CODE = "property_entry";
 export const propertyEntryStep = step({
   code: PROPERTY_ENTRY_STEP_CODE,
   path: "/property-entry",
-  title: "Property details",
+  title: eligibilityCopy.property_details,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const HOW_TO_AGGREGATE_STEP_CODE = "how_to_aggregate";
 export const howToAggregateStep = step({
   code: HOW_TO_AGGREGATE_STEP_CODE,
   path: "/how-to-aggregate",
-  title: "How to aggregate income",
+  title: eligibilityCopy.how_to_aggregate_income,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

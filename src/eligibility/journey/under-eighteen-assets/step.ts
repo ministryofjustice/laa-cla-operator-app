@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const UNDER_EIGHTEEN_ASSETS_STEP_CODE = "under_eighteen_assets";
 export const underEighteenAssetsStep = step({
   code: UNDER_EIGHTEEN_ASSETS_STEP_CODE,
   path: "/under-eighteen-assets",
-  title: "Assets",
+  title: eligibilityCopy.assets,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

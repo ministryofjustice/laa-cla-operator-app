@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import {
   createForgePackage,
   journey,
@@ -80,7 +81,7 @@ export function createEligibilityPackage(
 ) {
   const journeyConfig: Omit<JourneyDefinition, "type"> = {
     code: "eligibility",
-    title: "Financial Eligibility Check",
+    title: eligibilityCopy.financial_eligibility_check,
     path: options.path,
     // Only level of help is an entry point; every other step is reached by
     // following the saved answers, so send stray requests to the furthest

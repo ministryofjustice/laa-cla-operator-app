@@ -62,8 +62,20 @@ export class CfeHttpClient implements Assessor {
         },
       };
     } catch (error) {
+      const errors = axios.isAxiosError<
+        { errors?: unknown } | null | undefined
+      >(error)
+        ? error.response?.data?.errors
+        : undefined;
+      const validationDetails =
+        Array.isArray(errors) &&
+        errors.every(
+          (message): message is string => typeof message === "string",
+        )
+          ? `; validation errors: ${errors.join("; ")}`
+          : "";
       throw new Error(
-        `CFE assessment failed: ${error instanceof Error ? error.message : String(error)}`,
+        `CFE assessment failed: ${error instanceof Error ? error.message : String(error)}${validationDetails}`,
         { cause: error },
       );
     }

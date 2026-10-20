@@ -1,54 +1,13 @@
-import {
-  step,
-  submit,
-  access,
-  redirect,
-  Data,
-  Post,
-  Condition,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import {
-  partnerBankAccountsHeadingBlock,
-  partnerBankAccountsTableBlock,
-  partnerBankAccountsButtonsBlock,
-} from "../bank-accounts/block.js";
-import { partnerAssetsHeadingBlock, partnerAssetsBlock } from "./block.js";
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
+import { createAddAnotherStep } from "../add-another-step.js";
+import { PARTNER_BANK_ACCOUNTS_LIST } from "../../lists/index.js";
+import { partnerAssetsBlocks } from "../assets/block.js";
 
 export const PARTNER_ASSETS_STEP_CODE = "partner_assets";
 
-export const partnerAssetsStep = step({
+export const partnerAssetsStep = createAddAnotherStep({
   code: PARTNER_ASSETS_STEP_CODE,
-  path: "/partner-assets",
-  title: "Partner assets",
-  onAccess: [
-    access({
-      effects: [EligibilityEffects.LoadAnswers()],
-    }),
-  ],
-  view: { template: "main/eligibility/step.njk" },
-  blocks: [
-    partnerAssetsHeadingBlock,
-    partnerAssetsBlock,
-    partnerBankAccountsHeadingBlock,
-    partnerBankAccountsTableBlock,
-    partnerBankAccountsButtonsBlock,
-  ],
-  onSubmission: [
-    submit({
-      when: Post("action").match(Condition.Equals("add")),
-      validate: false,
-      onValid: {
-        effects: [EligibilityEffects.SaveAnswers()],
-        next: [redirect({ goto: Post("currentStep") })],
-      },
-    }),
-    submit({
-      validate: true,
-      onValid: {
-        effects: [EligibilityEffects.SaveAnswers()],
-        next: [redirect({ goto: Data("nav.partner_assets") })],
-      },
-    }),
-  ],
+  title: eligibilityCopy.partner_assets,
+  listKey: PARTNER_BANK_ACCOUNTS_LIST.key,
+  blocks: partnerAssetsBlocks,
 });

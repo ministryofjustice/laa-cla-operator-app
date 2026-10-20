@@ -1,6 +1,8 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   CollectionBlock,
   HtmlBlock,
+  type ResolvableString,
 } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKButton,
@@ -12,6 +14,7 @@ import {
   Answer,
   Condition,
   Data,
+  Format,
   Item,
   Iterator,
   Self,
@@ -59,59 +62,29 @@ const message = (
 export const defaultSubmitBlock = HtmlBlock({
   tag: "div",
   content:
-    '<button type="submit" class="govuk-visually-hidden" tabindex="-1" aria-hidden="true"></button>',
+    eligibilityCopy.button_type_submit_class_govuk_visually_hidden_tabindex_243f12c844,
 });
 
 /**
  * The self-employed guidance, which CCQ words by level of help and subject.
  * @param {IncomeSubject} subject - whose income this is
- * @returns {string} the guidance paragraphs as HTML
+ * @returns {{ controlled: ResolvableString, certificated: ResolvableString }} the guidance paragraphs as HTML
  */
 function selfEmployedHtml(subject: IncomeSubject): {
-  controlled: string;
-  certificated: string;
+  controlled: ResolvableString;
+  certificated: ResolvableString;
 } {
-  const { noun, possessive } = subject;
-  const para = (text: string): string => `<p class="govuk-body">${text}</p>`;
-  const bullets = (items: string[]): string =>
-    `<ul class="govuk-list govuk-list--bullet">${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
-  const their = subject.prefix === "" ? "your client’s" : "the partner’s";
-  const unavailable =
-    "If these figures are unavailable, or the latest accounts are more than 18 months old:";
-  const drawings = `if the drawings exceed the declared net profits of the business, or the business is making a loss, use the value of any monthly drawings for personal use made by ${noun}`;
-
   return {
-    controlled: [
-      para(
-        `If ${noun} is self-employed, enter their drawings, dividends, bonuses or any benefits in kind from their business as their income.`,
-      ),
-      para(
-        `If ${noun} is paid in cash, their drawings will be any money taken out of their earnings for personal use.`,
-      ),
-    ].join(""),
-    certificated: [
-      para(
-        `If ${noun} is a sole-trader, enter the taxable income figure from their latest self-assessment tax return, or the monthly net profit figure from their most recent set of accounts.`,
-      ),
-      para(unavailable),
-      bullets([
-        `if turnover is less than £15,000, use ${their} estimate of their net profit`,
-        `if turnover is £15,000 or more, ask ${noun} to provide the average net profit figure based on the previous 6 months' trading`,
-        drawings,
-      ]),
-      para(
-        `If ${noun} is in a partnership, enter the value of ${possessive} share of the taxable income figure from their latest self-assessment tax return, or their share of the business’ net profit from their most recent set of accounts.`,
-      ),
-      para(unavailable),
-      bullets([
-        `if turnover is less than £15,000, use ${their} estimate of their share of net profit`,
-        `if turnover is £15,000 or more, ask ${noun} to provide their share of the average net profit figure based on the previous 6 months' trading`,
-        drawings,
-      ]),
-      para(
-        `If ${noun} is paid in cash, enter any money taken out of their earnings for personal use.`,
-      ),
-    ].join(""),
+    controlled: Format(
+      eligibilityCopy.dynamic.income.selfEmployedControlledHtml,
+      subject.noun,
+    ),
+    certificated: Format(
+      eligibilityCopy.dynamic.income.selfEmployedCertificatedHtml,
+      subject.noun,
+      subject.possessive,
+      subject.possessive,
+    ),
   };
 }
 
@@ -124,45 +97,44 @@ function incomeGuidanceBlock(
   subject: IncomeSubject,
 ): ReturnType<typeof CollectionBlock> {
   const { noun, peopleTitle: capitalPeople } = subject;
-  const person = subject.prefix === "" ? "the client" : "the partner";
-  const list = (items: string[]): string =>
-    `<ul class="govuk-list govuk-list--bullet">${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+  const person =
+    subject.prefix === ""
+      ? eligibilityCopy.dynamic.income.personClient
+      : eligibilityCopy.dynamic.income.personPartner;
 
   return CollectionBlock({
     collection: [
       GovUKDetails({
-        summaryText: `${capitalPeople} who are police officers`,
-        html: `<p class="govuk-body">If ${noun} is a police officer, the salary entered should include:</p>${list(
-          [
-            `any rent or force housing allowance ${person} gets`,
-            `any police compensatory grant ${person} gets`,
-          ],
-        )}`,
+        summaryText: Format(
+          eligibilityCopy.dynamic.income.incomePoliceSummary,
+          capitalPeople,
+        ),
+        html: Format(
+          eligibilityCopy.dynamic.income.incomePoliceHtml,
+          noun,
+          person,
+        ),
       }),
       GovUKDetails({
-        summaryText: `${capitalPeople} in prison`,
-        html: `<p class="govuk-body">If ${noun} is in prison, include any income they get from:</p>${list(
-          [
-            "the pre-release employment scheme",
-            "outside employment where they are participating in a ‘working out’ scheme",
-            "employment when released on temporary licence",
-          ],
-        )}`,
+        summaryText: Format(
+          eligibilityCopy.dynamic.income.incomePrisonSummary,
+          capitalPeople,
+        ),
+        html: Format(eligibilityCopy.dynamic.income.incomePrisonHtml, noun),
       }),
       GovUKDetails({
-        summaryText: `${capitalPeople} living outside the UK`,
-        html: `<p class="govuk-body">If ${noun} lives outside the UK, include all income tax payments they made.</p><p class="govuk-body">Only include UK National Insurance contributions.</p>`,
+        summaryText: Format(
+          eligibilityCopy.dynamic.income.incomeOverseasSummary,
+          capitalPeople,
+        ),
+        html: Format(eligibilityCopy.dynamic.income.incomeOverseasHtml, noun),
       }),
       GovUKDetails({
-        summaryText: `${capitalPeople} in HM Forces`,
-        html: `<p class="govuk-body">If ${noun} is a member of HM Forces, include any of the following they get in the gross salary you enter:</p>${list(
-          [
-            "Local Overseas Allowance",
-            "Excess Rent Allowance",
-            "London Allowance",
-            "Overseas Child Benefit",
-          ],
-        )}`,
+        summaryText: Format(
+          eligibilityCopy.dynamic.income.incomeForcesSummary,
+          capitalPeople,
+        ),
+        html: Format(eligibilityCopy.dynamic.income.incomeForcesHtml, noun),
       }),
     ],
   });
@@ -182,15 +154,15 @@ export function createIncomeHeadingBlock(
       HtmlBlock({
         tag: "h1",
         content: isClient
-          ? "Your client's employment income"
-          : "The partner's employment income",
+          ? eligibilityCopy.dynamic.income.employmentHintClient
+          : eligibilityCopy.dynamic.income.employmentHintPartner,
         classes: "govuk-heading-xl",
       }),
       HtmlBlock({
         tag: "p",
         content: isClient
-          ? "You can find this on your client's payslips"
-          : "You can find this on the partner's payslips.",
+          ? eligibilityCopy.dynamic.income.payslipsClient
+          : eligibilityCopy.dynamic.income.payslipsPartner,
         classes: "govuk-body",
       }),
       incomeGuidanceBlock(subject),
@@ -208,7 +180,6 @@ export function createIncomeRowsBlock(
   subject: IncomeSubject,
   list: AddAnotherList,
 ): ReturnType<typeof CollectionBlock> {
-  const { noun } = subject;
   const guidance = selfEmployedHtml(subject);
 
   return CollectionBlock({
@@ -225,7 +196,7 @@ export function createIncomeRowsBlock(
             GovUKButton({
               name: "remove",
               value: Item().path("index"),
-              text: "Remove",
+              text: eligibilityCopy.remove,
               classes: "govuk-button--secondary",
               visibleWhen: Item().path("removable"),
             }),
@@ -233,32 +204,37 @@ export function createIncomeRowsBlock(
               code: code("income_type"),
               fieldset: {
                 legend: {
-                  text: "What type of employment income is this?",
+                  text: eligibilityCopy.what_type_of_employment_income_is_this,
                   classes: "govuk-fieldset__legend--s",
                 },
               },
               items: [
                 {
                   value: "employment",
-                  text: "A salary or wage",
+                  text: eligibilityCopy.a_salary_or_wage,
                   hint: {
                     text: byLevelOfHelp(
-                      `Including if ${noun} is a self-employed company director or in a partnership and is paid as an employee`,
+                      Format(
+                        eligibilityCopy.dynamic.income.employmentHint,
+                        subject.noun,
+                      ),
                       "",
                     ),
                   },
                 },
                 {
                   value: "statutory_pay",
-                  text: "Statutory Sick Pay or Statutory Maternity Pay",
+                  text: eligibilityCopy.statutory_sick_pay_or_statutory_maternity_pay,
                 },
                 {
                   value: "self_employment",
-                  text: "Self-employment income",
+                  text: eligibilityCopy.self_employment_income,
                   hint: {
                     text: byLevelOfHelp(
-                      "For example, payment in cash, drawings or dividends or bonuses paid from a company account, and the value of any benefits in kind",
-                      "For example, payment in cash, adjusted net profit or drawings",
+                      eligibilityCopy.dynamic.income
+                        .selfEmploymentHintControlled,
+                      eligibilityCopy.dynamic.income
+                        .selfEmploymentHintCertificated,
                     ),
                   },
                 },
@@ -274,14 +250,17 @@ export function createIncomeRowsBlock(
               code: code("income_frequency"),
               fieldset: {
                 legend: {
-                  text: `When does ${noun} normally get this income?`,
+                  text: eligibilityCopy.dynamic.income.whenFrequency.replace(
+                    "%1",
+                    subject.noun,
+                  ),
                   classes: "govuk-fieldset__legend--s",
                 },
               },
               hint: {
                 text: byLevelOfHelp(
-                  "We’ll use this to calculate their monthly income. If they do not get income regularly, tell us how much they got in the last 3 months.",
-                  "We’ll use this to calculate their monthly income. If they do not get income regularly, tell us how much they got in the last 3 months, or in the last year.",
+                  eligibilityCopy.dynamic.income.frequencyHintControlled,
+                  eligibilityCopy.dynamic.income.frequencyHintCertificated,
                 ),
               },
               items: Data("incomeFrequencyOptions"),
@@ -295,10 +274,10 @@ export function createIncomeRowsBlock(
             GovUKTextInput({
               code: code("gross_income"),
               label: {
-                text: "Income before any deductions",
+                text: eligibilityCopy.income_before_any_deductions,
                 classes: "govuk-label--s",
               },
-              prefix: { text: "£" },
+              prefix: { text: eligibilityCopy.copy },
               classes: "govuk-input--width-10",
               validWhen: [
                 ...amountValidations(
@@ -321,13 +300,19 @@ export function createIncomeRowsBlock(
               ],
             }),
             GovUKDetails({
-              summaryText: `Self-employed ${subject.people}, including ${subject.people} paid in cash`,
+              summaryText: Format(
+                eligibilityCopy.dynamic.income.summarySelfEmployment,
+                subject.people,
+              ),
               html: byLevelOfHelp(guidance.controlled, guidance.certificated),
             }),
             GovUKTextInput({
               code: code("income_tax"),
-              label: { text: "Income tax", classes: "govuk-label--s" },
-              prefix: { text: "£" },
+              label: {
+                text: eligibilityCopy.income_tax,
+                classes: "govuk-label--s",
+              },
+              prefix: { text: eligibilityCopy.copy },
               classes: "govuk-input--width-10",
               validWhen: amountValidations(
                 {
@@ -340,8 +325,11 @@ export function createIncomeRowsBlock(
             }),
             GovUKTextInput({
               code: code("national_insurance"),
-              label: { text: "National Insurance", classes: "govuk-label--s" },
-              prefix: { text: "£" },
+              label: {
+                text: eligibilityCopy.national_insurance,
+                classes: "govuk-label--s",
+              },
+              prefix: { text: eligibilityCopy.copy },
               classes: "govuk-input--width-10",
               validWhen: amountValidations(
                 {
@@ -369,10 +357,10 @@ export function createIncomeButtonsBlock(): ReturnType<typeof CollectionBlock> {
       GovUKButton({
         name: "action",
         value: "add",
-        text: "Add another employment income",
+        text: eligibilityCopy.add_another_employment_income,
         classes: "govuk-button--secondary",
       }),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }

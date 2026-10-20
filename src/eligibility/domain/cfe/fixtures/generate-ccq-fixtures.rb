@@ -1,13 +1,16 @@
 #!/usr/bin/env ruby
 # Generator script for CFE parity fixtures.
-# Run from the laa-check-client-qualifies repo at commit 1a30ea3f.
+# Run from the laa-check-client-qualifies repo at commit 1a30ea3f, with time
+# frozen at 2024-06-01 (the parity spec's FIXED_TODAY), for example from a
+# wrapper that boots Rails and calls `travel_to` before loading this script.
 #
 # Usage from CCQ repo:
 #   bin/rails runner path/to/generate-ccq-fixtures.rb ~/dev/laa-cla-operator-app/src/eligibility/domain/cfe/fixtures
 #
-# This reads each *.answers.json file in the specified directory, computes
-# the CFE payload for each using CCQ's builders, and writes the results as
-# *.json files alongside them (same stem, no .answers suffix).
+# This reads each *.answers.json file in the specified directory, checks that
+# every relevant step's CCQ form is valid for the session, computes the CFE
+# payload using CCQ's builders, and writes the results as *.json files
+# alongside them (same stem, no .answers suffix).
 
 require "json"
 require "date"
@@ -22,6 +25,14 @@ Dir.glob("#{fixtures_dir}/*.answers.json").each do |answers_file|
 
   # Compute relevant steps (same as TS stepsFor)
   relevant_steps = Steps::Helper.relevant_steps(session_data)
+
+  # Only accept sessions CCQ itself could have saved
+  relevant_steps.each do |step|
+    form = Flow::Handler.form_from_session(step, session_data)
+    next if form.valid?
+
+    raise "#{File.basename(answers_file)}: #{step} is invalid: #{form.errors.full_messages.join(', ')}"
+  end
 
   # Build the payload by calling each service (same order as CfeService.call)
   payload = {}

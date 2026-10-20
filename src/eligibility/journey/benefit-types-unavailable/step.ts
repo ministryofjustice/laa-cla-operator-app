@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   access,
@@ -24,7 +25,7 @@ export const BENEFIT_TYPES_UNAVAILABLE_STEP_CODE = "benefit_types_unavailable";
 export const benefitTypesUnavailableStep = step({
   code: BENEFIT_TYPES_UNAVAILABLE_STEP_CODE,
   path: "/benefit-types-unavailable",
-  title: "Benefits could not be loaded",
+  title: eligibilityCopy.benefits_could_not_be_loaded,
   reachability: { entryWhen: true },
   onAccess: [
     access({
@@ -45,28 +46,28 @@ export const benefitTypesUnavailableStep = step({
       collection: [
         HtmlBlock({
           tag: "h1",
-          content: "The list of benefits could not be loaded",
+          content: eligibilityCopy.the_list_of_benefits_could_not_be_loaded,
           classes: "govuk-heading-xl",
         }),
         HtmlBlock({
           tag: "p",
           content:
-            "We could not get the list of benefits from the financial eligibility service (CFE), so you cannot add benefit details yet. Your other answers are saved.",
+            eligibilityCopy.we_could_not_get_the_list_of_benefits_from_the_financia_ad87ab1a55,
           classes: "govuk-body",
         }),
         HtmlBlock({
           tag: "p",
           content:
-            "Report this problem and include the details below. You can try again, or go back to the previous question.",
+            eligibilityCopy.report_this_problem_and_include_the_details_below_you_c_bdcaee8797,
           classes: "govuk-body",
         }),
         GovUKSummaryList({ rows: Data("benefitTypesFailureRows") }),
         GovUKLinkButton({
-          text: "Try again",
+          text: eligibilityCopy.try_again,
           href: Data("benefitTypesRetryPath"),
         }),
         GovUKLinkButton({
-          text: "Go back",
+          text: eligibilityCopy.go_back,
           href: Data("benefitTypesBackPath"),
           classes: "govuk-button--secondary",
         }),

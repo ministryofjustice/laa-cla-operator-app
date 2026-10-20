@@ -1,10 +1,11 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import {
   EffectRegistry,
   type EffectFunctionContext,
   type EffectFunctionExpr,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { EligibilityDeps, AnswerStore } from "../ports/index.js";
-import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
+import { getAuthenticatedAxios } from "#src/journeys/helpers/effectHelpers.js";
 import {
   cannotUseService,
   stepsFor,
@@ -13,34 +14,28 @@ import {
 import { withClientAge } from "../domain/client-age.js";
 import { smodApplicable, type Answers } from "../domain/logic.js";
 import { frequencyOptionsFor } from "../domain/frequency-options.js";
+import { frequencyOptions } from "../journey/frequency-copy.js";
+import { eligibleForChildcareCosts } from "../domain/childcare-eligibility.js";
 import { ADD_ANOTHER_LISTS, listFor } from "../lists/index.js";
 import {
   collapseLists,
   describeRows,
   formAnswersFor,
-  readAmount,
   withBlankRow,
   withoutRow,
 } from "../lists/add-another.js";
 import { loadBenefitTypeOptions } from "./benefit-types.js";
+import { publishDependantsFormData } from "./dependant-effects.js";
+import { withFormAliases } from "./field-aliases.js";
+import { toDomainAnswers, toFormAnswer } from "./answer-conversion.js";
 
-// Yes/no radios post "true"/"false", but the domain logic (ported from CCQ)
-// expects booleans: `truthy("false")` is true.
-const FORM_BOOLEANS: Readonly<Record<string, boolean>> = {
-  true: true,
-  false: false,
-};
+export { toDomainAnswers } from "./answer-conversion.js";
 
 const NEXT_STEP_OFFSET = 1;
-
-// Amount fields that sit directly on a step (rather than in an add-another
-// row) are read as numbers by the CFE payload builders.
-const AMOUNT_ANSWER_SUFFIX = "_conditional_value";
 
 // Journey steps outside the domain's step list
 const CHECK_YOUR_ANSWERS_PATH = "check-your-answers";
 const CANNOT_USE_SERVICE_PATH = "cannot-use-service";
-
 /**
  * The URL path segment for a step code.
  * @param {string} step - a step code
@@ -48,34 +43,6 @@ const CANNOT_USE_SERVICE_PATH = "cannot-use-service";
  */
 function toPath(step: string): string {
   return step.replace(/_/gu, "-");
-}
-
-/**
- * Converts answers as Forge holds them into the shape the domain expects.
- * @param {Answers} formAnswers - answers keyed by field code, as posted
- * @returns {Answers} the same answers with yes/no strings as booleans and amounts as numbers
- */
-function toDomainAnswers(formAnswers: Answers): Answers {
-  return Object.fromEntries(
-    Object.entries(formAnswers).map(([key, value]) => {
-      if (key.endsWith(AMOUNT_ANSWER_SUFFIX)) return [key, readAmount(value)];
-      return [
-        key,
-        typeof value === "string" && value in FORM_BOOLEANS
-          ? FORM_BOOLEANS[value]
-          : value,
-      ];
-    }),
-  );
-}
-
-/**
- * Converts a saved domain answer back into the value its form field posts.
- * @param {unknown} value - a saved answer
- * @returns {unknown} the value as Forge's field expects it
- */
-function toFormValue(value: unknown): unknown {
-  return typeof value === "boolean" ? String(value) : value;
 }
 
 /**
@@ -141,9 +108,62 @@ function publishFrequencyOptions(
   answers: Answers,
 ): void {
   const options = frequencyOptionsFor(answers);
-  context.setData("benefitFrequencyOptions", options.benefit);
-  context.setData("incomeFrequencyOptions", options.income);
-  context.setData("otherIncomeFrequencyOptions", options.otherIncome);
+  context.setData("benefitFrequencyOptions", frequencyOptions(options.benefit));
+  context.setData("incomeFrequencyOptions", frequencyOptions(options.income));
+  context.setData(
+    "otherIncomeFrequencyOptions",
+    frequencyOptions(options.otherIncome),
+  );
+  context.setData(
+    "outgoingsFrequencyOptions",
+    frequencyOptions(options.outgoings),
+  );
+  context.setData(
+    "dependantIncomeFrequencyOptions",
+    frequencyOptions(options.dependantIncome),
+  );
+}
+
+/**
+ * Publishes whether the outgoings forms ask about childcare. See
+ * `eligibleForChildcareCosts`.
+ * @param {EffectFunctionContext} context - the effect context
+ * @param {Answers} answers - all saved answers
+ */
+function publishOutgoingsFormData(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  context.setData(
+    "showChildcare",
+    eligibleForChildcareCosts(toDomainAnswers(answers), todayUtc()),
+  );
+}
+
+/**
+ * Publishes the housing costs wording that depends on whether there is a
+ * partner, as CCQ's housing costs views do.
+ * @param {EffectFunctionContext} context - the effect context
+ * @param {Answers} answers - all saved answers
+ */
+function publishHousingFormData(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  const hasPartner = toDomainAnswers(answers).partner === true;
+  context.setData("housingHasPartner", hasPartner);
+  context.setData(
+    "housingBenefitHint",
+    hasPartner
+      ? eligibilityCopy.dynamic.housing.benefitHintWithPartner
+      : eligibilityCopy.dynamic.housing.benefitHintWithoutPartner,
+  );
+  context.setData(
+    "sharedOwnershipHousingBenefitLegend",
+    hasPartner
+      ? eligibilityCopy.dynamic.housing.benefitLegendWithPartner
+      : eligibilityCopy.dynamic.housing.benefitLegendWithoutPartner,
+  );
 }
 
 function publishPropertyFormData(
@@ -155,22 +175,50 @@ function publishPropertyFormData(
   context.setData(
     "propertyOwnedLegend",
     hasPartner
-      ? "Does your client or their partner own the home the client usually lives in?"
-      : "Does your client own the home the client usually lives in?",
+      ? eligibilityCopy.dynamic.housing.propertyOwnedLegendWithPartner
+      : eligibilityCopy.dynamic.housing.propertyOwnedLegendWithoutPartner,
   );
   context.setData(
     "propertyEntryHint",
     hasPartner
-      ? "Your client's name or their partner's name must be on the property deeds, lease, freehold or mortgage."
-      : "Your client's name must be on the property deeds, lease, freehold or mortgage.",
+      ? eligibilityCopy.dynamic.housing.propertyEntryHintWithPartner
+      : eligibilityCopy.dynamic.housing.propertyEntryHintWithoutPartner,
   );
   context.setData(
     "propertyPercentageHint",
     hasPartner
-      ? "Add the percentage the client and partner own together. We do not need to know what percentage each of them owns."
+      ? eligibilityCopy.dynamic.housing.propertyPercentageHintWithPartner
       : "",
   );
   context.setData("smodApplicable", smodApplicable(domainAnswers));
+}
+
+/**
+ * Publishes whether the client and partner are self-employed, for the
+ * business capital guidance on the assets forms, as CCQ's assets view does.
+ * @param {EffectFunctionContext} context - the effect context
+ * @param {Answers} answers - all saved answers
+ */
+function publishAssetsFormData(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  /**
+   * Whether any income row is self-employment.
+   * @param {unknown} rows - a saved incomes list
+   * @returns {boolean} whether the rows include self-employment
+   */
+  const selfEmployed = (rows: unknown): boolean =>
+    Array.isArray(rows) &&
+    rows.some(
+      (row: unknown) =>
+        typeof row === "object" &&
+        row !== null &&
+        "income_type" in row &&
+        row.income_type === "self_employment",
+    );
+  context.setData("clientSelfEmployed", selfEmployed(answers.incomes));
+  context.setData("partnerSelfEmployed", selfEmployed(answers.partner_incomes));
 }
 
 /**
@@ -254,12 +302,12 @@ const BENEFIT_STEPS: Readonly<
   benefit_details: {
     path: "benefit-details",
     back: "benefits",
-    title: "Benefit details",
+    title: eligibilityCopy.benefit_details,
   },
   partner_benefit_details: {
     path: "partner-benefit-details",
     back: "partner-benefits",
-    title: "Partner benefit details",
+    title: eligibilityCopy.partner_benefit_details,
   },
 };
 
@@ -284,7 +332,7 @@ async function loadBenefitTypes(
   try {
     const options = await loadBenefitTypeOptions(deps.assessor);
     context.setData("benefitTypes", [
-      { value: "", text: "Select a benefit" },
+      { value: "", text: eligibilityCopy.select_a_benefit },
       ...options,
     ]);
   } catch (error) {
@@ -296,9 +344,12 @@ async function loadBenefitTypes(
     );
     context.setData("benefitTypesUnavailable", true);
     context.setData("benefitTypesFailureRows", [
-      { key: { text: "Step" }, value: { text: step } },
-      { key: { text: "Case ID" }, value: { text: checkId } },
-      { key: { text: "Error from CFE" }, value: { text: reason } },
+      { key: { text: eligibilityCopy.step }, value: { text: step } },
+      { key: { text: eligibilityCopy.case_id }, value: { text: checkId } },
+      {
+        key: { text: eligibilityCopy.error_from_cfe },
+        value: { text: reason },
+      },
     ]);
   }
 }
@@ -342,45 +393,42 @@ const EligibilityEffectsImplementation: EligibilityEffectsImplementations = {
 
         const answers = await answerStore.load(checkId);
 
-        // On first access, preload date_of_birth from case data
-        if (Object.keys(answers).length === 0 && deps.caseApi) {
-          try {
-            // Get the axios middleware from the request (Forge provides this in context)
-            const forgeContext = context as EffectFunctionContext & {
-              axiosMiddleware?: AxiosInstanceWrapper;
-            };
-            const { axiosMiddleware } = forgeContext;
-            if (axiosMiddleware) {
-              const caseData = await deps.caseApi.loadCase(
-                axiosMiddleware,
-                String(checkId),
-              );
-              if (caseData.date_of_birth) {
-                answers.date_of_birth = caseData.date_of_birth;
-                // Save the preloaded DOB to session
-                await answerStore.save(checkId, {
-                  date_of_birth: caseData.date_of_birth,
-                });
-              }
-            }
-          } catch (error) {
-            // Log but don't fail - DOB can be entered manually if fetch fails
-            console.warn(
-              `Failed to preload DOB from case: ${error instanceof Error ? error.message : String(error)}`,
-            );
+        if (
+          Object.keys(answers).length === 0 &&
+          deps.caseApi !== undefined
+        ) {
+          const { date_of_birth: dateOfBirth } = await deps.caseApi.loadCase(
+            getAuthenticatedAxios(context),
+            String(checkId),
+          );
+          if (dateOfBirth === undefined || dateOfBirth.trim() === "") {
+            throw new Error("Case date of birth is required for eligibility");
           }
+          answers.date_of_birth = dateOfBirth;
+          await answerStore.save(checkId, {
+            date_of_birth: dateOfBirth,
+          });
         }
 
         // Set each answer in Forge
-        for (const [key, value] of Object.entries(answers)) {
-          if (value !== undefined && value !== null) {
-            context.setAnswer(key, toFormValue(value));
+        for (const [key, value] of Object.entries(withFormAliases(answers))) {
+          const formValue = toFormAnswer(key, value);
+          if (formValue !== undefined && formValue !== null) {
+            context.setAnswer(key, formValue);
           }
         }
 
         setListFormData(context, answers);
         publishFrequencyOptions(context, answers);
+        publishDependantsFormData(
+          context,
+          answers,
+          toDomainAnswers(answers).partner === true,
+        );
         publishPropertyFormData(context, answers);
+        publishAssetsFormData(context, answers);
+        publishOutgoingsFormData(context, answers);
+        publishHousingFormData(context, answers);
         publishNavigation(context, answers);
       } catch (error) {
         throw error;

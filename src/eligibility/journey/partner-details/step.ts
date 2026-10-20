@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const PARTNER_DETAILS_STEP_CODE = "partner_details";
 export const partnerDetailsStep = step({
   code: PARTNER_DETAILS_STEP_CODE,
   path: "/partner-details",
-  title: "Partner details",
+  title: eligibilityCopy.partner_details,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

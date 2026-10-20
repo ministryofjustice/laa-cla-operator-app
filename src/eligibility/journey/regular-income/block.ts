@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -15,7 +16,7 @@ export const regularIncomeBlock = CollectionBlock({
       code: "regular_income",
       fieldset: {
         legend: {
-          text: "Does the client have regular income?",
+          text: eligibilityCopy.does_the_client_have_regular_income,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
@@ -23,20 +24,20 @@ export const regularIncomeBlock = CollectionBlock({
       items: [
         {
           value: "true",
-          text: "Yes",
+          text: eligibilityCopy.yes,
         },
         {
           value: "false",
-          text: "No",
+          text: eligibilityCopy.no,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the client has regular income",
+          message: eligibilityCopy.select_whether_the_client_has_regular_income,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

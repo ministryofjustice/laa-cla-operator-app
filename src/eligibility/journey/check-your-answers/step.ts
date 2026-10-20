@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -26,7 +27,7 @@ export const createCheckYourAnswersStep = (
   step({
     code: CHECK_YOUR_ANSWERS_STEP_CODE,
     path: "/check-your-answers",
-    title: "Check your answers",
+    title: eligibilityCopy.check_your_answers,
     onAccess: [
       access({
         effects: [EligibilityEffects.LoadAnswers(), loadSummary],

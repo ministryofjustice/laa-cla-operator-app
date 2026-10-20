@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKDateInputFull,
@@ -17,27 +18,30 @@ const MAX_PARTNER_AGE_YEARS = 120;
 
 export const partnerDetailsBlock = CollectionBlock({
   collection: [
-    GovUKHeading({ text: "Tell us about the partner", size: "xl" }),
+    GovUKHeading({
+      text: eligibilityCopy.tell_us_about_the_partner,
+      size: "xl",
+    }),
     GovUKDateInputFull({
       code: "partner_date_of_birth",
       fieldset: {
         legend: {
-          text: "What is the partner's date of birth?",
+          text: eligibilityCopy.what_is_the_partner_s_date_of_birth,
           classes: "govuk-fieldset__legend--m",
         },
       },
-      hint: { text: "For example, 27 3 2007" },
+      hint: { text: eligibilityCopy.for_example_27_3_2007 },
       validWhen: [
         validation({
           condition: Self().match(Condition.Date.IsValid()),
-          message: "Enter a valid date of birth",
+          message: eligibilityCopy.enter_a_valid_date_of_birth,
         }),
         validation({
           condition: or(
             Self().not.match(Condition.Date.IsValid()),
             Self().not.match(Condition.Date.IsFutureDate()),
           ),
-          message: "Year cannot be in the future",
+          message: eligibilityCopy.year_cannot_be_in_the_future,
           details: { field: "year" },
         }),
         validation({
@@ -52,11 +56,11 @@ export const partnerDetailsBlock = CollectionBlock({
               ),
             ),
           ),
-          message: "Year cannot be more than 120 years ago",
+          message: eligibilityCopy.year_cannot_be_more_than_120_years_ago,
           details: { field: "year" },
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

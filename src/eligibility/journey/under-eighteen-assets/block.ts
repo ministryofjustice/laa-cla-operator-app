@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -15,7 +16,7 @@ export const underEighteenAssetsBlock = CollectionBlock({
       code: "under_eighteen_assets",
       fieldset: {
         legend: {
-          text: "Does the client have assets?",
+          text: eligibilityCopy.does_the_client_have_assets,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
@@ -23,20 +24,20 @@ export const underEighteenAssetsBlock = CollectionBlock({
       items: [
         {
           value: "true",
-          text: "Yes",
+          text: eligibilityCopy.yes,
         },
         {
           value: "false",
-          text: "No",
+          text: eligibilityCopy.no,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the client has assets",
+          message: eligibilityCopy.select_whether_the_client_has_assets,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

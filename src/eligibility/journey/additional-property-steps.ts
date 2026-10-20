@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -25,7 +26,7 @@ export const PARTNER_ADDITIONAL_PROPERTY_DETAILS_STEP_CODE =
 export const additionalPropertyStep = step({
   code: ADDITIONAL_PROPERTY_STEP_CODE,
   path: "/additional-property",
-  title: "Additional properties",
+  title: eligibilityCopy.additional_properties,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [additionalPropertyBlock],
@@ -42,7 +43,7 @@ export const additionalPropertyStep = step({
 
 export const additionalPropertyDetailsStep = createAddAnotherStep({
   code: ADDITIONAL_PROPERTY_DETAILS_STEP_CODE,
-  title: "Additional property details",
+  title: eligibilityCopy.additional_property_details,
   listKey: "additional_properties",
   blocks: [additionalPropertyDetailsBlock],
 });
@@ -50,7 +51,7 @@ export const additionalPropertyDetailsStep = createAddAnotherStep({
 export const partnerAdditionalPropertyStep = step({
   code: PARTNER_ADDITIONAL_PROPERTY_STEP_CODE,
   path: "/partner-additional-property",
-  title: "Partner's additional properties",
+  title: eligibilityCopy.partner_s_additional_properties,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerAdditionalPropertyBlock],
@@ -67,7 +68,7 @@ export const partnerAdditionalPropertyStep = step({
 
 export const partnerAdditionalPropertyDetailsStep = createAddAnotherStep({
   code: PARTNER_ADDITIONAL_PROPERTY_DETAILS_STEP_CODE,
-  title: "Partner's additional property details",
+  title: eligibilityCopy.partner_s_additional_property_details,
   listKey: "partner_additional_properties",
   blocks: [partnerAdditionalPropertyDetailsBlock],
 });

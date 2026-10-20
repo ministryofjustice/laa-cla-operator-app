@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -15,7 +16,7 @@ export const howToAggregateBlock = CollectionBlock({
       code: "how_to_aggregate",
       fieldset: {
         legend: {
-          text: "How should income be aggregated?",
+          text: eligibilityCopy.how_should_income_be_aggregated,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
@@ -23,20 +24,20 @@ export const howToAggregateBlock = CollectionBlock({
       items: [
         {
           value: "child_income",
-          text: "Add all child income to the client's income",
+          text: eligibilityCopy.add_all_child_income_to_the_client_s_income,
         },
         {
           value: "combined",
-          text: "Combine all income and assess together",
+          text: eligibilityCopy.combine_all_income_and_assess_together,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select how income should be aggregated",
+          message: eligibilityCopy.select_how_income_should_be_aggregated,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

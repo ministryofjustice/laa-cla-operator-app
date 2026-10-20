@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const EMPLOYMENT_STATUS_STEP_CODE = "employment_status";
 export const employmentStatusStep = step({
   code: EMPLOYMENT_STATUS_STEP_CODE,
   path: "/employment-status",
-  title: "Employment status",
+  title: eligibilityCopy.employment_status,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

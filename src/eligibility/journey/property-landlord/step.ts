@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -16,7 +17,7 @@ export const PROPERTY_LANDLORD_STEP_CODE = "property_landlord";
 export const propertyLandlordStep = step({
   code: PROPERTY_LANDLORD_STEP_CODE,
   path: "/property-landlord",
-  title: "Property landlord",
+  title: eligibilityCopy.property_landlord,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

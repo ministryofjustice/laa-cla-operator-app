@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { createAddAnotherStep } from "../add-another-step.js";
 import {
   partnerIncomeHeadingBlock,
@@ -9,7 +10,7 @@ export const PARTNER_INCOME_STEP_CODE = "partner_income";
 
 export const partnerIncomeStep = createAddAnotherStep({
   code: PARTNER_INCOME_STEP_CODE,
-  title: "Partner employment income",
+  title: eligibilityCopy.partner_employment_income,
   listKey: "partner_incomes",
   blocks: [
     partnerIncomeHeadingBlock,

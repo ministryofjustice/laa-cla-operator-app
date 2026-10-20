@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKBackLink,
@@ -14,7 +15,7 @@ import {
 
 export const propertyLandlordBackLinkBlock = GovUKBackLink({
   href: Format("/eligibility/%1/property", Params("caseId")),
-  text: "Back",
+  text: eligibilityCopy.back,
 });
 
 export const propertyLandlordBlock = CollectionBlock({
@@ -23,22 +24,23 @@ export const propertyLandlordBlock = CollectionBlock({
       code: "property_landlord",
       fieldset: {
         legend: {
-          text: "Is the landlord the only other joint-owner?",
+          text: eligibilityCopy.is_the_landlord_the_only_other_joint_owner,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "true", text: "Yes" },
-        { value: "false", text: "No" },
+        { value: "true", text: eligibilityCopy.yes },
+        { value: "false", text: eligibilityCopy.no },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select yes if the landlord is the only other joint-owner",
+          message:
+            eligibilityCopy.select_yes_if_the_landlord_is_the_only_other_joint_owner,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

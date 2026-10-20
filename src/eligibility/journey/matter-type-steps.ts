@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -20,7 +21,7 @@ export const DOMESTIC_ABUSE_APPLICANT_STEP_CODE = "domestic_abuse_applicant";
 export const immigrationOrAsylumTypeUpperTribunalStep = step({
   code: IMMIGRATION_OR_ASYLUM_TYPE_UPPER_TRIBUNAL_STEP_CODE,
   path: "/immigration-or-asylum-type-upper-tribunal",
-  title: "Immigration or asylum type (upper tribunal)",
+  title: eligibilityCopy.immigration_or_asylum_type_upper_tribunal,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [immigrationOrAsylumTypeUpperTribunalBlock],
@@ -42,7 +43,7 @@ export const immigrationOrAsylumTypeUpperTribunalStep = step({
 export const asylumSupportStep = step({
   code: ASYLUM_SUPPORT_STEP_CODE,
   path: "/asylum-support",
-  title: "Asylum support",
+  title: eligibilityCopy.asylum_support,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [asylumSupportBlock],
@@ -60,7 +61,7 @@ export const asylumSupportStep = step({
 export const domesticAbuseApplicantStep = step({
   code: DOMESTIC_ABUSE_APPLICANT_STEP_CODE,
   path: "/domestic-abuse-applicant",
-  title: "Domestic abuse",
+  title: eligibilityCopy.domestic_abuse,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [domesticAbuseApplicantBlock],

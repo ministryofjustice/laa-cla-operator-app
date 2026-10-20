@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const PARTNER_EMPLOYMENT_STATUS_STEP_CODE = "partner_employment_status";
 export const partnerEmploymentStatusStep = step({
   code: PARTNER_EMPLOYMENT_STATUS_STEP_CODE,
   path: "/partner-employment-status",
-  title: "Partner employment status",
+  title: eligibilityCopy.partner_employment_status,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerEmploymentStatusBlock],

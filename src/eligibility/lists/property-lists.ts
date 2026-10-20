@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import { smodApplicable } from "../domain/logic.js";
 import type { Answers } from "../domain/logic.js";
 import type { AddAnotherList, RowDescriptor } from "./add-another.js";
@@ -14,7 +15,7 @@ function createPropertyList(
     house_value: "amount",
     inline_owned_with_mortgage: "boolean",
     mortgage: "amount",
-    percentage_owned: "text",
+    percentage_owned: "amount",
     house_in_dispute: "checkbox",
   } as const;
 
@@ -25,13 +26,17 @@ function createPropertyList(
     blankRow: {},
     describeRow: (index, rowCount, answers = {}): RowDescriptor => {
       const position = index + FIRST_POSITION;
-      const name = "property, holiday home or land";
       const multiple = rowCount > FIRST_POSITION;
+      const formatPosition = (message: string) =>
+        message.replace("%1", String(position));
 
       return {
         index,
         position,
-        heading: `${subject === "client" ? "Other" : "Partner's other"} ${name} ${position}`,
+        heading: (subject === "client"
+          ? eligibilityCopy.dynamic.property.rowClient
+          : eligibilityCopy.dynamic.property.rowPartner
+        ).replace("%1", String(position)),
         removable: index > FIRST_ROW,
         showInlineMortgageOwnershipQuestion: index > FIRST_ROW,
         ownedWithMortgage:
@@ -45,21 +50,67 @@ function createPropertyList(
         ),
         messages: {
           house_value: {
-            required: `Enter how much the ${name} is worth${multiple ? ` for property ${position}` : ""}`,
-            notANumber: `The value of the ${name} must be a number${multiple ? ` for property ${position}` : ""}`,
-            greaterThanZero: `The value of the ${name} must be more than 0${multiple ? ` for property ${position}` : ""}`,
+            required: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.requiredHouseValueMultiple,
+                )
+              : eligibilityCopy.dynamic.property.requiredHouseValue,
+            notANumber: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.numberHouseValueMultiple,
+                )
+              : eligibilityCopy.dynamic.property.numberHouseValue,
+            greaterThanZero: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.greaterHouseValueMultiple,
+                )
+              : eligibilityCopy.dynamic.property.greaterHouseValue,
           },
           inline_owned_with_mortgage: {
-            required: `Select whether there is an outstanding mortgage${multiple ? ` for property ${position}` : ""}`,
+            required: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property
+                    .requiredMortgageQuestionMultiple,
+                )
+              : eligibilityCopy.dynamic.property.requiredMortgageQuestion,
           },
           mortgage: {
-            required: `Enter the value of the outstanding mortgage${multiple ? ` for property ${position}` : ""}`,
-            notANumber: `The outstanding mortgage must be a number${multiple ? ` for property ${position}` : ""}`,
-            greaterThanZero: `The outstanding mortgage must be more than 0${multiple ? ` for property ${position}` : ""}`,
+            required: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.requiredMortgageMultiple,
+                )
+              : eligibilityCopy.dynamic.property.requiredMortgage,
+            notANumber: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.numberMortgageMultiple,
+                )
+              : eligibilityCopy.dynamic.property.numberMortgage,
+            greaterThanZero: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.greaterMortgageMultiple,
+                )
+              : eligibilityCopy.dynamic.property.greaterMortgage,
           },
           percentage_owned: {
-            required: `Enter what percentage${multiple ? ` of property ${position}` : ""} ${subject === "client" ? "your client" : "the partner"} owns`,
-            withinRange: `Enter a whole number between 1 and 100${multiple ? ` for property ${position}` : ""}`,
+            required:
+              subject === "client"
+                ? multiple
+                  ? formatPosition(
+                      eligibilityCopy.dynamic.property
+                        .requiredPercentageClientMultiple,
+                    )
+                  : eligibilityCopy.dynamic.property.requiredPercentageClient
+                : multiple
+                  ? formatPosition(
+                      eligibilityCopy.dynamic.property
+                        .requiredPercentagePartnerMultiple,
+                    )
+                  : eligibilityCopy.dynamic.property.requiredPercentagePartner,
+            withinRange: multiple
+              ? formatPosition(
+                  eligibilityCopy.dynamic.property.withinRangeMultiple,
+                )
+              : eligibilityCopy.dynamic.property.withinRange,
           },
         },
       };

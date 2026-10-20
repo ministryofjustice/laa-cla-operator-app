@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -15,23 +16,23 @@ export const immigrationOrAsylumBlock = CollectionBlock({
       code: "immigration_or_asylum",
       fieldset: {
         legend: {
-          text: "Is the legal problem related to immigration or asylum?",
+          text: eligibilityCopy.is_the_legal_problem_related_to_immigration_or_asylum,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "true", text: "Yes" },
-        { value: "false", text: "No" },
+        { value: "true", text: eligibilityCopy.yes },
+        { value: "false", text: eligibilityCopy.no },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
           message:
-            "Select whether the legal problem is related to immigration or asylum",
+            eligibilityCopy.select_whether_the_legal_problem_is_related_to_immigration_or_asylum,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

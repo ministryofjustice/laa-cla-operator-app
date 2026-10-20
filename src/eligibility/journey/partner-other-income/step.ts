@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const PARTNER_OTHER_INCOME_STEP_CODE = "partner_other_income";
 export const partnerOtherIncomeStep = step({
   code: PARTNER_OTHER_INCOME_STEP_CODE,
   path: "/partner-other-income",
-  title: "Partner other income",
+  title: eligibilityCopy.partner_other_income,
   onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
   view: { template: "main/eligibility/step.njk" },
   blocks: [partnerOtherIncomeBlock],

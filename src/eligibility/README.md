@@ -53,6 +53,16 @@ that form follows the current journey, including any questions required by the
 changed answer, and returns to check your answers. CFE is called only when the
 operator selects **Accept and continue** on the review page.
 
+When a host supplies `caseApi`, a new check loads the client's date of birth
+using the authenticated API client in Forge request state
+(`authenticatedAxios`). A failed
+lookup or a case without a date of birth stops the journey rather than sending
+an incomplete applicant to CFE.
+
+CFE assessment failures retain the HTTP error and any validation error messages
+returned in CFE's `errors` array, so a 422 can be diagnosed from the server error
+without logging the assessment payload.
+
 ## Subject matter of dispute
 
 The SMOD checkboxes for property, investments, and valuable items are optional.

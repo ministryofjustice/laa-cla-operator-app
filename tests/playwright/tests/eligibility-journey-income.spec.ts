@@ -27,7 +27,8 @@ test.describe("Eligibility journey - Income", () => {
     await answer("immigration_or_asylum", "false");
     await page.locator('input[name="partner"][value="false"]').check();
     await answer("passporting", "false");
-    await answer("dependant_details", "false");
+    await answer("child_dependants", "false");
+    await answer("adult_dependants", "false");
   });
 
   test("employed client with a benefit and no other income", async ({

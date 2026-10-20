@@ -14,6 +14,14 @@ import {
   PropertyEntryPage,
   AdditionalPropertyPage,
   AdditionalPropertyDetailsPage,
+  OutgoingsPage,
+  HousingCostsPage,
+  DependantsDetailsPage,
+  DependantIncomePage,
+  DependantIncomeDetailsPage,
+  AssetsPage,
+  VehiclePage,
+  VehiclesDetailsPage,
 } from "./EligibilitySteps.js";
 
 /**
@@ -93,5 +101,37 @@ export class PageFactory {
 
   get additionalPropertyDetailsPage(): AdditionalPropertyDetailsPage {
     return new AdditionalPropertyDetailsPage(this.page);
+  }
+
+  get outgoingsPage(): OutgoingsPage {
+    return new OutgoingsPage(this.page);
+  }
+
+  get housingCostsPage(): HousingCostsPage {
+    return new HousingCostsPage(this.page);
+  }
+
+  get dependantsDetailsPage(): DependantsDetailsPage {
+    return new DependantsDetailsPage(this.page);
+  }
+
+  get dependantIncomePage(): DependantIncomePage {
+    return new DependantIncomePage(this.page);
+  }
+
+  get dependantIncomeDetailsPage(): DependantIncomeDetailsPage {
+    return new DependantIncomeDetailsPage(this.page);
+  }
+
+  get assetsPage(): AssetsPage {
+    return new AssetsPage(this.page);
+  }
+
+  get vehiclePage(): VehiclePage {
+    return new VehiclePage(this.page);
+  }
+
+  get vehiclesDetailsPage(): VehiclesDetailsPage {
+    return new VehiclesDetailsPage(this.page);
   }
 }

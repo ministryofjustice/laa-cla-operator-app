@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   CollectionBlock,
   HtmlBlock,
@@ -10,18 +11,18 @@ import { Data } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 export const checkYourAnswersHeadingBlock = HtmlBlock({
   tag: "h1",
-  content: "Check your answers",
+  content: eligibilityCopy.check_your_answers,
   classes: "govuk-heading-l",
 });
 
 export const checkYourAnswersSummaryBlock = HtmlBlock({
   tag: "div",
-  content: "Please review the answers you have provided below.",
+  content: eligibilityCopy.please_review_the_answers_you_have_provided_below,
   classes: "govuk-body govuk-!-margin-bottom-7",
 });
 
 export const checkYourAnswersButtonBlock = CollectionBlock({
-  collection: [GovUKButton({ text: "Accept and continue" })],
+  collection: [GovUKButton({ text: eligibilityCopy.accept_and_continue })],
 });
 
 export const checkYourAnswersListBlock = GovUKSummaryList({

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -14,19 +15,19 @@ import {
 const PROPERTY_OPTIONS = [
   {
     value: "with_mortgage",
-    text: "Yes, with a mortgage or loan",
+    text: eligibilityCopy.yes_with_a_mortgage_or_loan,
   },
   {
     value: "shared_ownership",
-    text: "Yes, through a shared ownership scheme",
+    text: eligibilityCopy.yes_through_a_shared_ownership_scheme,
   },
   {
     value: "outright",
-    text: "Yes, owned outright",
+    text: eligibilityCopy.yes_owned_outright,
   },
   {
     value: "none",
-    text: "No",
+    text: eligibilityCopy.no,
   },
 ];
 
@@ -56,7 +57,7 @@ export function createPropertyOwnershipBlock(
           }),
         ],
       }),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }
@@ -64,6 +65,6 @@ export function createPropertyOwnershipBlock(
 export const propertyBlock = createPropertyOwnershipBlock(
   "property_owned",
   Data("propertyOwnedLegend"),
-  "Select if your client owns the home they live in",
-  "Does your client own the home they usually live in?",
+  eligibilityCopy.dynamic.propertyOwnership.required,
+  eligibilityCopy.dynamic.propertyOwnership.summaryLabel,
 );

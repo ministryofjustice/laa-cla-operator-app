@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   CollectionBlock,
   HtmlBlock,
@@ -57,13 +58,15 @@ export function createBenefitDetailsHeadingBlock(
     collection: [
       HtmlBlock({
         tag: "h1",
-        content: "Add benefit details",
+        content: eligibilityCopy.add_benefit_details,
         classes: "govuk-heading-xl",
       }),
       HtmlBlock({
         tag: "div",
         content: benefitsNotNeededHtml(
-          `Add details of any ${subject.prefix === "" ? "non-passporting benefits your client gets" : "benefits the partner gets"}.`,
+          subject.prefix === ""
+            ? eligibilityCopy.dynamic.benefits.detailsGuidanceLeadClient
+            : eligibilityCopy.dynamic.benefits.detailsGuidanceLeadPartner,
         ),
       }),
     ],
@@ -94,13 +97,16 @@ export function createBenefitDetailsRowsBlock(
             GovUKButton({
               name: "remove",
               value: Item().path("index"),
-              text: "Remove",
+              text: eligibilityCopy.remove,
               classes: "govuk-button--secondary",
               visibleWhen: Item().path("removable"),
             }),
             GovUKSelectInput({
               code: code("benefit_type"),
-              label: { text: "Benefit name", classes: "govuk-label--s" },
+              label: {
+                text: eligibilityCopy.benefit_name,
+                classes: "govuk-label--s",
+              },
               items: Data("benefitTypes"),
               validWhen: [
                 validation({
@@ -111,8 +117,11 @@ export function createBenefitDetailsRowsBlock(
             }),
             GovUKTextInput({
               code: code("benefit_amount"),
-              label: { text: "Benefit amount", classes: "govuk-label--s" },
-              prefix: { text: "£" },
+              label: {
+                text: eligibilityCopy.benefit_amount,
+                classes: "govuk-label--s",
+              },
+              prefix: { text: eligibilityCopy.copy },
               classes: "govuk-input--width-10",
               validWhen: amountValidations(
                 {
@@ -127,7 +136,10 @@ export function createBenefitDetailsRowsBlock(
               code: code("benefit_frequency"),
               fieldset: {
                 legend: {
-                  text: `When does ${subject.noun} normally get this benefit?`,
+                  text: eligibilityCopy.dynamic.lists.benefitFrequencyRequired.replace(
+                    "%1",
+                    subject.noun,
+                  ),
                   classes: "govuk-fieldset__legend--s",
                 },
               },
@@ -158,10 +170,10 @@ export function createBenefitDetailsButtonsBlock(): ReturnType<
       GovUKButton({
         name: "action",
         value: "add",
-        text: "Add another benefit",
+        text: eligibilityCopy.add_another_benefit,
         classes: "govuk-button--secondary",
       }),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }

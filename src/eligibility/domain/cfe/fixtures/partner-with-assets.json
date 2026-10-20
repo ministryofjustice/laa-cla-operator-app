@@ -26,10 +26,6 @@
         "national_insurance": 180
       }
     ],
-    "housing_costs": true,
-    "housing_payments": 1000,
-    "housing_payments_frequency": "monthly",
-    "housing_benefit_relevant": false,
     "friends_or_family_relevant": false,
     "maintenance_relevant": false,
     "property_or_lodger_relevant": false,
@@ -57,7 +53,8 @@
       {
         "house_value": 150000,
         "percentage_owned": 50,
-        "mortgage": 75000
+        "mortgage": 75000,
+        "house_in_dispute": false
       }
     ],
     "partner_additional_property_owned": "outright",
@@ -71,11 +68,11 @@
     "valuables": 2000,
     "bank_accounts": [
       {
-        "amount": 15000
+        "amount": 15000,
+        "account_in_dispute": false
       }
     ],
     "partner_investments": 5000,
-    "partner_valuables": 0,
     "partner_bank_accounts": [
       {
         "amount": 8000
@@ -95,8 +92,21 @@
     "adult_dependants_count": 1,
     "child_dependants": true,
     "child_dependants_count": 2,
-    "immigration_or_asylum": false,
-    "domestic_abuse_applicant": false
+    "domestic_abuse_applicant": false,
+    "immigration_or_asylum_type_upper_tribunal": "none",
+    "partner_over_60": false,
+    "receives_benefits": false,
+    "partner_receives_benefits": false,
+    "dependants_get_income": false,
+    "housing_loan_payments": 1000,
+    "housing_payments_loan_frequency": "monthly",
+    "house_in_dispute": false,
+    "investments_relevant": true,
+    "investments_in_dispute": false,
+    "valuables_relevant": true,
+    "valuables_in_dispute": false,
+    "partner_investments_relevant": true,
+    "partner_valuables_relevant": false
   },
   "relevant_steps": [
     "client_age",
@@ -164,10 +174,10 @@
       {
         "income": {
           "frequency": "monthly",
-          "gross": 2000,
+          "gross": "2000.0",
           "benefits_in_kind": 0,
-          "tax": -300,
-          "national_insurance": -200,
+          "tax": "-300.0",
+          "national_insurance": "-200.0",
           "receiving_only_statutory_sick_or_maternity_pay": false
         }
       }
@@ -178,7 +188,7 @@
     },
     "vehicles": [
       {
-        "value": 12000,
+        "value": "12000.0",
         "loan_amount_outstanding": 0,
         "date_of_purchase": "2022-06-01",
         "in_regular_use": true,
@@ -188,19 +198,19 @@
     "capitals": {
       "bank_accounts": [
         {
-          "value": 15000,
+          "value": "15000.0",
           "description": "Liquid Asset",
           "subject_matter_of_dispute": false
         }
       ],
       "non_liquid_capital": [
         {
-          "value": 8000,
+          "value": "8000.0",
           "description": "Non Liquid Asset",
           "subject_matter_of_dispute": false
         },
         {
-          "value": 2000,
+          "value": "2000.0",
           "description": "Non Liquid Asset",
           "subject_matter_of_dispute": false
         }
@@ -208,30 +218,37 @@
     },
     "properties": {
       "main_home": {
-        "value": 300000,
-        "outstanding_mortgage": 200000,
+        "value": "300000.0",
+        "outstanding_mortgage": "200000.0",
         "percentage_owned": 100,
         "subject_matter_of_dispute": false,
         "shared_with_housing_assoc": false
       },
       "additional_properties": [
         {
-          "value": 150000,
-          "outstanding_mortgage": 75000,
+          "value": "150000.0",
+          "outstanding_mortgage": "75000.0",
           "percentage_owned": 50,
           "subject_matter_of_dispute": false,
           "shared_with_housing_assoc": false
         }
       ]
     },
-    "regular_transactions": [],
+    "regular_transactions": [
+      {
+        "operation": "debit",
+        "category": "rent_or_mortgage",
+        "frequency": "monthly",
+        "amount": "1000.0"
+      }
+    ],
     "applicant": {
-      "date_of_birth": "1976-01-20",
+      "date_of_birth": "1974-06-01",
       "receives_qualifying_benefit": false
     },
     "partner": {
       "partner": {
-        "date_of_birth": "1978-05-10",
+        "date_of_birth": "1974-06-01",
         "employed": true
       },
       "irregular_incomes": [],
@@ -239,10 +256,10 @@
         {
           "income": {
             "frequency": "monthly",
-            "gross": 1800,
+            "gross": "1800.0",
             "benefits_in_kind": 0,
-            "tax": -250,
-            "national_insurance": -180,
+            "tax": "-250.0",
+            "national_insurance": "-180.0",
             "receiving_only_statutory_sick_or_maternity_pay": false
           }
         }
@@ -251,7 +268,7 @@
       "regular_transactions": [],
       "additional_properties": [
         {
-          "value": 100000,
+          "value": "100000.0",
           "outstanding_mortgage": 0,
           "percentage_owned": 100,
           "shared_with_housing_assoc": false
@@ -262,14 +279,14 @@
       "capitals": {
         "bank_accounts": [
           {
-            "value": 8000,
+            "value": "8000.0",
             "description": "Liquid Asset",
             "subject_matter_of_dispute": false
           }
         ],
         "non_liquid_capital": [
           {
-            "value": 5000,
+            "value": "5000.0",
             "description": "Non Liquid Asset",
             "subject_matter_of_dispute": false
           }

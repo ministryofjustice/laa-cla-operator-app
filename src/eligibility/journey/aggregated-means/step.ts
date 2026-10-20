@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const AGGREGATED_MEANS_STEP_CODE = "aggregated_means";
 export const aggregatedMeansStep = step({
   code: AGGREGATED_MEANS_STEP_CODE,
   path: "/aggregated-means",
-  title: "Aggregated means",
+  title: eligibilityCopy.aggregated_means,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

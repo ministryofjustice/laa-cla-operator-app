@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -14,7 +15,7 @@ export const SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE =
 export const sharedOwnershipHousingCostsStep = step({
   code: SHARED_OWNERSHIP_HOUSING_COSTS_STEP_CODE,
   path: "/shared-ownership-housing-costs",
-  title: "Shared ownership housing costs",
+  title: eligibilityCopy.shared_ownership_housing_costs,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

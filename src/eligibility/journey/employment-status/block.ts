@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -6,6 +7,7 @@ import {
 import {
   validation,
   Condition,
+  Format,
   Self,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
@@ -22,18 +24,16 @@ import {
 export function createEmploymentStatusBlock(
   subject: IncomeSubject,
 ): ReturnType<typeof CollectionBlock> {
-  const { noun, possessive, people } = subject;
-  const inWork = `Including if ${noun} is paid in cash, is a sole trader`;
-  const inWorkEnd =
-    "is in a partnership, or gets Statutory Sick Pay or Statutory Maternity Pay";
-
   return CollectionBlock({
     collection: [
       GovUKRadioInput({
         code: `${subject.prefix}employment_status`,
         fieldset: {
           legend: {
-            text: `What is ${possessive} employment status?`,
+            text: eligibilityCopy.dynamic.employmentStatus.question.replace(
+              "%1",
+              subject.possessive,
+            ),
             classes: "govuk-fieldset__legend--l",
             isPageHeading: true,
           },
@@ -41,30 +41,39 @@ export function createEmploymentStatusBlock(
         items: [
           {
             value: "in_work",
-            text: "Employed or self-employed",
+            text: eligibilityCopy.employed_or_self_employed,
             hint: {
               text: byLevelOfHelp(
-                `${inWork}, is a company director, ${inWorkEnd}`,
-                `${inWork}, ${inWorkEnd}`,
+                Format(
+                  eligibilityCopy.dynamic.employmentStatus.inWorkControlled,
+                  subject.noun,
+                ),
+                Format(
+                  eligibilityCopy.dynamic.employmentStatus.inWorkCertificated,
+                  subject.noun,
+                ),
               ),
             },
           },
           {
             value: "unemployed",
-            text: "Unemployed",
+            text: eligibilityCopy.unemployed,
             hint: {
-              text: `Including anyone without employment income, for example retired ${people}`,
+              text: Format(
+                eligibilityCopy.dynamic.employmentStatus.unemployedHint,
+                subject.people,
+              ),
             },
           },
         ],
         validWhen: [
           validation({
             condition: Self().match(Condition.IsRequired()),
-            message: "Select an employment status",
+            message: eligibilityCopy.select_an_employment_status,
           }),
         ],
       }),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }

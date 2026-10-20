@@ -1,66 +1,13 @@
-import {
-  step,
-  submit,
-  access,
-  redirect,
-  Data,
-  Post,
-  Condition,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import {
-  addBankAccountButtonBlock,
-  assetsContinueButtonBlock,
-  assetsHeadingBlock,
-  assetsQuestionsBlock,
-  bankAccountsGuidanceBlock,
-  bankAccountsHeadingBlock,
-  bankAccountsTableBlock,
-  bankruptClientsDetailsBlock,
-  costOfLivingPaymentsDetailsBlock,
-} from "./block.js";
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
+import { createAddAnotherStep } from "../add-another-step.js";
+import { BANK_ACCOUNTS_LIST } from "../../lists/index.js";
+import { clientAssetsBlocks } from "./block.js";
 
 export const ASSETS_STEP_CODE = "assets";
 
-export const assetsStep = step({
+export const assetsStep = createAddAnotherStep({
   code: ASSETS_STEP_CODE,
-  path: "/assets",
-  title: "Assets",
-  onAccess: [
-    access({
-      effects: [EligibilityEffects.LoadAnswers()],
-    }),
-  ],
-  view: { template: "main/eligibility/step.njk" },
-  blocks: [
-    assetsHeadingBlock,
-    bankruptClientsDetailsBlock,
-    bankAccountsHeadingBlock,
-    bankAccountsGuidanceBlock,
-    bankAccountsTableBlock,
-    costOfLivingPaymentsDetailsBlock,
-    addBankAccountButtonBlock,
-    assetsQuestionsBlock,
-    assetsContinueButtonBlock,
-  ],
-  onSubmission: [
-    submit({
-      when: Post("action").match(Condition.Equals("add")),
-      validate: false,
-      onValid: {
-        effects: [
-          EligibilityEffects.SaveAnswers(),
-          EligibilityEffects.AddListRow("bank_accounts"),
-        ],
-        next: [redirect({ goto: Post("currentStep") })],
-      },
-    }),
-    submit({
-      validate: true,
-      onValid: {
-        effects: [EligibilityEffects.SaveAnswers()],
-        next: [redirect({ goto: Data("nav.assets") })],
-      },
-    }),
-  ],
+  title: eligibilityCopy.assets,
+  listKey: BANK_ACCOUNTS_LIST.key,
+  blocks: clientAssetsBlocks,
 });

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -16,7 +17,7 @@ export const levelOfHelpStep = step({
   reachability: {
     entryWhen: true,
   },
-  title: "Level of legal aid",
+  title: eligibilityCopy.level_of_legal_aid,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

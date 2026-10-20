@@ -4,20 +4,6 @@
     "client_age": "standard",
     "date_of_birth": "1980-11-05",
     "passporting": true,
-    "employment_status": "in_work",
-    "housing_costs": true,
-    "housing_payments": 900,
-    "housing_payments_frequency": "monthly",
-    "housing_benefit_relevant": false,
-    "friends_or_family_relevant": false,
-    "maintenance_relevant": false,
-    "property_or_lodger_relevant": false,
-    "pension_relevant": false,
-    "student_finance_relevant": false,
-    "other_relevant": false,
-    "childcare_payments_relevant": false,
-    "maintenance_payments_relevant": false,
-    "legal_aid_payments_relevant": false,
     "property_owned": "with_mortgage",
     "house_value": 200000,
     "percentage_owned": 100,
@@ -26,14 +12,20 @@
     "valuables": 5000,
     "bank_accounts": [
       {
-        "amount": 30000
+        "amount": 30000,
+        "account_in_dispute": false
       }
     ],
-    "adult_dependants": false,
-    "child_dependants": false,
     "vehicle_owned": false,
-    "immigration_or_asylum": false,
-    "domestic_abuse_applicant": false
+    "domestic_abuse_applicant": false,
+    "partner": false,
+    "immigration_or_asylum_type_upper_tribunal": "none",
+    "house_in_dispute": false,
+    "additional_property_owned": "none",
+    "investments_relevant": true,
+    "investments_in_dispute": false,
+    "valuables_relevant": true,
+    "valuables_in_dispute": false
   },
   "relevant_steps": [
     "client_age",
@@ -61,19 +53,19 @@
     "capitals": {
       "bank_accounts": [
         {
-          "value": 30000,
+          "value": "30000.0",
           "description": "Liquid Asset",
           "subject_matter_of_dispute": false
         }
       ],
       "non_liquid_capital": [
         {
-          "value": 20000,
+          "value": "20000.0",
           "description": "Non Liquid Asset",
           "subject_matter_of_dispute": false
         },
         {
-          "value": 5000,
+          "value": "5000.0",
           "description": "Non Liquid Asset",
           "subject_matter_of_dispute": false
         }
@@ -81,15 +73,15 @@
     },
     "properties": {
       "main_home": {
-        "value": 200000,
-        "outstanding_mortgage": 150000,
+        "value": "200000.0",
+        "outstanding_mortgage": "150000.0",
         "percentage_owned": 100,
         "subject_matter_of_dispute": false,
         "shared_with_housing_assoc": false
       }
     },
     "applicant": {
-      "date_of_birth": "1980-11-05",
+      "date_of_birth": "1974-06-01",
       "receives_qualifying_benefit": true
     }
   }

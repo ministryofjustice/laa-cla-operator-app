@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   EffectRegistry,
   type EffectFunctionContext,
@@ -12,8 +13,8 @@ import type {
   SummaryListRow,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import type { Answers } from "../../domain/logic.js";
-import { frequencyLabel } from "../../domain/frequency-options.js";
 import type { EligibilityDeps } from "../../ports/index.js";
+import { frequencyLabel } from "../frequency-copy.js";
 import {
   BENEFITS_LIST,
   INCOMES_LIST,
@@ -21,6 +22,10 @@ import {
   PARTNER_INCOMES_LIST,
   ADDITIONAL_PROPERTIES_LIST,
   PARTNER_ADDITIONAL_PROPERTIES_LIST,
+  DEPENDANT_INCOMES_LIST,
+  BANK_ACCOUNTS_LIST,
+  PARTNER_BANK_ACCOUNTS_LIST,
+  VEHICLES_LIST,
 } from "../../lists/index.js";
 import {
   rowFieldCode,
@@ -31,7 +36,6 @@ import {
 type Question =
   GovUKRadioInput | GovUKTextInput | GovUKCheckboxInput | GovUKDateInputFull;
 const EMPTY_LENGTH = 0;
-const BANK_ACCOUNT_POSITION_OFFSET = 1;
 const POSITION_OFFSET = 1;
 
 interface ListSummaryField {
@@ -47,9 +51,9 @@ interface ListSummary {
 }
 
 const INCOME_TYPE_LABELS: Readonly<Record<string, string>> = {
-  employment: "A salary or wage",
-  statutory_pay: "Statutory Sick Pay or Statutory Maternity Pay",
-  self_employment: "Self-employment income",
+  employment: eligibilityCopy.a_salary_or_wage,
+  statutory_pay: eligibilityCopy.statutory_sick_pay_or_statutory_maternity_pay,
+  self_employment: eligibilityCopy.self_employment_income,
 };
 
 const asText = (value: unknown): string => String(value);
@@ -63,39 +67,110 @@ const asIncomeType = (value: unknown): string =>
   INCOME_TYPE_LABELS[asText(value)] ?? asText(value);
 
 const INCOME_FIELDS: readonly ListSummaryField[] = [
-  { field: "income_type", label: "Type", format: asIncomeType },
-  { field: "income_frequency", label: "Frequency", format: asFrequency },
+  { field: "income_type", label: eligibilityCopy.type, format: asIncomeType },
+  {
+    field: "income_frequency",
+    label: eligibilityCopy.frequency,
+    format: asFrequency,
+  },
   {
     field: "gross_income",
-    label: "Income before deductions",
+    label: eligibilityCopy.income_before_deductions,
     format: asPounds,
   },
-  { field: "income_tax", label: "Income tax", format: asPounds },
+  { field: "income_tax", label: eligibilityCopy.income_tax, format: asPounds },
   {
     field: "national_insurance",
-    label: "National Insurance",
+    label: eligibilityCopy.national_insurance,
     format: asPounds,
   },
 ];
 
 const BENEFIT_FIELDS: readonly ListSummaryField[] = [
-  { field: "benefit_type", label: "Name", format: asText },
-  { field: "benefit_amount", label: "Amount", format: asPounds },
-  { field: "benefit_frequency", label: "Frequency", format: asFrequency },
+  { field: "benefit_type", label: eligibilityCopy.name, format: asText },
+  { field: "benefit_amount", label: eligibilityCopy.amount, format: asPounds },
+  {
+    field: "benefit_frequency",
+    label: eligibilityCopy.frequency,
+    format: asFrequency,
+  },
+];
+
+/**
+ * A yes/no answer's summary text.
+ * @param {unknown} value - the saved answer
+ * @returns {string} "Yes" when the answer is true, otherwise "No"
+ */
+const asYesNo = (value: unknown): string =>
+  value === true ? eligibilityCopy.yes : eligibilityCopy.no;
+
+const BANK_ACCOUNT_FIELDS: readonly ListSummaryField[] = [
+  {
+    field: "amount",
+    label: eligibilityCopy.dynamic.bankAccount.summaryAmount,
+    format: asPounds,
+  },
+  {
+    field: "account_in_dispute",
+    label: eligibilityCopy.subject_matter_of_dispute,
+    format: asYesNo,
+  },
+];
+
+const VEHICLE_SUMMARY = eligibilityCopy.dynamic.vehicles;
+const VEHICLE_FIELDS: readonly ListSummaryField[] = [
+  {
+    field: "vehicle_value",
+    label: VEHICLE_SUMMARY.summaryValue,
+    format: asPounds,
+  },
+  { field: "vehicle_pcp", label: VEHICLE_SUMMARY.summaryPcp, format: asYesNo },
+  {
+    field: "vehicle_finance",
+    label: VEHICLE_SUMMARY.summaryFinance,
+    format: asPounds,
+  },
+  {
+    field: "vehicle_over_3_years_ago",
+    label: VEHICLE_SUMMARY.summaryOverThreeYears,
+    format: asYesNo,
+  },
+  {
+    field: "vehicle_in_regular_use",
+    label: VEHICLE_SUMMARY.summaryRegularUse,
+    format: asYesNo,
+  },
+  {
+    field: "vehicle_in_dispute",
+    label: VEHICLE_SUMMARY.summaryDispute,
+    format: asYesNo,
+  },
 ];
 
 const PROPERTY_FIELDS: readonly ListSummaryField[] = [
-  { field: "house_value", label: "Estimated value", format: asPounds },
+  {
+    field: "house_value",
+    label: eligibilityCopy.estimated_value,
+    format: asPounds,
+  },
   {
     field: "inline_owned_with_mortgage",
-    label: "Outstanding mortgage",
+    label: eligibilityCopy.outstanding_mortgage,
     format: (value) => (value === true ? "Yes" : "No"),
   },
-  { field: "mortgage", label: "Mortgage amount", format: asPounds },
-  { field: "percentage_owned", label: "Percentage owned", format: asText },
+  {
+    field: "mortgage",
+    label: eligibilityCopy.mortgage_amount,
+    format: asPounds,
+  },
+  {
+    field: "percentage_owned",
+    label: eligibilityCopy.percentage_owned,
+    format: asText,
+  },
   {
     field: "house_in_dispute",
-    label: "Subject matter of dispute",
+    label: eligibilityCopy.subject_matter_of_dispute,
     format: (value) => (value === true ? "Yes" : "No"),
   },
 ];
@@ -105,33 +180,64 @@ const PROPERTY_FIELDS: readonly ListSummaryField[] = [
 const LIST_SUMMARIES: Readonly<Record<string, ListSummary>> = {
   income: {
     list: INCOMES_LIST,
-    rowLabel: "Employment income",
+    rowLabel: eligibilityCopy.employment_income,
     fields: INCOME_FIELDS,
   },
   partner_income: {
     list: PARTNER_INCOMES_LIST,
-    rowLabel: "Partner employment income",
+    rowLabel: eligibilityCopy.partner_employment_income,
     fields: INCOME_FIELDS,
   },
   benefit_details: {
     list: BENEFITS_LIST,
-    rowLabel: "Benefit",
+    rowLabel: eligibilityCopy.benefit,
     fields: BENEFIT_FIELDS,
   },
   partner_benefit_details: {
     list: PARTNER_BENEFITS_LIST,
-    rowLabel: "Partner benefit",
+    rowLabel: eligibilityCopy.partner_benefit,
     fields: BENEFIT_FIELDS,
   },
   additional_property_details: {
     list: ADDITIONAL_PROPERTIES_LIST,
-    rowLabel: "Other property",
+    rowLabel: eligibilityCopy.other_property,
     fields: PROPERTY_FIELDS,
   },
   partner_additional_property_details: {
     list: PARTNER_ADDITIONAL_PROPERTIES_LIST,
-    rowLabel: "Partner's other property",
+    rowLabel: eligibilityCopy.partner_s_other_property,
     fields: PROPERTY_FIELDS,
+  },
+  assets: {
+    list: BANK_ACCOUNTS_LIST,
+    rowLabel: eligibilityCopy.dynamic.assets.bankAccountRow,
+    fields: BANK_ACCOUNT_FIELDS,
+  },
+  partner_assets: {
+    list: PARTNER_BANK_ACCOUNTS_LIST,
+    rowLabel: eligibilityCopy.dynamic.assets.partnerBankAccountRow,
+    fields: BANK_ACCOUNT_FIELDS,
+  },
+  vehicles_details: {
+    list: VEHICLES_LIST,
+    rowLabel: VEHICLE_SUMMARY.row,
+    fields: VEHICLE_FIELDS,
+  },
+  dependant_income_details: {
+    list: DEPENDANT_INCOMES_LIST,
+    rowLabel: eligibilityCopy.dynamic.dependants.dependant,
+    fields: [
+      {
+        field: "amount",
+        label: eligibilityCopy.dynamic.dependants.incomeAmountLabel,
+        format: asPounds,
+      },
+      {
+        field: "frequency",
+        label: eligibilityCopy.frequency,
+        format: asFrequency,
+      },
+    ],
   },
 };
 
@@ -151,7 +257,10 @@ function listSummaryRows(
     summary.fields.flatMap(({ field, label, format }) => {
       const { [field]: value } = row;
       if (!answered(value)) return [];
-      const key = `${summary.rowLabel} ${index + POSITION_OFFSET}: ${label}`;
+      const key = eligibilityCopy.dynamic.summary.repeatedRow
+        .replace("%1", summary.rowLabel)
+        .replace("%2", String(index + POSITION_OFFSET))
+        .replace("%3", label);
       return [
         {
           key: { text: key },
@@ -160,7 +269,7 @@ function listSummaryRows(
             items: [
               {
                 href: `${stepPath}#${rowFieldCode(summary.list.key, index, field)}`,
-                text: "Change",
+                text: eligibilityCopy.change,
                 visuallyHiddenText: key,
               },
             ],
@@ -189,13 +298,17 @@ function isQuestion(value: object): value is Question {
 }
 
 /**
- * Collects questions from collections, including repeated-row templates.
+ * Collects questions from collections, including repeated-row templates
+ * and questions revealed by a radio option.
  * @param {unknown} value - authored blocks or nested configuration
  * @returns {Question[]} the question definitions
  */
 function questionsIn(value: unknown): Question[] {
   if (value === null || typeof value !== "object") return [];
-  if (isQuestion(value)) return [value];
+  // A radio's options can reveal questions of their own.
+  if (isQuestion(value)) {
+    return [value, ...("items" in value ? questionsIn(value.items) : [])];
+  }
   return Object.values(value).flatMap(questionsIn);
 }
 
@@ -242,75 +355,39 @@ function answerText(question: Question, value: unknown): string {
 }
 
 /**
- * Builds summary rows for the repeated bank-account inputs on the assets step.
- * @param {Answers} answers - all saved eligibility answers
- * @returns {SummaryListRow[]} rows for each saved bank account
+ * Resolve the partner-sensitive dependant and vehicle question labels.
+ * @param {unknown} code - the field code
+ * @param {boolean} hasPartner - whether the client has a partner
+ * @returns {string | undefined} the partner-sensitive label, if applicable
  */
-function bankAccountSummaryRows(answers: Answers): SummaryListRow[] {
-  if (!Array.isArray(answers.bank_accounts)) return [];
-
-  return answers.bank_accounts.flatMap((account: unknown, index: number) => {
-    if (typeof account !== "object" || account === null) return [];
-    const amount = "amount" in account ? account.amount : undefined;
-    const accountInDispute =
-      "account_in_dispute" in account ? account.account_in_dispute : undefined;
-    if (
-      (typeof amount !== "string" && typeof amount !== "number") ||
-      String(amount).trim() === ""
-    ) {
-      return [];
-    }
-
-    const label = `Bank account ${index + BANK_ACCOUNT_POSITION_OFFSET}`;
-    const rows: SummaryListRow[] = [
-      {
-        key: { text: label },
-        value: {
-          text: new Intl.NumberFormat("en-GB", {
-            style: "currency",
-            currency: "GBP",
-          }).format(Number(amount)),
-        },
-        actions: {
-          items: [
-            {
-              href: `assets#bank_accounts_${index}_amount`,
-              text: "Change",
-              visuallyHiddenText: label,
-            },
-          ],
-        },
-      },
-    ];
-
-    if (accountInDispute === true) {
-      rows.push({
-        key: { text: `${label}: subject matter of dispute` },
-        value: { text: "Yes" },
-        actions: {
-          items: [
-            {
-              href: `assets#bank_accounts_${index}_account_in_dispute`,
-              text: "Change",
-              visuallyHiddenText: `${label}: subject matter of dispute`,
-            },
-          ],
-        },
-      });
-    }
-
-    return rows;
-  });
+function dependantQuestionLabel(
+  code: unknown,
+  hasPartner: boolean,
+): string | undefined {
+  if (code === "child_dependants") {
+    return hasPartner
+      ? eligibilityCopy.dynamic.dependants.childLegendWithPartner
+      : eligibilityCopy.dynamic.dependants.childLegendWithoutPartner;
+  }
+  if (code === "adult_dependants") {
+    return hasPartner
+      ? eligibilityCopy.dynamic.dependants.adultLegendWithPartner
+      : eligibilityCopy.dynamic.dependants.adultLegendWithoutPartner;
+  }
+  if (code === "vehicle_owned") {
+    return hasPartner
+      ? eligibilityCopy.dynamic.vehicles.ownedLegendWithPartner
+      : eligibilityCopy.dynamic.vehicles.ownedLegendWithoutPartner;
+  }
+  return undefined;
 }
 
 /**
- * Reads the original question text without exposing authored expressions.
+ * Read the input's declared label without exposing authored expressions.
  * @param {Question} question - the original input definition
  * @returns {string} the question label
  */
-function questionLabel(question: Question): string {
-  const { metadata } = question;
-  if (typeof metadata?.summaryLabel === "string") return metadata.summaryLabel;
+function inputQuestionLabel(question: Question): string {
   const label =
     "label" in question
       ? typeof question.label === "string"
@@ -325,6 +402,24 @@ function questionLabel(question: Question): string {
     throw new Error("Missing eligibility question label");
   }
   return label;
+}
+
+/**
+ * Reads the original question text without exposing authored expressions.
+ * @param {Question} question - the original input definition
+ * @param {Answers} answers - current journey answers
+ * @returns {string} the question label
+ */
+function questionLabel(question: Question, answers: Answers): string {
+  const { metadata } = question;
+  if (typeof metadata?.summaryLabel === "string") return metadata.summaryLabel;
+  const { partner } = answers;
+  const dependantLabel = dependantQuestionLabel(
+    question.code,
+    partner === true,
+  );
+  if (dependantLabel !== undefined) return dependantLabel;
+  return inputQuestionLabel(question);
 }
 
 /**
@@ -354,14 +449,18 @@ export function summaryRows(
       (question) => {
         const { code: fieldCode } = question;
         if (typeof fieldCode !== "string") {
-          if (code === "assets" || listSummary !== undefined) return [];
+          if (listSummary !== undefined) return [];
           throw new Error(
             `Unsupported question code in eligibility step: ${code}`,
           );
         }
         const { [fieldCode]: value } = answers;
         if (!answered(value)) return [];
-        const label = questionLabel(question);
+        // An unticked checkbox is saved as false, which is not an answer to show.
+        if (question.variant === "govukCheckboxInput" && value === false) {
+          return [];
+        }
+        const label = questionLabel(question, answers);
         return [
           {
             key: { text: label },
@@ -370,7 +469,7 @@ export function summaryRows(
               items: [
                 {
                   href: `${stepPath}#${encodeURIComponent(fieldCode)}`,
-                  text: "Change",
+                  text: eligibilityCopy.change,
                   visuallyHiddenText: label,
                 },
               ],
@@ -386,9 +485,7 @@ export function summaryRows(
         ...questionRows,
       ];
     }
-    return code === "assets"
-      ? [...bankAccountSummaryRows(answers), ...questionRows]
-      : questionRows;
+    return questionRows;
   });
 }
 

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   CollectionBlock,
   HtmlBlock,
@@ -23,7 +24,7 @@ import {
 
 export const propertyEntryHeadingBlock = HtmlBlock({
   tag: "h1",
-  content: "The home your client usually lives in",
+  content: eligibilityCopy.the_home_your_client_usually_lives_in,
   classes: "govuk-heading-xl",
 });
 
@@ -38,11 +39,11 @@ export const propertyEntryBlock = CollectionBlock({
     GovUKTextInput({
       code: "house_value",
       label: {
-        text: "Home value",
+        text: eligibilityCopy.home_value,
         classes: "govuk-label--m",
       },
       hint: {
-        text: "You can use property websites to find the estimated value. If you have more than one valuation, use the highest.",
+        text: eligibilityCopy.you_can_use_property_websites_to_find_the_estimated_val_b5487e2ee9,
       },
       validWhen: [
         validation({
@@ -51,15 +52,16 @@ export const propertyEntryBlock = CollectionBlock({
               POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN,
             ),
           ),
-          message: "Enter the property value as a number greater than 0",
+          message:
+            eligibilityCopy.enter_the_property_value_as_a_number_greater_than_0,
         }),
       ],
     }),
     GovUKTextInput({
       code: "mortgage",
-      label: { text: "How much is left to pay on the mortgage?" },
+      label: { text: eligibilityCopy.how_much_is_left_to_pay_on_the_mortgage },
       hint: {
-        text: "Check the statement from the mortgage provider or lender and include any other loans secured against the property.",
+        text: eligibilityCopy.check_the_statement_from_the_mortgage_provider_or_lende_30cc0c2d98,
       },
       visibleWhen: or([
         Answer("property_owned").match(Condition.Equals("with_mortgage")),
@@ -72,7 +74,7 @@ export const propertyEntryBlock = CollectionBlock({
             "with_mortgage",
           ),
           message:
-            "Enter how much is left to pay on the mortgage, as a number greater than 0",
+            eligibilityCopy.enter_how_much_is_left_to_pay_on_the_mortgage_as_a_numb_5f9e7216ee,
         }),
         validation({
           condition: poundsAmountGreaterThanZeroWhenAnswered(
@@ -80,13 +82,13 @@ export const propertyEntryBlock = CollectionBlock({
             "shared_ownership",
           ),
           message:
-            "Enter how much is left to pay on the mortgage, as a number greater than 0",
+            eligibilityCopy.enter_how_much_is_left_to_pay_on_the_mortgage_as_a_numb_5f9e7216ee,
         }),
       ],
     }),
     GovUKTextInput({
       code: "percentage_owned",
-      label: { text: "What percentage of the home do they own?" },
+      label: { text: eligibilityCopy.what_percentage_of_the_home_do_they_own },
       hint: { text: Data("propertyPercentageHint") },
       validWhen: [
         validation({
@@ -94,7 +96,7 @@ export const propertyEntryBlock = CollectionBlock({
             Condition.String.MatchesRegex(WHOLE_PERCENTAGE_PATTERN),
           ),
           message:
-            "Enter the percentage share your client owns, between 1 and 100",
+            eligibilityCopy.enter_the_percentage_share_your_client_owns_between_1_and_100,
         }),
       ],
     }),
@@ -103,17 +105,17 @@ export const propertyEntryBlock = CollectionBlock({
       visibleWhen: Data("smodApplicable"),
       fieldset: {
         legend: {
-          text: "Property details",
+          text: eligibilityCopy.property_details,
           classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
         {
           value: "true",
-          text: "This asset is a subject matter of dispute",
+          text: eligibilityCopy.this_asset_is_a_subject_matter_of_dispute,
         },
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

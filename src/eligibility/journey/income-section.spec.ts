@@ -53,6 +53,8 @@ interface RenderedField {
   code: string;
   value?: unknown;
   items?: { value: string; text: string }[];
+  label?: { text?: string };
+  fieldset?: { legend?: { text?: string } };
 }
 
 const OTHER_INCOME_TYPES = [
@@ -158,7 +160,8 @@ describe("eligibility journey: income section", () => {
       immigration_or_asylum_type_upper_tribunal: "no_upper_tribunal",
       partner: false,
       passporting: false,
-      dependant_details: false,
+      child_dependants: false,
+      adult_dependants: false,
       employment_status: "unemployed",
       receives_benefits: false,
     };
@@ -338,14 +341,27 @@ describe("eligibility journey: income section", () => {
     });
 
     it("offers the year frequency only for certificated work", async () => {
-      const certificated = fieldsOf(await get("income"), "govukRadioInput");
+      const incomePage = await get("income");
+      const certificated = fieldsOf(incomePage, "govukRadioInput");
       const frequency = certificated.find(
         (field) => field.code === "incomes_0_income_frequency",
+      );
+      const grossIncome = fieldsOf(incomePage, "govukTextInput").find(
+        (field) => field.code === "incomes_0_gross_income",
+      );
+      assert.equal(
+        frequency?.fieldset?.legend?.text,
+        "When does your client normally get this income?",
       );
       assert.equal(
         frequency?.items?.some((item) => item.value === "year"),
         true,
       );
+      assert.equal(
+        frequency?.items?.find((item) => item.value === "year")?.text,
+        "Total in the last year",
+      );
+      assert.equal(grossIncome?.label?.text, "Income before any deductions");
 
       answerStore.answers.level_of_help = "controlled";
       const controlled = fieldsOf(await get("income"), "govukRadioInput");

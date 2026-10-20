@@ -1,3 +1,4 @@
+import eligibilityCopy from "../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -15,23 +16,24 @@ export const immigrationOrAsylumTypeBlock = CollectionBlock({
       code: "immigration_or_asylum_type",
       fieldset: {
         legend: {
-          text: "What type of immigration or asylum matter is it?",
+          text: eligibilityCopy.what_type_of_immigration_or_asylum_matter_is_it,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "immigration", text: "Immigration" },
-        { value: "asylum", text: "Asylum" },
+        { value: "immigration", text: eligibilityCopy.immigration },
+        { value: "asylum", text: eligibilityCopy.asylum },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select the type of immigration or asylum matter",
+          message:
+            eligibilityCopy.select_the_type_of_immigration_or_asylum_matter,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });
 
@@ -41,23 +43,26 @@ export const immigrationOrAsylumTypeUpperTribunalBlock = CollectionBlock({
       code: "immigration_or_asylum_type_upper_tribunal",
       fieldset: {
         legend: {
-          text: "What type of immigration or asylum matter is it?",
+          text: eligibilityCopy.what_type_of_immigration_or_asylum_matter_is_it,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "upper_tribunal", text: "Upper tribunal appeal" },
-        { value: "other", text: "Other immigration matter" },
+        {
+          value: "upper_tribunal",
+          text: eligibilityCopy.upper_tribunal_appeal,
+        },
+        { value: "other", text: eligibilityCopy.other_immigration_matter },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select the type of matter",
+          message: eligibilityCopy.select_the_type_of_matter,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });
 
@@ -67,23 +72,24 @@ export const asylumSupportBlock = CollectionBlock({
       code: "asylum_support",
       fieldset: {
         legend: {
-          text: "Is the client receiving asylum support?",
+          text: eligibilityCopy.is_the_client_receiving_asylum_support,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "true", text: "Yes" },
-        { value: "false", text: "No" },
+        { value: "true", text: eligibilityCopy.yes },
+        { value: "false", text: eligibilityCopy.no },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the client is receiving asylum support",
+          message:
+            eligibilityCopy.select_whether_the_client_is_receiving_asylum_support,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });
 
@@ -93,22 +99,22 @@ export const domesticAbuseApplicantBlock = CollectionBlock({
       code: "domestic_abuse_applicant",
       fieldset: {
         legend: {
-          text: "Is this a domestic abuse case?",
+          text: eligibilityCopy.is_this_a_domestic_abuse_case,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "true", text: "Yes" },
-        { value: "false", text: "No" },
+        { value: "true", text: eligibilityCopy.yes },
+        { value: "false", text: eligibilityCopy.no },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether this is a domestic abuse case",
+          message: eligibilityCopy.select_whether_this_is_a_domestic_abuse_case,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

@@ -1,4 +1,8 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
+import {
+  CollectionBlock,
+  type ResolvableString,
+} from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKButton,
@@ -6,6 +10,7 @@ import {
 import {
   validation,
   Condition,
+  Format,
   Self,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import {
@@ -15,16 +20,6 @@ import {
 } from "../income-subject.js";
 import { guidanceLink } from "../guidance.js";
 
-const NOT_NEEDED_EXAMPLES = [
-  "Housing Benefit",
-  "State Pension",
-  "Personal Independence Payment (PIP)",
-  "Carer’s Allowance",
-  "Community Care direct payments",
-  "Fostering allowance",
-  "Cost of Living Payments",
-];
-
 /**
  * The text that points the operator at the guidance on which benefits to
  * leave out, with CCQ's examples. Shared by the benefits question and the
@@ -33,11 +28,20 @@ const NOT_NEEDED_EXAMPLES = [
  * @returns {ReturnType<typeof byLevelOfHelp>} the HTML, by level of help
  */
 export function benefitsNotNeededHtml(
-  lead: string,
+  lead: ResolvableString,
 ): ReturnType<typeof byLevelOfHelp> {
-  const list = `<ul class="govuk-list govuk-list--bullet">${NOT_NEEDED_EXAMPLES.map((example) => `<li>${example}</li>`).join("")}</ul>`;
-  const guidance = (level: "controlled" | "certificated"): string =>
-    `<p class="govuk-body">${lead} ${guidanceLink(level, "disregardedPayments", "Check the guidance")} to find out which benefits you do not need to tell us about for this question, for example:</p>${list}`;
+  const list = `<ul class="govuk-list govuk-list--bullet">${eligibilityCopy.dynamic.benefits.examples.map((example) => `<li>${example}</li>`).join("")}</ul>`;
+  const guidance = (level: "controlled" | "certificated"): ResolvableString =>
+    Format(
+      eligibilityCopy.dynamic.benefits.guidanceHtml,
+      lead,
+      guidanceLink(
+        level,
+        "disregardedPayments",
+        eligibilityCopy.dynamic.benefits.checkGuidance,
+      ),
+      list,
+    );
   return byLevelOfHelp(guidance("controlled"), guidance("certificated"));
 }
 
@@ -58,29 +62,32 @@ export function createBenefitsBlock(
         fieldset: {
           legend: {
             text: isPartner
-              ? "Does the partner get any benefits?"
-              : "Does your client get any non-passporting benefits?",
+              ? eligibilityCopy.dynamic.benefits.questionPartner
+              : eligibilityCopy.dynamic.benefits.questionClient,
             classes: "govuk-fieldset__legend--l",
             isPageHeading: true,
           },
         },
         hint: {
           html: benefitsNotNeededHtml(
-            "For example, Child Benefit, tax credits or asylum support payments.",
+            eligibilityCopy.dynamic.benefits.questionGuidanceLead,
           ),
         },
         items: [
-          { value: "true", text: "Yes" },
-          { value: "false", text: "No" },
+          { value: "true", text: eligibilityCopy.yes },
+          { value: "false", text: eligibilityCopy.no },
         ],
         validWhen: [
           validation({
             condition: Self().match(Condition.IsRequired()),
-            message: `Select yes if ${subject.noun} gets any benefits`,
+            message: Format(
+              eligibilityCopy.dynamic.benefits.required,
+              subject.noun,
+            ),
           }),
         ],
       }),
-      GovUKButton({ text: "Continue" }),
+      GovUKButton({ text: eligibilityCopy.continue }),
     ],
   });
 }

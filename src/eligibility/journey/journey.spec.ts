@@ -180,7 +180,10 @@ describe("eligibility journey navigation", () => {
       true,
     );
 
-    await submit("dependant-details", { dependant_details: "false" });
+    await submit("dependant-details", {
+      child_dependants: "false",
+      adult_dependants: "false",
+    });
     await submit("employment-status", { employment_status: "in_work" });
     await submit("income", {
       incomes_0_income_type: "employment",
@@ -229,7 +232,8 @@ describe("eligibility journey navigation", () => {
         immigration_or_asylum: false,
         partner: false,
         passporting: false,
-        dependant_details: false,
+        child_dependants: false,
+        adult_dependants: false,
         employment_status: "unemployed",
       };
       // Navigate through income steps to reach property step
@@ -258,6 +262,33 @@ describe("eligibility journey navigation", () => {
       assert.equal(next, `${BASE}/property-landlord`);
       await assertRenders("property-landlord");
     });
+
+    for (const [label, partner, legend] of [
+      [
+        "a client with no partner",
+        false,
+        "Does your client own the home they usually live in?",
+      ],
+      [
+        "a client with a partner",
+        true,
+        "Does your client or their partner own the home the client usually lives in?",
+      ],
+    ] as const) {
+      it(`asks ${label} the CCQ property legend`, async () => {
+        answerStore.answers = {
+          ...answerStore.answers,
+          partner,
+          ...(partner ? { partner_date_of_birth: "1980-01-01" } : {}),
+        };
+
+        const result = await client.get(`${BASE}/property`, { params });
+
+        assert.equal(result.type, "render");
+        if (result.type !== "render") return;
+        assert.ok(JSON.stringify(result.context.blocks).includes(legend));
+      });
+    }
 
     it("requires the mortgage amount for a shared-ownership home", async () => {
       answerStore.answers = {
@@ -477,7 +508,7 @@ describe("eligibility journey navigation", () => {
         {
           house_value: 80000,
           mortgage: 20000,
-          percentage_owned: "50",
+          percentage_owned: 50,
         },
         {},
       ]);

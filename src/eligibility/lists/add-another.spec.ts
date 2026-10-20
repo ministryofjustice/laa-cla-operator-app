@@ -73,7 +73,7 @@ describe("lists/add-another", () => {
         {
           house_value: 150000,
           inline_owned_with_mortgage: false,
-          percentage_owned: "50",
+          percentage_owned: 50,
         },
       ]);
       assert.deepEqual(answers.partner_additional_properties, [
@@ -112,6 +112,22 @@ describe("lists/add-another", () => {
       {
         incomes_0_income_type: "employment",
         incomes_0_gross_income: "1000.5",
+      },
+    );
+  });
+
+  it("pre-fills a ticked checkbox as the list of its ticked options", () => {
+    assert.deepEqual(
+      formAnswersFor(BANK_ACCOUNTS_LIST, {
+        bank_accounts: [
+          { amount: 10, account_in_dispute: true },
+          { amount: 20, account_in_dispute: false },
+        ],
+      }),
+      {
+        bank_accounts_0_amount: "10",
+        bank_accounts_0_account_in_dispute: ["true"],
+        bank_accounts_1_amount: "20",
       },
     );
   });

@@ -46,6 +46,75 @@ describe("domain/navigation (port of Steps::Helper)", () => {
     ]);
   });
 
+  describe("dependant routing", () => {
+    for (const partner of [false, true]) {
+      it(`routes dependants without income with partner=${String(partner)}`, () => {
+        const common = {
+          level_of_help: "certificated",
+          partner,
+          passporting: false,
+          employment_status: "unemployed",
+          child_dependants: true,
+          child_dependants_count: 1,
+          adult_dependants: false,
+        };
+        const steps = stepsFor(common);
+        assert.deepEqual(
+          steps.filter((step) => step.startsWith("dependant_")),
+          ["dependant_details", "dependant_income"],
+        );
+      });
+
+      it(`routes dependants with income with partner=${String(partner)}`, () => {
+        const steps = stepsFor({
+          level_of_help: "certificated",
+          partner,
+          passporting: false,
+          employment_status: "unemployed",
+          child_dependants: true,
+          child_dependants_count: 1,
+          adult_dependants: false,
+          dependants_get_income: true,
+        });
+        assert.deepEqual(
+          steps.filter((step) => step.startsWith("dependant_")),
+          [
+            "dependant_details",
+            "dependant_income",
+            "dependant_income_details",
+          ],
+        );
+      });
+
+      it(`skips dependant questions for passported clients with partner=${String(partner)}`, () => {
+        const steps = stepsFor({
+          level_of_help: "certificated",
+          partner,
+          passporting: true,
+          child_dependants: true,
+          child_dependants_count: 1,
+          adult_dependants: false,
+          dependants_get_income: true,
+        });
+        assert.equal(steps.some((step) => step.startsWith("dependant_")), false);
+      });
+    }
+
+    it("keeps the dependant-income question out when neither type has dependants", () => {
+      const steps = stepsFor({
+        level_of_help: "certificated",
+        partner: false,
+        passporting: false,
+        child_dependants: false,
+        adult_dependants: false,
+      });
+      assert.deepEqual(
+        steps.filter((step) => step.startsWith("dependant_")),
+        ["dependant_details"],
+      );
+    });
+  });
+
   describe("nextStep / previousStep", () => {
     const answers = { partner: false, passporting: true };
 

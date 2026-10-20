@@ -1,6 +1,5 @@
-import {
-  CollectionBlock,
-} from "@ministryofjustice/hmpps-forge/core/components";
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
+import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKButton,
@@ -17,7 +16,7 @@ export const levelOfHelpBlock = CollectionBlock({
       code: "level_of_help",
       fieldset: {
         legend: {
-          text: "What type of legal aid is needed?",
+          text: eligibilityCopy.what_type_of_legal_aid_is_needed,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
@@ -25,20 +24,20 @@ export const levelOfHelpBlock = CollectionBlock({
       items: [
         {
           value: "controlled",
-          text: "Controlled work (advice only)",
+          text: eligibilityCopy.controlled_work_advice_only,
         },
         {
           value: "certificated",
-          text: "Certificated work (representation)",
+          text: eligibilityCopy.certificated_work_representation,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select the type of legal aid needed",
+          message: eligibilityCopy.select_the_type_of_legal_aid_needed,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

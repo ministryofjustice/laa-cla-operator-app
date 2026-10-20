@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
@@ -15,32 +16,32 @@ export const under18ClrBlock = CollectionBlock({
       code: "controlled_legal_representation",
       fieldset: {
         legend: {
-          text: "Controlled legal representation",
+          text: eligibilityCopy.controlled_legal_representation,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       hint: {
-        text: "Does the client have controlled legal representation?",
+        text: eligibilityCopy.does_the_client_have_controlled_legal_representation,
       },
       items: [
         {
           value: "true",
-          text: "Yes",
+          text: eligibilityCopy.yes,
         },
         {
           value: "false",
-          text: "No",
+          text: eligibilityCopy.no,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
           message:
-            "Select whether the client has controlled legal representation",
+            eligibilityCopy.select_whether_the_client_has_controlled_legal_representation,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });

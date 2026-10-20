@@ -14,10 +14,6 @@
         "national_insurance": 250
       }
     ],
-    "housing_costs": true,
-    "housing_payments": 800,
-    "housing_payments_frequency": "monthly",
-    "housing_benefit_relevant": false,
     "friends_or_family_relevant": false,
     "maintenance_relevant": false,
     "property_or_lodger_relevant": false,
@@ -31,17 +27,23 @@
     "house_value": 250000,
     "percentage_owned": 100,
     "investments": 5000,
-    "valuables": 0,
     "bank_accounts": [
       {
-        "amount": 10000
+        "amount": 10000,
+        "account_in_dispute": false
       }
     ],
     "adult_dependants": false,
     "child_dependants": false,
-    "vehicle_owned": false,
     "immigration_or_asylum": false,
-    "domestic_abuse_applicant": false
+    "partner": false,
+    "receives_benefits": false,
+    "house_in_dispute": false,
+    "additional_property_owned": "none",
+    "investments_relevant": true,
+    "investments_in_dispute": false,
+    "valuables_relevant": false,
+    "valuables_in_dispute": false
   },
   "relevant_steps": [
     "client_age",
@@ -75,10 +77,10 @@
       {
         "income": {
           "frequency": "monthly",
-          "gross": 2500,
+          "gross": "2500.0",
           "benefits_in_kind": 0,
-          "tax": -400,
-          "national_insurance": -250,
+          "tax": "-400.0",
+          "national_insurance": "-250.0",
           "receiving_only_statutory_sick_or_maternity_pay": false
         }
       }
@@ -90,14 +92,14 @@
     "capitals": {
       "bank_accounts": [
         {
-          "value": 10000,
+          "value": "10000.0",
           "description": "Liquid Asset",
           "subject_matter_of_dispute": false
         }
       ],
       "non_liquid_capital": [
         {
-          "value": 5000,
+          "value": "5000.0",
           "description": "Non Liquid Asset",
           "subject_matter_of_dispute": false
         }
@@ -105,7 +107,7 @@
     },
     "properties": {
       "main_home": {
-        "value": 250000,
+        "value": "250000.0",
         "outstanding_mortgage": 0,
         "percentage_owned": 100,
         "subject_matter_of_dispute": false,
@@ -114,7 +116,7 @@
     },
     "regular_transactions": [],
     "applicant": {
-      "date_of_birth": "1978-03-15",
+      "date_of_birth": "1974-06-01",
       "receives_qualifying_benefit": false
     }
   }

@@ -1,3 +1,4 @@
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
 import {
   step,
   submit,
@@ -13,7 +14,7 @@ export const HOUSING_COSTS_STEP_CODE = "housing_costs";
 export const housingCostsStep = step({
   code: HOUSING_COSTS_STEP_CODE,
   path: "/housing-costs",
-  title: "Housing costs",
+  title: eligibilityCopy.housing_costs,
   onAccess: [
     access({
       effects: [EligibilityEffects.LoadAnswers()],

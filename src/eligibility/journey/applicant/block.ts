@@ -1,4 +1,8 @@
-import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import eligibilityCopy from "../../locales/en.json" with { type: "json" };
+import {
+  CollectionBlock,
+  HtmlBlock,
+} from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKRadioInput,
   GovUKButton,
@@ -11,7 +15,7 @@ import {
 
 export const applicantHeadingBlock = HtmlBlock({
   tag: "h1",
-  content: "About your client",
+  content: eligibilityCopy.about_your_client,
   classes: "govuk-heading-xl",
 });
 
@@ -21,24 +25,24 @@ export const applicantBlock = CollectionBlock({
       code: "partner",
       fieldset: {
         legend: {
-          text: "Does your client have a partner?",
+          text: eligibilityCopy.does_your_client_have_a_partner,
           classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       items: [
         {
           value: "true",
-          text: "Yes",
+          text: eligibilityCopy.yes,
         },
         {
           value: "false",
-          text: "No",
+          text: eligibilityCopy.no,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the client has a partner",
+          message: eligibilityCopy.select_whether_the_client_has_a_partner,
         }),
       ],
     }),
@@ -46,30 +50,31 @@ export const applicantBlock = CollectionBlock({
       code: "passporting",
       fieldset: {
         legend: {
-          text: "Does your client receive a passporting benefit?",
+          text: eligibilityCopy.does_your_client_receive_a_passporting_benefit,
           classes: "govuk-fieldset__legend govuk-fieldset__legend--m",
         },
       },
       hint: {
-        text: "Such as Universal Credit, Income Support, Income-based Jobseeker's Allowance, Income-related Employment and Support Allowance, Pension Credit, or Housing Benefit.",
+        text: eligibilityCopy.such_as_universal_credit_income_support_income_based_jo_a0306ce834,
       },
       items: [
         {
           value: "true",
-          text: "Yes",
+          text: eligibilityCopy.yes,
         },
         {
           value: "false",
-          text: "No",
+          text: eligibilityCopy.no,
         },
       ],
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the client receives a passporting benefit",
+          message:
+            eligibilityCopy.select_whether_the_client_receives_a_passporting_benefit,
         }),
       ],
     }),
-    GovUKButton({ text: "Continue" }),
+    GovUKButton({ text: eligibilityCopy.continue }),
   ],
 });
