@@ -18,7 +18,7 @@ export const applicantHeadingBlock = HtmlBlock({
 export const applicantBlock = CollectionBlock({
   collection: [
     GovUKRadioInput({
-      code: "applicant",
+      code: "partner",
       fieldset: {
         legend: {
           text: "Does your client have a partner?",

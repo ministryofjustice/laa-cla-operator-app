@@ -3,7 +3,7 @@ import {
   type EffectFunctionContext,
   type EffectFunctionExpr,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
-import type { EligibilityDeps } from "../ports/index.js";
+import type { EligibilityDeps, AnswerStore } from "../ports/index.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import {
   cannotUseService,
@@ -11,7 +11,18 @@ import {
   relevantAnswers,
 } from "../domain/navigation.js";
 import { withClientAge } from "../domain/client-age.js";
-import type { Answers } from "../domain/logic.js";
+import { smodApplicable, type Answers } from "../domain/logic.js";
+import { frequencyOptionsFor } from "../domain/frequency-options.js";
+import { ADD_ANOTHER_LISTS, listFor } from "../lists/index.js";
+import {
+  collapseLists,
+  describeRows,
+  formAnswersFor,
+  readAmount,
+  withBlankRow,
+  withoutRow,
+} from "../lists/add-another.js";
+import { loadBenefitTypeOptions } from "./benefit-types.js";
 
 // Yes/no radios post "true"/"false", but the domain logic (ported from CCQ)
 // expects booleans: `truthy("false")` is true.
@@ -21,11 +32,10 @@ const FORM_BOOLEANS: Readonly<Record<string, boolean>> = {
 };
 
 const NEXT_STEP_OFFSET = 1;
-const BANK_ACCOUNT_FIELD_PATTERN =
-  /^bank_accounts_(?<index>\d+)_(?<field>amount|account_in_dispute)$/u;
-const MIN_BANK_ACCOUNT_ROWS = 1;
-const NO_BANK_ACCOUNT_FIELDS = 0;
-const BANK_ACCOUNT_ROW_POSITION_OFFSET = 1;
+
+// Amount fields that sit directly on a step (rather than in an add-another
+// row) are read as numbers by the CFE payload builders.
+const AMOUNT_ANSWER_SUFFIX = "_conditional_value";
 
 // Journey steps outside the domain's step list
 const CHECK_YOUR_ANSWERS_PATH = "check-your-answers";
@@ -43,16 +53,19 @@ function toPath(step: string): string {
 /**
  * Converts answers as Forge holds them into the shape the domain expects.
  * @param {Answers} formAnswers - answers keyed by field code, as posted
- * @returns {Answers} the same answers with yes/no strings as booleans
+ * @returns {Answers} the same answers with yes/no strings as booleans and amounts as numbers
  */
 function toDomainAnswers(formAnswers: Answers): Answers {
   return Object.fromEntries(
-    Object.entries(formAnswers).map(([key, value]) => [
-      key,
-      typeof value === "string" && value in FORM_BOOLEANS
-        ? FORM_BOOLEANS[value]
-        : value,
-    ]),
+    Object.entries(formAnswers).map(([key, value]) => {
+      if (key.endsWith(AMOUNT_ANSWER_SUFFIX)) return [key, readAmount(value)];
+      return [
+        key,
+        typeof value === "string" && value in FORM_BOOLEANS
+          ? FORM_BOOLEANS[value]
+          : value,
+      ];
+    }),
   );
 }
 
@@ -117,159 +130,202 @@ function publishNavigation(
   context.setData("steps", steps);
 }
 
-interface BankAccountRow {
-  heading: string;
-  amountCode: string;
-  disputeCode: string;
-  requiredMessage: string;
-  numberMessage: string;
-}
-
 /**
- * Builds the row definition used to render one client's bank account.
- * @param {number} index - zero-based position of the account
- * @returns {BankAccountRow} a row with input codes and validation messages
+ * Publishes the option lists that depend on the level of help, for the
+ * income forms' radios to read via `Data(...)`.
+ * @param {EffectFunctionContext} context - the effect context
+ * @param {Answers} answers - all saved answers
  */
-function bankAccountRow(index: number): BankAccountRow {
-  const position = index + BANK_ACCOUNT_ROW_POSITION_OFFSET;
-  return {
-    heading: `Bank account ${position}`,
-    amountCode: `bank_accounts_${index}_amount`,
-    disputeCode: `bank_accounts_${index}_account_in_dispute`,
-    requiredMessage: `Enter total money in bank account ${position}. Enter 0 if this does not apply.`,
-    numberMessage: `Total money in bank account ${position} must be a number. Enter 0 if this does not apply.`,
-  };
-}
-
-/**
- * Checks whether a saved bank account is a row object.
- * @param {unknown} value - a saved bank account
- * @returns {boolean} whether the value is a non-array object
- */
-function isBankAccountRowAnswer(
-  value: unknown,
-): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/**
- * Populates bank-account input rows and values from saved answers.
- * @param {EffectFunctionContext} context - the Forge effect context
- * @param {Answers} answers - all saved eligibility answers
- */
-function setBankAccountFormData(
+function publishFrequencyOptions(
   context: EffectFunctionContext,
   answers: Answers,
 ): void {
-  const bankAccounts: unknown[] = Array.isArray(answers.bank_accounts)
-    ? Array.from(answers.bank_accounts, (account: unknown) => account)
-    : [];
-  context.setData(
-    "bankAccountRows",
-    Array.from(
-      { length: Math.max(bankAccounts.length, MIN_BANK_ACCOUNT_ROWS) },
-      (_, index) => bankAccountRow(index),
-    ),
-  );
-
-  bankAccounts.forEach((account, index) => {
-    if (!isBankAccountRowAnswer(account)) return;
-    const { amount, account_in_dispute: accountInDispute } = account;
-    context.setAnswer(
-      `bank_accounts_${index}_amount`,
-      typeof amount === "string" || typeof amount === "number"
-        ? String(amount)
-        : "",
-    );
-    if (accountInDispute === true) {
-      context.setAnswer(`bank_accounts_${index}_account_in_dispute`, "true");
-    }
-  });
+  const options = frequencyOptionsFor(answers);
+  context.setData("benefitFrequencyOptions", options.benefit);
+  context.setData("incomeFrequencyOptions", options.income);
+  context.setData("otherIncomeFrequencyOptions", options.otherIncome);
 }
 
-/**
- * Converts repeated bank-account form fields to the CFE answer structure.
- * @param {Answers} answers - answers collected by Forge from the current form
- * @returns {Answers} answers with bank-account rows grouped under one key
- */
-function bankAccountsFromFormAnswers(answers: Answers): Answers {
-  const indexes = Object.keys(answers)
-    .map((key) => BANK_ACCOUNT_FIELD_PATTERN.exec(key)?.groups?.index)
-    .filter((index): index is string => index !== undefined)
-    .map(Number);
-
-  if (indexes.length === NO_BANK_ACCOUNT_FIELDS) return answers;
-
-  const normalizedAnswers = Object.fromEntries(
-    Object.entries(answers).filter(
-      ([key]) => !BANK_ACCOUNT_FIELD_PATTERN.test(key),
-    ),
-  );
-  normalizedAnswers.bank_accounts = Array.from(
-    { length: Math.max(...indexes) + BANK_ACCOUNT_ROW_POSITION_OFFSET },
-    (_, index) => {
-      const amountCode = `bank_accounts_${index}_amount`;
-      const disputeCode = `bank_accounts_${index}_account_in_dispute`;
-      const { [amountCode]: rawAmount, [disputeCode]: dispute } = answers;
-      const numericAmount =
-        typeof rawAmount === "string" && rawAmount.trim() !== ""
-          ? Number(rawAmount)
-          : Number.NaN;
-      const amount = Number.isFinite(numericAmount) ? numericAmount : rawAmount;
-      const checked =
-        dispute === true ||
-        dispute === "true" ||
-        (Array.isArray(dispute) && dispute.includes("true"));
-
-      return {
-        amount,
-        ...(checked ? { account_in_dispute: true } : {}),
-      };
-    },
-  );
-
-  return normalizedAnswers;
-}
-
-/**
- * Appends an empty bank-account row after saving the submitted rows.
- * @param {EligibilityDeps} deps - journey dependencies
- * @param {EffectFunctionContext} context - the Forge effect context
- */
-async function appendBankAccountRow(
-  deps: EligibilityDeps,
+function publishPropertyFormData(
   context: EffectFunctionContext,
-): Promise<void> {
-  const checkId = context.getRequestParam("caseId");
+  answers: Answers,
+): void {
+  const domainAnswers = toDomainAnswers(answers);
+  const hasPartner = domainAnswers.partner === true;
+  context.setData(
+    "propertyOwnedLegend",
+    hasPartner
+      ? "Does your client or their partner own the home the client usually lives in?"
+      : "Does your client own the home the client usually lives in?",
+  );
+  context.setData(
+    "propertyEntryHint",
+    hasPartner
+      ? "Your client's name or their partner's name must be on the property deeds, lease, freehold or mortgage."
+      : "Your client's name must be on the property deeds, lease, freehold or mortgage.",
+  );
+  context.setData(
+    "propertyPercentageHint",
+    hasPartner
+      ? "Add the percentage the client and partner own together. We do not need to know what percentage each of them owns."
+      : "",
+  );
+  context.setData("smodApplicable", smodApplicable(domainAnswers));
+}
+
+/**
+ * Populates each add-another list's rows, and pre-fills their fields from
+ * the saved rows.
+ * @param {EffectFunctionContext} context - the Forge effect context
+ * @param {Answers} answers - all saved eligibility answers
+ */
+function setListFormData(
+  context: EffectFunctionContext,
+  answers: Answers,
+): void {
+  for (const list of ADD_ANOTHER_LISTS) {
+    context.setData(list.rowsData, describeRows(list, answers));
+    for (const [code, value] of Object.entries(formAnswersFor(list, answers))) {
+      context.setAnswer(code, value);
+    }
+  }
+}
+
+/**
+ * Reads the answer store, which a step's effects need for add-another changes.
+ * @param {EligibilityDeps} deps - journey dependencies
+ * @returns {AnswerStore} the answer store
+ */
+function answerStoreOf(deps: EligibilityDeps): AnswerStore {
   const { answerStore } = deps;
   if (answerStore === undefined) {
     throw new Error("answerStore not provided to eligibility package");
   }
+  return answerStore;
+}
 
-  const answers = await answerStore.load(checkId);
-  const bankAccounts: unknown[] = Array.isArray(answers.bank_accounts)
-    ? Array.from(answers.bank_accounts, (account: unknown) => account)
-    : [];
+/**
+ * Appends a blank row to a list after the submitted rows have been saved.
+ * @param {EligibilityDeps} deps - journey dependencies
+ * @param {EffectFunctionContext} context - the Forge effect context
+ * @param {string} key - the list's session key
+ */
+async function appendListRow(
+  deps: EligibilityDeps,
+  context: EffectFunctionContext,
+  key: string,
+): Promise<void> {
+  const checkId = context.getRequestParam("caseId");
+  const answerStore = answerStoreOf(deps);
+  const list = listFor(key);
   await answerStore.save(checkId, {
-    bank_accounts: [...bankAccounts, { amount: "" }],
+    [list.key]: withBlankRow(list, await answerStore.load(checkId)),
   });
+}
+
+/**
+ * Removes the row named by the posted `remove` value, after the submitted
+ * rows have been saved.
+ * @param {EligibilityDeps} deps - journey dependencies
+ * @param {EffectFunctionContext} context - the Forge effect context
+ * @param {string} key - the list's session key
+ */
+async function removeListRow(
+  deps: EligibilityDeps,
+  context: EffectFunctionContext,
+  key: string,
+): Promise<void> {
+  const checkId = context.getRequestParam("caseId");
+  const answerStore = answerStoreOf(deps);
+  const list = listFor(key);
+  const index = Number(context.getPostData("remove"));
+  if (!Number.isInteger(index)) return;
+  await answerStore.save(checkId, {
+    [list.key]: withoutRow(list, await answerStore.load(checkId), index),
+  });
+}
+
+// Where each benefit-details step sits, so a failed CFE call can send the
+// operator back, and a later retry can return them. The query parameter that
+// names the step is only ever looked up here, never used as a path.
+const BENEFIT_STEPS: Readonly<
+  Record<string, { path: string; back: string; title: string }>
+> = {
+  benefit_details: {
+    path: "benefit-details",
+    back: "benefits",
+    title: "Benefit details",
+  },
+  partner_benefit_details: {
+    path: "partner-benefit-details",
+    back: "partner-benefits",
+    title: "Partner benefit details",
+  },
+};
+
+/**
+ * Fetches CFE's benefit types for a benefit-details step. On failure, logs
+ * what is needed to raise the issue and publishes it for the error page.
+ * @param {EligibilityDeps} deps - journey dependencies
+ * @param {EffectFunctionContext} context - the Forge effect context
+ * @param {unknown} stepCode - the benefit-details step being loaded
+ */
+async function loadBenefitTypes(
+  deps: EligibilityDeps,
+  context: EffectFunctionContext,
+  stepCode: unknown,
+): Promise<void> {
+  const benefitStep =
+    BENEFIT_STEPS[String(stepCode)] ?? BENEFIT_STEPS.benefit_details;
+  context.setData("benefitTypesUnavailable", false);
+  context.setData("benefitTypesRetryPath", benefitStep.path);
+  context.setData("benefitTypesBackPath", benefitStep.back);
+
+  try {
+    const options = await loadBenefitTypeOptions(deps.assessor);
+    context.setData("benefitTypes", [
+      { value: "", text: "Select a benefit" },
+      ...options,
+    ]);
+  } catch (error) {
+    const checkId = String(context.getRequestParam("caseId"));
+    const reason = error instanceof Error ? error.message : String(error);
+    const step = benefitStep.title;
+    console.error(
+      `[LoadBenefitTypes] Could not load benefit types for ${step} (case ${checkId}): ${reason}`,
+    );
+    context.setData("benefitTypesUnavailable", true);
+    context.setData("benefitTypesFailureRows", [
+      { key: { text: "Step" }, value: { text: step } },
+      { key: { text: "Case ID" }, value: { text: checkId } },
+      { key: { text: "Error from CFE" }, value: { text: reason } },
+    ]);
+  }
 }
 
 export interface EligibilityEffectShape {
   LoadAnswers: () => EffectFunctionExpr;
   SaveAnswers: () => EffectFunctionExpr;
-  AddBankAccountRow: () => EffectFunctionExpr;
+  AddListRow: (key: string) => EffectFunctionExpr;
+  RemoveListRow: (key: string) => EffectFunctionExpr;
+  LoadBenefitTypes: (stepCode: unknown) => EffectFunctionExpr;
   RunAssessment: () => EffectFunctionExpr;
 }
 
-type EffectImplementation = (
+type EffectImplementation<TArgs extends unknown[] = []> = (
   deps: EligibilityDeps,
-) => (context: EffectFunctionContext) => Promise<void>;
+) => (context: EffectFunctionContext, ...args: TArgs) => Promise<void>;
 
-const EligibilityEffectsImplementation: Record<
-  keyof EligibilityEffectShape,
-  EffectImplementation
-> = {
+interface EligibilityEffectsImplementations {
+  LoadAnswers: EffectImplementation;
+  SaveAnswers: EffectImplementation;
+  AddListRow: EffectImplementation<[key: string]>;
+  RemoveListRow: EffectImplementation<[key: string]>;
+  LoadBenefitTypes: EffectImplementation<[stepCode: unknown]>;
+  RunAssessment: EffectImplementation;
+}
+
+const EligibilityEffectsImplementation: EligibilityEffectsImplementations = {
   /**
    *
    * @param deps
@@ -322,8 +378,9 @@ const EligibilityEffectsImplementation: Record<
           }
         }
 
-        setBankAccountFormData(context, answers);
-
+        setListFormData(context, answers);
+        publishFrequencyOptions(context, answers);
+        publishPropertyFormData(context, answers);
         publishNavigation(context, answers);
       } catch (error) {
         throw error;
@@ -354,7 +411,9 @@ const EligibilityEffectsImplementation: Record<
         // step after it.
         await answerStore.save(
           checkId,
-          toDomainAnswers(bankAccountsFromFormAnswers(context.getAllAnswers())),
+          toDomainAnswers(
+            collapseLists(ADD_ANOTHER_LISTS, context.getAllAnswers()),
+          ),
         );
 
         const allAnswers = await answerStore.load(checkId);
@@ -375,13 +434,36 @@ const EligibilityEffectsImplementation: Record<
     },
 
   /**
-   * Registers the effect that appends an empty bank-account row.
+   * Registers the effect that appends an empty row to an add-another list.
    * @param {EligibilityDeps} deps - dependencies for the eligibility journey
-   * @returns {EffectFunctionExpr} the add-bank-account effect
+   * @returns {EffectFunctionExpr} the add-row effect
    */
-  AddBankAccountRow:
-    (deps: EligibilityDeps) => async (context: EffectFunctionContext) => {
-      await appendBankAccountRow(deps, context);
+  AddListRow:
+    (deps: EligibilityDeps) =>
+    async (context: EffectFunctionContext, key: string) => {
+      await appendListRow(deps, context, key);
+    },
+
+  /**
+   * Registers the effect that removes a row from an add-another list.
+   * @param {EligibilityDeps} deps - dependencies for the eligibility journey
+   * @returns {EffectFunctionExpr} the remove-row effect
+   */
+  RemoveListRow:
+    (deps: EligibilityDeps) =>
+    async (context: EffectFunctionContext, key: string) => {
+      await removeListRow(deps, context, key);
+    },
+
+  /**
+   * Registers the effect that loads CFE's benefit types for a benefit step.
+   * @param {EligibilityDeps} deps - dependencies for the eligibility journey
+   * @returns {EffectFunctionExpr} the load-benefit-types effect
+   */
+  LoadBenefitTypes:
+    (deps: EligibilityDeps) =>
+    async (context: EffectFunctionContext, stepCode: unknown) => {
+      await loadBenefitTypes(deps, context, stepCode);
     },
 
   /**
@@ -433,9 +515,17 @@ export const EligibilityEffects: EligibilityEffectShape = {
     "SaveAnswers",
     EligibilityEffectsImplementation.SaveAnswers,
   ),
-  AddBankAccountRow: EligibilityEffectsRegistry.register(
-    "AddBankAccountRow",
-    EligibilityEffectsImplementation.AddBankAccountRow,
+  AddListRow: EligibilityEffectsRegistry.register(
+    "AddListRow",
+    EligibilityEffectsImplementation.AddListRow,
+  ),
+  RemoveListRow: EligibilityEffectsRegistry.register(
+    "RemoveListRow",
+    EligibilityEffectsImplementation.RemoveListRow,
+  ),
+  LoadBenefitTypes: EligibilityEffectsRegistry.register(
+    "LoadBenefitTypes",
+    EligibilityEffectsImplementation.LoadBenefitTypes,
   ),
   RunAssessment: EligibilityEffectsRegistry.register(
     "RunAssessment",

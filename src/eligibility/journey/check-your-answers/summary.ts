@@ -8,14 +8,168 @@ import type {
   GovUKRadioInput,
   GovUKTextInput,
   GovUKCheckboxInput,
+  GovUKDateInputFull,
   SummaryListRow,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import type { Answers } from "../../domain/logic.js";
+import { frequencyLabel } from "../../domain/frequency-options.js";
 import type { EligibilityDeps } from "../../ports/index.js";
+import {
+  BENEFITS_LIST,
+  INCOMES_LIST,
+  PARTNER_BENEFITS_LIST,
+  PARTNER_INCOMES_LIST,
+  ADDITIONAL_PROPERTIES_LIST,
+  PARTNER_ADDITIONAL_PROPERTIES_LIST,
+} from "../../lists/index.js";
+import {
+  rowFieldCode,
+  savedRows,
+  type AddAnotherList,
+} from "../../lists/add-another.js";
 
-type Question = GovUKRadioInput | GovUKTextInput | GovUKCheckboxInput;
+type Question =
+  GovUKRadioInput | GovUKTextInput | GovUKCheckboxInput | GovUKDateInputFull;
 const EMPTY_LENGTH = 0;
 const BANK_ACCOUNT_POSITION_OFFSET = 1;
+const POSITION_OFFSET = 1;
+
+interface ListSummaryField {
+  field: string;
+  label: string;
+  format: (value: unknown) => string;
+}
+
+interface ListSummary {
+  list: AddAnotherList;
+  rowLabel: string;
+  fields: readonly ListSummaryField[];
+}
+
+const INCOME_TYPE_LABELS: Readonly<Record<string, string>> = {
+  employment: "A salary or wage",
+  statutory_pay: "Statutory Sick Pay or Statutory Maternity Pay",
+  self_employment: "Self-employment income",
+};
+
+const asText = (value: unknown): string => String(value);
+const asPounds = (value: unknown): string =>
+  new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(
+    Number(value),
+  );
+const asFrequency = (value: unknown): string =>
+  frequencyLabel(value) ?? asText(value);
+const asIncomeType = (value: unknown): string =>
+  INCOME_TYPE_LABELS[asText(value)] ?? asText(value);
+
+const INCOME_FIELDS: readonly ListSummaryField[] = [
+  { field: "income_type", label: "Type", format: asIncomeType },
+  { field: "income_frequency", label: "Frequency", format: asFrequency },
+  {
+    field: "gross_income",
+    label: "Income before deductions",
+    format: asPounds,
+  },
+  { field: "income_tax", label: "Income tax", format: asPounds },
+  {
+    field: "national_insurance",
+    label: "National Insurance",
+    format: asPounds,
+  },
+];
+
+const BENEFIT_FIELDS: readonly ListSummaryField[] = [
+  { field: "benefit_type", label: "Name", format: asText },
+  { field: "benefit_amount", label: "Amount", format: asPounds },
+  { field: "benefit_frequency", label: "Frequency", format: asFrequency },
+];
+
+const PROPERTY_FIELDS: readonly ListSummaryField[] = [
+  { field: "house_value", label: "Estimated value", format: asPounds },
+  {
+    field: "inline_owned_with_mortgage",
+    label: "Outstanding mortgage",
+    format: (value) => (value === true ? "Yes" : "No"),
+  },
+  { field: "mortgage", label: "Mortgage amount", format: asPounds },
+  { field: "percentage_owned", label: "Percentage owned", format: asText },
+  {
+    field: "house_in_dispute",
+    label: "Subject matter of dispute",
+    format: (value) => (value === true ? "Yes" : "No"),
+  },
+];
+
+// Steps whose answers are add-another rows, which have no question of their
+// own to read the answers from.
+const LIST_SUMMARIES: Readonly<Record<string, ListSummary>> = {
+  income: {
+    list: INCOMES_LIST,
+    rowLabel: "Employment income",
+    fields: INCOME_FIELDS,
+  },
+  partner_income: {
+    list: PARTNER_INCOMES_LIST,
+    rowLabel: "Partner employment income",
+    fields: INCOME_FIELDS,
+  },
+  benefit_details: {
+    list: BENEFITS_LIST,
+    rowLabel: "Benefit",
+    fields: BENEFIT_FIELDS,
+  },
+  partner_benefit_details: {
+    list: PARTNER_BENEFITS_LIST,
+    rowLabel: "Partner benefit",
+    fields: BENEFIT_FIELDS,
+  },
+  additional_property_details: {
+    list: ADDITIONAL_PROPERTIES_LIST,
+    rowLabel: "Other property",
+    fields: PROPERTY_FIELDS,
+  },
+  partner_additional_property_details: {
+    list: PARTNER_ADDITIONAL_PROPERTIES_LIST,
+    rowLabel: "Partner's other property",
+    fields: PROPERTY_FIELDS,
+  },
+};
+
+/**
+ * Builds summary rows for an add-another step's saved rows.
+ * @param {string} stepPath - the step's path, without its leading slash
+ * @param {ListSummary} summary - how to describe the step's rows
+ * @param {Answers} answers - all saved answers
+ * @returns {SummaryListRow[]} a row for each answered field of each saved row
+ */
+function listSummaryRows(
+  stepPath: string,
+  summary: ListSummary,
+  answers: Answers,
+): SummaryListRow[] {
+  return savedRows(summary.list, answers).flatMap((row, index) =>
+    summary.fields.flatMap(({ field, label, format }) => {
+      const { [field]: value } = row;
+      if (!answered(value)) return [];
+      const key = `${summary.rowLabel} ${index + POSITION_OFFSET}: ${label}`;
+      return [
+        {
+          key: { text: key },
+          value: { text: format(value) },
+          actions: {
+            items: [
+              {
+                href: `${stepPath}#${rowFieldCode(summary.list.key, index, field)}`,
+                text: "Change",
+                visuallyHiddenText: key,
+              },
+            ],
+          },
+        },
+      ];
+    }),
+  );
+}
 
 /**
  * Recognises the input components used by this journey.
@@ -25,9 +179,12 @@ const BANK_ACCOUNT_POSITION_OFFSET = 1;
 function isQuestion(value: object): value is Question {
   return (
     "variant" in value &&
-    ["govukTextInput", "govukRadioInput", "govukCheckboxInput"].includes(
-      String(value.variant),
-    )
+    [
+      "govukTextInput",
+      "govukRadioInput",
+      "govukCheckboxInput",
+      "govukDateInputFull",
+    ].includes(String(value.variant))
   );
 }
 
@@ -79,7 +236,7 @@ function answerText(question: Question, value: unknown): string {
         "text" in option &&
         typeof option.text === "string"
         ? option.text
-        : String(item);
+        : (frequencyLabel(item) ?? String(item));
     })
     .join(", ");
 }
@@ -152,6 +309,8 @@ function bankAccountSummaryRows(answers: Answers): SummaryListRow[] {
  * @returns {string} the question label
  */
 function questionLabel(question: Question): string {
+  const { metadata } = question;
+  if (typeof metadata?.summaryLabel === "string") return metadata.summaryLabel;
   const label =
     "label" in question
       ? typeof question.label === "string"
@@ -186,11 +345,16 @@ export function summaryRows(
       throw new Error(`Missing eligibility step: ${code}`);
     }
 
+    const stepPath = currentStep.path.replace(/^\//u, "");
+    const listSummary = Object.hasOwn(LIST_SUMMARIES, code)
+      ? LIST_SUMMARIES[code]
+      : undefined;
+
     const questionRows = questionsIn(currentStep.blocks ?? []).flatMap(
       (question) => {
         const { code: fieldCode } = question;
         if (typeof fieldCode !== "string") {
-          if (code === "assets") return [];
+          if (code === "assets" || listSummary !== undefined) return [];
           throw new Error(
             `Unsupported question code in eligibility step: ${code}`,
           );
@@ -205,7 +369,7 @@ export function summaryRows(
             actions: {
               items: [
                 {
-                  href: `${currentStep.path.replace(/^\//u, "")}#${encodeURIComponent(fieldCode)}`,
+                  href: `${stepPath}#${encodeURIComponent(fieldCode)}`,
                   text: "Change",
                   visuallyHiddenText: label,
                 },
@@ -216,6 +380,12 @@ export function summaryRows(
       },
     );
 
+    if (listSummary !== undefined) {
+      return [
+        ...listSummaryRows(stepPath, listSummary, answers),
+        ...questionRows,
+      ];
+    }
     return code === "assets"
       ? [...bankAccountSummaryRows(answers), ...questionRows]
       : questionRows;

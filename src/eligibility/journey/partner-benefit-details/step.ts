@@ -1,29 +1,21 @@
+import { createAddAnotherStep } from "../add-another-step.js";
+import { loadBenefitTypesHook } from "../benefit-types-unavailable/hook.js";
 import {
-  step,
-  submit,
-  access,
-  redirect,
-  Data,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
-import { EligibilityEffects } from "../../registries/effects.js";
-import { partnerBenefitDetailsBlock } from "../partner-blocks.js";
+  partnerBenefitDetailsHeadingBlock,
+  partnerBenefitDetailsRowsBlock,
+  partnerBenefitDetailsButtonsBlock,
+} from "../partner-blocks.js";
 
 export const PARTNER_BENEFIT_DETAILS_STEP_CODE = "partner_benefit_details";
 
-export const partnerBenefitDetailsStep = step({
+export const partnerBenefitDetailsStep = createAddAnotherStep({
   code: PARTNER_BENEFIT_DETAILS_STEP_CODE,
-  path: "/partner-benefit-details",
   title: "Partner benefit details",
-  onAccess: [access({ effects: [EligibilityEffects.LoadAnswers()] })],
-  view: { template: "main/eligibility/step.njk" },
-  blocks: [partnerBenefitDetailsBlock],
-  onSubmission: [
-    submit({
-      validate: true,
-      onValid: {
-        effects: [EligibilityEffects.SaveAnswers()],
-        next: [redirect({ goto: Data("nav.partner_benefit_details") })],
-      },
-    }),
+  listKey: "partner_benefits",
+  onAccess: [loadBenefitTypesHook(PARTNER_BENEFIT_DETAILS_STEP_CODE)],
+  blocks: [
+    partnerBenefitDetailsHeadingBlock,
+    partnerBenefitDetailsRowsBlock,
+    partnerBenefitDetailsButtonsBlock,
   ],
 });

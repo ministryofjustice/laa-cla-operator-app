@@ -2,199 +2,6 @@ import type { Page } from "@playwright/test";
 import { EligibilityBasePage } from "./EligibilityBasePage.js";
 
 /**
- * Page object for Under 18 CLR step
- */
-export class Under18ClrPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Aggregated Means step
- */
-export class AggregatedMeansPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Immigration or Asylum step
- */
-export class ImmigrationOrAsylumPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Immigration or Asylum Type step
- */
-export class ImmigrationOrAsylumTypePage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectImmigration(): Promise<void> {
-    await this.selectRadio("Immigration");
-  }
-
-  async selectAsylum(): Promise<void> {
-    await this.selectRadio("Asylum");
-  }
-
-  async selectImmigrationAppeal(): Promise<void> {
-    await this.selectRadio("Immigration appeal");
-  }
-
-  async selectAsylumAppeal(): Promise<void> {
-    await this.selectRadio("Asylum appeal");
-  }
-}
-
-/**
- * Page object for Asylum Support step
- */
-export class AsylumSupportPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Domestic Abuse Applicant step
- */
-export class DomesticAbuseApplicantPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Applicant step (partner question)
- */
-export class ApplicantPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectHasPartner(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNoPartner(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Property step
- */
-export class PropertyPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectOutright(): Promise<void> {
-    await this.selectRadio("Yes, outright");
-  }
-
-  async selectWithMortgage(): Promise<void> {
-    await this.selectRadio("Yes, with a mortgage or loan");
-  }
-
-  async selectSharedOwnership(): Promise<void> {
-    await this.selectRadio("Yes, shared ownership");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Property Entry step
- */
-export class PropertyEntryPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async fillPropertyValue(value: string): Promise<void> {
-    await this.fillTextInput("How much is the property worth?", value);
-  }
-
-  async fillMortgageAmount(value: string): Promise<void> {
-    await this.fillTextInput("How much is left to pay on the mortgage?", value);
-  }
-
-  async fillPercentageOwned(value: string): Promise<void> {
-    await this.fillTextInput(
-      "What percentage of the property does the client own?",
-      value,
-    );
-  }
-}
-
-/**
- * Page object for Additional Property step
- */
-export class AdditionalPropertyPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
  * Page object for Employment Status step
  */
 export class EmploymentStatusPage extends EligibilityBasePage {
@@ -203,19 +10,108 @@ export class EmploymentStatusPage extends EligibilityBasePage {
   }
 
   async selectEmployed(): Promise<void> {
-    await this.selectCheckbox("Employed");
-  }
-
-  async selectSelfEmployed(): Promise<void> {
-    await this.selectCheckbox("Self-employed");
+    await this.page.getByLabel("Employed or self-employed").check();
   }
 
   async selectUnemployed(): Promise<void> {
-    await this.selectCheckbox("Unemployed");
+    await this.page.getByLabel("Unemployed").check();
+  }
+}
+
+/**
+ * Page object for the Employment income step
+ */
+export class IncomePage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
   }
 
-  async selectNotWorking(): Promise<void> {
-    await this.selectCheckbox("Not working");
+  async fillRow(
+    index: number,
+    row: {
+      type: string;
+      frequency: string;
+      gross: string;
+      tax: string;
+      nationalInsurance: string;
+    },
+  ): Promise<void> {
+    await this.page.locator(`#incomes_${index}_income_type`).waitFor();
+    await this.page
+      .locator(
+        `input[name="incomes_${index}_income_type"][value="${row.type}"]`,
+      )
+      .check();
+    await this.page
+      .locator(
+        `input[name="incomes_${index}_income_frequency"][value="${row.frequency}"]`,
+      )
+      .check();
+    await this.page.locator(`#incomes_${index}_gross_income`).fill(row.gross);
+    await this.page.locator(`#incomes_${index}_income_tax`).fill(row.tax);
+    await this.page
+      .locator(`#incomes_${index}_national_insurance`)
+      .fill(row.nationalInsurance);
+  }
+
+  async addAnother(): Promise<void> {
+    await this.page
+      .getByRole("button", { name: "Add another employment income" })
+      .click();
+  }
+}
+
+/**
+ * Page object for the Benefit details step
+ */
+export class BenefitDetailsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fillRow(
+    index: number,
+    row: { type: string; amount: string; frequency: string },
+  ): Promise<void> {
+    await this.page
+      .locator(`#benefits_${index}_benefit_type`)
+      .selectOption(row.type);
+    await this.page
+      .locator(`#benefits_${index}_benefit_amount`)
+      .fill(row.amount);
+    await this.page
+      .locator(
+        `input[name="benefits_${index}_benefit_frequency"][value="${row.frequency}"]`,
+      )
+      .check();
+  }
+}
+
+/**
+ * Page object for the Other income step
+ */
+export class OtherIncomePage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async answer(type: string, relevant: boolean): Promise<void> {
+    await this.page
+      .locator(`input[name="${type}_relevant"][value="${String(relevant)}"]`)
+      .check();
+  }
+
+  async answerNoToAll(): Promise<void> {
+    for (const type of [
+      "friends_or_family",
+      "maintenance",
+      "property_or_lodger",
+      "pension",
+      "student_finance",
+      "other",
+    ]) {
+      await this.answer(type, false);
+    }
   }
 }
 
@@ -236,76 +132,92 @@ export class BenefitsPage extends EligibilityBasePage {
   }
 }
 
-/**
- * Page object for Assets step
- */
-export class AssetsPage extends EligibilityBasePage {
+export class PropertyPage extends EligibilityBasePage {
   constructor(page: Page) {
     super(page);
   }
 
-  async fillBankAccountAmount(value: string): Promise<void> {
-    await this.page.getByLabel("Total money in bank account").fill(value);
-  }
-
-  async selectNoInvestments(): Promise<void> {
+  async selectOwnership(value: string): Promise<void> {
     await this.page
-      .getByRole("group", { name: "Does your client have any investments?" })
-      .getByLabel("No")
+      .locator(`input[name="property_owned"][value="${value}"]`)
       .check();
   }
+}
 
-  async selectNoValuables(): Promise<void> {
+export class PropertyEntryPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fill(details: {
+    homeValue: string;
+    mortgage?: string;
+    percentageOwned: string;
+  }): Promise<void> {
+    await this.page.locator("#house_value").fill(details.homeValue);
+    if (details.mortgage !== undefined) {
+      await this.page.locator("#mortgage").fill(details.mortgage);
+    }
+    await this.page.locator("#percentage_owned").fill(details.percentageOwned);
+  }
+}
+
+export class AdditionalPropertyPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async selectOwnership(value: string): Promise<void> {
     await this.page
-      .getByRole("group", {
-        name: "Does your client have valuable items worth £500 or more?",
+      .locator(`input[name="additional_property_owned"][value="${value}"]`)
+      .check();
+  }
+}
+
+export class AdditionalPropertyDetailsPage extends EligibilityBasePage {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async fillRow(
+    index: number,
+    details: {
+      value: string;
+      percentageOwned: string;
+      mortgage?: string;
+      inlineMortgage?: boolean;
+    },
+  ): Promise<void> {
+    await this.page
+      .locator(`#additional_properties_${index}_house_value`)
+      .fill(details.value);
+    await this.page
+      .locator(`#additional_properties_${index}_percentage_owned`)
+      .fill(details.percentageOwned);
+
+    if (index === 0 && details.mortgage !== undefined) {
+      await this.page
+        .locator("#additional_properties_0_mortgage")
+        .fill(details.mortgage);
+    } else if (index > 0 && details.inlineMortgage !== undefined) {
+      await this.page
+        .locator(
+          `input[name="additional_properties_${index}_inline_owned_with_mortgage"][value="${String(details.inlineMortgage)}"]`,
+        )
+        .check();
+      if (details.inlineMortgage && details.mortgage !== undefined) {
+        await this.page
+          .locator(`#additional_properties_${index}_mortgage`)
+          .fill(details.mortgage);
+      }
+    }
+  }
+
+  async addAnother(): Promise<void> {
+    await this.page
+      .getByRole("button", {
+        name: "Add another property, holiday home or land",
       })
-      .getByLabel("No")
-      .check();
-  }
-
-  async fillInvestments(value: string): Promise<void> {
-    await this.fillTextInput("Total of all investments", value);
-  }
-
-  async fillValuables(value: string): Promise<void> {
-    await this.fillTextInput("Total of all valuable items", value);
-  }
-}
-
-/**
- * Page object for Vehicles step
- */
-export class VehiclesPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  async selectYes(): Promise<void> {
-    await this.selectRadio("Yes");
-  }
-
-  async selectNo(): Promise<void> {
-    await this.selectRadio("No");
-  }
-}
-
-/**
- * Page object for Check Your Answers step
- */
-export class CheckYourAnswersPage extends EligibilityBasePage {
-  constructor(page: Page) {
-    super(page);
-  }
-
-  get answersSummary() {
-    return this.page.locator("dl");
-  }
-
-  async hasAnswer(fieldName: string, expectedValue: string): Promise<boolean> {
-    const text = await this.answersSummary.textContent();
-    return text?.includes(fieldName) && text?.includes(expectedValue)
-      ? true
-      : false;
+      .click();
   }
 }

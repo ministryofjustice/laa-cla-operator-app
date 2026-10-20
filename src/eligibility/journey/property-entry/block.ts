@@ -1,10 +1,16 @@
-import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
+import {
+  CollectionBlock,
+  HtmlBlock,
+} from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKTextInput,
   GovUKButton,
   GovUKCheckboxInput,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import {
+  Answer,
+  Data,
+  or,
   validation,
   Condition,
   Self,
@@ -17,8 +23,14 @@ import {
 
 export const propertyEntryHeadingBlock = HtmlBlock({
   tag: "h1",
-  content: "Property details",
+  content: "The home your client usually lives in",
   classes: "govuk-heading-xl",
+});
+
+export const propertyEntryHintBlock = HtmlBlock({
+  tag: "p",
+  content: Data("propertyEntryHint"),
+  classes: "govuk-body",
 });
 
 export const propertyEntryBlock = CollectionBlock({
@@ -26,14 +38,18 @@ export const propertyEntryBlock = CollectionBlock({
     GovUKTextInput({
       code: "house_value",
       label: {
-        text: "How much is the property worth?",
+        text: "Home value",
         classes: "govuk-label--m",
       },
-      hint: { text: "In pounds" },
+      hint: {
+        text: "You can use property websites to find the estimated value. If you have more than one valuation, use the highest.",
+      },
       validWhen: [
         validation({
           condition: Self().match(
-            Condition.String.MatchesRegex(POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN),
+            Condition.String.MatchesRegex(
+              POUNDS_AMOUNT_GREATER_THAN_ZERO_PATTERN,
+            ),
           ),
           message: "Enter the property value as a number greater than 0",
         }),
@@ -42,33 +58,49 @@ export const propertyEntryBlock = CollectionBlock({
     GovUKTextInput({
       code: "mortgage",
       label: { text: "How much is left to pay on the mortgage?" },
-      hint: { text: "In pounds" },
-      // TODO: This field is shown to all owners, but CCQ only shows it when property_owned = "with_mortgage".
-      // Forge blocks don't support conditional field rendering (only conditional validation via `when:`).
-      // Consider if field should be hidden via CSS or if the current approach (always visible, validated only
-      // when relevant) is acceptable. For now, validation handles the conditional requirement.
+      hint: {
+        text: "Check the statement from the mortgage provider or lender and include any other loans secured against the property.",
+      },
+      visibleWhen: or([
+        Answer("property_owned").match(Condition.Equals("with_mortgage")),
+        Answer("property_owned").match(Condition.Equals("shared_ownership")),
+      ]),
       validWhen: [
         validation({
-          condition: poundsAmountGreaterThanZeroWhenAnswered("property_owned", "with_mortgage"),
-          message: "Enter how much is left to pay on the mortgage, as a number greater than 0",
+          condition: poundsAmountGreaterThanZeroWhenAnswered(
+            "property_owned",
+            "with_mortgage",
+          ),
+          message:
+            "Enter how much is left to pay on the mortgage, as a number greater than 0",
+        }),
+        validation({
+          condition: poundsAmountGreaterThanZeroWhenAnswered(
+            "property_owned",
+            "shared_ownership",
+          ),
+          message:
+            "Enter how much is left to pay on the mortgage, as a number greater than 0",
         }),
       ],
     }),
     GovUKTextInput({
       code: "percentage_owned",
-      label: { text: "What percentage of the property does the client own?" },
-      hint: { text: "Enter a whole number between 1 and 100" },
+      label: { text: "What percentage of the home do they own?" },
+      hint: { text: Data("propertyPercentageHint") },
       validWhen: [
         validation({
           condition: Self().match(
             Condition.String.MatchesRegex(WHOLE_PERCENTAGE_PATTERN),
           ),
-          message: "Enter the percentage share your client owns, between 1 and 100",
+          message:
+            "Enter the percentage share your client owns, between 1 and 100",
         }),
       ],
     }),
     GovUKCheckboxInput({
       code: "house_in_dispute",
+      visibleWhen: Data("smodApplicable"),
       fieldset: {
         legend: {
           text: "Property details",

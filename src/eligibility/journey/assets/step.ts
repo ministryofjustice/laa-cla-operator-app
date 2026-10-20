@@ -50,7 +50,7 @@ export const assetsStep = step({
       onValid: {
         effects: [
           EligibilityEffects.SaveAnswers(),
-          EligibilityEffects.AddBankAccountRow(),
+          EligibilityEffects.AddListRow("bank_accounts"),
         ],
         next: [redirect({ goto: Post("currentStep") })],
       },

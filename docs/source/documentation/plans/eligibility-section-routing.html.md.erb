@@ -69,7 +69,7 @@ This plan maps how each section works in CCQ, what the operator app has today, a
 4. Convert yes/no with the existing `toDomainAnswers` (`"true"`/`"false"` to booleans). Do not hand-roll.
 5. Show amount and frequency fields all the time (decision 1). Keep the existing "validate only when the yes/no is yes" conditions (`poundsAmountWhenAnswered` and friends). Add `dependentWhen` on those fields so a value left behind after switching back to "no" is cleared on save. `dependentWhen` does not change rendering.
 6. For add-another lists, follow the bank-accounts pattern (`Data("bankAccountRows").each`, `AddBankAccountRow` effect, `bankAccountsFromFormAnswers`). Generalise it rather than copying it a third time. See "Shared work".
-7. Add or extend: a `stepsFor` routing test, a block field-code test, a Playwright spec, and the check-your-answers summary entry.
+7. Add or extend: a `stepsFor` routing test, a block field-code test, a short Playwright spec (see [Test strategy](#test-strategy)), and the check-your-answers summary entry.
 
 ## Section 1: Income
 
@@ -120,6 +120,27 @@ Groups: `[employment_status]`, `[income]`, `[benefits, benefit_details]`, `[othe
 - `stepsFor` tests: `in_work` adds `income`, `unemployed` does not. `receives_benefits` true adds `benefit_details`. Passported and non-means-tested skip the whole section.
 - Saved answers survive `relevantAnswers` (every key is in `STEP_ANSWER_KEYS`).
 - `domain/cfe/employment-income` and `irregular-income` build a payload from answers entered through the UI.
+
+### Status: implemented
+
+All five client steps and their partner equivalents now use CCQ's field codes and values. What was built, and where it differs from the plan above:
+
+- **Add-another lists** are generic: `src/eligibility/lists/` holds the row conversion (`add-another.ts`) and the lists (`incomes`, `partner_incomes`, `benefits`, `partner_benefits`, and `bank_accounts`, moved onto the same mechanism). `journey/add-another-step.ts` builds a step from a list. Rows are Add another / Remove / Continue, without JavaScript. A hidden first submit button makes Enter continue rather than click Remove. A row must exist (be added) before its fields are read, so Forge ignores fields posted for rows that were never saved.
+- **Frequency lists** are in `domain/frequency-options.ts` and published as `Data("incomeFrequencyOptions")`, `Data("otherIncomeFrequencyOptions")` and `Data("benefitFrequencyOptions")`. Radio `items: Data(...)` works, so the open question is closed. Labels are in that module rather than `locales/en.json`, which the blocks do not read.
+- **Partner steps** are built by the same block factories, with an `IncomeSubject` (`journey/income-subject.ts`) for the wording and key prefix. `partner_benefits` (yes/no) is now `partner_receives_benefits`.
+- **Benefit types** come from CFE, filtered by `domain/benefit-types.ts`, and are cached in memory for 10 minutes (`registries/benefit-types.ts`). The `StateBenefitType` type now has `name`, `label`, `exclude_from_gross_income`, `dwp_code` and `category`, as CFE returns them. The type is picked from a select, not CCQ's autocomplete.
+- **Benefit types unavailable** is a step outside the domain list (`benefit_types_unavailable`). Redirecting from an access hook works (`access({ next: [redirect(...)] })`), but Forge treats a step with no route to it as unreachable, so it needs `reachability: { entryWhen: true }`. The page shows the step, case ID and CFE error, logs the same with `console.error`, and visiting it again retries the call and returns to the benefit step once CFE answers. The `from` query value is only looked up in a fixed list, never used as a path.
+- **Dependent fields** (`dependentWhen`) on the other income amount and frequency fields skip validation, and clear the saved value, when the yes/no is not yes.
+- **Net income** is checked by the `NetIncomeIsPositive` condition (`domain/income.ts`). It uses exact amounts, where CCQ truncates to whole pounds.
+- **Check your answers** shows one line per answered field of each add-another row, and uses `metadata.summaryLabel` where a field's own label is not enough (the other income amounts and frequencies).
+- **Amounts** saved from `*_conditional_value` fields and add-another rows are numbers, as the CFE payload builders require.
+
+Tests: `journey/income-section.spec.ts` (routing, validation, what is saved, CFE payloads, the error page, partner), `journey/field-codes.spec.ts` (field codes against `STEP_ANSWER_KEYS`), `lists/add-another.spec.ts`, the domain and registry specs, extra `check-your-answers` cases, and `tests/playwright/tests/eligibility-journey-income.spec.ts`.
+
+Not done, found on the way:
+
+- The older `eligibility-journey-*` Playwright specs (certificated, controlled, domestic abuse, asylum and immigration, under 18, change answers, regression, property, employment and assets) were removed on 2026-10-20. They looked for labels that no longer exist, so none of them could pass. Most only repeated routing that `journey.spec.ts` and `domain/navigation.spec.ts` already test. See [Test strategy](#test-strategy).
+- CCQ also checks that a posted frequency or income type is one of the allowed values. Forge's radios do not, so a tampered value is saved as posted.
 
 ## Section 2: Property
 
@@ -180,13 +201,20 @@ Exits: `property_landlord == false` goes to cannot-use-service. `additional_prop
 4. `additional_property`: radio with `additional_property_owned`, same options as `property`. Keep `cannot-use-service` routing.
 5. `additional_property_details`: add-another rows of `AdditionalPropertyModel` fields. Check the model in CCQ `app/models/additional_property_model.rb` for fields and validation.
 6. Create `partner_additional_property` and `partner_additional_property_details` (blocks, steps, `index.ts` registration).
-7. Update the Playwright `property` spec and page objects.
+7. Add a Playwright `eligibility-journey-property.spec.ts` and page objects, following the [Test strategy](#test-strategy). The old property spec was removed.
 
 ### Done when
 
 - `stepsFor` tests cover every `property_owned` x `additional_property_owned` x partner x passported combination.
 - Both shared-ownership exits reach cannot-use-service.
 - `domain/cfe/assets` builds property data from UI-entered answers.
+
+### Status: implemented
+
+- Journey blocks use CCQ field codes and values for the main property, landlord, property entry, and client and partner additional-property steps (client and partner details use add-another lists).
+- Property form data (legends, hints, SMOD visibility) is published from `LoadAnswers`.
+- Tests: `property-section.spec.ts` routing matrix, journey, field-code, add-another and summary specs, and `eligibility-journey-property.spec.ts` (Playwright).
+- Known gap: partner main-property wording is driven only by the `propertyOwnedLegend` data.
 
 ## Section 3: Outgoings and housing costs
 
@@ -261,19 +289,60 @@ These come up in more than one section, so do them once before or alongside Sect
 
 Within each section, fix the routing-critical field first (`employment_status`, `property_owned`, `additional_property_owned`, `partner_receives_benefits`, the missing partner steps). That is one small change each and restores correct routing before the larger forms are rebuilt.
 
-## Verification (per section)
+## Test strategy
 
-- `npx tsx` script or unit test calling `stepsFor` for each branch in the section's table.
+Routing is decided in `domain/` and in the Forge journey, so most of it is tested without a browser. Playwright only covers what a browser adds.
+
+| Layer | Tool | Owns | Location |
+|---|---|---|---|
+| Domain | mocha | Step order for every branch (`stepsFor`, `nextStep`, `relevantAnswers`), eligibility rules, CFE payload builders, parity with CCQ fixtures | `src/eligibility/domain/*.spec.ts`, `domain/cfe/parity.spec.ts` |
+| Journey | mocha | The real Forge journey driven through `ForgeTestHarness` (no browser): redirects between steps, validation, what is saved, change-answers loops, unreachable steps, the check-your-answers summary, field codes against `STEP_ANSWER_KEYS` | `src/eligibility/journey/*.spec.ts` |
+| Forge assumptions | mocha | Spikes that pin framework behaviour we depend on (dynamic `goto`, add-another, session persistence) | `src/eligibility/tests/forge-assumptions/` |
+| End to end | Playwright | One happy path per section through the real UI, plus the browser-only behaviour listed below | `tests/playwright/tests/eligibility-journey-<section>.spec.ts` |
+
+Do not test a routing branch in Playwright if a unit or journey test can test it. A branch matrix belongs in `stepsFor` tests.
+
+### What a Playwright section spec covers
+
+- The section can be reached from the start by answering earlier questions (a `beforeEach` that submits the forms, not `page.goto` between steps).
+- The page renders and passes axe (`checkAccessibility`) at least once per new step type.
+- Behaviour that needs JavaScript or real form submission: add-another and remove, option lists that change with an earlier answer, the error summary after an invalid submit.
+- One happy path that ends at the next section or at check your answers, and one skip path if the section can be skipped.
+
+### Rules for Playwright specs
+
+- One spec per section, named `eligibility-journey-<section>.spec.ts`. Page objects for a step live in `pages/EligibilitySteps.ts` and are registered in `PageFactory`.
+- Select fields by Forge field code (`input[name="level_of_help"][value="controlled"]`, `#incomes_0_gross_income`) or by role. Do not use `label:has-text(...)` for options, because the copy changes.
+- Assert the URL or visible content. Never accept either of two outcomes (for example status 200 or 302).
+- CFE is stubbed with MSW handlers in `tests/playwright/factories/handlers`. Never call the real service.
+- A spec that cannot pass is deleted or fixed in the same change. Do not leave failing specs for a later section.
+- The test server raises `RATE_LIMIT_MAX` in `playwright.config.ts`. All tests share one IP, so the production limit of 100 requests per 15 minutes returns "Too many requests" part way through a run.
+- First run on a machine: `npx playwright install chromium`. Then `yarn test:e2e eligibility-journey`, or `npx playwright test --config=tests/playwright/playwright.config.ts eligibility-journey` if yarn cannot find the `playwright` binary.
+
+### Checklist per section
+
+- `stepsFor` test for each branch in the section's table.
 - Block test: every Forge field code is in `STEP_ANSWER_KEYS[step]`, and every key in that list has a field.
-- Playwright: extend the `eligibility-journey-*.spec.ts` files so they walk the real routes and finish at check your answers.
+- Journey test for validation, what is saved, and the redirect out of each new step.
 - Parity: `domain/cfe/parity.spec.ts` against the CCQ fixtures for the section's answers.
+- One Playwright spec as described above.
 - Manual: compare the step order against a CCQ instance for the same answers.
+
+### Current state
+
+| Section | Unit and journey | Playwright |
+|---|---|---|
+| Non-financial | Covered (`journey.spec.ts`, `navigation.spec.ts`, `field-codes.spec.ts` for applicant and partner details) | None. The old specs were removed. Add one only if a browser-only behaviour appears |
+| Income | Covered (`income-section.spec.ts`, `field-codes.spec.ts`, domain and registry specs) | `eligibility-journey-income.spec.ts` |
+| Property | Partly covered. Rework is in Section 2 | To add in Section 2 |
+| Outgoings | To add in Section 3 | To add in Section 3 |
+| Assets and vehicles | Out of scope here | None |
 
 ## Out of scope
 
 - The early gross-income result banner (Phase 4 in [the main plan](eligibility-journey.html)).
 - Assets, bank accounts and vehicles. Their code naming has similar mismatches (`vehicles` and `vehicle_details` blocks against `vehicle` and `vehicles_details` steps). Treat them as a follow-up once these three sections are done.
-- Non-financial section.
+- Other non-financial mismatches remain out of scope: `how_to_aggregate`, `dependant_details`, `dependant_income` and `dependant_income_details` do not match `STEP_ANSWER_KEYS`.
 
 ## Level of help in the step forms
 
@@ -296,8 +365,8 @@ Recommended approach: have `publishNavigation` also publish one value per varian
 
 ## Open questions
 
-- **`Data(...)`-driven radio items.** Spike (see above) before building the frequency lists.
-- **Redirecting to the benefit error page.** Confirm the Forge mechanism for redirecting from an access hook (see Section 1, task 3).
+- **`Data(...)`-driven radio items.** Resolved in Section 1: radio `items: Data(...)` works.
+- **Redirecting to the benefit error page.** Resolved in Section 1: redirect from an access hook with `next: [redirect(...)]`, and give the target step `reachability: { entryWhen: true }`.
 
 ## Review checklist
 

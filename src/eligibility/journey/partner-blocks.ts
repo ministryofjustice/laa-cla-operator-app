@@ -1,135 +1,41 @@
-import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
+// The partner's income steps are the client's, asked about the partner and
+// saved under `partner_` answer keys, so they are built from the same
+// factories.
+import { createEmploymentStatusBlock } from "./employment-status/block.js";
+import { createBenefitsBlock } from "./benefits/block.js";
 import {
-  GovUKRadioInput,
-  GovUKTextInput,
-  GovUKButton,
-} from "@ministryofjustice/hmpps-forge/govuk-components";
+  createIncomeButtonsBlock,
+  createIncomeHeadingBlock,
+  createIncomeRowsBlock,
+} from "./income/block.js";
 import {
-  validation,
-  Condition,
-  Self,
-} from "@ministryofjustice/hmpps-forge/core/authoring";
+  createBenefitDetailsButtonsBlock,
+  createBenefitDetailsHeadingBlock,
+  createBenefitDetailsRowsBlock,
+} from "./benefit-details/block.js";
+import { createOtherIncomeBlock } from "./other-income/block.js";
+import { PARTNER } from "./income-subject.js";
+import { PARTNER_BENEFITS_LIST, PARTNER_INCOMES_LIST } from "../lists/index.js";
 
-export const partnerEmploymentStatusBlock = CollectionBlock({
-  collection: [
-    GovUKRadioInput({
-      code: "partner_employment_status",
-      fieldset: {
-        legend: {
-          text: "What is the partner's employment status?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
-        },
-      },
-      items: [
-        { value: "in_work", text: "In work" },
-        { value: "not_in_work", text: "Not in work" },
-        { value: "self_employed", text: "Self-employed" },
-      ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "Select the partner's employment status",
-        }),
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-});
+export const partnerEmploymentStatusBlock =
+  createEmploymentStatusBlock(PARTNER);
 
-export const partnerIncomeBlock = CollectionBlock({
-  collection: [
-    GovUKTextInput({
-      code: "partner_income",
-      label: {
-        text: "What is the partner's monthly income?",
-        classes: "govuk-label--l",
-        isPageHeading: true,
-      },
-      hint: { text: "In pounds per month" },
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "Enter the partner's monthly income",
-        }),
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-});
+export const partnerIncomeHeadingBlock = createIncomeHeadingBlock(PARTNER);
+export const partnerIncomeRowsBlock = createIncomeRowsBlock(
+  PARTNER,
+  PARTNER_INCOMES_LIST,
+);
+export const partnerIncomeButtonsBlock = createIncomeButtonsBlock();
 
-export const partnerBenefitsBlock = CollectionBlock({
-  collection: [
-    GovUKRadioInput({
-      code: "partner_benefits",
-      fieldset: {
-        legend: {
-          text: "Does the partner receive any state benefits?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
-        },
-      },
-      items: [
-        { value: "true", text: "Yes" },
-        { value: "false", text: "No" },
-      ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the partner receives benefits",
-        }),
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-});
+export const partnerBenefitsBlock = createBenefitsBlock(PARTNER);
 
-export const partnerBenefitDetailsBlock = CollectionBlock({
-  collection: [
-    GovUKTextInput({
-      code: "partner_benefit_details",
-      label: {
-        text: "Which state benefits does the partner receive?",
-        classes: "govuk-label--l",
-        isPageHeading: true,
-      },
-      hint: { text: "List all benefits received" },
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "Enter which benefits the partner receives",
-        }),
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-});
+export const partnerBenefitDetailsHeadingBlock =
+  createBenefitDetailsHeadingBlock(PARTNER);
+export const partnerBenefitDetailsRowsBlock = createBenefitDetailsRowsBlock(
+  PARTNER,
+  PARTNER_BENEFITS_LIST,
+);
+export const partnerBenefitDetailsButtonsBlock =
+  createBenefitDetailsButtonsBlock();
 
-export const partnerOtherIncomeBlock = CollectionBlock({
-  collection: [
-    GovUKRadioInput({
-      code: "partner_other_income",
-      fieldset: {
-        legend: {
-          text: "Does the partner have any other income?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
-        },
-      },
-      hint: {
-        text: "For example, pensions, rental income, or savings interest",
-      },
-      items: [
-        { value: "true", text: "Yes" },
-        { value: "false", text: "No" },
-      ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "Select whether the partner has other income",
-        }),
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-});
+export const partnerOtherIncomeBlock = createOtherIncomeBlock(PARTNER);

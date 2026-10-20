@@ -12,8 +12,11 @@ export interface Assessor {
   stateBenefitTypes: () => Promise<StateBenefitType[]>;
 }
 
+// The fields CFE's `GET /state_benefit_type` returns for each benefit type.
 export interface StateBenefitType {
-  code: string;
+  name: string;
   label: string;
-  category_description?: string;
+  dwp_code?: string | null;
+  exclude_from_gross_income: boolean;
+  category?: string | null;
 }

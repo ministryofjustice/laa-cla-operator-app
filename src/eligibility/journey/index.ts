@@ -53,9 +53,12 @@ import {
 import {
   additionalPropertyStep,
   additionalPropertyDetailsStep,
+  partnerAdditionalPropertyStep,
+  partnerAdditionalPropertyDetailsStep,
 } from "./additional-property/index.js";
 import { vehiclesStep, vehicleDetailsStep } from "./vehicles/index.js";
 import { cannotUseServiceStep } from "./cannot-use-service/index.js";
+import { benefitTypesUnavailableStep } from "./benefit-types-unavailable/index.js";
 import { createCheckYourAnswersStep } from "./check-your-answers/index.js";
 import { createAnswerSummary } from "./check-your-answers/summary.js";
 
@@ -125,11 +128,14 @@ export function createEligibilityPackage(
       dependantIncomeDetailsStep,
       additionalPropertyStep,
       additionalPropertyDetailsStep,
+      partnerAdditionalPropertyStep,
+      partnerAdditionalPropertyDetailsStep,
       assetsStep,
       partnerAssetsStep,
       vehiclesStep,
       vehicleDetailsStep,
       cannotUseServiceStep,
+      benefitTypesUnavailableStep,
     ],
   };
 

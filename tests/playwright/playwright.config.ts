@@ -50,8 +50,11 @@ export default defineConfig({
       PORT: "3001",
       SESSION_SECRET: "test-secret-key-for-playwright-tests",
       SESSION_NAME: "test-session",
+      // All tests share one IP, so the production limit (100 per 15 min) would block the suite
+      RATE_LIMIT_MAX: "100000",
       TEST_ACCESS_TOKEN: "test-access-token",
       BACKEND_BASE_URL: MSW_CONFIG.API_BASE_URL,
+      CFE_HOST: MSW_CONFIG.API_BASE_URL,
     },
   },
 });

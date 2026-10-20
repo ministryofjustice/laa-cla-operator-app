@@ -9,6 +9,7 @@ import type {
 } from "@ministryofjustice/hmpps-forge/core/testing";
 import { govukComponents } from "@ministryofjustice/hmpps-forge/govuk-components";
 import type { Answers } from "../domain/logic.js";
+import { stepsFor } from "../domain/navigation.js";
 import type { AnswerStore, EligibilityDeps } from "../ports/index.js";
 import { createEligibilityPackage } from "./index.js";
 
@@ -16,6 +17,18 @@ const CASE_ID = "case-1";
 const BASE = `/cases/${CASE_ID}/eligibility`;
 const CHILD_AGE = 10;
 const CHILD_DATE_OF_BIRTH = `${new Date().getUTCFullYear() - CHILD_AGE}-01-01`;
+
+// Other income with every question answered "No"
+const OTHER_INCOME_NONE = Object.fromEntries(
+  [
+    "friends_or_family",
+    "maintenance",
+    "property_or_lodger",
+    "pension",
+    "student_finance",
+    "other",
+  ].map((type) => [`${type}_relevant`, "false"]),
+);
 
 class InMemoryAnswerStore implements AnswerStore {
   answers: Answers = {};
@@ -141,12 +154,60 @@ describe("eligibility journey navigation", () => {
     await submit("level-of-help", { level_of_help: "controlled" });
     await submit("immigration-or-asylum", { immigration_or_asylum: "false" });
     const next = await submit("applicant", {
-      applicant: "false",
+      partner: "false",
       passporting: "false",
     });
 
     assert.equal(next, `${BASE}/dependant-details`);
     await assertRenders("dependant-details");
+  });
+
+  it("routes to partner steps from the applicant's submitted answer", async () => {
+    await submit("level-of-help", { level_of_help: "controlled" });
+    await submit("immigration-or-asylum", { immigration_or_asylum: "false" });
+
+    const next = await submit("applicant", {
+      partner: "true",
+      passporting: "false",
+    });
+    assert.equal(next, `${BASE}/dependant-details`);
+    assert.equal(
+      stepsFor(answerStore.answers).includes("partner_details"),
+      true,
+    );
+    assert.equal(
+      stepsFor(answerStore.answers).includes("partner_employment_status"),
+      true,
+    );
+
+    await submit("dependant-details", { dependant_details: "false" });
+    await submit("employment-status", { employment_status: "in_work" });
+    await submit("income", {
+      incomes_0_income_type: "employment",
+      incomes_0_income_frequency: "monthly",
+      incomes_0_gross_income: "2000",
+      incomes_0_income_tax: "300",
+      incomes_0_national_insurance: "100",
+    });
+    await submit("benefits", { receives_benefits: "false" });
+    const afterIncome = await submit("other-income", OTHER_INCOME_NONE);
+    assert.equal(afterIncome, `${BASE}/partner-details`);
+
+    const afterPartnerDetails = await submit("partner-details", {
+      partner_date_of_birth: { day: "1", month: "1", year: "1980" },
+    });
+    assert.equal(afterPartnerDetails, `${BASE}/partner-employment-status`);
+    assert.equal(answerStore.answers.partner_date_of_birth, "1980-01-01");
+  });
+
+  it("skips partner steps after the applicant submits no partner", async () => {
+    await submit("level-of-help", { level_of_help: "controlled" });
+    await submit("immigration-or-asylum", { immigration_or_asylum: "false" });
+    await submit("applicant", { partner: "false", passporting: "false" });
+
+    const steps = stepsFor(answerStore.answers);
+    assert.equal(steps.includes("partner_details"), false);
+    assert.equal(steps.includes("partner_employment_status"), false);
   });
 
   describe("property and assets", () => {
@@ -156,7 +217,9 @@ describe("eligibility journey navigation", () => {
         house_value: "150000",
         percentage_owned: "100",
       });
-      await submit("additional-property", { additional_property: "false" });
+      await submit("additional-property", {
+        additional_property_owned: "none",
+      });
     }
 
     beforeEach(async () => {
@@ -165,19 +228,19 @@ describe("eligibility journey navigation", () => {
         client_age: "standard",
         immigration_or_asylum: false,
         partner: false,
-        applicant: false,
         passporting: false,
         dependant_details: false,
-        employment_status: ["employed"],
+        employment_status: "unemployed",
       };
       // Navigate through income steps to reach property step
       await submit("benefits", { receives_benefits: "false" });
-      await submit("other-income", { other_income: "false" });
+      await submit("other-income", OTHER_INCOME_NONE);
       await submit("outgoings", {
         childcare_payments_relevant: "false",
         maintenance_payments_relevant: "false",
         legal_aid_payments_relevant: "false",
       });
+      answerStore.answers.passporting = true;
     });
 
     it("sends an outright owner to property entry", async () => {
@@ -194,6 +257,45 @@ describe("eligibility journey navigation", () => {
 
       assert.equal(next, `${BASE}/property-landlord`);
       await assertRenders("property-landlord");
+    });
+
+    it("requires the mortgage amount for a shared-ownership home", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "shared_ownership",
+        property_landlord: true,
+      };
+
+      const result = await client.post(`${BASE}/property-entry`, {
+        params,
+        body: {
+          house_value: "150000",
+          percentage_owned: "50",
+        },
+      });
+
+      assert.equal(result.type, "render");
+      if (result.type !== "render") return;
+      assert.ok(result.getValidationErrorsByFieldCode("mortgage").length > 0);
+    });
+
+    it("requires the mortgage amount for a home with a mortgage", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "with_mortgage",
+      };
+
+      const result = await client.post(`${BASE}/property-entry`, {
+        params,
+        body: {
+          house_value: "150000",
+          percentage_owned: "100",
+        },
+      });
+
+      assert.equal(result.type, "render");
+      if (result.type !== "render") return;
+      assert.ok(result.getValidationErrorsByFieldCode("mortgage").length > 0);
     });
 
     it("goes to additional property after property entry", async () => {
@@ -312,7 +414,7 @@ describe("eligibility journey navigation", () => {
       await assertRenders("assets");
     });
 
-    it("goes to assets after additional property", async () => {
+    it("goes to assets when the client has no additional property", async () => {
       answerStore.answers = {
         ...answerStore.answers,
         property_owned: "outright",
@@ -322,11 +424,98 @@ describe("eligibility journey navigation", () => {
       };
 
       const next = await submit("additional-property", {
-        additional_property: "false",
+        additional_property_owned: "none",
       });
 
       assert.equal(next, `${BASE}/assets`);
       await assertRenders("assets");
+    });
+
+    it("routes to additional property details for an owned property", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "none",
+      };
+
+      const next = await submit("additional-property", {
+        additional_property_owned: "outright",
+      });
+
+      assert.equal(next, `${BASE}/additional-property-details`);
+      await assertRenders("additional-property-details");
+    });
+
+    it("cannot continue with shared-ownership additional property", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "none",
+      };
+      const next = await submit("additional-property", {
+        additional_property_owned: "shared_ownership",
+      });
+
+      assert.equal(next, `${BASE}/cannot-use-service`);
+      await assertRenders("cannot-use-service");
+    });
+
+    it("saves additional-property rows and supports adding another", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        property_owned: "none",
+        additional_property_owned: "with_mortgage",
+      };
+
+      const next = await submit("additional-property-details", {
+        action: "add",
+        additional_properties_0_house_value: "80000",
+        additional_properties_0_mortgage: "20000",
+        additional_properties_0_percentage_owned: "50",
+      });
+
+      assert.equal(next, `${BASE}/additional-property-details`);
+      assert.deepEqual(answerStore.answers.additional_properties, [
+        {
+          house_value: 80000,
+          mortgage: 20000,
+          percentage_owned: "50",
+        },
+        {},
+      ]);
+      await assertRenders("additional-property-details");
+    });
+
+    it("routes through the partner's additional-property steps", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        partner: true,
+        partner_date_of_birth: "1980-01-01",
+        property_owned: "none",
+        additional_property_owned: "none",
+      };
+
+      const next = await submit("partner-additional-property", {
+        partner_additional_property_owned: "outright",
+      });
+
+      assert.equal(next, `${BASE}/partner-additional-property-details`);
+      await assertRenders("partner-additional-property-details");
+    });
+
+    it("cannot continue with the partner's shared-ownership additional property", async () => {
+      answerStore.answers = {
+        ...answerStore.answers,
+        partner: true,
+        partner_date_of_birth: "1980-01-01",
+        property_owned: "none",
+        additional_property_owned: "none",
+      };
+
+      const next = await submit("partner-additional-property", {
+        partner_additional_property_owned: "shared_ownership",
+      });
+
+      assert.equal(next, `${BASE}/cannot-use-service`);
+      await assertRenders("cannot-use-service");
     });
   });
 

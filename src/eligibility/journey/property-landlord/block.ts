@@ -1,13 +1,21 @@
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
+  GovUKBackLink,
   GovUKRadioInput,
   GovUKButton,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import {
+  Format,
+  Params,
   validation,
   Condition,
   Self,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
+
+export const propertyLandlordBackLinkBlock = GovUKBackLink({
+  href: Format("/eligibility/%1/property", Params("caseId")),
+  text: "Back",
+});
 
 export const propertyLandlordBlock = CollectionBlock({
   collection: [

@@ -3,48 +3,67 @@ import {
   GovUKRadioInput,
   GovUKButton,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import type { ResolvableString } from "@ministryofjustice/hmpps-forge/core/components";
 import {
+  Data,
   validation,
   Condition,
   Self,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
-export const propertyBlock = CollectionBlock({
-  collection: [
-    GovUKRadioInput({
-      code: "property_owned",
-      fieldset: {
-        legend: {
-          text: "Does the client own the property?",
-          classes: "govuk-fieldset__legend--l",
-          isPageHeading: true,
+const PROPERTY_OPTIONS = [
+  {
+    value: "with_mortgage",
+    text: "Yes, with a mortgage or loan",
+  },
+  {
+    value: "shared_ownership",
+    text: "Yes, through a shared ownership scheme",
+  },
+  {
+    value: "outright",
+    text: "Yes, owned outright",
+  },
+  {
+    value: "none",
+    text: "No",
+  },
+];
+
+export function createPropertyOwnershipBlock(
+  code: string,
+  legend: ResolvableString,
+  errorMessage: string,
+  summaryLabel: string,
+) {
+  return CollectionBlock({
+    collection: [
+      GovUKRadioInput({
+        code,
+        metadata: { summaryLabel },
+        fieldset: {
+          legend: {
+            text: legend,
+            classes: "govuk-fieldset__legend--l",
+            isPageHeading: true,
+          },
         },
-      },
-      items: [
-        {
-          value: "outright",
-          text: "Owned outright",
-        },
-        {
-          value: "with_mortgage",
-          text: "Owned with a mortgage",
-        },
-        {
-          value: "shared_ownership",
-          text: "Shared ownership",
-        },
-        {
-          value: "rented",
-          text: "Rented",
-        },
-      ],
-      validWhen: [
-        validation({
-          condition: Self().match(Condition.IsRequired()),
-          message: "Select how the property is owned",
-        }),
-      ],
-    }),
-    GovUKButton({ text: "Continue" }),
-  ],
-});
+        items: PROPERTY_OPTIONS,
+        validWhen: [
+          validation({
+            condition: Self().match(Condition.IsRequired()),
+            message: errorMessage,
+          }),
+        ],
+      }),
+      GovUKButton({ text: "Continue" }),
+    ],
+  });
+}
+
+export const propertyBlock = createPropertyOwnershipBlock(
+  "property_owned",
+  Data("propertyOwnedLegend"),
+  "Select if your client owns the home they live in",
+  "Does your client own the home they usually live in?",
+);

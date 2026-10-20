@@ -107,7 +107,7 @@ export const STEP_ANSWER_KEYS: Readonly<Record<string, readonly string[]>> = {
     "valuables_in_dispute",
     "bank_accounts",
   ],
-  partner_details: ["partner_over_60", "partner_date_of_birth"],
+  partner_details: ["partner_date_of_birth"],
   partner_employment_status: ["partner_employment_status"],
   partner_income: ["partner_incomes"],
   partner_benefits: ["partner_receives_benefits"],

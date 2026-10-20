@@ -5,6 +5,7 @@ import {
 import type { EligibilityDeps } from "../ports/index.js";
 import { stepsFor } from "../domain/navigation.js";
 import type { Answers } from "../domain/logic.js";
+import { netIncomeIsPositive } from "../domain/income.js";
 
 export interface EligibilityConditionShape {
   // Type assertion needed due to Forge's condition typing incompatibility
@@ -44,3 +45,12 @@ export const EligibilityConditions: EligibilityConditionShape = {
     ),
 };
 
+/**
+ * Passes when the income in the field, less the tax and National Insurance
+ * answers given, is still positive. See `netIncomeIsPositive`.
+ */
+export const NetIncomeIsPositive = EligibilityConditionsRegistry.register(
+  "NetIncomeIsPositive",
+  () => (gross: unknown, tax: unknown, nationalInsurance: unknown) =>
+    netIncomeIsPositive(gross, tax, nationalInsurance),
+);
