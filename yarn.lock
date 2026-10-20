@@ -896,7 +896,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.64.0":
+"@playwright/test@npm:1.64.0":
   version: 1.64.0
   resolution: "@playwright/test@npm:1.64.0"
   dependencies:
@@ -4073,7 +4073,7 @@ __metadata:
     "@eslint/js": "npm:^10.0.1"
     "@ministryofjustice/frontend": "npm:^11.1.0"
     "@ministryofjustice/hmpps-forge": "npm:^0.4.5"
-    "@playwright/test": "npm:^1.64.0"
+    "@playwright/test": "npm:1.64.0"
     "@types/chai": "npm:^5.2.2"
     "@types/compression": "npm:^1.7.5"
     "@types/connect-livereload": "npm:^0.6.3"
@@ -4139,7 +4139,7 @@ __metadata:
     msw: "npm:^2.11.3"
     nodemon: "npm:^3.1.9"
     nunjucks: "npm:^3.2.4"
-    playwright-core: "npm:^1.64.0"
+    playwright-core: "npm:1.64.0"
     prettier: "npm:^3.9.10"
     redis: "npm:^6.2.1"
     rimraf: "npm:^6.0.1"
@@ -4835,15 +4835,6 @@ __metadata:
   bin:
     playwright-core: cli.js
   checksum: 10c0/fe3237282ada99d634e4d002efd3db6aa51218f7f4f3b1bc31515d30fa6eec5ec940d425e035db2af4e2856d9cae30b7a27bd167870b3285d40bdffd399ab286
-  languageName: node
-  linkType: hard
-
-"playwright-core@npm:^1.64.0":
-  version: 1.64.1
-  resolution: "playwright-core@npm:1.64.1"
-  bin:
-    playwright-core: cli.js
-  checksum: 10c0/91c4f5ed1cff4b0e18b6ac62f66770f5f1b6c204d4aebd6a321c07466dca18a70822ac692597c6059705a703f9768097ac551df179fb49294d639509148e04f3
   languageName: node
   linkType: hard
 
