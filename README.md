@@ -154,7 +154,7 @@ Playwright starts the application on `http://localhost:3001` with MSW intercepti
 
 ### Silas authentication setup
 
-Sett the following variables in your .env file or equivalent
+Set the following variables in your .env file or equivalent
 
 ```
 ENTRA_AUTHORITY='redacted'
