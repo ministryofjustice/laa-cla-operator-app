@@ -40,6 +40,7 @@ export class CfeHttpClient implements Assessor {
    * @throws Error if the assessment fails
    */
   async assess(payload: unknown): Promise<CfeResult> {
+    console.log(`[CFE] Assessment payload: ${JSON.stringify(payload)}`);
     try {
       const response = await this.axiosInstance.post<{
         assessment_result?: string;
@@ -49,6 +50,9 @@ export class CfeHttpClient implements Assessor {
       }>(`${this.config.baseUrl}/v6/assessments`, payload);
 
       const { data } = response;
+      console.log(
+        `[CFE] Assessment response (${response.status}): ${JSON.stringify(data)}`,
+      );
       const result = CfeHttpClient.translateResult(
         data.assessment_result ?? "",
       );
@@ -62,6 +66,7 @@ export class CfeHttpClient implements Assessor {
         },
       };
     } catch (error) {
+      CfeHttpClient.logFailure(error);
       const errors = axios.isAxiosError<
         { errors?: unknown } | null | undefined
       >(error)
@@ -99,6 +104,18 @@ export class CfeHttpClient implements Assessor {
         { cause: error },
       );
     }
+  }
+
+  /**
+   * Logs CFE's status and response body for a failed assessment.
+   *
+   * @param error - The error thrown by the assessment request
+   */
+  private static logFailure(error: unknown): void {
+    if (!axios.isAxiosError(error)) return;
+    console.error(
+      `[CFE] Assessment failed (${error.response?.status ?? "no response"}): ${JSON.stringify(error.response?.data)}`,
+    );
   }
 
   /**
