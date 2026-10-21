@@ -262,6 +262,8 @@ function isAuthExemptPath(path: string): boolean {
     /^\/sign-in$/u,
     /^\/privacy$/u,
     /^\/cookies$/u,
+    /^\/status$/u,
+    /^\/health$/u,
     /^\/js\//u,
     /^\/cs\//u,
   ];
