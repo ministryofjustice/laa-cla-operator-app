@@ -63,6 +63,13 @@ CFE assessment failures retain the HTTP error and any validation error messages
 returned in CFE's `errors` array, so a 422 can be diagnosed from the server error
 without logging the assessment payload.
 
+The CFE v6 response is read from `result_summary`: the eligibility decision comes
+from `overall_result.result`, disposable income from
+`disposable_income.combined_total_disposable_income`, and disposable capital from
+`capital.combined_assessed_capital`. CFE does not return an upper tribunal
+availability flag. Unsuccessful assessments and missing or unsupported overall
+results raise an error rather than being recorded as ineligible.
+
 ## Subject matter of dispute
 
 The SMOD checkboxes for property, investments, and valuable items are optional.

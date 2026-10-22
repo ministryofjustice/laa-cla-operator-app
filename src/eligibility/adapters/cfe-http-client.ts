@@ -9,6 +9,21 @@ interface CfeConfig {
   baseUrl: string;
 }
 
+interface CfeAssessmentResponse {
+  success: boolean;
+  result_summary?: {
+    overall_result?: {
+      result?: unknown;
+    };
+    disposable_income?: {
+      combined_total_disposable_income?: number;
+    };
+    capital?: {
+      combined_assessed_capital?: number;
+    };
+  };
+}
+
 const EMPTY_LENGTH = 0;
 
 /**
@@ -42,29 +57,17 @@ export class CfeHttpClient implements Assessor {
   async assess(payload: unknown): Promise<CfeResult> {
     console.log(`[CFE] Assessment payload: ${JSON.stringify(payload)}`);
     try {
-      const response = await this.axiosInstance.post<{
-        assessment_result?: string;
-        disposable_income_amount?: number;
-        disposable_capital_amount?: number;
-        upper_tribunal_available?: boolean;
-      }>(`${this.config.baseUrl}/v6/assessments`, payload);
+      const response =
+        await this.axiosInstance.post<CfeAssessmentResponse | null>(
+          `${this.config.baseUrl}/v6/assessments`,
+          payload,
+        );
 
       const { data } = response;
       console.log(
         `[CFE] Assessment response (${response.status}): ${JSON.stringify(data)}`,
       );
-      const result = CfeHttpClient.translateResult(
-        data.assessment_result ?? "",
-      );
-
-      return {
-        result,
-        calculations: {
-          disposable_income: data.disposable_income_amount,
-          disposable_capital: data.disposable_capital_amount,
-          upper_tribunal: data.upper_tribunal_available,
-        },
-      };
+      return CfeHttpClient.translateResponse(data);
     } catch (error) {
       CfeHttpClient.logFailure(error);
       const errors = axios.isAxiosError<
@@ -119,13 +122,36 @@ export class CfeHttpClient implements Assessor {
   }
 
   /**
+   * Maps the v6 assessment summary to the module's result.
+   *
+   * @returns The eligibility decision and combined financial calculations
+   * @throws Error if CFE did not return a successful, supported assessment
+   */
+  private static translateResponse(
+    data: CfeAssessmentResponse | null,
+  ): CfeResult {
+    if (data?.success !== true) {
+      throw new Error("CFE did not return a successful assessment");
+    }
+    const { result_summary: summary } = data;
+    return {
+      result: CfeHttpClient.translateResult(summary?.overall_result?.result),
+      calculations: {
+        disposable_income:
+          summary?.disposable_income?.combined_total_disposable_income,
+        disposable_capital: summary?.capital?.combined_assessed_capital,
+      },
+    };
+  }
+
+  /**
    * Translates CFE result string to typed result.
    *
    * @param cfeResult - The result string from CFE
-   * @returns The typed result, defaulting to ineligible for unknown values
+   * @returns The typed result
+   * @throws Error if CFE returns a missing or unsupported result
    */
-  private static translateResult(cfeResult: string): CfeResult["result"] {
-    // CFE returns result as a string like "eligible", "ineligible", "contribution_required"
+  private static translateResult(cfeResult: unknown): CfeResult["result"] {
     if (
       cfeResult === "eligible" ||
       cfeResult === "ineligible" ||
@@ -133,7 +159,6 @@ export class CfeHttpClient implements Assessor {
     ) {
       return cfeResult;
     }
-    // Default to ineligible if we get an unexpected value
-    return "ineligible";
+    throw new Error(`Unsupported CFE assessment result: ${String(cfeResult)}`);
   }
 }
