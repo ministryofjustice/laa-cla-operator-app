@@ -194,8 +194,8 @@ export async function callbackAction(
     return;
   }
 
-  await regenerateSession(req);
   try {
+    await regenerateSession(req);
     const service = SilasService.factory(req.session.id);
     const response = await service.acquireTokenByCode(code);
     if (!hasValidAccountResponse(response)) {
