@@ -46,6 +46,7 @@ export interface Config {
   silas: SilasConfig;
   api: ApiConfig;
   redis: RedisConfig;
+  cfe: CfeConfig;
 }
 
 export interface SilasConfig {
@@ -69,4 +70,8 @@ export interface RedisConfig {
   auth_token?: string;
   port?: number;
   tls_enabled?: boolean;
+}
+
+export interface CfeConfig {
+  baseUrl: string;
 }

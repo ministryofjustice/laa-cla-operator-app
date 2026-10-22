@@ -1,0 +1,29 @@
+{% extends "layouts/operator.njk" %}
+
+{% block content %}
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper">
+    {% call govukFieldset({
+      legend: {
+        text: step.blocks[0].legend.text,
+        classes: "govuk-fieldset__legend--l",
+        isPageHeading: true
+      }
+    }) %}
+      {% if errors %}
+        {% for error in errors %}
+          {% call govukErrorMessage() %}
+            {{ error.message }}
+          {% endcall %}
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% for block in step.blocks %}
+          {% include block %}
+        {% endfor %}
+      </form>
+    {% endcall %}
+  </main>
+</div>
+{% endblock %}

@@ -26,11 +26,38 @@ export const handlers = [
     ({ params }) =>
       HttpResponse.json({
         reference: params.caseId,
+        date_of_birth: "1990-01-01",
       }),
   ),
   http.put(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
     () => new HttpResponse(null, { status: 204 }),
+  ),
+  // CFE's state benefit types, offered on the benefit details steps
+  http.get("*/state_benefit_type", () =>
+    HttpResponse.json([
+      {
+        name: "Carer's Allowance",
+        label: "carers_allowance",
+        dwp_code: null,
+        exclude_from_gross_income: false,
+        category: "carer_disability",
+      },
+      {
+        name: "Child Benefit",
+        label: "child_benefit",
+        dwp_code: null,
+        exclude_from_gross_income: false,
+        category: "other",
+      },
+      {
+        name: "Housing Benefit",
+        label: "housing_benefit",
+        dwp_code: null,
+        exclude_from_gross_income: true,
+        category: "other",
+      },
+    ]),
   ),
   // Health check endpoint for testing
   http.get("/health", () =>

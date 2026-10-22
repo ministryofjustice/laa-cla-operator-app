@@ -4,6 +4,25 @@ import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
 import { AddressPage } from "./addAddressPage.js";
 import { SearchClientPage } from "./SearchClientPage.js";
 import { AdaptationDetailPage } from "./adaptationDetailsPage.js";
+import {
+  EmploymentStatusPage,
+  IncomePage,
+  BenefitDetailsPage,
+  OtherIncomePage,
+  BenefitsPage,
+  PropertyPage,
+  PropertyEntryPage,
+  AdditionalPropertyPage,
+  AdditionalPropertyDetailsPage,
+  OutgoingsPage,
+  HousingCostsPage,
+  DependantsDetailsPage,
+  DependantIncomePage,
+  DependantIncomeDetailsPage,
+  AssetsPage,
+  VehiclePage,
+  VehiclesDetailsPage,
+} from "./EligibilitySteps.js";
 
 /**
  * Factory class for creating page objects
@@ -45,5 +64,74 @@ export class PageFactory {
 
   get AdaptationDetailPage(): AdaptationDetailPage {
     return new AdaptationDetailPage(this.page);
+  }
+
+  // Eligibility journey pages
+  get employmentStatusPage(): EmploymentStatusPage {
+    return new EmploymentStatusPage(this.page);
+  }
+
+  get benefitsPage(): BenefitsPage {
+    return new BenefitsPage(this.page);
+  }
+
+  get incomePage(): IncomePage {
+    return new IncomePage(this.page);
+  }
+
+  get benefitDetailsPage(): BenefitDetailsPage {
+    return new BenefitDetailsPage(this.page);
+  }
+
+  get otherIncomePage(): OtherIncomePage {
+    return new OtherIncomePage(this.page);
+  }
+
+  get propertyPage(): PropertyPage {
+    return new PropertyPage(this.page);
+  }
+
+  get propertyEntryPage(): PropertyEntryPage {
+    return new PropertyEntryPage(this.page);
+  }
+
+  get additionalPropertyPage(): AdditionalPropertyPage {
+    return new AdditionalPropertyPage(this.page);
+  }
+
+  get additionalPropertyDetailsPage(): AdditionalPropertyDetailsPage {
+    return new AdditionalPropertyDetailsPage(this.page);
+  }
+
+  get outgoingsPage(): OutgoingsPage {
+    return new OutgoingsPage(this.page);
+  }
+
+  get housingCostsPage(): HousingCostsPage {
+    return new HousingCostsPage(this.page);
+  }
+
+  get dependantsDetailsPage(): DependantsDetailsPage {
+    return new DependantsDetailsPage(this.page);
+  }
+
+  get dependantIncomePage(): DependantIncomePage {
+    return new DependantIncomePage(this.page);
+  }
+
+  get dependantIncomeDetailsPage(): DependantIncomeDetailsPage {
+    return new DependantIncomeDetailsPage(this.page);
+  }
+
+  get assetsPage(): AssetsPage {
+    return new AssetsPage(this.page);
+  }
+
+  get vehiclePage(): VehiclePage {
+    return new VehiclePage(this.page);
+  }
+
+  get vehiclesDetailsPage(): VehiclesDetailsPage {
+    return new VehiclesDetailsPage(this.page);
   }
 }

@@ -1,0 +1,88 @@
+{
+  "input": {
+    "level_of_help": "certificated",
+    "client_age": "standard",
+    "date_of_birth": "1980-11-05",
+    "passporting": true,
+    "property_owned": "with_mortgage",
+    "house_value": 200000,
+    "percentage_owned": 100,
+    "mortgage": 150000,
+    "investments": 20000,
+    "valuables": 5000,
+    "bank_accounts": [
+      {
+        "amount": 30000,
+        "account_in_dispute": false
+      }
+    ],
+    "vehicle_owned": false,
+    "domestic_abuse_applicant": false,
+    "partner": false,
+    "immigration_or_asylum_type_upper_tribunal": "none",
+    "house_in_dispute": false,
+    "additional_property_owned": "none",
+    "investments_relevant": true,
+    "investments_in_dispute": false,
+    "valuables_relevant": true,
+    "valuables_in_dispute": false
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "domestic_abuse_applicant",
+    "immigration_or_asylum_type_upper_tribunal",
+    "applicant",
+    "property",
+    "property_entry",
+    "additional_property",
+    "assets",
+    "vehicle"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "certificated"
+    },
+    "proceeding_types": [
+      {
+        "ccms_code": "SE003",
+        "client_involvement_type": "A"
+      }
+    ],
+    "capitals": {
+      "bank_accounts": [
+        {
+          "value": "30000.0",
+          "description": "Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ],
+      "non_liquid_capital": [
+        {
+          "value": "20000.0",
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": false
+        },
+        {
+          "value": "5000.0",
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ]
+    },
+    "properties": {
+      "main_home": {
+        "value": "200000.0",
+        "outstanding_mortgage": "150000.0",
+        "percentage_owned": 100,
+        "subject_matter_of_dispute": false,
+        "shared_with_housing_assoc": false
+      }
+    },
+    "applicant": {
+      "date_of_birth": "1974-06-01",
+      "receives_qualifying_benefit": true
+    }
+  }
+}
