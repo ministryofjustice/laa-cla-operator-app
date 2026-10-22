@@ -29,7 +29,11 @@ import { MOJCardGroup } from "@ministryofjustice/hmpps-forge/moj-components";
 import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunjucks";
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
-import { axiosMiddleware, setAuthStatus } from "./middleware/apiMiddleware.js";
+import {
+  axiosMiddleware,
+  requireAuth,
+  setAuthStatus,
+} from "./middleware/apiMiddleware.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
 
 const TRUST_FIRST_PROXY = 1;
@@ -52,6 +56,7 @@ const createApp = async (): Promise<express.Application> => {
   app.set("trust proxy", TRUST_FIRST_PROXY);
   app.use(session(await buildSessionConfig(config)));
 
+  app.use(requireAuth);
   app.use(axiosMiddleware);
 
   // Response compression setup

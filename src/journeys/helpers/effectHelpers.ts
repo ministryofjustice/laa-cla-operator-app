@@ -3,11 +3,11 @@ import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import type { SearchCasesResponse } from "#types/api-types.js";
 import { isAxiosInstanceWrapper } from "#src/helpers/axiosTypeGuards.js";
 import { mapResultsToFormatDob } from "#src/helpers/dataTransformers.js";
+import { ZERO } from "#src/constants.js";
 
 export const SEARCH_PAGE_SIZE = 10;
 export const FIRST_PAGE = 1;
 const DECIMAL_RADIX = 10;
-export const ZERO = 0;
 export const SINGLE_STEP = 1;
 
 /**

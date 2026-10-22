@@ -27,6 +27,7 @@ describe("createRedisClient", () => {
       port: 6380,
       tls_enabled: true,
       enabled: true,
+      maxAge: 60,
     };
 
     assert.equal(buildConnectionUrl(config), "rediss://redis.example.com:6380");
@@ -39,6 +40,7 @@ describe("createRedisClient", () => {
       tls_enabled: false,
       auth_token: "secret-token",
       enabled: true,
+      maxAge: 60,
     };
 
     const client = createRedisClient(config);
@@ -78,6 +80,7 @@ describe("createRedisClient", () => {
       port: 6380,
       tls_enabled: true,
       enabled: true,
+      maxAge: 60,
     };
 
     createRedisClient(config);
@@ -95,6 +98,7 @@ describe("createRedisClient", () => {
       port: 6379,
       tls_enabled: false,
       enabled: true,
+      maxAge: 60,
     };
 
     const client = createRedisClient(config);
@@ -123,6 +127,7 @@ describe("createRedisClient", () => {
       port: 6379,
       tls_enabled: false,
       enabled: true,
+      maxAge: 60,
     };
 
     const client = createRedisClient(config);
@@ -144,6 +149,7 @@ describe("createRedisClient", () => {
       port: 6379,
       tls_enabled: false,
       enabled: true,
+      maxAge: 60,
     };
 
     const client = createRedisClient(config) as any;
@@ -167,6 +173,7 @@ describe("createRedisClient", () => {
       port: 6379,
       tls_enabled: false,
       enabled: true,
+      maxAge: 60,
     };
 
     const client1 = createRedisClient(config);

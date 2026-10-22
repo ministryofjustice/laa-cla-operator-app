@@ -21,6 +21,7 @@ package-lock.json
 # LAA Express TypeScript Template
 public/
 .env
+.env.*
 
 # Playwright
 /test-results/

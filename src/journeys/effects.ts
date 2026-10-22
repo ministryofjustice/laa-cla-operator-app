@@ -11,12 +11,12 @@ import {
   getSearchParamFromAnswers,
   setPaginatedSearchData,
   SEARCH_PAGE_SIZE,
-  ZERO,
 } from "#src/journeys/helpers/effectHelpers.js";
 import type { CaseDetails } from "#types/api-types.js";
 import type { InboundCallContext } from "./types.js";
 import type { Session } from "express-session";
 import type { Address } from "#src/services/postcodeLookup.js";
+import { ZERO } from "#src/constants.js";
 
 /**
  * Get the current case

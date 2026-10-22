@@ -55,6 +55,7 @@ export default [
       "jsdoc/newline-after-description": "off",
       "jsdoc/no-undefined-types": "error",
       "jsdoc/require-description": "error",
+      "@typescript-eslint/class-methods-use-this": "off", // https://github.com/typescript-eslint/typescript-eslint/issues/10085
       "jsdoc/require-jsdoc": [
         "error",
         {
