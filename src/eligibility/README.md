@@ -76,6 +76,19 @@ The SMOD checkboxes for property, investments, and valuable items are optional.
 Leave a checkbox unchecked when the asset is not a subject matter of dispute;
 no explicit answer is required to continue.
 
+## Immigration and asylum matters
+
+For controlled work, answering **Yes** to **Is this an immigration or asylum
+matter?** opens **What type of immigration or asylum matter is this?** with
+three choices:
+
+- Immigration - controlled legal representation (CLR) in the First-tier Tribunal
+- Immigration - legal help or help at court
+- Asylum - legal help, help at court, or controlled legal representation (CLR) in the First-tier Tribunal
+
+All three choices lead to **Does your client get Asylum Support?** Answering
+**No** to the initial immigration or asylum question skips both follow-up pages.
+
 ## Boundaries
 
 The module is strictly bounded so it can be copied into another service:

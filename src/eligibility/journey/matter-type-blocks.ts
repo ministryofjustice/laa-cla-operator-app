@@ -16,14 +16,21 @@ export const immigrationOrAsylumTypeBlock = CollectionBlock({
       code: "immigration_or_asylum_type",
       fieldset: {
         legend: {
-          text: eligibilityCopy.what_type_of_immigration_or_asylum_matter_is_it,
+          text: eligibilityCopy.what_type_of_immigration_or_asylum_matter_is_this,
           classes: "govuk-fieldset__legend--l",
           isPageHeading: true,
         },
       },
       items: [
-        { value: "immigration", text: eligibilityCopy.immigration },
-        { value: "asylum", text: eligibilityCopy.asylum },
+        {
+          value: "immigration_clr",
+          text: eligibilityCopy.immigration_clr,
+        },
+        {
+          value: "immigration_legal_help",
+          text: eligibilityCopy.immigration_legal_help,
+        },
+        { value: "asylum", text: eligibilityCopy.asylum_legal_help_or_clr },
       ],
       validWhen: [
         validation({

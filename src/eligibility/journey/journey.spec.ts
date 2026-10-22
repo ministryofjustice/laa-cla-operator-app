@@ -104,6 +104,58 @@ describe("eligibility journey navigation", () => {
     await assertRenders("immigration-or-asylum-type");
   });
 
+  for (const type of ["immigration_clr", "immigration_legal_help", "asylum"]) {
+    it(`saves ${type} and asks about Asylum Support next`, async () => {
+      await submit("level-of-help", { level_of_help: "controlled" });
+      await submit("immigration-or-asylum", { immigration_or_asylum: "true" });
+
+      const next = await submit("immigration-or-asylum-type", {
+        immigration_or_asylum_type: type,
+      });
+
+      assert.equal(next, `${BASE}/asylum-support`);
+      assert.equal(answerStore.answers.immigration_or_asylum_type, type);
+      await assertRenders("asylum-support");
+
+      const afterSupport = await submit("asylum-support", {
+        asylum_support: "false",
+      });
+      assert.equal(afterSupport, `${BASE}/applicant`);
+      await assertRenders("applicant");
+    });
+  }
+
+  it("requires a matter type before continuing to Asylum Support", async () => {
+    await submit("level-of-help", { level_of_help: "controlled" });
+    await submit("immigration-or-asylum", { immigration_or_asylum: "true" });
+
+    const result = await client.post(`${BASE}/immigration-or-asylum-type`, {
+      params,
+      body: {},
+    });
+
+    assert.equal(result.type, "render");
+    assert.ok(
+      result.type === "render" &&
+        result.getValidationErrorsByFieldCode("immigration_or_asylum_type")
+          .length > 0,
+    );
+    assert.equal(answerStore.answers.immigration_or_asylum_type, undefined);
+  });
+
+  it("skips the means test when the client gets Asylum Support", async () => {
+    await submit("level-of-help", { level_of_help: "controlled" });
+    await submit("immigration-or-asylum", { immigration_or_asylum: "true" });
+    await submit("immigration-or-asylum-type", {
+      immigration_or_asylum_type: "asylum",
+    });
+
+    const next = await submit("asylum-support", { asylum_support: "true" });
+
+    assert.equal(next, `${BASE}/check-your-answers`);
+    await assertRenders("check-your-answers");
+  });
+
   it("saves yes/no answers as booleans, so 'No' is not treated as 'Yes'", async () => {
     await submit("level-of-help", { level_of_help: "controlled" });
     const next = await submit("immigration-or-asylum", {
