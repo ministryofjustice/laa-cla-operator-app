@@ -1,0 +1,41 @@
+{% extends "base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{# Template path is set by the shared financial eligibility journey package (laa-manage-your-civil-cases) #}
+{% block content %}
+  {% set errorList = [] %}
+  {% set seenBlockCodes = [] %} {# only show the first error message for each field #}
+
+  {% for error in fieldValidationErrors %}
+    {% if not (error.blockCode in seenBlockCodes) %}
+      {% set seenBlockCodes = seenBlockCodes.concat([error.blockCode]) %}
+      {% set errorList = errorList.concat([{
+        text: error.message,
+        href: "#" + error.blockCode
+      }]) %}
+    {% endif %}
+  {% endfor %}
+
+  {% for error in domainValidationErrors %}
+    {% set errorList = errorList.concat([{ text: error.message }]) %}
+  {% endfor %}
+
+  {% if errorList | length %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% for block in blocks %}
+          {{ block | safe }}
+        {% endfor %}
+      </form>
+    </div>
+  </div>
+{% endblock %}
