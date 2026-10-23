@@ -17,7 +17,10 @@
     "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
     "baseUrl": ".",
     "paths": {
-      "#*": ["./*"]
+      "#*": ["./*"],
+      "@ministryofjustice/financial-eligibility-journey": [
+        "./packages/financial-eligibility-journey/src/index.ts"
+      ]
     }
   },
   "include": [
@@ -33,7 +36,8 @@
     "types/**/*.ts",
     "playwright.config.ts",
     "tests/**/*.spec.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "packages/**/*.ts"
   ],
   "exclude": ["node_modules", "public", "**/*.js"]
 }
