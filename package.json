@@ -5,6 +5,9 @@
   "license": "MIT",
   "main": "public/app.js",
   "type": "module",
+  "workspaces": [
+    "packages/financial-eligibility-journey"
+  ],
   "imports": {
     "#*": "./*"
   },
@@ -50,7 +53,7 @@
   "dependencies": {
     "@azure/msal-node": "^6.0.1",
     "@ministryofjustice/frontend": "^11.1.0",
-    "@ministryofjustice/hmpps-forge": "^0.4.5",
+    "@ministryofjustice/hmpps-forge": "0.4.5",
     "axios": "1.20.0",
     "body-parser": "^2.2.0",
     "chalk": "^6.0.1",

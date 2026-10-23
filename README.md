@@ -196,6 +196,13 @@ This repo enforces formatting and linting as part of CI.
 
 Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will fail on formatting or lint errors instead of rewriting files. These should be fixed locally.
 
+### Financial eligibility journey
+
+The financial eligibility (means test) journey lives in `packages/financial-eligibility-journey` as a standalone Forge package. It is copied from [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases) and should be kept identical to that copy: make changes there first, then copy them across. For that reason `packages/` is excluded from ESLint and Prettier here.
+
+- The journey runs at `/cases/:caseId/financial-eligibility/change`. Leaving the journey (submit or discard) goes back to the client details page.
+- App-specific behaviour is supplied through the package's `effectsWithDeps` dependency, implemented in `src/services/financialEligibilityWithDeps.ts`. It reads and writes the call centre `eligibility_check` API. A case has no eligibility check until the first submit, which creates it.
+
 ### Pre-commit checks
 
 This repo uses Husky and `lint-staged` to format and lint code before each commit.

@@ -6,8 +6,16 @@ import type {
   SearchCasesResponse,
   saveAdaptationDetailsResponse,
   saveAdaptationDetailsParams,
+  FinancialEligibilityData,
+  GetFinancialEligibilityApiResponse,
 } from "#types/api-types.js";
 import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
+import { transformFinancialEligibilityItem } from "./transforms/transformFinancialEligibility.js";
+import {
+  devLog,
+  extractAndLogError,
+  isNotFoundError,
+} from "#src/scripts/helpers/index.js";
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE_NUMBER = 1;
@@ -134,4 +142,106 @@ export async function saveAdaptationDetails(
     : await configuredAxios.post<saveAdaptationDetailsResponse>(url, body);
 
   return response.data;
+}
+
+/**
+ * Get the financial eligibility check for a case.
+ * Cases created by operators have no eligibility check until one is first saved,
+ * so a 404 is treated as "no data yet" rather than an error.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {string} caseId The case reference.
+ * @returns {Promise<GetFinancialEligibilityApiResponse>} The eligibility data, null data when none exists, or an error response.
+ */
+export async function getFinancialEligibility(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+): Promise<GetFinancialEligibilityApiResponse> {
+  const url = `/call_centre/api/v1/case/${caseId}/eligibility_check/`;
+  try {
+    devLog(`API: GET ${url}`);
+    const configuredAxios = configureAxiosInstance(axiosMiddleware);
+    const response = await configuredAxios.get(url);
+    return {
+      data: transformFinancialEligibilityItem(response.data),
+      status: "success",
+    };
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      devLog(`No eligibility check exists yet for case ${caseId}`);
+      return { data: null, status: "success" };
+    }
+    return {
+      data: null,
+      status: "error",
+      message: extractAndLogError(
+        error,
+        "Error fetching financial eligibility",
+      ),
+    };
+  }
+}
+
+/**
+ * Update the financial eligibility check for a case, creating it if it does not exist yet.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {string} caseId The case reference.
+ * @param {Partial<FinancialEligibilityData>} financialEligibilityData The eligibility_check payload.
+ * @returns {Promise<GetFinancialEligibilityApiResponse>} The saved eligibility data or an error response.
+ */
+export async function updateFinancialEligibility(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+  financialEligibilityData: Partial<FinancialEligibilityData>,
+): Promise<GetFinancialEligibilityApiResponse> {
+  const url = `/call_centre/api/v1/case/${caseId}/eligibility_check/`;
+  const configuredAxios = configureAxiosInstance(axiosMiddleware);
+  try {
+    const savedData = await patchOrCreate(
+      configuredAxios,
+      url,
+      financialEligibilityData,
+    );
+    return {
+      data: transformFinancialEligibilityItem(savedData),
+      status: "success",
+    };
+  } catch (error) {
+    return {
+      data: null,
+      status: "error",
+      message: extractAndLogError(
+        error,
+        "Error updating financial eligibility",
+      ),
+    };
+  }
+}
+
+/**
+ * PATCH a nested one-to-one resource, falling back to POST when it does not exist yet (404).
+ *
+ * @param {AxiosInstanceWrapper} configuredAxios The configured Axios instance wrapper.
+ * @param {string} url The resource URL.
+ * @param {unknown} body The request payload.
+ * @returns {Promise<unknown>} The response data.
+ */
+async function patchOrCreate(
+  configuredAxios: AxiosInstanceWrapper,
+  url: string,
+  body: unknown,
+): Promise<unknown> {
+  try {
+    devLog(`API: PATCH ${url}`);
+    const response = await configuredAxios.patch<unknown>(url, body);
+    return response.data;
+  } catch (error) {
+    if (!isNotFoundError(error)) {
+      throw error;
+    }
+    devLog(`API: POST ${url}`);
+    const response = await configuredAxios.post<unknown>(url, body);
+    return response.data;
+  }
 }

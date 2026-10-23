@@ -5,6 +5,7 @@ import {
   loginAction,
   logOut,
 } from "#src/controllers/silasController.js";
+import { requireAuth } from "#src/middleware/apiMiddleware.js";
 
 // Create a new router
 const router = express.Router();
@@ -87,6 +88,18 @@ router.get("/", (req: Request, res: Response): void => {
   }
   res.redirect("/dashboard");
 });
+
+// The shared financial eligibility journey exits to its summary page, which only exists in
+// manage-your-civil-cases, so send the operator back to the client details page instead
+router.get(
+  "/cases/:caseId/financial-eligibility",
+  requireAuth,
+  (req: Request<{ caseId: string }>, res: Response): void => {
+    res.redirect(
+      `/case/${encodeURIComponent(req.params.caseId)}/add-client-details`,
+    );
+  },
+);
 
 router.get("/privacy", (req: Request, res: Response): void => {
   res.render("main/privacy.njk");

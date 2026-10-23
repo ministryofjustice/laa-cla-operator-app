@@ -100,6 +100,28 @@ export default [
       "@typescript-eslint/no-namespace": "off", // Namespaces are allowed in d.ts
     },
   },
+  // Ported from laa-manage-your-civil-cases (shared financial eligibility journey). Relaxed so the
+  // file can stay close to its source and be kept in sync, rather than diverging to meet these rules.
+  {
+    files: ["src/services/financialEligibilityWithDeps.ts"],
+    rules: {
+      complexity: "off",
+      "max-lines": "off",
+      "logical-assignment-operators": "off",
+      "@typescript-eslint/no-magic-numbers": "off",
+      "@typescript-eslint/no-unsafe-type-assertion": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/strict-boolean-expressions": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/prefer-destructuring": "off",
+      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/class-methods-use-this": "off",
+      "@typescript-eslint/no-dynamic-delete": "off",
+      "@typescript-eslint/no-base-to-string": "off",
+    },
+  },
   // Ignore patterns
   {
     ignores: [
@@ -119,6 +141,7 @@ export default [
       "coverage", // Ignore the code coverage output from linter
       "scripts/e2e_coverage/*", // Route coverage analysis scripts
       "playwright/*", // Ignore local Playwright output
+      "packages/*", // Vendored from laa-manage-your-civil-cases and linted there; keep identical to the source
     ],
   },
 ];
