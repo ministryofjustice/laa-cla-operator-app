@@ -152,6 +152,41 @@ yarn test:e2e
 
 Playwright starts the application on `http://localhost:3001` with MSW intercepting backend requests, then shuts the server down when the tests finish. You do not need to start `yarn dev` separately. The HTML test report is generated after the run; open it with `yarn playwright show-report`.
 
+### Silas authentication setup
+
+Set the following variables in your .env file or equivalent
+
+```
+ENTRA_AUTHORITY='redacted'
+ENTRA_TENANT_ID='redacted'
+ENTRA_CLIENT_ID='redacted'
+ENTRA_CLIENT_SECRET='redacted'
+ENTRA_REDIRECT_URI='http://localhost:3000/redirect'
+ENTRA_POST_REDIRECT_URI='/'
+ENTRA_SCOPES='redacted'
+ENTRA_EXPECTED_AUDIENCE='redacted'
+```
+
+The values for these variable can be copied from the UAT environment.
+
+```
+$ kubectl get secret sso -o json | jq '.data|map_values(@base64d)' --raw-output
+{
+  "authority": "redacted",
+  "backend_scope": "redacted",
+  "client_id": "redacted",
+  "client_secret": "redacted",
+  "expected_audience": "redacted",
+  "tenant_id": "redacted"
+}
+```
+
+#### How to get silas test users
+
+> To request an Internal SiLAS account in DEV, complete the ‘External Tenant Account Creation’ workflow in #staff-identity-external-authentication-service and select ‘Internal Caseworker' when prompted for account type.
+
+[Read more on the silas onboarding guide](https://dsdmoj.atlassian.net/wiki/spaces/LS/pages/6002638890/LAA+Service+Onboarding+Guide#Internal-SiLAS-Accounts)
+
 ### GitHub Actions
 
 The workflows in `.github/workflows` automate validation, security checks, container

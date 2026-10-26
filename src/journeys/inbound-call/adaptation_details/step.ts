@@ -1,4 +1,3 @@
-import { requireSilasAuth } from "#src/journeys/auth.js";
 import {
   step,
   submit,
@@ -14,7 +13,6 @@ export const adaptationDetails = step({
   title: "Client’s support needs",
   path: "/adaptation-details",
   reachability: { entryWhen: true },
-  onAccess: [requireSilasAuth],
   view: { template: "main/forms/form.njk" },
   blocks: [adaptationDetailsNeed],
   onSubmission: [
