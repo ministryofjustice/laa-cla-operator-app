@@ -14,13 +14,14 @@ import { saveSession } from "#src/helpers/session.js";
 import { randomBytes } from "node:crypto";
 import { createRedisClient } from "#utils/redis.js";
 import config from "#config.js";
-import { EMPTY_LENGTH, ZERO } from "#src/constants.js";
+import { EMPTY_LENGTH, ZERO , ALLOWED_LAA_ACCOUNTS} from "#src/constants.js";
 import jsonwebtoken, {
   JsonWebTokenError,
   TokenExpiredError,
   NotBeforeError,
 } from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
+import { error } from "node:console";
 
 const NONCE_BYTES = 32;
 const ENTRA_KEY_CACHE_TTL_MS = 3600000; // 1 hour
@@ -281,14 +282,29 @@ export class SilasService {
    * @param {string} token JWT access token to decode.
    * @throws {JsonWebTokenError | TokenExpiredError | NotBeforeError | Error}
    */
+ /**
+   * Decodes the claims portion of a JWT access token.
+   * @param {string} token JWT access token to decode.
+   * @throws {JsonWebTokenError | TokenExpiredError | NotBeforeError | Error}
+   */
   async verify(token: string): Promise<void> {
     const kid = this.getAccessTokenKID(token);
     const pubKey = await this.getPublicKey(kid);
-    jsonwebtoken.verify(token, pubKey, {
+    const payload = jsonwebtoken.verify(token, pubKey, {
       audience: this.config.expectedAudience,
       issuer: `https://login.microsoftonline.com/${this.config.tenantId}/v2.0`,
       algorithms: ["RS256"],
-    });
+    }) as jsonwebtoken.JwtPayload;
+
+    const laaAccounts = [payload.LAA_ACCOUNTS].flat() as string[];
+
+    const allAllowed =
+      laaAccounts.length > EMPTY_LENGTH &&
+      laaAccounts.every((account) => ALLOWED_LAA_ACCOUNTS.includes(account));
+
+    if (!allAllowed) {
+      throw new Error("LAA_ACCOUNTS not in the allowed list");
+    }
   }
 
   /**
@@ -306,3 +322,4 @@ export class SilasService {
   }
   /* c8 ignore next */
 }
+

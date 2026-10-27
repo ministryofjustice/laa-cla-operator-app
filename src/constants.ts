@@ -4,3 +4,10 @@ export const MS_PER_SECOND = 1000;
 export const INTERNAL_SERVER_ERROR = 500;
 export const ZERO = 0;
 /* c8 ignore stop */
+
+
+export const ALLOWED_LAA_ACCOUNTS: readonly string[] = [
+  "ACCOUNT_1",
+  "ACCOUNT_2",
+  "ACCOUNT_3",
+];
