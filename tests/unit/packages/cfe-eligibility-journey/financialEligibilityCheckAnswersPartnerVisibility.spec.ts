@@ -22,8 +22,8 @@ import {
   expensesHeading,
   expensesSummaryList,
   partnerExpensesSummaryList,
-} from '#packages/financial-eligibility-journey/src/checkAnswersPage/checkAnswersBlock.js';
-import type { Deps } from '#packages/financial-eligibility-journey/src/api.js';
+} from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersBlock.js';
+import type { Deps } from '#packages/cfe-eligibility-journey/src/api.js';
 import { FinancialEligibilityEffectsWithDepsImpl } from '#src/services/financialEligibilityWithDeps.js';
 
 /**

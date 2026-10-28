@@ -12,7 +12,7 @@ import {
   otherIncomeField, otherIncomeFrequencyField,
   childBenefitFrequencyField,
   childBenefitField,
-} from '#packages/financial-eligibility-journey/src/incomePage/incomeBlock.js';
+} from '#packages/cfe-eligibility-journey/src/incomePage/incomeBlock.js';
 import {
   selfEmployedPartnerField,
   earningsPartnerField, earningsPartnerFrequencyField,
@@ -24,11 +24,11 @@ import {
   maintenanceReceivedPartnerField, maintenanceReceivedPartnerFrequencyField,
   pensionIncomePartnerField, pensionIncomePartnerFrequencyField,
   otherIncomePartnerField, otherIncomePartnerFrequencyField,
-} from '#packages/financial-eligibility-journey/src/partnerIncomePage/partnerIncomeBlock.js';
-import { dependants16OverField, dependants15UnderField } from '#packages/financial-eligibility-journey/src/dependantsPage/dependantsBlock.js';
-import { partnerDependants16OverField, partnerDependants15UnderField } from '#packages/financial-eligibility-journey/src/partnerDependantsPage/partnerDependantsBlock.js';
-import { frequencyItems as FREQUENCY_ITEMS, MAX_MONEY_VALUE_MESSAGE } from '#packages/financial-eligibility-journey/src/moneyFieldHelpers.js';
-import { MAX_DEPENDANTS_MESSAGE } from '#packages/financial-eligibility-journey/src/dependantsFieldHelpers.js';
+} from '#packages/cfe-eligibility-journey/src/partnerIncomePage/partnerIncomeBlock.js';
+import { dependants16OverField, dependants15UnderField } from '#packages/cfe-eligibility-journey/src/dependantsPage/dependantsBlock.js';
+import { partnerDependants16OverField, partnerDependants15UnderField } from '#packages/cfe-eligibility-journey/src/partnerDependantsPage/partnerDependantsBlock.js';
+import { frequencyItems as FREQUENCY_ITEMS, MAX_MONEY_VALUE_MESSAGE } from '#packages/cfe-eligibility-journey/src/moneyFieldHelpers.js';
+import { MAX_DEPENDANTS_MESSAGE } from '#packages/cfe-eligibility-journey/src/dependantsFieldHelpers.js';
 
 interface FieldLike {
   code?: unknown;

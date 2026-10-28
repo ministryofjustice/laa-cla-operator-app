@@ -18,8 +18,8 @@
     "baseUrl": ".",
     "paths": {
       "#*": ["./*"],
-      "@ministryofjustice/financial-eligibility-journey": [
-        "./packages/financial-eligibility-journey/src/index.ts"
+      "@ministryofjustice/cfe-eligibility-journey": [
+        "./packages/cfe-eligibility-journey/src/index.ts"
       ]
     }
   },

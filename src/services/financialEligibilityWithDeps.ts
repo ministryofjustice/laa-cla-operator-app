@@ -2,31 +2,31 @@ import type { EffectFunctionContext } from "@ministryofjustice/hmpps-forge/core"
 import type {
   FinancialEligibilityEffectsWithDeps,
   Deps,
-} from "#packages/financial-eligibility-journey/src/api.js";
+} from "#packages/cfe-eligibility-journey/src/api.js";
 import {
   bankBalanceField as savingsBankBalanceField,
   investmentBalanceField as savingsInvestmentBalanceField,
   assetBalanceField as savingsAssetBalanceField,
   creditBalanceField as savingsCreditBalanceField,
-} from "#packages/financial-eligibility-journey/src/savingsPage/savingsBlock.js";
+} from "#packages/cfe-eligibility-journey/src/savingsPage/savingsBlock.js";
 import {
   bankBalanceField as disputedBankBalanceField,
   investmentBalanceField as disputedInvestmentBalanceField,
   assetBalanceField as disputedAssetBalanceField,
   creditBalanceField as disputedCreditBalanceField,
-} from "#packages/financial-eligibility-journey/src/disputedSavingsPage/disputedSavingsBlock.js";
+} from "#packages/cfe-eligibility-journey/src/disputedSavingsPage/disputedSavingsBlock.js";
 import {
   bankBalanceField as partnerBankBalanceField,
   investmentBalanceField as partnerInvestmentBalanceField,
   assetBalanceField as partnerAssetBalanceField,
   creditBalanceField as partnerCreditBalanceField,
-} from "#packages/financial-eligibility-journey/src/partnerSavingsPage/partnerSavingsBlock.js";
+} from "#packages/cfe-eligibility-journey/src/partnerSavingsPage/partnerSavingsBlock.js";
 import {
   propertyMarketValueFieldPrefix,
   propertyMortgageLeftFieldPrefix,
-} from "#packages/financial-eligibility-journey/src/propertiesPage/propertiesBlock.js";
-import { getOrMigrateCasePatternDrafts } from "#packages/financial-eligibility-journey/src/casePatternDrafts.js";
-import type { FinancialEligibilitySession } from "#packages/financial-eligibility-journey/src/context.type.js";
+} from "#packages/cfe-eligibility-journey/src/propertiesPage/propertiesBlock.js";
+import { getOrMigrateCasePatternDrafts } from "#packages/cfe-eligibility-journey/src/casePatternDrafts.js";
+import type { FinancialEligibilitySession } from "#packages/cfe-eligibility-journey/src/context.type.js";
 import {
   under18Step,
   under18HasValuablesStep,
@@ -35,8 +35,10 @@ import {
   over60Step,
   over60StepWithPartnerStep,
   disregardsStep,
-} from "#packages/financial-eligibility-journey/src/index.js";
+  CLIENT_DATE_OF_BIRTH_DATA_KEY,
+} from "#packages/cfe-eligibility-journey/src/index.js";
 import type {
+  CaseDetails,
   FinancialEligibilityData,
   IncomeData,
   DeductionData,
@@ -52,26 +54,26 @@ import {
   toNumber,
 } from "#src/scripts/helpers/index.js";
 import { transformFinancialEligibilityItem } from "#src/services/api/transforms/transformFinancialEligibility.js";
-import { under18RegularPaymentField } from "#packages/financial-eligibility-journey/src/under18RegularPaymentPage/under18RegularPaymentBlock.js";
-import { under18Field } from "#packages/financial-eligibility-journey/src/under18Page/under18Block.js";
-import { under18HasValuablesField } from "#packages/financial-eligibility-journey/src/under18HasValuablesPage/under18HasValuablesBlock.js";
-import { over60Field } from "#packages/financial-eligibility-journey/src/over60Page/over60Block.js";
-import { over60WithPartnerField } from "#packages/financial-eligibility-journey/src/over60PWithPartnerPage/over60WithPartnerBlock.js";
+import { under18RegularPaymentField } from "#packages/cfe-eligibility-journey/src/under18RegularPaymentPage/under18RegularPaymentBlock.js";
+import { under18Field } from "#packages/cfe-eligibility-journey/src/under18Page/under18Block.js";
+import { under18HasValuablesField } from "#packages/cfe-eligibility-journey/src/under18HasValuablesPage/under18HasValuablesBlock.js";
+import { over60Field } from "#packages/cfe-eligibility-journey/src/over60Page/over60Block.js";
+import { over60WithPartnerField } from "#packages/cfe-eligibility-journey/src/over60PWithPartnerPage/over60WithPartnerBlock.js";
 import {
   incomeSupportField,
   universalCreditField,
   incomeBasedJSAField,
   pensionCreditField,
   employmentSupportField,
-} from "#packages/financial-eligibility-journey/src/benefitsPage/benefitsBlock.js";
-import { partnerField } from "#packages/financial-eligibility-journey/src/partnerPage/partnerBlock.js";
-import { disregardsField } from "#packages/financial-eligibility-journey/src/disregardsPage/disregardsBlock.js";
+} from "#packages/cfe-eligibility-journey/src/benefitsPage/benefitsBlock.js";
+import { partnerField } from "#packages/cfe-eligibility-journey/src/partnerPage/partnerBlock.js";
+import { disregardsField } from "#packages/cfe-eligibility-journey/src/disregardsPage/disregardsBlock.js";
 import {
   dependants15UnderField,
   dependants16OverField,
-} from "#packages/financial-eligibility-journey/src/dependantsPage/dependantsBlock.js";
-import { selfEmployedField } from "#packages/financial-eligibility-journey/src/incomePage/incomeBlock.js";
-import { selfEmployedPartnerField } from "#packages/financial-eligibility-journey/src/partnerIncomePage/partnerIncomeBlock.js";
+} from "#packages/cfe-eligibility-journey/src/dependantsPage/dependantsBlock.js";
+import { selfEmployedField } from "#packages/cfe-eligibility-journey/src/incomePage/incomeBlock.js";
+import { selfEmployedPartnerField } from "#packages/cfe-eligibility-journey/src/partnerIncomePage/partnerIncomeBlock.js";
 
 const MONETARY_FIELDS = new Set([
   savingsBankBalanceField.code,
@@ -754,6 +756,21 @@ export function mapAnswersToApiPayload(
     );
   }
 
+  // Both over-60 questions map to the same API field; use the one on the path the has-partner answer selects,
+  // so a stale (or date-of-birth derived) answer to the other question can't override it
+  const over60AnswerCode =
+    payload.has_partner === true
+      ? over60StepWithPartnerStep.code
+      : over60Step.code;
+  if (over60AnswerCode in answers) {
+    const over60Answer = answers[over60AnswerCode];
+    payload.is_you_or_your_partner_over_60 =
+      typeof over60Answer === "string" &&
+      ["yes", "no"].includes(over60Answer.toLowerCase())
+        ? over60Answer.toLowerCase() === "yes"
+        : over60Answer;
+  }
+
   const income = mapMoneyFieldsToApiPayload(answers, incomeMoneyFields, "");
   if ("self-employed" in answers) {
     income.self_employed = toBoolean(answers["self-employed"]);
@@ -862,14 +879,18 @@ export class FinancialEligibilityEffectsWithDepsImpl implements FinancialEligibi
     }
 
     const axiosMiddleware = context.getState("authenticatedAxios");
-    const caseDetails: unknown = await this.apiService.loadCase(
+    const caseDetails = (await this.apiService.loadCase(
       axiosMiddleware,
       caseId,
-    );
+    )) as Partial<CaseDetails> | undefined;
 
     devLog(`Loaded case details for caseId ${caseId}`);
     context.setData("case", caseDetails);
     context.setData("caseDetails", { status: "success", data: caseDetails });
+    context.setData(
+      CLIENT_DATE_OF_BIRTH_DATA_KEY,
+      caseDetails?.date_of_birth ?? null,
+    );
   };
 
   /**

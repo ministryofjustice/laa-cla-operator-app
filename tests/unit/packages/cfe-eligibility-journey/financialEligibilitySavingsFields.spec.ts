@@ -1,24 +1,24 @@
 import { expect } from 'chai';
 import {
   bankBalanceField, investmentBalanceField, assetBalanceField, creditBalanceField,
-} from '#packages/financial-eligibility-journey/src/savingsPage/savingsBlock.js';
+} from '#packages/cfe-eligibility-journey/src/savingsPage/savingsBlock.js';
 import {
   bankBalanceField as disputedBankBalanceField, investmentBalanceField as disputedInvestmentBalanceField,
   assetBalanceField as disputedAssetBalanceField, creditBalanceField as disputedCreditBalanceField,
-} from '#packages/financial-eligibility-journey/src/disputedSavingsPage/disputedSavingsBlock.js';
+} from '#packages/cfe-eligibility-journey/src/disputedSavingsPage/disputedSavingsBlock.js';
 import {
   bankBalanceField as partnerBankBalanceField, investmentBalanceField as partnerInvestmentBalanceField,
   assetBalanceField as partnerAssetBalanceField, creditBalanceField as partnerCreditBalanceField,
-} from '#packages/financial-eligibility-journey/src/partnerSavingsPage/partnerSavingsBlock.js';
+} from '#packages/cfe-eligibility-journey/src/partnerSavingsPage/partnerSavingsBlock.js';
 import {
   bankBalanceField as undisputedBankBalanceField, investmentBalanceField as undisputedInvestmentBalanceField,
   assetBalanceField as undisputedAssetBalanceField, creditBalanceField as undisputedCreditBalanceField,
-} from '#packages/financial-eligibility-journey/src/undisputedSavings/undisputedSavingsBlock.js';
+} from '#packages/cfe-eligibility-journey/src/undisputedSavings/undisputedSavingsBlock.js';
 import {
   bankBalanceField as partnerUndisputedBankBalanceField, investmentBalanceField as partnerUndisputedInvestmentBalanceField,
   assetBalanceField as partnerUndisputedAssetBalanceField, creditBalanceField as partnerUndisputedCreditBalanceField,
-} from '#packages/financial-eligibility-journey/src/partnerUndisputedSavings/partnerUndisputedSavingsBlock.js';
-import { MAX_MONEY_VALUE_MESSAGE, MIN_MONEY_OR_ZERO_VALUE_MESSAGE } from '#packages/financial-eligibility-journey/src/moneyFieldHelpers.js';
+} from '#packages/cfe-eligibility-journey/src/partnerUndisputedSavings/partnerUndisputedSavingsBlock.js';
+import { MAX_MONEY_VALUE_MESSAGE, MIN_MONEY_OR_ZERO_VALUE_MESSAGE } from '#packages/cfe-eligibility-journey/src/moneyFieldHelpers.js';
 
 interface FieldLike {
   code?: unknown;

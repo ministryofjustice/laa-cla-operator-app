@@ -1,25 +1,25 @@
 import { expect } from 'chai';
-import { under18Step } from '#packages/financial-eligibility-journey/src/under18Page/under18Step.js';
-import { under18RegularPaymentStep } from '#packages/financial-eligibility-journey/src/under18RegularPaymentPage/under18RegularPaymentStep.js';
-import { under18HasValuablesStep } from '#packages/financial-eligibility-journey/src/under18HasValuablesPage/under18HasValuablesStep.js';
-import { partnerStep } from '#packages/financial-eligibility-journey/src/partnerPage/partnerStep.js';
-import { over60Step } from '#packages/financial-eligibility-journey/src/over60Page/over60Step.js';
-import { over60StepWithPartnerStep } from '#packages/financial-eligibility-journey/src/over60PWithPartnerPage/over60WithPartnerStep.js';
-import { benefitsStep } from '#packages/financial-eligibility-journey/src/benefitsPage/benefitsStep.js';
-import { propertiesStep } from '#packages/financial-eligibility-journey/src/propertiesPage/propertiesStep.js';
-import { savingsStep } from '#packages/financial-eligibility-journey/src/savingsPage/savingsStep.js';
-import { partnerSavingsStep } from '#packages/financial-eligibility-journey/src/partnerSavingsPage/partnerSavingsStep.js';
-import { disputedSavingsStep } from '#packages/financial-eligibility-journey/src/disputedSavingsPage/disputedSavingsStep.js';
-import { disregardsStep } from '#packages/financial-eligibility-journey/src/disregardsPage/disregardsStep.js';
-import { incomeStep } from '#packages/financial-eligibility-journey/src/incomePage/incomeStep.js';
-import { partnerIncomeStep } from '#packages/financial-eligibility-journey/src/partnerIncomePage/partnerIncomeStep.js';
-import { dependantsStep } from '#packages/financial-eligibility-journey/src/dependantsPage/dependantsStep.js';
-import { expensesStep } from '#packages/financial-eligibility-journey/src/expensesPage/expensesStep.js';
-import { partnerExpensesStep } from '#packages/financial-eligibility-journey/src/partnerExpensesPage/partnerExpensesStep.js';
-import { checkAnswersStep } from '#packages/financial-eligibility-journey/src/checkAnswersPage/checkAnswersStep.js';
-import { propertiesStepPartner } from '#packages/financial-eligibility-journey/src/propertiesPageWithPartner/propertiesStepPartner.js';
-import { undisputedSavingsStep } from '#packages/financial-eligibility-journey/src/undisputedSavings/undisputedSavingsStep.js';
-import { partnerDependantsStep } from '#packages/financial-eligibility-journey/src/partnerDependantsPage/partnerDependantsStep.js';
+import { under18Step } from '#packages/cfe-eligibility-journey/src/under18Page/under18Step.js';
+import { under18RegularPaymentStep } from '#packages/cfe-eligibility-journey/src/under18RegularPaymentPage/under18RegularPaymentStep.js';
+import { under18HasValuablesStep } from '#packages/cfe-eligibility-journey/src/under18HasValuablesPage/under18HasValuablesStep.js';
+import { partnerStep } from '#packages/cfe-eligibility-journey/src/partnerPage/partnerStep.js';
+import { over60Step } from '#packages/cfe-eligibility-journey/src/over60Page/over60Step.js';
+import { over60StepWithPartnerStep } from '#packages/cfe-eligibility-journey/src/over60PWithPartnerPage/over60WithPartnerStep.js';
+import { benefitsStep } from '#packages/cfe-eligibility-journey/src/benefitsPage/benefitsStep.js';
+import { propertiesStep } from '#packages/cfe-eligibility-journey/src/propertiesPage/propertiesStep.js';
+import { savingsStep } from '#packages/cfe-eligibility-journey/src/savingsPage/savingsStep.js';
+import { partnerSavingsStep } from '#packages/cfe-eligibility-journey/src/partnerSavingsPage/partnerSavingsStep.js';
+import { disputedSavingsStep } from '#packages/cfe-eligibility-journey/src/disputedSavingsPage/disputedSavingsStep.js';
+import { disregardsStep } from '#packages/cfe-eligibility-journey/src/disregardsPage/disregardsStep.js';
+import { incomeStep } from '#packages/cfe-eligibility-journey/src/incomePage/incomeStep.js';
+import { partnerIncomeStep } from '#packages/cfe-eligibility-journey/src/partnerIncomePage/partnerIncomeStep.js';
+import { dependantsStep } from '#packages/cfe-eligibility-journey/src/dependantsPage/dependantsStep.js';
+import { expensesStep } from '#packages/cfe-eligibility-journey/src/expensesPage/expensesStep.js';
+import { partnerExpensesStep } from '#packages/cfe-eligibility-journey/src/partnerExpensesPage/partnerExpensesStep.js';
+import { checkAnswersStep } from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersStep.js';
+import { propertiesStepPartner } from '#packages/cfe-eligibility-journey/src/propertiesPageWithPartner/propertiesStepPartner.js';
+import { undisputedSavingsStep } from '#packages/cfe-eligibility-journey/src/undisputedSavings/undisputedSavingsStep.js';
+import { partnerDependantsStep } from '#packages/cfe-eligibility-journey/src/partnerDependantsPage/partnerDependantsStep.js';
 
 describe('Financial eligibility Forge routing', () => {
   it('routes under-18 answers to the correct next steps', () => {

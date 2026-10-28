@@ -10,7 +10,7 @@ export const submitButton = GovUKButton({ text: 'Submit' })
 export const discardChangesLink = HtmlBlock({
   tag: 'a',
   classes: `govuk-link ${GovUKUtilityClasses.FontSize.Size19} ${GovUKUtilityClasses.Margin.Left1}`,
-  attributes: { href: [Format('/cases/%1/financial-eligibility/change/discard', Params('caseId'))], },
+  attributes: { href: [Format('/cases/%1/cfe-eligibility/change/discard', Params('caseId'))], },
   content: 'Discard changes',
 })
 

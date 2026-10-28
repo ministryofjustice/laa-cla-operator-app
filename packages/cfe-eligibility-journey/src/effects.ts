@@ -1,8 +1,16 @@
 import { EffectRegistry } from "@ministryofjustice/hmpps-forge/core/authoring";
 import type { EffectFunctionContext, EffectFunctionExpr } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { type Deps } from '@ministryofjustice/financial-eligibility-journey';
+import { type Deps } from '@ministryofjustice/cfe-eligibility-journey';
 import type { FinancialEligibilitySession } from './context.type.js';
 import { getOrMigrateCasePatternDrafts } from './casePatternDrafts.js';
+import {
+  calculateAge,
+  deriveAgeAnswers,
+  CLIENT_AGE_DATA_KEY,
+  CLIENT_DATE_OF_BIRTH_DATA_KEY,
+  CLIENT_IS_60_OR_OVER_DATA_KEY,
+  CLIENT_IS_UNDER_18_DATA_KEY,
+} from './clientAge.js';
 
 export interface FinancialEligibilityEffectShape {  
   /** Stores the current journey page as the return target for discard confirmation */
@@ -19,6 +27,8 @@ export interface FinancialEligibilityEffectShape {
   LoadCaseFinancialEligibility: () => EffectFunctionExpr;
   /** Saves a new answer if it has been answered */
   SaveNewAnswerIfAnswered: () => EffectFunctionExpr;
+  /** Answers the age questions from the client's date of birth so they can be skipped */
+  ApplyClientAgeFromDob: () => EffectFunctionExpr;
 }
 
 type FinancialEligibilityEffectImplementation = (
@@ -41,7 +51,7 @@ export const FinancialEligibilityEffectsImplementations: Record<
     }
 
     const currentPath = new URL(context.getRequestUrl()).pathname;
-    const discardPath = `/cases/${caseId}/financial-eligibility/change/discard`;
+    const discardPath = `/cases/${caseId}/cfe-eligibility/change/discard`;
 
     if (currentPath !== discardPath) {
       const session = context.getSession() as FinancialEligibilitySession | undefined;
@@ -67,9 +77,9 @@ export const FinancialEligibilityEffectsImplementations: Record<
       return;
     }
 
-    const fallbackPath = `/cases/${caseId}/financial-eligibility/`;
+    const fallbackPath = `/cases/${caseId}/cfe-eligibility/`;
     const returnTo = (context.getSession() as FinancialEligibilitySession | undefined)?.discardReturnPaths?.[caseId];
-    const journeyPath = `/cases/${caseId}/financial-eligibility/change/`;
+    const journeyPath = `/cases/${caseId}/cfe-eligibility/change/`;
 
     // This resolved path populates `discardReturnPath`, and is picked up in the link
     context.setData('discardReturnPath', typeof returnTo === 'string' && returnTo.startsWith(journeyPath) ? returnTo : fallbackPath);
@@ -120,6 +130,39 @@ export const FinancialEligibilityEffectsImplementations: Record<
   SaveNewAnswerIfAnswered: (deps) => (context: EffectFunctionContext) => {
     void deps.effectsWithDeps.SaveNewAnswerIfAnswered(deps, context);
   },
+
+  /**
+   * Answers the age questions from the client's date of birth (supplied by the host as Data `clientDateOfBirth`),
+   * so the journey can skip them. The answers are also written to the drafts so they are persisted on submit,
+   * and take precedence over previously saved answers because the operator can no longer change them.
+   * @returns {(context: EffectFunctionContext) => void} Function to apply the DOB-derived answers
+   */
+  ApplyClientAgeFromDob: () => (context: EffectFunctionContext) => {
+    const age = calculateAge(context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY), new Date());
+    if (age === null) {
+      return;
+    }
+
+    const answers = deriveAgeAnswers(age);
+    context.setData(CLIENT_AGE_DATA_KEY, age);
+    context.setData(CLIENT_IS_UNDER_18_DATA_KEY, answers['under-18'] === 'yes');
+    context.setData(CLIENT_IS_60_OR_OVER_DATA_KEY, answers['60-or-over'] === 'yes');
+
+    const caseId = context.getRequestParam('caseId');
+    const session = context.getSession() as FinancialEligibilitySession | undefined;
+    let drafts: Record<string, unknown> | undefined;
+    if (caseId && session) {
+      session.financialEligibilityDrafts ??= {};
+      drafts = session.financialEligibilityDrafts[caseId] ??= {};
+    }
+
+    for (const [answerCode, value] of Object.entries(answers)) {
+      context.setAnswer(answerCode, value);
+      if (drafts) {
+        drafts[answerCode] = value;
+      }
+    }
+  },
 };
 
 export const FinancialEligibilityEffectsRegistry = new EffectRegistry<Deps>();
@@ -152,6 +195,10 @@ export const FinancialEligibilityEffects: FinancialEligibilityEffectShape = {
   SaveNewAnswerIfAnswered: FinancialEligibilityEffectsRegistry.register(
     'SaveNewAnswerIfAnswered',
     FinancialEligibilityEffectsImplementations.SaveNewAnswerIfAnswered,
+  ),
+  ApplyClientAgeFromDob: FinancialEligibilityEffectsRegistry.register(
+    'ApplyClientAgeFromDob',
+    FinancialEligibilityEffectsImplementations.ApplyClientAgeFromDob,
   ),
 };
 

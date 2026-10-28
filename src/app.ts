@@ -36,12 +36,12 @@ import {
 } from "./middleware/apiMiddleware.js";
 import createEligibilityPackage, {
   type Deps as EligibilityDeps,
-} from "@ministryofjustice/financial-eligibility-journey";
+} from "@ministryofjustice/cfe-eligibility-journey";
 import {
   type TransformerRegistryDeps,
   transformers,
-} from "#packages/financial-eligibility-journey/src/formatters.js";
-import { moneyConditions } from "#packages/financial-eligibility-journey/src/moneyFieldHelpers.js";
+} from "#packages/cfe-eligibility-journey/src/formatters.js";
+import { moneyConditions } from "#packages/cfe-eligibility-journey/src/moneyFieldHelpers.js";
 import { FinancialEligibilityEffectsWithDepsImpl } from "./services/financialEligibilityWithDeps.js";
 import { formatCurrency } from "#src/scripts/helpers/index.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
@@ -156,8 +156,8 @@ const createApp = async (): Promise<express.Application> => {
     });
   }
 
-  // The financial eligibility journey is a standalone package shared with
-  // laa-manage-your-civil-cases, so it has its own dependencies.
+  // The financial eligibility journey is a standalone package (to be shared with
+  // laa-manage-your-civil-cases), so it has its own dependencies.
   forge
     .registerGlobalFunctions<TransformerRegistryDeps>(transformers, {
       formatCurrency,
@@ -200,7 +200,7 @@ const createApp = async (): Promise<express.Application> => {
   };
 
   app.use(express.urlencoded({ extended: true }));
-  app.use("/cases/:caseId/financial-eligibility/change", requireAuth);
+  app.use("/cases/:caseId/cfe-eligibility/change", requireAuth);
   app.use("/", createExpressRouter(forge, { nunjucksEnv }));
 
   // Register last to catch errors from routes, controllers, and services.

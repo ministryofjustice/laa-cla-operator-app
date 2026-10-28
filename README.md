@@ -233,9 +233,10 @@ Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will 
 
 ### Financial eligibility journey
 
-The financial eligibility (means test) journey lives in `packages/financial-eligibility-journey` as a standalone Forge package. It is copied from [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases) and should be kept identical to that copy: make changes there first, then copy them across. For that reason `packages/` is excluded from ESLint and Prettier here.
+The financial eligibility (means test) journey lives in `packages/cfe-eligibility-journey` as a standalone Forge package. It started as a copy of the journey in [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases), which reflects the questions cla_frontend asks. This version is changing to map more closely to CFE Civil, and will be handed back to manage-your-civil-cases to run alongside its own version for cases created in this app. Its journey code (`cfe-eligibility`), URL, import alias (`@ministryofjustice/cfe-eligibility-journey`) and global Forge function names (prefixed `Cfe`) are distinct from manage's so both can be registered in one app. `packages/` keeps the original code style, so it is excluded from ESLint and Prettier here.
 
-- The journey runs at `/cases/:caseId/financial-eligibility/change`. Leaving the journey (submit or discard) goes back to the client details page.
+- The journey runs at `/cases/:caseId/cfe-eligibility/change`. Leaving the journey (submit or discard) goes back to the client details page.
+- The age questions are answered from the client's date of birth when the case has one, and skipped. The host supplies the date of birth by setting Forge Data `clientDateOfBirth` (ISO `YYYY-MM-DD`) in its `LoadCaseDetails` effect. "Are you or your partner aged 60 or over?" is still asked when the client is under 60, because the partner's age decides it.
 - App-specific behaviour is supplied through the package's `effectsWithDeps` dependency, implemented in `src/services/financialEligibilityWithDeps.ts`. It reads and writes the call centre `eligibility_check` API. A case has no eligibility check until the first submit, which creates it.
 
 ### Pre-commit checks
