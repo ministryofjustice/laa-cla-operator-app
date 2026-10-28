@@ -6,7 +6,7 @@
   "main": "public/app.js",
   "type": "module",
   "workspaces": [
-    "packages/financial-eligibility-journey"
+    "packages/cfe-eligibility-journey"
   ],
   "imports": {
     "#*": "./*"

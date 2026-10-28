@@ -32,6 +32,7 @@ export const handlers = [
     ({ params }) =>
       HttpResponse.json({
         reference: params.caseId,
+        date_of_birth: "1980-05-14",
       }),
   ),
   http.put(

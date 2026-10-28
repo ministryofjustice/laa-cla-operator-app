@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { createTestEffectContext } from "@ministryofjustice/hmpps-forge/core/testing";
-import type { Deps } from "#packages/financial-eligibility-journey/src/api.js";
-import type { FinancialEligibilitySession } from "#packages/financial-eligibility-journey/src/context.type.js";
+import type { Deps } from "#packages/cfe-eligibility-journey/src/api.js";
+import type { FinancialEligibilitySession } from "#packages/cfe-eligibility-journey/src/context.type.js";
 import {
   mapAnswersToApiPayload,
   applyNonRequiredSectionDefaults,
@@ -83,6 +83,32 @@ describe("mapAnswersToApiPayload", () => {
       const answers = { "60-or-over-with-partner": "yes" };
       const result = mapAnswersToApiPayload(answers);
       expect(result.is_you_or_your_partner_over_60).to.equal(true);
+    });
+
+    it("should use the 60-or-over-with-partner answer when the client has a partner, whatever the key order", () => {
+      const answers = {
+        "has-partner": "yes",
+        "60-or-over-with-partner": "yes",
+        "60-or-over": "no",
+      };
+      const result = mapAnswersToApiPayload(answers);
+      expect(result.is_you_or_your_partner_over_60).to.equal(true);
+    });
+
+    it("should use the 60-or-over answer when the client has no partner, whatever the key order", () => {
+      const answers = {
+        "has-partner": "no",
+        "60-or-over": "no",
+        "60-or-over-with-partner": "yes",
+      };
+      const result = mapAnswersToApiPayload(answers);
+      expect(result.is_you_or_your_partner_over_60).to.equal(false);
+    });
+
+    it("should pass through a non yes/no over-60 answer on the selected path unchanged", () => {
+      const answers = { "has-partner": "no", "60-or-over": null };
+      const result = mapAnswersToApiPayload(answers);
+      expect(result.is_you_or_your_partner_over_60).to.equal(null);
     });
   });
 
@@ -1526,6 +1552,18 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
         status: "success",
         data: caseData,
       });
+      expect(context.getData("clientDateOfBirth")).to.equal("1990-01-01");
+    });
+
+    it("stores a null date of birth when the case has none", async () => {
+      loadCaseStub.resolves({ reference: "CASE123" });
+      const context = createTestEffectContext({
+        params: { caseId: "CASE123" },
+      });
+
+      await effects.LoadCaseDetails(deps, context);
+
+      expect(context.getData("clientDateOfBirth")).to.equal(null);
     });
 
     it("propagates API errors when the case cannot be loaded", async () => {

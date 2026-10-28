@@ -87,10 +87,10 @@ router.get("/", (req: Request, res: Response): void => {
   res.redirect("/dashboard");
 });
 
-// The shared financial eligibility journey exits to its summary page, which only exists in
-// manage-your-civil-cases, so send the operator back to the client details page instead
+// The eligibility journey exits to a summary page that this app doesn't have, so send the
+// operator back to the client details page instead
 router.get(
-  "/cases/:caseId/financial-eligibility",
+  "/cases/:caseId/cfe-eligibility",
   requireAuth,
   (req: Request<{ caseId: string }>, res: Response): void => {
     res.redirect(

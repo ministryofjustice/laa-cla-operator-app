@@ -5,16 +5,16 @@ import {
   maintenancePaidField, maintenancePaidFrequencyField,
   childcareCostsField, childcareCostsFrequencyField,
   legalAidContributionsField, maintenancePaidRow, legalAidContributionsHeading,
-} from '#packages/financial-eligibility-journey/src/expensesPage/expensesBlock.js';
+} from '#packages/cfe-eligibility-journey/src/expensesPage/expensesBlock.js';
 import {
   mortgagePartnerField, mortgagePartnerFrequencyField,
   rentPartnerField, rentPartnerFrequencyField,
   maintenancePaidPartnerField, maintenancePaidPartnerFrequencyField,
   childcareCostsPartnerField, childcareCostsPartnerFrequencyField,
   legalAidContributionsPartnerField, maintenancePaidPartnerRow, legalAidContributionsPartnerHeading,
-} from '#packages/financial-eligibility-journey/src/partnerExpensesPage/partnerExpensesBlock.js';
-import { expensesSummaryList, partnerExpensesSummaryList } from '#packages/financial-eligibility-journey/src/checkAnswersPage/checkAnswersBlock.js';
-import { frequencyItems as FREQUENCY_ITEMS, lastCalendarMonthDate, MAX_MONEY_VALUE_MESSAGE } from '#packages/financial-eligibility-journey/src/moneyFieldHelpers.js';
+} from '#packages/cfe-eligibility-journey/src/partnerExpensesPage/partnerExpensesBlock.js';
+import { expensesSummaryList, partnerExpensesSummaryList } from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersBlock.js';
+import { frequencyItems as FREQUENCY_ITEMS, lastCalendarMonthDate, MAX_MONEY_VALUE_MESSAGE } from '#packages/cfe-eligibility-journey/src/moneyFieldHelpers.js';
 
 interface FieldLike {
   code?: unknown;

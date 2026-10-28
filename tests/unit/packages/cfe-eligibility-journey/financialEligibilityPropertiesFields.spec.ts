@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { propertySet } from '#packages/financial-eligibility-journey/src/propertiesPage/propertiesBlock.js';
-import { propertySet as propertySetPartner } from '#packages/financial-eligibility-journey/src/propertiesPageWithPartner/propertiesBlockPartner.js';
-import { MAX_MONEY_VALUE_MESSAGE } from '#packages/financial-eligibility-journey/src/moneyFieldHelpers.js';
+import { propertySet } from '#packages/cfe-eligibility-journey/src/propertiesPage/propertiesBlock.js';
+import { propertySet as propertySetPartner } from '#packages/cfe-eligibility-journey/src/propertiesPageWithPartner/propertiesBlockPartner.js';
+import { MAX_MONEY_VALUE_MESSAGE } from '#packages/cfe-eligibility-journey/src/moneyFieldHelpers.js';
 
 interface FieldLike {
   validWhen?: unknown;

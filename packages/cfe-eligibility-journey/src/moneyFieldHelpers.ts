@@ -93,7 +93,7 @@ export function lastCalendarMonthDate(): ResolvableString {
  * Function to check inputted values are validated to 2 decimal places 
  */
 export const HasMaxTwoDecimalPlaces = moneyConditions.register(
-  'HasMaxTwoDecimalPlaces',
+  'CfeHasMaxTwoDecimalPlaces',
   () => (value: unknown): boolean => {
     if (value === null || value === undefined || value === '') {
       return true

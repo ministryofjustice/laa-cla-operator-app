@@ -15,7 +15,7 @@ export const ifPressedDiscardChanges = () => submit({
   when: Post('action').match(Condition.Equals('discard-changes')),
   onAlways: {
     effects: [FinancialEligibilityEffects.ClearDraftAnswers()],
-    next: [redirect({ goto: Format('/cases/%1/financial-eligibility/', Params('caseId')) })], //`%1` will get resolved to caseId
+    next: [redirect({ goto: Format('/cases/%1/cfe-eligibility/', Params('caseId')) })], //`%1` will get resolved to caseId
   },
 })
 

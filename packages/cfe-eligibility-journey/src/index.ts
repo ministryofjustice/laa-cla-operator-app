@@ -17,6 +17,7 @@ export * from './authoring.js'
 export * from './effects.js'
 export * from './context.type.js'
 export * from './journey.js'
+export * from './clientAge.js'
 
 export * from './under18Page/under18Step.js'
 export * from './under18RegularPaymentPage/under18RegularPaymentStep.js'
