@@ -15,7 +15,17 @@ import { EMPTY_LENGTH } from "#src/constants.js";
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
 
-const AUTH_FAILED_MESSAGE = "We couldn't sign you in. Please try again.";
+
+
+// types/express-session.d.ts
+import "express-session";
+
+declare module "express-session" {
+  interface SessionData {
+    flashErrors?: { text: string; }[];
+  }
+}
+
 
 /**
  * Get a querystring as a string
@@ -110,25 +120,24 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
 }
 
 /**
- * Flashes an authentication error and redirects the user to the home page.
+ * Flashes an authentication error and redirects the user to the sign-in page.
  *
  * @param {Request} req Express request holding the session.
  * @param {Response} res Express response used to redirect the user.
+ * @param {string} message The error message to display.
  * @returns {Promise<void>} A promise resolving after the redirect is issued.
  */
 async function redirectHomeWithError(
   req: Request,
   res: Response,
+  message: string,
 ): Promise<void> {
-  req.session.flash = { type: "error", message: AUTH_FAILED_MESSAGE };
-  try {
-    // Persist before redirecting so the flash is there when "/" loads
-    await saveSession(req);
-  } catch {
-    /* c8 ignore next */
-    // Still redirect; the user just won't see the message.
-  }
-  res.redirect("/");
+  req.session.flashError = message;
+
+  // Make sure the session is saved before the redirect happens
+  req.session.save(() => {
+    res.redirect("/sign-in");
+  });
 }
 
 /**
@@ -205,7 +214,7 @@ export async function callbackAction(
   const state = typeof req.query.state === "string" ? req.query.state : "";
 
   if (!validateCodeAndState(code, state, req)) {
-    await redirectHomeWithError(req, res);
+    await redirectHomeWithError(req, res, "Validation code failed");
     return;
   }
 
@@ -214,7 +223,7 @@ export async function callbackAction(
     const service = SilasService.factory(req.session.id);
     const response = await service.acquireTokenByCode(code);
     if (!hasValidAccountResponse(response)) {
-      await redirectHomeWithError(req, res);
+      await redirectHomeWithError(req, res, "Failed to save session");
       return;
     }
 
@@ -229,7 +238,7 @@ export async function callbackAction(
     res.redirect("/dashboard");
   } catch {
     /* c8 ignore next */
-    await redirectHomeWithError(req, res);
+    await redirectHomeWithError(req, res, "Office code does not match");
   }
 }
 

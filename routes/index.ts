@@ -38,9 +38,16 @@ const getSafeRelativeNextPath = (next: unknown): string => {
 };
 
 // 1. Trigger Login
+
 router.get("/sign-in", (req: Request, res: Response): void => {
-  res.render("main/auth/sign-in.njk");
+  const message = req.session.flashError;
+  delete req.session.flashError; // one-time use
+
+  res.render("main/auth/sign-in.njk", {
+    errors: message ? [{ text: message }] : []
+  });
 });
+
 
 // Login
 router.get("/login", loginAction);
