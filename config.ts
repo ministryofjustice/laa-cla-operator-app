@@ -86,6 +86,10 @@ const config: Config = {
     tls_enabled: process.env.REDIS_TLS_ENABLED === "true",
     maxAge: REDIS_AGE_MAX_SECONDS,
   },
+  // Check Financial Eligibility (CFE) API, used by the eligibility journey.
+  cfe: {
+    baseUrl: process.env.CFE_HOST ?? "",
+  },
 };
 
 export default config;

@@ -1,0 +1,45 @@
+{
+  "level_of_help": "certificated",
+  "client_age": "standard",
+  "domestic_abuse_applicant": false,
+  "date_of_birth": "1982-09-14",
+  "immigration_or_asylum_type_upper_tribunal": "none",
+  "partner": false,
+  "passporting": true,
+  "property_owned": "none",
+  "additional_property_owned": "none",
+  "bank_accounts": [
+    {
+      "amount": 1250.75,
+      "account_in_dispute": true
+    },
+    {
+      "amount": 300,
+      "account_in_dispute": false
+    }
+  ],
+  "investments_relevant": true,
+  "investments": 2500,
+  "investments_in_dispute": true,
+  "valuables_relevant": true,
+  "valuables": 750,
+  "valuables_in_dispute": false,
+  "vehicle_owned": true,
+  "vehicles": [
+    {
+      "vehicle_value": 8000,
+      "vehicle_pcp": true,
+      "vehicle_finance": 1500,
+      "vehicle_over_3_years_ago": true,
+      "vehicle_in_regular_use": true,
+      "vehicle_in_dispute": true
+    },
+    {
+      "vehicle_value": 3000,
+      "vehicle_pcp": false,
+      "vehicle_over_3_years_ago": false,
+      "vehicle_in_regular_use": false,
+      "vehicle_in_dispute": false
+    }
+  ]
+}

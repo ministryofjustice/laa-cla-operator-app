@@ -160,5 +160,19 @@
   },
   "accessibility": {
     "visuallyHiddenText": {}
+  },
+  "eligibility": {
+    "client_age": {
+      "question": "How old is the client?",
+      "legend": "Select the client's age group"
+    },
+    "level_of_help": {
+      "question": "What type of legal aid is needed?",
+      "legend": "Select the type of legal aid"
+    },
+    "applicant": {
+      "question": "Partner details",
+      "legend": "Does the client have a partner?"
+    }
   }
 }

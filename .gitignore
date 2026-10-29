@@ -31,3 +31,6 @@ public/
 
 # Code coverage
 coverage/
+
+# VS Code workspace files
+*.code-workspace
