@@ -7,7 +7,5 @@ export const ZERO = 0;
 
 
 export const ALLOWED_LAA_ACCOUNTS: readonly string[] = [
-  "ACCOUNT_1",
-  "ACCOUNT_2",
-  "ACCOUNT_3",
+"2Q209V"
 ];

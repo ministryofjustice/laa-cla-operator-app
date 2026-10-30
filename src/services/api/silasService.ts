@@ -296,8 +296,13 @@ export class SilasService {
       algorithms: ["RS256"],
     }) as jsonwebtoken.JwtPayload;
 
-    const laaAccounts = [payload.LAA_ACCOUNTS].flat() as string[];
-
+  //cover all edge cases- future proof 
+  const laaAccounts = [payload.LAA_ACCOUNTS]
+  .flat(Infinity)
+  .filter((x) => ["string", "number", "bigint", "boolean"].includes(typeof x) && x !== "" && x === x)
+  .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
+   
+    //Check if it's inside the constant
     const allAllowed =
       laaAccounts.length > EMPTY_LENGTH &&
       laaAccounts.every((account) => ALLOWED_LAA_ACCOUNTS.includes(account));

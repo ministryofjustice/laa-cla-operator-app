@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-
+import "express-session";
 import type { ConfidentialClientApplication } from "@azure/msal-node";
 import type { Request, Response } from "express";
 
@@ -15,10 +15,6 @@ import { EMPTY_LENGTH } from "#src/constants.js";
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
 
-
-
-// types/express-session.d.ts
-import "express-session";
 
 declare module "express-session" {
   interface SessionData {
@@ -134,7 +130,6 @@ async function redirectHomeWithError(
 ): Promise<void> {
   req.session.flashError = message;
 
-  // Make sure the session is saved before the redirect happens
   req.session.save(() => {
     res.redirect("/sign-in");
   });
