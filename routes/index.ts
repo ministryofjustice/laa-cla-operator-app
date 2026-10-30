@@ -38,16 +38,14 @@ const getSafeRelativeNextPath = (next: unknown): string => {
 };
 
 // 1. Trigger Login
-
 router.get("/sign-in", (req: Request, res: Response): void => {
-  const message = req.session.flashError;
-  delete req.session.flashError; // one-time use
+  const { flashError: message } = req.session;
+  delete req.session.flashError; 
 
   res.render("main/auth/sign-in.njk", {
-    errors: message ? [{ text: message }] : []
+    errors: message !== undefined && message !== "" ? [{ text: message }] : [],
   });
 });
-
 
 // Login
 router.get("/login", loginAction);
@@ -97,7 +95,7 @@ router.get("/privacy", (req: Request, res: Response): void => {
   res.render("main/privacy.njk");
 });
 
-//Cookies page
+// Cookies page
 router.get("/cookies", (req: Request, res: Response): void => {
   res.render("main/cookies.njk");
 });
