@@ -9,12 +9,19 @@ $moj-page-width: 1280px;
 $ucd-content-width: 1280px;
 $ucd-gutter: 50px;
 
+.two-thirds-login {
+  width: 80%;
+}
+
 @include govuk-media-query($from: desktop) {
   .govuk-width-container,
   .moj-header__container {
     max-width: $ucd-content-width;
     padding-inline: $ucd-gutter;
     box-sizing: content-box;
+  }
+  .two-thirds-login {
+    width: 90%;
   }
 
   .govuk-width-container .govuk-grid-row {

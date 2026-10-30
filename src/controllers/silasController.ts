@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-
+import "express-session";
 import type { ConfidentialClientApplication } from "@azure/msal-node";
 import type { Request, Response } from "express";
-
+import { promisify } from "node:util";
 import config from "#config.js";
 import { SilasService } from "#src/services/api/silasService.js";
 import {
@@ -10,16 +10,22 @@ import {
   regenerateSession,
   saveSession,
 } from "#src/helpers/session.js";
-import { EMPTY_LENGTH, INTERNAL_SERVER_ERROR } from "#src/constants.js";
+import { EMPTY_LENGTH } from "#src/constants.js";
 
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
+
+declare module "express-session" {
+  interface SessionData {
+    flashErrors?: Array<{ text: string }>;
+  }
+}
 
 /**
  * Get a querystring as a string
  * @param {Request} request - The express request
  * @param {string} key - Which querystring to get
- * @returns {string | undefined} - The querysyting value
+ * @returns {string | undefined} - The querystring value
  */
 function getQueryStringAsString(
   request: Request,
@@ -108,15 +114,27 @@ export async function loginAction(req: Request, res: Response): Promise<void> {
 }
 
 /**
- * Sends an authentication failure response.
+ * Flashes an authentication error and redirects the user to the sign-in page.
  *
- * @param {Response} res Express response used to send the failure status.
- * @returns {void} Sends the authentication failure response.
+ * @param {Request} req Express request holding the session.
+ * @param {Response} res Express response used to redirect the user.
+ * @param {string} message The error message to display.
+ * @returns {Promise<void>} A promise resolving after the redirect is issued.
  */
-function sendAuthenticationFailure(res: Response): void {
-  res.status(INTERNAL_SERVER_ERROR).send("");
-}
+async function redirectHomeWithError(
+  req: Request,
+  res: Response,
+  message: string,
+): Promise<void> {
+  req.session.flashError = message;
 
+  const saveSession = promisify((callback: (err?: unknown) => void): void => {
+    req.session.save(callback);
+  });
+
+  await saveSession();
+  res.redirect("/sign-in");
+}
 /**
  * Determines whether an MSAL authentication response contains
  * the information required to establish a session.
@@ -151,7 +169,7 @@ function hasValidAccountResponse(
 /**
  * Validate code and state from an entra redirect
  * @param {string} code - The entra code that will be exchange for an access token
- * @param {state} state - The alue that was added to the original lokin request
+ * @param {string} state - The value that was added to the original login request
  * @param {Request} req - Express request object
  * @returns {boolean} - Whether the given values are valid
  */
@@ -169,6 +187,7 @@ function validateCodeAndState(
   }
   return true;
 }
+
 /**
  * Handles the OAuth callback from SILAS.
  *
@@ -190,7 +209,7 @@ export async function callbackAction(
   const state = typeof req.query.state === "string" ? req.query.state : "";
 
   if (!validateCodeAndState(code, state, req)) {
-    sendAuthenticationFailure(res);
+    await redirectHomeWithError(req, res, "Validation code failed");
     return;
   }
 
@@ -199,7 +218,7 @@ export async function callbackAction(
     const service = SilasService.factory(req.session.id);
     const response = await service.acquireTokenByCode(code);
     if (!hasValidAccountResponse(response)) {
-      sendAuthenticationFailure(res);
+      await redirectHomeWithError(req, res, "Failed to save session");
       return;
     }
 
@@ -214,8 +233,7 @@ export async function callbackAction(
     res.redirect("/dashboard");
   } catch {
     /* c8 ignore next */
-    res.status(INTERNAL_SERVER_ERROR).send("Authentication failed");
-    /* c8 ignore next */
+    await redirectHomeWithError(req, res, "Office code does not match");
   }
 }
 
