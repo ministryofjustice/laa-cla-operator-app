@@ -137,7 +137,6 @@ async function redirectHomeWithError(
   await saveSession();
   res.redirect("/sign-in");
 }
-
 /**
  * Determines whether an MSAL authentication response contains
  * the information required to establish a session.

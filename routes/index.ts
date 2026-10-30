@@ -39,6 +39,7 @@ const getSafeRelativeNextPath = (next: unknown): string => {
 
 // 1. Trigger Login
 router.get("/sign-in", (req: Request, res: Response): void => {
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- already destructured
   const { flashError: message } = req.session;
   delete req.session.flashError; 
 
