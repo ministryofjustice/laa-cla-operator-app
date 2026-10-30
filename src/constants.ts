@@ -5,7 +5,4 @@ export const INTERNAL_SERVER_ERROR = 500;
 export const ZERO = 0;
 /* c8 ignore stop */
 
-
-export const ALLOWED_LAA_ACCOUNTS: readonly string[] = [
-"2Q209V"
-];
+export const ALLOWED_LAA_ACCOUNTS: readonly string[] = ["2Q209V"];

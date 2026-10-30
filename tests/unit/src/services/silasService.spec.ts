@@ -369,7 +369,7 @@ describe("Silas Service", () => {
     }
   });
 
-    it("verify: LAA_ACCOUNTS not in the allowed list", async () => {
+  it("verify: LAA_ACCOUNTS not in the allowed list", async () => {
     const silasConfig = { ...config.silas };
     Object.assign(silasConfig, {
       tenantId: "test-tenant-id",
@@ -381,13 +381,10 @@ describe("Silas Service", () => {
       laaAccounts: "not-allowed",
     });
     sinon.stub(service, "getPublicKey").resolves(publicKey);
-    await assert.rejects(
-      service.verify(accessToken),
-      (error: Error) => {
-        assert.equal(error.message, "LAA_ACCOUNTS not in the allowed list");
-        return true;
-      },
-    );
+    await assert.rejects(service.verify(accessToken), (error: Error) => {
+      assert.equal(error.message, "LAA_ACCOUNTS not in the allowed list");
+      return true;
+    });
   });
 
   it("verify: token has algorithm", async () => {

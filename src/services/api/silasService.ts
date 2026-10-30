@@ -14,14 +14,13 @@ import { saveSession } from "#src/helpers/session.js";
 import { randomBytes } from "node:crypto";
 import { createRedisClient } from "#utils/redis.js";
 import config from "#config.js";
-import { EMPTY_LENGTH, ZERO , ALLOWED_LAA_ACCOUNTS} from "#src/constants.js";
+import { EMPTY_LENGTH, ZERO, ALLOWED_LAA_ACCOUNTS } from "#src/constants.js";
 import jsonwebtoken, {
   JsonWebTokenError,
   TokenExpiredError,
   NotBeforeError,
 } from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
-
 
 const NONCE_BYTES = 32;
 const ENTRA_KEY_CACHE_TTL_MS = 3600000; // 1 hour
@@ -283,40 +282,40 @@ export class SilasService {
    * @param {string} token JWT access token to verify.
    * @throws {JsonWebTokenError | TokenExpiredError | NotBeforeError | Error}
    */
-async verify(token: string): Promise<void> {
-  const kid = this.getAccessTokenKID(token);
-  const pubKey = await this.getPublicKey(kid);
-  const verified = jsonwebtoken.verify(token, pubKey, {
-    audience: this.config.expectedAudience,
-    issuer: `https://login.microsoftonline.com/${this.config.tenantId}/v2.0`,
-    algorithms: ["RS256"],
-  });
+  async verify(token: string): Promise<void> {
+    const kid = this.getAccessTokenKID(token);
+    const pubKey = await this.getPublicKey(kid);
+    const verified = jsonwebtoken.verify(token, pubKey, {
+      audience: this.config.expectedAudience,
+      issuer: `https://login.microsoftonline.com/${this.config.tenantId}/v2.0`,
+      algorithms: ["RS256"],
+    });
 
-  if (typeof verified === "string") {
-    throw new Error("Unexpected string payload in access token");
+    if (typeof verified === "string") {
+      throw new Error("Unexpected string payload in access token");
+    }
+    const payload: jsonwebtoken.JwtPayload = verified;
+
+    // Cover all edge cases - future proof
+    const laaAccounts = [payload.LAA_ACCOUNTS]
+      .flat(Infinity)
+      .filter(
+        (x) =>
+          ["string", "number", "bigint", "boolean"].includes(typeof x) &&
+          x !== "" &&
+          !(typeof x === "number" && Number.isNaN(x)),
+      )
+      .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
+
+    // Check it's inside the constant
+    const allAllowed =
+      laaAccounts.length > EMPTY_LENGTH &&
+      laaAccounts.every((account) => ALLOWED_LAA_ACCOUNTS.includes(account));
+
+    if (!allAllowed) {
+      throw new Error("LAA_ACCOUNTS not in the allowed list");
+    }
   }
-  const payload: jsonwebtoken.JwtPayload = verified;
-
-  // Cover all edge cases - future proof
-  const laaAccounts = [payload.LAA_ACCOUNTS]
-    .flat(Infinity)
-    .filter(
-      (x) =>
-        ["string", "number", "bigint", "boolean"].includes(typeof x) &&
-        x !== "" &&
-        !(typeof x === "number" && Number.isNaN(x)),
-    )
-    .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
-
-  // Check it's inside the constant
-  const allAllowed =
-    laaAccounts.length > EMPTY_LENGTH &&
-    laaAccounts.every((account) => ALLOWED_LAA_ACCOUNTS.includes(account));
-
-  if (!allAllowed) {
-    throw new Error("LAA_ACCOUNTS not in the allowed list");
-  }
-}
 
   /**
    * Get key id used in a given access token.
@@ -333,4 +332,3 @@ async verify(token: string): Promise<void> {
   }
   /* c8 ignore next */
 }
-

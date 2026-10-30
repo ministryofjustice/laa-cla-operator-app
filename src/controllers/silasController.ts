@@ -15,13 +15,11 @@ import { EMPTY_LENGTH } from "#src/constants.js";
 const EPHEMERAL_SUFFIX =
   "laa-cla-operator-app.cloud-platform.service.justice.gov.uk";
 
-
 declare module "express-session" {
   interface SessionData {
-    flashErrors?: Array<{ text: string; }>;
+    flashErrors?: Array<{ text: string }>;
   }
 }
-
 
 /**
  * Get a querystring as a string
