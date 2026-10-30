@@ -4,7 +4,7 @@ import {
   RedisCachePlugin,
   SilasService,
 } from "#src/services/api/silasService.js";
-import { describe, it } from "mocha";
+import { afterEach, describe, it } from "mocha";
 import sinon from "sinon";
 import { createTestRequest } from "../controllers/index.js";
 import type { AuthenticationResult } from "@azure/msal-node";
@@ -26,6 +26,10 @@ interface GenerateAccessTokenOptions {
   algorithm?: string;
   laaAccounts?: string | string[];
 }
+
+const TEST_TENANT_ID = "test-tenant-id";
+const TEST_AUDIENCE = "test-audience";
+const ALLOWED_ACCOUNT = ALLOWED_LAA_ACCOUNTS[0];
 
 function assertAuthCodeUrl(url: URL, expectedNonceValue?: string) {
   if (expectedNonceValue !== undefined) {
@@ -79,13 +83,13 @@ function generateAccessToken(
   const payload = {
     name: "Test user",
     username: "test.user@justice.gov.uk",
-    LAA_ACCOUNTS: args.laaAccounts ?? ALLOWED_LAA_ACCOUNTS[0],
+    LAA_ACCOUNTS: args.laaAccounts ?? ALLOWED_ACCOUNT,
   };
   const options = {
     algorithm: args.algorithm ?? "RS256",
     issuer:
       args.issuer ?? `https://login.microsoftonline.com/${args.tenantId}/v2.0`,
-    audience: args.audience ?? "test-audience",
+    audience: args.audience ?? TEST_AUDIENCE,
     expiresIn: args.expires ?? "1h",
     header: {
       kid: "rsa-key-2026-01",
@@ -95,9 +99,45 @@ function generateAccessToken(
   const accessToken = jsonwebtoken.sign(payload, privateKey, options);
   return { accessToken, publicKey };
 }
+
+/**
+ * Builds a SilasService configured with the test tenant and audience.
+ * @returns {SilasService} service instance
+ */
+function buildVerifyService(): SilasService {
+  const silasConfig = { ...config.silas };
+  Object.assign(silasConfig, {
+    tenantId: TEST_TENANT_ID,
+    expectedAudience: TEST_AUDIENCE,
+  });
+  return new SilasService(silasConfig);
+}
+
+/**
+ * Runs service.verify with jsonwebtoken.verify stubbed to return the given
+ * payload. Needed for payload shapes that cannot survive real JWT JSON
+ * serialisation (NaN, bigint, undefined, plain string payloads, etc.).
+ * @param {unknown} payload - The value jsonwebtoken.verify should return
+ */
+async function verifyWithStubbedPayload(payload: unknown): Promise<void> {
+  const service = buildVerifyService();
+  const { accessToken, publicKey } = generateAccessToken({
+    tenantId: TEST_TENANT_ID,
+  });
+  sinon.stub(service, "getPublicKey").resolves(publicKey);
+  sinon.stub(jsonwebtoken, "verify").returns(payload as any);
+  await service.verify(accessToken);
+}
+
+const NOT_ALLOWED_PATTERN = /LAA_ACCOUNTS not in the allowed list/;
+
 describe("Silas Service", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("factory:should return service instance without cache", () => {
-    const redisEnabledStub = sinon.stub(config.redis, "enabled").value(false);
+    sinon.stub(config.redis, "enabled").value(false);
     const createRedisCachePluginStub = sinon.stub(
       SilasService,
       "createRedisCachePlugin",
@@ -115,24 +155,20 @@ describe("Silas Service", () => {
       false,
       "should not use redis cache plugin when redis is disabled",
     );
-    redisEnabledStub.restore();
-    createRedisCachePluginStub.restore();
   });
 
   it("factory:should return service instance with cache", () => {
-    const redisEnabledStub = sinon.stub(config.redis, "enabled").value(true);
-    const createRedisCachePluginStub = sinon.spy(
+    sinon.stub(config.redis, "enabled").value(true);
+    const createRedisCachePluginSpy = sinon.spy(
       SilasService,
       "createRedisCachePlugin",
     );
     SilasService.factory("session-id-1111");
     assert.equal(
-      createRedisCachePluginStub.called,
+      createRedisCachePluginSpy.called,
       true,
-      "should not use redis cache plugin when redis is disabled",
+      "should use redis cache plugin when redis is enabled",
     );
-    redisEnabledStub.restore();
-    createRedisCachePluginStub.restore();
   });
 
   it("getAuthCodeUrl: should return authorisation url", async () => {
@@ -275,141 +311,229 @@ describe("Silas Service", () => {
     assert.equal(result.accessToken, "not-a-real-access-token");
   });
 
-  it("verify: valid access token", async () => {
-    const silasConfig = { ...config.silas };
-    Object.assign(silasConfig, {
-      tenantId: "test-tenant-id",
-      expectedAudience: "test-audience",
+  describe("verify", () => {
+    it("verify: valid access token", async () => {
+      const service = buildVerifyService();
+      const { accessToken, publicKey } = generateAccessToken({
+        tenantId: TEST_TENANT_ID,
+      });
+      sinon.stub(service, "getPublicKey").resolves(publicKey);
+      await assert.doesNotReject(service.verify(accessToken));
     });
-    const service = new SilasService(silasConfig);
-    const { accessToken, publicKey } = generateAccessToken({
-      tenantId: silasConfig.tenantId,
+
+    it("verify: token has expired", async () => {
+      const service = buildVerifyService();
+      const { accessToken, publicKey } = generateAccessToken({
+        tenantId: TEST_TENANT_ID,
+        expires: "-1hr",
+      });
+      sinon.stub(service, "getPublicKey").resolves(publicKey);
+      await assert.rejects(
+        service.verify(accessToken),
+        TokenExpiredError,
+        "expected to raise token expired error for expired token",
+      );
     });
-    sinon.stub(service, "getPublicKey").resolves(publicKey);
-    try {
-      await service.verify(accessToken);
-    } catch (error: any) {
-      assert.fail(error.message);
-    }
+
+    it("verify: token has incorrect audience", async () => {
+      const service = buildVerifyService();
+      const { accessToken, publicKey } = generateAccessToken({
+        tenantId: TEST_TENANT_ID,
+        audience: "invalid-auidence",
+      });
+      sinon.stub(service, "getPublicKey").resolves(publicKey);
+      await assert.rejects(service.verify(accessToken), (error: Error) => {
+        assert.equal(
+          error instanceof JsonWebTokenError,
+          true,
+          "expecting JsonWebTokenError to be raised",
+        );
+        assert.equal(
+          error.message,
+          `jwt audience invalid. expected: ${TEST_AUDIENCE}`,
+          "expecting error message to be raised",
+        );
+        return true;
+      });
+    });
+
+    it("verify: token has incorrect issuer", async () => {
+      const service = buildVerifyService();
+      const { accessToken, publicKey } = generateAccessToken({
+        tenantId: TEST_TENANT_ID,
+        issuer: "invalid-issuer",
+      });
+      sinon.stub(service, "getPublicKey").resolves(publicKey);
+      await assert.rejects(service.verify(accessToken), (error: Error) => {
+        assert.equal(
+          error instanceof JsonWebTokenError,
+          true,
+          "expecting JsonWebTokenError to be raised",
+        );
+        assert.equal(
+          error.message,
+          `jwt issuer invalid. expected: https://login.microsoftonline.com/${TEST_TENANT_ID}/v2.0`,
+        );
+        return true;
+      });
+    });
+
+    it("verify: token has unsupported algorithm", async () => {
+      const service = buildVerifyService();
+      const { accessToken, publicKey } = generateAccessToken({
+        tenantId: TEST_TENANT_ID,
+        algorithm: "RS512",
+      });
+      sinon.stub(service, "getPublicKey").resolves(publicKey);
+      await assert.rejects(service.verify(accessToken), (error: Error) => {
+        assert.equal(
+          error instanceof JsonWebTokenError,
+          true,
+          "expecting JsonWebTokenError to be raised",
+        );
+        assert.equal(error.message, "invalid algorithm");
+        return true;
+      });
+    });
+
+    it("verify: should reject when jsonwebtoken returns a string payload", async () => {
+      await assert.rejects(
+        verifyWithStubbedPayload("i-am-a-string-payload"),
+        (error: Error) => {
+          assert.equal(
+            error.message,
+            "Unexpected string payload in access token",
+          );
+          return true;
+        },
+      );
+    });
+
+    describe("LAA_ACCOUNTS claim", () => {
+      it("verify: LAA_ACCOUNTS not in the allowed list", async () => {
+        const service = buildVerifyService();
+        const { accessToken, publicKey } = generateAccessToken({
+          tenantId: TEST_TENANT_ID,
+          laaAccounts: "not-allowed",
+        });
+        sinon.stub(service, "getPublicKey").resolves(publicKey);
+        await assert.rejects(service.verify(accessToken), (error: Error) => {
+          assert.equal(error.message, "LAA_ACCOUNTS not in the allowed list");
+          return true;
+        });
+      });
+
+      it("verify: should accept a real token whose LAA_ACCOUNTS is an array of allowed accounts", async () => {
+        const service = buildVerifyService();
+        const { accessToken, publicKey } = generateAccessToken({
+          tenantId: TEST_TENANT_ID,
+          laaAccounts: [ALLOWED_ACCOUNT, ALLOWED_ACCOUNT],
+        });
+        sinon.stub(service, "getPublicKey").resolves(publicKey);
+        await assert.doesNotReject(service.verify(accessToken));
+      });
+
+      it("verify: should accept an array containing only allowed accounts", async () => {
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, ALLOWED_ACCOUNT],
+          }),
+        );
+      });
+
+      it("verify: should accept deeply nested arrays of allowed accounts", async () => {
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [[ALLOWED_ACCOUNT], [[ALLOWED_ACCOUNT]]],
+          }),
+        );
+      });
+
+      it("verify: should reject when LAA_ACCOUNTS claim is missing", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({ name: "no accounts claim" }),
+          NOT_ALLOWED_PATTERN,
+        );
+      });
+
+      it("verify: should reject when LAA_ACCOUNTS is an empty array", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({ LAA_ACCOUNTS: [] }),
+          NOT_ALLOWED_PATTERN,
+        );
+      });
+
+      it("verify: should reject when LAA_ACCOUNTS only has values that get filtered out", async () => {
+        // null, object, undefined -> fail the typeof check
+        // ""                      -> fails the empty string check
+        // NaN                     -> fails the NaN check
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [null, {}, undefined, "", Number.NaN],
+          }),
+          NOT_ALLOWED_PATTERN,
+        );
+      });
+
+      it("verify: should reject when a mix of allowed and disallowed accounts is present", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, "not-allowed"],
+          }),
+          NOT_ALLOWED_PATTERN,
+        );
+      });
+
+      it("verify: should coerce boolean, number and bigint values to strings", async () => {
+        // true -> "1", false -> "0", 12345 -> "12345", 10n -> "10"
+        // Runs every coercion branch (boolean ternary both sides, number, bigint).
+        // If ALLOWED_LAA_ACCOUNTS ever contains one of these strings, change the values.
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [true, false, 12345, BigInt(10)],
+          }),
+          NOT_ALLOWED_PATTERN,
+        );
+      });
+
+      it("verify: should ignore filtered-out values alongside an allowed account", async () => {
+        // Junk is filtered away, leaving only the allowed account -> passes
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [
+              ALLOWED_ACCOUNT,
+              null,
+              "",
+              Number.NaN,
+              {},
+              undefined,
+            ],
+          }),
+        );
+      });
+    });
+  });
+});
+
+describe("RedisCachePlugin", () => {
+  afterEach(() => {
+    sinon.restore();
   });
 
-  it("verify: token has expired", async () => {
-    const silasConfig = { ...config.silas };
-    Object.assign(silasConfig, {
-      tenantId: "test-tenant-id",
-      expectedAudience: "test-audience",
-    });
-    const service = new SilasService(silasConfig);
-    const { accessToken, publicKey } = generateAccessToken({
-      tenantId: silasConfig.tenantId,
-      expires: "-1hr",
-    });
-    sinon.stub(service, "getPublicKey").resolves(publicKey);
-    await assert.rejects(
-      service.verify(accessToken),
-      TokenExpiredError,
-      "expected to raise token expired error for expired token",
-    );
-  });
+  it("beforeCacheAccess: should not deserialize or extend TTL when nothing is cached", async () => {
+    const expireStub = sinon.stub().resolves(true);
+    const redisClient = {
+      get: sinon.stub().resolves(null),
+      expire: expireStub,
+    } as unknown as RedisClientType;
+    const deserialize = sinon.stub();
 
-  it("verify: token has incorrect audience", async () => {
-    const silasConfig = { ...config.silas };
-    Object.assign(silasConfig, {
-      tenantId: "test-tenant-id",
-      expectedAudience: "test-audience",
-    });
-    const service = new SilasService(silasConfig);
-    const { accessToken, publicKey } = generateAccessToken({
-      tenantId: silasConfig.tenantId,
-      audience: "invalid-auidence",
-    });
-    sinon.stub(service, "getPublicKey").resolves(publicKey);
-    try {
-      await service.verify(accessToken);
-      assert.fail("Failed to throw error on token with invalid audience");
-    } catch (error: any) {
-      assert.equal(
-        error instanceof JsonWebTokenError,
-        true,
-        "expecting JsonWebTokenError to be raised",
-      );
-      assert.equal(
-        error.message,
-        "jwt audience invalid. expected: test-audience",
-        "expecting error message to be raised",
-      );
-    }
-  });
+    const plugin = new RedisCachePlugin(redisClient, "test-session", 36000);
+    await plugin.beforeCacheAccess({
+      tokenCache: { deserialize },
+    } as any);
 
-  it("verify: token has incorrect issuer", async () => {
-    const silasConfig = { ...config.silas };
-    Object.assign(silasConfig, {
-      tenantId: "test-tenant-id",
-      expectedAudience: "test-audience",
-    });
-    const service = new SilasService(silasConfig);
-    const { accessToken, publicKey } = generateAccessToken({
-      tenantId: silasConfig.tenantId,
-      issuer: "invalid-issuer",
-    });
-    sinon.stub(service, "getPublicKey").resolves(publicKey);
-    try {
-      await service.verify(accessToken);
-      assert.fail("Failed to throw error on token with invalid issuer");
-    } catch (error: any) {
-      assert.equal(
-        error instanceof JsonWebTokenError,
-        true,
-        "expecting JsonWebTokenError to be raised",
-      );
-      assert.equal(
-        error.message,
-        `jwt issuer invalid. expected: https://login.microsoftonline.com/${silasConfig.tenantId}/v2.0`,
-      );
-    }
-  });
-
-  it("verify: LAA_ACCOUNTS not in the allowed list", async () => {
-    const silasConfig = { ...config.silas };
-    Object.assign(silasConfig, {
-      tenantId: "test-tenant-id",
-      expectedAudience: "test-audience",
-    });
-    const service = new SilasService(silasConfig);
-    const { accessToken, publicKey } = generateAccessToken({
-      tenantId: silasConfig.tenantId,
-      laaAccounts: "not-allowed",
-    });
-    sinon.stub(service, "getPublicKey").resolves(publicKey);
-    await assert.rejects(service.verify(accessToken), (error: Error) => {
-      assert.equal(error.message, "LAA_ACCOUNTS not in the allowed list");
-      return true;
-    });
-  });
-
-  it("verify: token has algorithm", async () => {
-    const silasConfig = { ...config.silas };
-    Object.assign(silasConfig, {
-      tenantId: "test-tenant-id",
-      expectedAudience: "test-audience",
-    });
-    const service = new SilasService(silasConfig);
-    const { accessToken, publicKey } = generateAccessToken({
-      tenantId: silasConfig.tenantId,
-      algorithm: "RS512",
-    });
-    sinon.stub(service, "getPublicKey").resolves(publicKey);
-    try {
-      await service.verify(accessToken);
-      assert.fail("Failed to throw error on token with invalid issuer");
-    } catch (error: any) {
-      console.log(error.message);
-      assert.equal(
-        error instanceof JsonWebTokenError,
-        true,
-        "expecting JsonWebTokenError to be raised",
-      );
-      assert.equal(error.message, "invalid algorithm");
-    }
+    assert.equal(deserialize.called, false, "should not deserialize");
+    assert.equal(expireStub.called, false, "should not refresh the TTL");
   });
 });
