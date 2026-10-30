@@ -16,6 +16,7 @@ import jsonwebtoken, {
   SignOptions,
   TokenExpiredError,
 } from "jsonwebtoken";
+import { ALLOWED_LAA_ACCOUNTS } from "#src/constants.js";
 
 interface GenerateAccessTokenOptions {
   tenantId: string;
@@ -23,6 +24,7 @@ interface GenerateAccessTokenOptions {
   audience?: string;
   issuer?: string;
   algorithm?: string;
+  laaAccounts?: string | string[];
 }
 
 function assertAuthCodeUrl(url: URL, expectedNonceValue?: string) {
@@ -77,6 +79,7 @@ function generateAccessToken(
   const payload = {
     name: "Test user",
     username: "test.user@justice.gov.uk",
+    LAA_ACCOUNTS: args.laaAccounts ?? ALLOWED_LAA_ACCOUNTS[0],
   };
   const options = {
     algorithm: args.algorithm ?? "RS256",
@@ -364,6 +367,27 @@ describe("Silas Service", () => {
         `jwt issuer invalid. expected: https://login.microsoftonline.com/${silasConfig.tenantId}/v2.0`,
       );
     }
+  });
+
+    it("verify: LAA_ACCOUNTS not in the allowed list", async () => {
+    const silasConfig = { ...config.silas };
+    Object.assign(silasConfig, {
+      tenantId: "test-tenant-id",
+      expectedAudience: "test-audience",
+    });
+    const service = new SilasService(silasConfig);
+    const { accessToken, publicKey } = generateAccessToken({
+      tenantId: silasConfig.tenantId,
+      laaAccounts: "not-allowed",
+    });
+    sinon.stub(service, "getPublicKey").resolves(publicKey);
+    await assert.rejects(
+      service.verify(accessToken),
+      (error: Error) => {
+        assert.equal(error.message, "LAA_ACCOUNTS not in the allowed list");
+        return true;
+      },
+    );
   });
 
   it("verify: token has algorithm", async () => {

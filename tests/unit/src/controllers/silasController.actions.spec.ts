@@ -82,97 +82,149 @@ describe("silasController:callbackAction", () => {
     sandbox.restore();
   });
   it("should reject missing state", async () => {
-    req.query.code = "1";
-    const statusStub = res.status as sinon.SinonStub;
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for missing state",
-    );
+  req.query.code = "1";
+  const redirectStub = res.redirect as sinon.SinonStub;
 
-    req.query.state = "";
-    statusStub.reset();
-    statusStub.returns(res);
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for empty state",
-    );
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for missing state",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for missing state",
+  );
+
+  req.query.state = "";
+  redirectStub.resetHistory();
+  req.session.flashError = undefined;
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for empty state",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for empty state",
+  );
+});
+
+it("should reject missing code", async () => {
+  req.query.state = "1111";
+  req.session.auth_nonce = "1111";
+  const redirectStub = res.redirect as sinon.SinonStub;
+
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for missing code",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for missing code",
+  );
+
+  req.query.code = "";
+  redirectStub.resetHistory();
+  req.session.flashError = undefined;
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for empty code",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for empty code",
+  );
+});
+it("should reject invalid session auth_nonce", async () => {
+  req.query.state = "1111";
+  req.query.code = "1111";
+  const redirectStub = res.redirect as sinon.SinonStub;
+
+  // session.auth_nonce is unset
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for missing auth_nonce",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for missing auth_nonce",
+  );
+
+  // session.auth_nonce is empty
+  req.session.auth_nonce = "";
+  redirectStub.resetHistory();
+  req.session.flashError = undefined;
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for empty auth_nonce",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for empty auth_nonce",
+  );
+
+  // session.auth_nonce does not match state
+  req.session.auth_nonce = "2222";
+  redirectStub.resetHistory();
+  req.session.flashError = undefined;
+  await callbackAction(req, res);
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for auth_nonce and state mismatch",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Validation code failed",
+    "should flash a validation error for auth_nonce and state mismatch",
+  );
+});
+
+it("should validate token response body", async () => {
+  req.query.state = "1111";
+  req.query.code = "1111";
+  req.session.auth_nonce = "1111";
+  const redirectStub = res.redirect as sinon.SinonStub;
+  mockSilasService.acquireTokenByCode.returns({
+    accessToken: "",
+    idToken: "",
+    account: {},
   });
 
-  it("should reject missing code", async () => {
-    req.query.state = "1111";
-    req.session.auth_nonce = "1111";
-    const statusStub = res.status as sinon.SinonStub;
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for missing code",
-    );
+  await callbackAction(req, res);
 
-    req.query.code = "";
-    statusStub.reset();
-    statusStub.returns(res);
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for empty code",
-    );
-  });
-
-  it("should reject invalid sesssion auth_nonce", async () => {
-    req.query.state = "1111";
-    req.query.code = "1111";
-    const statusStub = res.status as sinon.SinonStub;
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for missing auth_nonce",
-    );
-
-    req.query.auth_nonce = "";
-    statusStub.reset();
-    statusStub.returns(res);
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for empty auth_nonce",
-    );
-
-    req.query.auth_nonce = "2222";
-    statusStub.reset();
-    statusStub.returns(res);
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for auth_nonce and state mismatch",
-    );
-  });
-
-  it("should validate token response body", async () => {
-    req.query.state = "1111";
-    req.query.code = "1111";
-    req.session.auth_nonce = "1111";
-    const statusStub = res.status as sinon.SinonStub;
-    mockSilasService.acquireTokenByCode.returns({
-      accessToken: "",
-      idToken: "",
-      account: {},
-    });
-    await callbackAction(req, res);
-    assert.equal(
-      statusStub.calledWith(INTERNAL_SERVER_ERROR),
-      true,
-      "should return 500 error for missing auth_nonce",
-    );
-  });
+  assert.equal(
+    redirectStub.calledWith("/sign-in"),
+    true,
+    "should redirect to sign-in for an invalid token response",
+  );
+  assert.equal(
+    req.session.flashError,
+    "Failed to save session",
+    "should flash a session error for an invalid token response",
+  );
+  assert.notEqual(
+    req.session.isAuthenticated,
+    true,
+    "user should not be authenticated",
+  );
+});
 
   it("should exchange code for access token", async () => {
     req.query.state = "1111";
