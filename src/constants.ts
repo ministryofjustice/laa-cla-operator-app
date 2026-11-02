@@ -10,4 +10,5 @@ export const INTERNAL_USERS: readonly string[] = [
   "Civil Legal Advice - Helpline Operator Manager",
   "Civil Legal Advice - Contract Manager",
   "Civil Legal Advice - Helpline Provider",
+  /* c8 ignore next */
 ];
