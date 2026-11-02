@@ -6,3 +6,8 @@ export const ZERO = 0;
 /* c8 ignore stop */
 
 export const ALLOWED_LAA_ACCOUNTS: readonly string[] = ["2Q209V"];
+export const INTERNAL_USERS: readonly string[] = [
+  "Civil Legal Advice - Helpline Operator Manager",
+  "Civil Legal Advice - Contract Manager",
+  "Civil Legal Advice - Helpline Provider",
+];

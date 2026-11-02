@@ -16,7 +16,7 @@ import jsonwebtoken, {
   SignOptions,
   TokenExpiredError,
 } from "jsonwebtoken";
-import { ALLOWED_LAA_ACCOUNTS } from "#src/constants.js";
+import { ALLOWED_LAA_ACCOUNTS, INTERNAL_USERS } from "#src/constants.js";
 
 interface GenerateAccessTokenOptions {
   tenantId: string;
@@ -25,11 +25,18 @@ interface GenerateAccessTokenOptions {
   issuer?: string;
   algorithm?: string;
   laaAccounts?: string | string[];
+  appRoles?: string | string[];
 }
 
 const TEST_TENANT_ID = "test-tenant-id";
 const TEST_AUDIENCE = "test-audience";
 const ALLOWED_ACCOUNT = ALLOWED_LAA_ACCOUNTS[0];
+const INTERNAL_USER = INTERNAL_USERS[0];
+const NOT_ALLOWED_ACCOUNT = "not-allowed";
+const NOT_INTERNAL_ROLE = "not-an-internal-role";
+
+const ACCESS_DENIED_PATTERN =
+  /Access denied: LAA accounts are not allowed and user is not an internal user/;
 
 function assertAuthCodeUrl(url: URL, expectedNonceValue?: string) {
   if (expectedNonceValue !== undefined) {
@@ -72,6 +79,11 @@ function assertAuthCodeUrl(url: URL, expectedNonceValue?: string) {
   );
 }
 
+/**
+ * Generates a signed access token and the matching public key.
+ * @param {GenerateAccessTokenOptions} args - Options controlling the token claims
+ * @returns {Record<string, string>} the access token and public key
+ */
 function generateAccessToken(
   args: GenerateAccessTokenOptions,
 ): Record<string, string> {
@@ -80,11 +92,14 @@ function generateAccessToken(
     publicKeyEncoding: { type: "spki", format: "pem" },
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
   });
-  const payload = {
+  const payload: Record<string, unknown> = {
     name: "Test user",
     username: "test.user@justice.gov.uk",
     LAA_ACCOUNTS: args.laaAccounts ?? ALLOWED_ACCOUNT,
   };
+  if (args.appRoles !== undefined) {
+    payload.APP_ROLES = args.appRoles;
+  }
   const options = {
     algorithm: args.algorithm ?? "RS256",
     issuer:
@@ -128,8 +143,6 @@ async function verifyWithStubbedPayload(payload: unknown): Promise<void> {
   sinon.stub(jsonwebtoken, "verify").returns(payload as any);
   await service.verify(accessToken);
 }
-
-const NOT_ALLOWED_PATTERN = /LAA_ACCOUNTS not in the allowed list/;
 
 describe("Silas Service", () => {
   afterEach(() => {
@@ -409,18 +422,15 @@ describe("Silas Service", () => {
       );
     });
 
-    describe("LAA_ACCOUNTS claim", () => {
-      it("verify: LAA_ACCOUNTS not in the allowed list", async () => {
+    describe("LAA_ACCOUNTS check", () => {
+      it("verify: should accept a real token with an allowed account", async () => {
         const service = buildVerifyService();
         const { accessToken, publicKey } = generateAccessToken({
           tenantId: TEST_TENANT_ID,
-          laaAccounts: "not-allowed",
+          laaAccounts: ALLOWED_ACCOUNT,
         });
         sinon.stub(service, "getPublicKey").resolves(publicKey);
-        await assert.rejects(service.verify(accessToken), (error: Error) => {
-          assert.equal(error.message, "LAA_ACCOUNTS not in the allowed list");
-          return true;
-        });
+        await assert.doesNotReject(service.verify(accessToken));
       });
 
       it("verify: should accept a real token whose LAA_ACCOUNTS is an array of allowed accounts", async () => {
@@ -433,14 +443,6 @@ describe("Silas Service", () => {
         await assert.doesNotReject(service.verify(accessToken));
       });
 
-      it("verify: should accept an array containing only allowed accounts", async () => {
-        await assert.doesNotReject(
-          verifyWithStubbedPayload({
-            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, ALLOWED_ACCOUNT],
-          }),
-        );
-      });
-
       it("verify: should accept deeply nested arrays of allowed accounts", async () => {
         await assert.doesNotReject(
           verifyWithStubbedPayload({
@@ -449,55 +451,30 @@ describe("Silas Service", () => {
         );
       });
 
-      it("verify: should reject when LAA_ACCOUNTS claim is missing", async () => {
-        await assert.rejects(
+      it("verify: should accept when LAA_ACCOUNTS claim is missing", async () => {
+        await assert.doesNotReject(
           verifyWithStubbedPayload({ name: "no accounts claim" }),
-          NOT_ALLOWED_PATTERN,
         );
       });
 
-      it("verify: should reject when LAA_ACCOUNTS is an empty array", async () => {
-        await assert.rejects(
+      it("verify: should accept when LAA_ACCOUNTS is an empty array", async () => {
+        await assert.doesNotReject(
           verifyWithStubbedPayload({ LAA_ACCOUNTS: [] }),
-          NOT_ALLOWED_PATTERN,
         );
       });
 
-      it("verify: should reject when LAA_ACCOUNTS only has values that get filtered out", async () => {
+      it("verify: should accept when LAA_ACCOUNTS only has values that get filtered out", async () => {
         // null, object, undefined -> fail the typeof check
         // ""                      -> fails the empty string check
         // NaN                     -> fails the NaN check
-        await assert.rejects(
+        await assert.doesNotReject(
           verifyWithStubbedPayload({
             LAA_ACCOUNTS: [null, {}, undefined, "", Number.NaN],
           }),
-          NOT_ALLOWED_PATTERN,
-        );
-      });
-
-      it("verify: should reject when a mix of allowed and disallowed accounts is present", async () => {
-        await assert.rejects(
-          verifyWithStubbedPayload({
-            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, "not-allowed"],
-          }),
-          NOT_ALLOWED_PATTERN,
-        );
-      });
-
-      it("verify: should coerce boolean, number and bigint values to strings", async () => {
-        // true -> "1", false -> "0", 12345 -> "12345", 10n -> "10"
-        // Runs every coercion branch (boolean ternary both sides, number, bigint).
-        // If ALLOWED_LAA_ACCOUNTS ever contains one of these strings, change the values.
-        await assert.rejects(
-          verifyWithStubbedPayload({
-            LAA_ACCOUNTS: [true, false, 12345, BigInt(10)],
-          }),
-          NOT_ALLOWED_PATTERN,
         );
       });
 
       it("verify: should ignore filtered-out values alongside an allowed account", async () => {
-        // Junk is filtered away, leaving only the allowed account -> passes
         await assert.doesNotReject(
           verifyWithStubbedPayload({
             LAA_ACCOUNTS: [
@@ -509,6 +486,118 @@ describe("Silas Service", () => {
               undefined,
             ],
           }),
+        );
+      });
+    });
+
+    describe("APP_ROLES internal user check", () => {
+      it("verify: should reject when LAA account is not allowed and APP_ROLES is missing", async () => {
+        const service = buildVerifyService();
+        const { accessToken, publicKey } = generateAccessToken({
+          tenantId: TEST_TENANT_ID,
+          laaAccounts: NOT_ALLOWED_ACCOUNT,
+        });
+        sinon.stub(service, "getPublicKey").resolves(publicKey);
+        await assert.rejects(service.verify(accessToken), (error: Error) => {
+          assert.match(error.message, ACCESS_DENIED_PATTERN);
+          return true;
+        });
+      });
+
+      it("verify: should reject when LAA account is not allowed and APP_ROLES is empty", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [NOT_ALLOWED_ACCOUNT],
+            APP_ROLES: [],
+          }),
+          ACCESS_DENIED_PATTERN,
+        );
+      });
+
+      it("verify: should reject when LAA account is not allowed and no role is internal", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [NOT_ALLOWED_ACCOUNT],
+            APP_ROLES: [NOT_INTERNAL_ROLE],
+          }),
+          ACCESS_DENIED_PATTERN,
+        );
+      });
+
+      it("verify: should reject when a mix of allowed and disallowed accounts is present and user is not internal", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, NOT_ALLOWED_ACCOUNT],
+          }),
+          ACCESS_DENIED_PATTERN,
+        );
+      });
+
+      it("verify: should reject when APP_ROLES only has values that get filtered out", async () => {
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [NOT_ALLOWED_ACCOUNT],
+            APP_ROLES: [null, {}, undefined, "", Number.NaN],
+          }),
+          ACCESS_DENIED_PATTERN,
+        );
+      });
+
+      it("verify: should coerce boolean, number and bigint values to strings", async () => {
+        // true -> "1", false -> "0", 12345 -> "12345", 10n -> "10"
+        // Runs every coercion branch (boolean ternary both sides, number, bigint).
+        // If ALLOWED_LAA_ACCOUNTS or INTERNAL_USERS ever contains one of these
+        // strings, change the values.
+        await assert.rejects(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [true, false, 12345, BigInt(10)],
+            APP_ROLES: [true, false, 12345, BigInt(10)],
+          }),
+          ACCESS_DENIED_PATTERN,
+        );
+      });
+
+      it("verify: should accept a real token with a disallowed account and an internal user role", async () => {
+        const service = buildVerifyService();
+        const { accessToken, publicKey } = generateAccessToken({
+          tenantId: TEST_TENANT_ID,
+          laaAccounts: NOT_ALLOWED_ACCOUNT,
+          appRoles: [INTERNAL_USER],
+        });
+        sinon.stub(service, "getPublicKey").resolves(publicKey);
+        await assert.doesNotReject(service.verify(accessToken));
+      });
+
+      it("verify: should accept a scalar internal user role", async () => {
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [NOT_ALLOWED_ACCOUNT],
+            APP_ROLES: INTERNAL_USER,
+          }),
+        );
+      });
+
+      it("verify: should accept when one of several roles is internal", async () => {
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, NOT_ALLOWED_ACCOUNT],
+            APP_ROLES: [NOT_INTERNAL_ROLE, INTERNAL_USER],
+          }),
+        );
+      });
+
+      it("verify: should accept deeply nested internal roles with junk filtered out", async () => {
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({
+            LAA_ACCOUNTS: [NOT_ALLOWED_ACCOUNT],
+            APP_ROLES: [[null, ""], [[INTERNAL_USER]], Number.NaN],
+          }),
+        );
+      });
+
+      it("verify: should accept an internal user when LAA_ACCOUNTS is missing", async () => {
+        await assert.doesNotReject(
+          verifyWithStubbedPayload({ APP_ROLES: [INTERNAL_USER] }),
         );
       });
     });

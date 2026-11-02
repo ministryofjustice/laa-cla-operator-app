@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import "express-session";
 import type { ConfidentialClientApplication } from "@azure/msal-node";
 import type { Request, Response } from "express";
-import { promisify } from "node:util";
 import config from "#config.js";
 import { SilasService } from "#src/services/api/silasService.js";
 import {
@@ -128,11 +127,7 @@ async function redirectHomeWithError(
 ): Promise<void> {
   req.session.flashError = message;
 
-  const saveSession = promisify((callback: (err?: unknown) => void): void => {
-    req.session.save(callback);
-  });
-
-  await saveSession();
+  await saveSession(req);
   res.redirect("/sign-in");
 }
 /**
