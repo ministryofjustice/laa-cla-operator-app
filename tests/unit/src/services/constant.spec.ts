@@ -2,6 +2,7 @@ import { describe, it } from "mocha";
 import { expect } from "chai";
 import {
   ALLOWED_LAA_ACCOUNTS,
+  INTERNAL_USERS,
   EMPTY_LENGTH,
   MS_PER_SECOND,
   INTERNAL_SERVER_ERROR,
@@ -38,6 +39,44 @@ describe("constants", () => {
 
     it("does not contain an unknown account", () => {
       expect(ALLOWED_LAA_ACCOUNTS).to.not.include("NOTALLOWED");
+    });
+  });
+
+  describe("INTERNAL_USERS", () => {
+    it("is defined and is an array", () => {
+      expect(INTERNAL_USERS).to.not.equal(undefined);
+      expect(Array.isArray(INTERNAL_USERS)).to.equal(true);
+    });
+
+    it("is not empty", () => {
+      expect(INTERNAL_USERS.length).to.be.greaterThan(EMPTY_LENGTH);
+    });
+
+    it("contains only non-empty strings", () => {
+      INTERNAL_USERS.forEach((user) => {
+        expect(user).to.be.a("string");
+        expect(user.length).to.be.greaterThan(EMPTY_LENGTH);
+      });
+    });
+
+    it("contains the expected internal users", () => {
+      expect(INTERNAL_USERS).to.include.members([
+        "Civil Legal Advice - Helpline Operator Manager",
+        "Civil Legal Advice - Contract Manager",
+        "Civil Legal Advice - Helpline Provider",
+      ]);
+    });
+
+    it("contains exactly three users", () => {
+      expect(INTERNAL_USERS).to.have.lengthOf(3);
+    });
+
+    it("does not contain duplicate users", () => {
+      expect(new Set(INTERNAL_USERS).size).to.equal(INTERNAL_USERS.length);
+    });
+
+    it("does not contain an unknown user", () => {
+      expect(INTERNAL_USERS).to.not.include("Unknown User");
     });
   });
 
