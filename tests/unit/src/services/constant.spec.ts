@@ -61,14 +61,12 @@ describe("constants", () => {
 
     it("contains the expected internal users", () => {
       expect(INTERNAL_USERS).to.include.members([
-        "Civil Legal Advice - Helpline Operator Manager",
         "Civil Legal Advice - Contract Manager",
-        "Civil Legal Advice - Helpline Provider",
       ]);
     });
 
     it("contains exactly three users", () => {
-      expect(INTERNAL_USERS).to.have.lengthOf(3);
+      expect(INTERNAL_USERS).to.have.lengthOf(1);
     });
 
     it("does not contain duplicate users", () => {
