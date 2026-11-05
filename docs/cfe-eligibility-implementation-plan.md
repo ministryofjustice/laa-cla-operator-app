@@ -53,18 +53,18 @@ converts DOB into the ISO date string rather than sending the raw date object.
 
 ### Implementation surfaces to inspect
 
-| Surface | Current role / required attention |
-|---|---|
-| [Standalone package](../packages/cfe-eligibility-journey/src/) | Questions, branches, review, authoring and effect contracts |
-| [Journey definition](../packages/cfe-eligibility-journey/src/journey.ts) | Runs case loading, legacy eligibility loading and DOB injection on access |
-| [Client age helper](../packages/cfe-eligibility-journey/src/clientAge.ts) | DOB-derived answers and age boundaries |
-| [Package effects](../packages/cfe-eligibility-journey/src/effects.ts) | Keep host dependencies injected; use existing Forge conventions |
-| [Host eligibility service](../src/services/financialEligibilityWithDeps.ts) | Legacy loading/mapping/persistence and case-specific session drafts |
-| [Backend API service](../src/services/api/caseDetailsService.ts) | Existing legacy eligibility read/write functions |
+| Surface                                                                                     | Current role / required attention                                                                 |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [Standalone package](../packages/cfe-eligibility-journey/src/)                              | Questions, branches, review, authoring and effect contracts                                       |
+| [Journey definition](../packages/cfe-eligibility-journey/src/journey.ts)                    | Runs case loading, legacy eligibility loading and DOB injection on access                         |
+| [Client age helper](../packages/cfe-eligibility-journey/src/clientAge.ts)                   | DOB-derived answers and age boundaries                                                            |
+| [Package effects](../packages/cfe-eligibility-journey/src/effects.ts)                       | Keep host dependencies injected; use existing Forge conventions                                   |
+| [Host eligibility service](../src/services/financialEligibilityWithDeps.ts)                 | Legacy loading/mapping/persistence and case-specific session drafts                               |
+| [Backend API service](../src/services/api/caseDetailsService.ts)                            | Existing legacy eligibility read/write functions                                                  |
 | [Review step](../packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersStep.ts) | Currently submits without full-journey validation, saves legacy data, clears drafts and redirects |
-| [Shared actions](../packages/cfe-eligibility-journey/src/commonBlocks.ts) | Current review button says Submit |
-| [Legacy API types](../types/api-types.ts) | Do not use legacy FinancialEligibilityData as the new canonical answer contract |
-| [End-to-end tests](../tests/playwright/tests/cfe-eligibility.spec.ts) | Existing save/reload expectations must change to draft-only preparation |
+| [Shared actions](../packages/cfe-eligibility-journey/src/commonBlocks.ts)                   | Current review button says Submit                                                                 |
+| [Legacy API types](../types/api-types.ts)                                                   | Do not use legacy FinancialEligibilityData as the new canonical answer contract                   |
+| [End-to-end tests](../tests/playwright/tests/cfe-eligibility.spec.ts)                       | Existing save/reload expectations must change to draft-only preparation                           |
 
 The journey route is `/cases/:caseId/cfe-eligibility/change`.
 The entry screen is `/case/:caseId/add-client-details`.
