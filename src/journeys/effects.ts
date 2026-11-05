@@ -228,7 +228,7 @@ export const InboundCallEffectsImplementation: Record<
 
     const apiPersonalDetails = {
       full_name: personalDetails.full_name,
-      dob: personalDetails.date_of_birth,
+      dob: context.getPostData("dateOfBirth"),
       mobile_phone: personalDetails.mobile_phone,
       safe_to_contact: personalDetails.safe_to_contact,
       email: personalDetails.email,

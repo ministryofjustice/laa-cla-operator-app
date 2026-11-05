@@ -237,6 +237,7 @@ The financial eligibility journey lives in `packages/cfe-eligibility-journey` as
 
 - The journey runs at `/cases/:caseId/cfe-eligibility/change`. The **Check financial eligibility** button validates and saves client details before starting it; ordinary **Save and continue** still goes to address lookup.
 - Client age answers are derived from the saved date of birth when available. The partner's age is still asked when the client is under 60, because the partner's age decides that branch.
+- Forge stores DOB as an ISO date internally, but the backend personal-details endpoint requires `dob` as `{ day, month, year }`. Case reads return `date_of_birth` as an ISO date for the journey.
 - Financial answers are restored from a case-scoped session draft. The journey does not read or write legacy financial eligibility data. Drafts are temporary and are not recoverable after the session expires.
 - **Prepare submission** validates active-branch answers and stores a versioned answer snapshot in the session. The submission-ready page explicitly states that no CFE calculation has run and no assessment has been saved. There is no CFE request, result, or backend assessment persistence in this phase.
 - The properties question includes an explicit yes/no ownership answer. Selecting **Yes** requires at least one complete property entry; selecting **No** excludes any inactive property draft from the prepared snapshot.

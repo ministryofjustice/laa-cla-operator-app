@@ -86,6 +86,8 @@ test.describe("Client details eligibility entry", () => {
     await details.fillValidForm();
     await details.submit();
     await expect(page).toHaveURL("/case/EL-ADDRESS/address-lookup");
+    await page.goto(journeyPath("EL-ADDRESS"));
+    await expect(page).toHaveURL(`${journeyPath("EL-ADDRESS")}/has-partner`);
   });
 
   test("does not enter eligibility if saving client details fails", async ({
