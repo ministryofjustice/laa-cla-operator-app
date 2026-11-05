@@ -5,6 +5,7 @@ import {
   loginAction,
   logOut,
 } from "#src/controllers/silasController.js";
+import { requireAuth } from "#src/middleware/apiMiddleware.js";
 
 // Create a new router
 const router = express.Router();
@@ -91,6 +92,18 @@ if (process.env.NODE_ENV === "test") {
 router.get("/", (req: Request, res: Response): void => {
   res.redirect("/dashboard");
 });
+
+// The eligibility journey exits to a summary page that this app doesn't have, so send the
+// operator back to the client details page instead
+router.get(
+  "/cases/:caseId/cfe-eligibility",
+  requireAuth,
+  (req: Request<{ caseId: string }>, res: Response): void => {
+    res.redirect(
+      `/case/${encodeURIComponent(req.params.caseId)}/add-client-details`,
+    );
+  },
+);
 
 router.get("/privacy", (req: Request, res: Response): void => {
   res.render("main/privacy.njk");

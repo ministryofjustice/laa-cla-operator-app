@@ -10,6 +10,7 @@ import {
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
   GovUKButton,
+  GovUKButtonGroup,
   GovUKRadioInput,
   GovUKTextInput,
   GovUKDateInputFull,
@@ -168,6 +169,16 @@ export const clientDetailsBlock = CollectionBlock({
       inputType: "email",
     }),
 
-    GovUKButton({ text: "Save and continue" }),
+    GovUKButtonGroup({
+      buttons: [
+        GovUKButton({ text: "Save and continue" }),
+        GovUKButton({
+          text: "Check financial eligibility",
+          name: "action",
+          value: "start-eligibility",
+          classes: "govuk-button--secondary",
+        }),
+      ],
+    }),
   ],
 });

@@ -231,6 +231,18 @@ This repo enforces formatting and linting as part of CI.
 
 Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will fail on formatting or lint errors instead of rewriting files. These should be fixed locally.
 
+### Financial eligibility journey
+
+The financial eligibility journey lives in `packages/cfe-eligibility-journey` as a standalone Forge package. It started as a copy of the journey in [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases), which reflects the questions cla_frontend asks. Its journey code (`cfe-eligibility`), URL, import alias (`@ministryofjustice/cfe-eligibility-journey`) and global Forge function names are distinct from manage's so both can be registered in one app.
+
+- The journey runs at `/cases/:caseId/cfe-eligibility/change`. The **Check financial eligibility** button validates and saves client details before starting it; ordinary **Save and continue** still goes to address lookup.
+- Client age answers are derived from the saved date of birth when available. The partner's age is still asked when the client is under 60, because the partner's age decides that branch.
+- Forge stores DOB as an ISO date internally, but the backend personal-details endpoint requires `dob` as `{ day, month, year }`. Case reads return `date_of_birth` as an ISO date for the journey.
+- Financial answers are restored from a case-scoped session draft. The journey does not read or write legacy financial eligibility data. Drafts are temporary and are not recoverable after the session expires.
+- **Prepare submission** validates active-branch answers and stores a versioned answer snapshot in the session. The submission-ready page explicitly states that no CFE calculation has run and no assessment has been saved. There is no CFE request, result, or backend assessment persistence in this phase.
+- The properties question includes an explicit yes/no ownership answer. Selecting **Yes** requires at least one complete property entry; selecting **No** excludes any inactive property draft from the prepared snapshot.
+- Before a CFE request can be implemented, the business must confirm the CFE API version, proceeding mapping, assessment date/exemption policy, and any additional CFE inputs not represented by the current questions. In particular, partner date of birth and the exact CFE treatment of some existing financial questions remain to be agreed. The phase-one snapshot is not a CFE request contract.
+
 ### Pre-commit checks
 
 This repo uses Husky and `lint-staged` to format and lint code before each commit.

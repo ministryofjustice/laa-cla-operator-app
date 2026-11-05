@@ -138,7 +138,11 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     const setData = sinon.stub();
     const getPostData = sinon.stub();
     getPostData.withArgs("fullName").returns("Jane Doe");
-    getPostData.withArgs("dateOfBirth").returns("2001-05-12");
+    getPostData
+      .withArgs("dateOfBirth")
+      .returns({ day: "12", month: "5", year: "2001" });
+    const getAnswer = sinon.stub();
+    getAnswer.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
     getPostData.withArgs("safeToCall").returns("yes");
     getPostData.withArgs("email").returns("jane@example.com");
@@ -151,8 +155,10 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         .withArgs("authenticatedAxios")
         .returns(axiosWrapper),
       getPostData,
+      getAnswer,
       setData,
       getData,
+      getSession: sinon.stub().returns(undefined),
     };
 
     await effect(context as any);
@@ -174,7 +180,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         "ED-0001-0002",
         {
           full_name: "Jane Doe",
-          dob: "2001-05-12",
+          dob: { day: "12", month: "5", year: "2001" },
           mobile_phone: "07123456789",
           safe_to_contact: "SAFE",
           email: "jane@example.com",
@@ -194,7 +200,11 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     const setData = sinon.stub();
     const getPostData = sinon.stub();
     getPostData.withArgs("fullName").returns("Jane Doe");
-    getPostData.withArgs("dateOfBirth").returns("2001-05-12");
+    getPostData
+      .withArgs("dateOfBirth")
+      .returns({ day: "12", month: "5", year: "2001" });
+    const getAnswer = sinon.stub();
+    getAnswer.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
     getPostData.withArgs("safeToCall").returns("no");
     getPostData.withArgs("email").returns("jane@example.com");
@@ -207,8 +217,10 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         .withArgs("authenticatedAxios")
         .returns(axiosWrapper),
       getPostData,
+      getAnswer,
       setData,
       getData,
+      getSession: sinon.stub().returns(undefined),
     };
 
     await effect(context as any);
@@ -230,7 +242,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         "ED-0001-0002",
         {
           full_name: "Jane Doe",
-          dob: "2001-05-12",
+          dob: { day: "12", month: "5", year: "2001" },
           mobile_phone: "07123456789",
           safe_to_contact: "DONT_CALL",
           email: "jane@example.com",

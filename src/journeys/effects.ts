@@ -17,6 +17,8 @@ import type { InboundCallContext } from "./types.js";
 import type { Session } from "express-session";
 import type { Address } from "#src/services/postcodeLookup.js";
 import { ZERO } from "#src/constants.js";
+import type { FinancialEligibilitySession } from "#packages/cfe-eligibility-journey/src/context.type.js";
+import { invalidatePreparedEligibilitySnapshot } from "#packages/cfe-eligibility-journey/src/draftState.js";
 
 /**
  * Get the current case
@@ -217,7 +219,7 @@ export const InboundCallEffectsImplementation: Record<
 
     const personalDetails = {
       full_name: context.getPostData("fullName"),
-      date_of_birth: context.getPostData("dateOfBirth"),
+      date_of_birth: context.getAnswer("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
       safe_to_contact:
         context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
@@ -226,7 +228,7 @@ export const InboundCallEffectsImplementation: Record<
 
     const apiPersonalDetails = {
       full_name: personalDetails.full_name,
-      dob: personalDetails.date_of_birth,
+      dob: context.getPostData("dateOfBirth"),
       mobile_phone: personalDetails.mobile_phone,
       safe_to_contact: personalDetails.safe_to_contact,
       email: personalDetails.email,
@@ -239,6 +241,13 @@ export const InboundCallEffectsImplementation: Record<
       _case.reference,
       apiPersonalDetails,
     );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge returns the Express session used by this journey.
+    const session = context.getSession() as
+      FinancialEligibilitySession | undefined;
+    if (session !== undefined) {
+      invalidatePreparedEligibilitySnapshot(session, _case.reference);
+    }
   },
 
   /**
