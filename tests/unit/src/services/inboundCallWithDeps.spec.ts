@@ -138,7 +138,11 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     const setData = sinon.stub();
     const getPostData = sinon.stub();
     getPostData.withArgs("fullName").returns("Jane Doe");
-    getPostData.withArgs("dateOfBirth").returns("2001-05-12");
+    getPostData
+      .withArgs("dateOfBirth")
+      .returns({ day: "12", month: "5", year: "2001" });
+    const getAnswer = sinon.stub();
+    getAnswer.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
     getPostData.withArgs("safeToCall").returns("yes");
     getPostData.withArgs("email").returns("jane@example.com");
@@ -151,6 +155,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         .withArgs("authenticatedAxios")
         .returns(axiosWrapper),
       getPostData,
+      getAnswer,
       setData,
       getData,
     };
@@ -194,7 +199,11 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     const setData = sinon.stub();
     const getPostData = sinon.stub();
     getPostData.withArgs("fullName").returns("Jane Doe");
-    getPostData.withArgs("dateOfBirth").returns("2001-05-12");
+    getPostData
+      .withArgs("dateOfBirth")
+      .returns({ day: "12", month: "5", year: "2001" });
+    const getAnswer = sinon.stub();
+    getAnswer.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
     getPostData.withArgs("safeToCall").returns("no");
     getPostData.withArgs("email").returns("jane@example.com");
@@ -207,6 +216,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
         .withArgs("authenticatedAxios")
         .returns(axiosWrapper),
       getPostData,
+      getAnswer,
       setData,
       getData,
     };

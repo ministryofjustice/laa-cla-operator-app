@@ -14,6 +14,7 @@ type EligibilityCheck = Record<string, unknown>;
 // In-memory eligibility checks keyed by case reference. Like cla_backend, a case has no
 // eligibility check (404) until one is created with POST; PATCH then updates it.
 const eligibilityChecks = new Map<string, EligibilityCheck>();
+const personalDetails = new Map<string, Record<string, unknown>>();
 
 /**
  * Combined handlers array
@@ -32,12 +33,38 @@ export const handlers = [
     ({ params }) =>
       HttpResponse.json({
         reference: params.caseId,
-        date_of_birth: "1980-05-14",
+        date_of_birth:
+          params.caseId === "EL-NO-DOB"
+            ? null
+            : (personalDetails.get(params.caseId)?.dob ?? "1980-05-14"),
       }),
   ),
-  http.put(
+  http.patch<{ caseId: string }, Record<string, unknown>>(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
-    () => new HttpResponse(null, { status: 204 }),
+    async ({ params, request }) => {
+      if (params.caseId === "EL-SAVE-FAIL") {
+        return HttpResponse.json(
+          { detail: "Unable to save personal details." },
+          { status: 500 },
+        );
+      }
+      const details = await request.json();
+      if (
+        details.dob !== undefined &&
+        (typeof details.dob !== "string" ||
+          !/^\d{4}-\d{2}-\d{2}$/u.test(details.dob))
+      ) {
+        return HttpResponse.json(
+          { dob: ["Date has wrong format. Use YYYY-MM-DD."] },
+          { status: 400 },
+        );
+      }
+      personalDetails.set(params.caseId, {
+        ...personalDetails.get(params.caseId),
+        ...details,
+      });
+      return new HttpResponse(null, { status: 204 });
+    },
   ),
   http.get<{ caseId: string }>(
     "*/call_centre/api/v1/case/:caseId/eligibility_check/",
