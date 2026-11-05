@@ -217,7 +217,7 @@ export const InboundCallEffectsImplementation: Record<
 
     const personalDetails = {
       full_name: context.getPostData("fullName"),
-      date_of_birth: context.getPostData("dateOfBirth"),
+      date_of_birth: context.getAnswer("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
       safe_to_contact:
         context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",

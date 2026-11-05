@@ -2,6 +2,10 @@ import {
   step,
   submit,
   redirect,
+  Post,
+  Condition,
+  Format,
+  Data,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 import { clientDetailsBlock } from "./block.js";
@@ -16,6 +20,21 @@ export const addClientDetailsStep = step({
   view: { template: "main/add-client-details.njk" },
   blocks: [clientDetailsBlock],
   onSubmission: [
+    submit({
+      when: Post("action").match(Condition.Equals("start-eligibility")),
+      validate: true,
+      onValid: {
+        effects: [InboundCallEffects.saveClientDetails()],
+        next: [
+          redirect({
+            goto: Format(
+              "/cases/%1/cfe-eligibility/change",
+              Data("case.reference"),
+            ),
+          }),
+        ],
+      },
+    }),
     submit({
       validate: true,
       onValid: {
