@@ -41,3 +41,16 @@ export async function destroySession(req: Request): Promise<void> {
 
   await destroy();
 }
+
+/**
+ * Extends the express-session `SessionData` interface with app-specific fields.
+ *
+ * @property {Array<{ text: string }>} [flashErrors] One-time error messages to
+ * display on the next rendered page.
+ */
+
+declare module "express-session" {
+  interface SessionData {
+    flashErrors?: Array<{ text: string }>;
+  }
+}

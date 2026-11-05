@@ -39,7 +39,13 @@ const getSafeRelativeNextPath = (next: unknown): string => {
 
 // 1. Trigger Login
 router.get("/sign-in", (req: Request, res: Response): void => {
-  res.render("main/auth/sign-in.njk");
+  // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- already destructured
+  const { flashError: message } = req.session;
+  delete req.session.flashError;
+
+  res.render("main/auth/sign-in.njk", {
+    errors: message !== undefined && message !== "" ? [{ text: message }] : [],
+  });
 });
 
 // Login
@@ -90,7 +96,7 @@ router.get("/privacy", (req: Request, res: Response): void => {
   res.render("main/privacy.njk");
 });
 
-//Cookies page
+// Cookies page
 router.get("/cookies", (req: Request, res: Response): void => {
   res.render("main/cookies.njk");
 });

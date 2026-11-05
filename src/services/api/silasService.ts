@@ -14,7 +14,12 @@ import { saveSession } from "#src/helpers/session.js";
 import { randomBytes } from "node:crypto";
 import { createRedisClient } from "#utils/redis.js";
 import config from "#config.js";
-import { EMPTY_LENGTH, ZERO } from "#src/constants.js";
+import {
+  EMPTY_LENGTH,
+  ZERO,
+  ALLOWED_LAA_ACCOUNTS,
+  INTERNAL_USERS,
+} from "#src/constants.js";
 import jsonwebtoken, {
   JsonWebTokenError,
   TokenExpiredError,
@@ -277,20 +282,70 @@ export class SilasService {
   /* c8 ignore stop */
 
   /**
-   * Decodes the claims portion of a JWT access token.
-   * @param {string} token JWT access token to decode.
+   * Verifies the access token signature and claims, then authorises access:
+   * 1. passes if every account in LAA_ACCOUNTS is in ALLOWED_LAA_ACCOUNTS
+   *    (an empty or missing LAA_ACCOUNTS claim passes this check)
+   * 2. otherwise passes if at least one APP_ROLES entry is in INTERNAL_USERS
+   * 3. otherwise throws
+   * @param {string} token JWT access token to verify.
    * @throws {JsonWebTokenError | TokenExpiredError | NotBeforeError | Error}
    */
   async verify(token: string): Promise<void> {
     const kid = this.getAccessTokenKID(token);
     const pubKey = await this.getPublicKey(kid);
-    jsonwebtoken.verify(token, pubKey, {
+    const verified = jsonwebtoken.verify(token, pubKey, {
       audience: this.config.expectedAudience,
       issuer: `https://login.microsoftonline.com/${this.config.tenantId}/v2.0`,
       algorithms: ["RS256"],
     });
-  }
 
+    if (typeof verified === "string") {
+      throw new Error("Unexpected string payload in access token");
+    }
+    const payload: jsonwebtoken.JwtPayload = verified;
+
+    /**
+     * Flattens a claim into a list of non-empty strings.
+     * Accepts scalars or nested arrays; drops null, undefined, objects,
+     * empty strings and NaN. Booleans become "1" / "0".
+     * @param {unknown} value Raw claim value from the token payload.
+     * @returns {string[]} Normalised claim values as strings.
+     */
+    const normalise = (value: unknown): string[] =>
+      [value]
+        .flat(Infinity)
+        .filter(
+          (x): x is string | number | bigint | boolean =>
+            ["string", "number", "bigint", "boolean"].includes(typeof x) &&
+            x !== "" &&
+            !(typeof x === "number" && Number.isNaN(x)),
+        )
+        .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
+    // Check 1: every LAA account (if any) is in the allowed list
+    const laaAccounts = normalise(payload.LAA_ACCOUNTS);
+    const allAllowed = laaAccounts.every((account) =>
+      ALLOWED_LAA_ACCOUNTS.includes(account),
+    );
+
+    if (allAllowed) {
+      return;
+    }
+
+    // Check 2: user has an internal role
+    const appRoles = normalise(payload.APP_ROLES);
+    const isInternalUser = appRoles.some((role) =>
+      INTERNAL_USERS.includes(role),
+    );
+
+    if (isInternalUser) {
+      return;
+    }
+
+    // Neither check passed
+    throw new Error(
+      "Access denied: LAA accounts are not allowed and user is not an internal user",
+    );
+  }
   /**
    * Get key id used in a given access token.
    * @param {string} accessToken - Access token
