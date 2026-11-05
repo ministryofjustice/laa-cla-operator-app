@@ -49,19 +49,39 @@ export const handlers = [
         );
       }
       const details = await request.json();
+      const dob = details.dob;
       if (
-        details.dob !== undefined &&
-        (typeof details.dob !== "string" ||
-          !/^\d{4}-\d{2}-\d{2}$/u.test(details.dob))
+        dob !== undefined &&
+        (typeof dob !== "object" ||
+          dob === null ||
+          !("day" in dob) ||
+          !("month" in dob) ||
+          !("year" in dob) ||
+          !/^\d{1,2}$/u.test(String(dob.day)) ||
+          !/^\d{1,2}$/u.test(String(dob.month)) ||
+          !/^\d{4}$/u.test(String(dob.year)))
       ) {
         return HttpResponse.json(
-          { dob: ["Date has wrong format. Use YYYY-MM-DD."] },
+          {
+            dob: [
+              'Date field has wrong format. Use { "day": 25, "month": 12, "year": 2012 }',
+            ],
+          },
           { status: 400 },
         );
       }
       personalDetails.set(params.caseId, {
         ...personalDetails.get(params.caseId),
         ...details,
+        ...(typeof dob === "object" &&
+        dob !== null &&
+        "day" in dob &&
+        "month" in dob &&
+        "year" in dob
+          ? {
+              dob: `${String(dob.year)}-${String(dob.month).padStart(2, "0")}-${String(dob.day).padStart(2, "0")}`,
+            }
+          : {}),
       });
       return new HttpResponse(null, { status: 204 });
     },
