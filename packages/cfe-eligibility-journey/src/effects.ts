@@ -3,6 +3,7 @@ import type { EffectFunctionContext, EffectFunctionExpr } from "@ministryofjusti
 import { type Deps } from '@ministryofjustice/cfe-eligibility-journey';
 import type { FinancialEligibilitySession } from './context.type.js';
 import { getOrMigrateCasePatternDrafts } from './casePatternDrafts.js';
+import { clearEligibilitySubmissionError, invalidatePreparedEligibilitySnapshot } from './draftState.js';
 import {
   calculateAge,
   deriveAgeAnswers,
@@ -19,12 +20,18 @@ export interface FinancialEligibilityEffectShape {
   ResolveDiscardReturnPath: () => EffectFunctionExpr;
   /** Clears draft answers for this pattern (used after committing drafts to the store) */
   ClearDraftAnswers: () => EffectFunctionExpr;
-  /** Submit saved answers from session to cla_backend  */
-  PersistSavedAnswers: () => EffectFunctionExpr;
   /** Loads case details from middleware (already fetched by fetchClientDetails) and stores them in the context for use in the journey */
   LoadCaseDetails: () => EffectFunctionExpr;
-  /** Loads financial eligibility data from the API, checks if any questions have been answered so that they take precedence over the API data, and stores the results in Forge's answers */
-  LoadCaseFinancialEligibility: () => EffectFunctionExpr;
+  /** Restores the case-scoped answer draft from the current session */
+  RestoreCaseDraft: () => EffectFunctionExpr;
+  /** Validates the active draft before review or preparation */
+  ValidateDraftAnswers: () => EffectFunctionExpr;
+  /** Stores a typed answer snapshot for the validated submission boundary */
+  PrepareSubmission: () => EffectFunctionExpr;
+  /** Confirms a prepared snapshot is still available before rendering the boundary */
+  CheckPreparedSubmission: () => EffectFunctionExpr;
+  /** Restores a draft validation message after redirecting to its question */
+  RestoreSubmissionError: () => EffectFunctionExpr;
   /** Saves a new answer if it has been answered */
   SaveNewAnswerIfAnswered: () => EffectFunctionExpr;
   /** Answers the age questions from the client's date of birth so they can be skipped */
@@ -96,21 +103,48 @@ export const FinancialEligibilityEffectsImplementations: Record<
   },
 
   /**
-   * Loads financial eligibility data from the API, checks if any questions have been answered so that they take precedence over the API data, and stores the results in Forge's answers.
-   * @param {unknown} deps Effect dependencies supplied by Forge, expected to include a getFinancialEligibility function
-   * @returns {(context: EffectFunctionContext) => Promise<void>} Async function to load financial eligibility data and store in context
+   * Restores the current case's session-only answer draft without loading legacy financial data.
+   * @param {unknown} deps Effect dependencies supplied by Forge
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Async draft restoration function
    */
-  LoadCaseFinancialEligibility: (deps) => async (context: EffectFunctionContext) => {
-    await deps.effectsWithDeps.LoadCaseFinancialEligibility(deps, context);
+  RestoreCaseDraft: (deps) => async (context: EffectFunctionContext) => {
+    await deps.effectsWithDeps.RestoreCaseDraft(deps, context);
   },
 
   /**
-   * Submit saved answers from session to cla_backend
+   * Validates all active journey answers against the phase-one answer contract.
    * @param {unknown} deps Effect dependencies supplied by Forge
-   * @returns {(context: EffectFunctionContext) => Promise<void>} Async function to submit saved answers to cla_backend
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Async validation function
    */
-  PersistSavedAnswers: (deps) => async (context: EffectFunctionContext) => {
-    await deps.effectsWithDeps.PersistSavedAnswers(deps, context);
+  ValidateDraftAnswers: (deps) => async (context: EffectFunctionContext) => {
+    await deps.effectsWithDeps.ValidateDraftAnswers(deps, context);
+  },
+
+  /**
+   * Stores the validated answer snapshot in the current session only.
+   * @param {unknown} deps Effect dependencies supplied by Forge
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Async preparation function
+   */
+  PrepareSubmission: (deps) => async (context: EffectFunctionContext) => {
+    await deps.effectsWithDeps.PrepareSubmission(deps, context);
+  },
+
+  /**
+   * Checks that the prepared snapshot still exists for this case and session.
+   * @param {unknown} deps Effect dependencies supplied by Forge
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Async prepared snapshot check
+   */
+  CheckPreparedSubmission: (deps) => async (context: EffectFunctionContext) => {
+    await deps.effectsWithDeps.CheckPreparedSubmission(deps, context);
+  },
+
+  /**
+   * Restores an incomplete-draft message from the session to Forge Data.
+   * @param {unknown} deps Effect dependencies supplied by Forge
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Async validation message restoration
+   */
+  RestoreSubmissionError: (deps) => async (context: EffectFunctionContext) => {
+    await deps.effectsWithDeps.RestoreSubmissionError(deps, context);
   },
 
   /**
@@ -133,11 +167,14 @@ export const FinancialEligibilityEffectsImplementations: Record<
 
   /**
    * Answers the age questions from the client's date of birth (supplied by the host as Data `clientDateOfBirth`),
-   * so the journey can skip them. The answers are also written to the drafts so they are persisted on submit,
-   * and take precedence over previously saved answers because the operator can no longer change them.
+   * so the journey can skip them. These derived values are recalculated on every journey access and are not saved
+   * as user-entered answers in the draft.
    * @returns {(context: EffectFunctionContext) => void} Function to apply the DOB-derived answers
    */
   ApplyClientAgeFromDob: () => (context: EffectFunctionContext) => {
+    context.setData(CLIENT_AGE_DATA_KEY, undefined);
+    context.setData(CLIENT_IS_UNDER_18_DATA_KEY, undefined);
+    context.setData(CLIENT_IS_60_OR_OVER_DATA_KEY, undefined);
     const age = calculateAge(context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY), new Date());
     if (age === null) {
       return;
@@ -148,19 +185,8 @@ export const FinancialEligibilityEffectsImplementations: Record<
     context.setData(CLIENT_IS_UNDER_18_DATA_KEY, answers['under-18'] === 'yes');
     context.setData(CLIENT_IS_60_OR_OVER_DATA_KEY, answers['60-or-over'] === 'yes');
 
-    const caseId = context.getRequestParam('caseId');
-    const session = context.getSession() as FinancialEligibilitySession | undefined;
-    let drafts: Record<string, unknown> | undefined;
-    if (caseId && session) {
-      session.financialEligibilityDrafts ??= {};
-      drafts = session.financialEligibilityDrafts[caseId] ??= {};
-    }
-
     for (const [answerCode, value] of Object.entries(answers)) {
       context.setAnswer(answerCode, value);
-      if (drafts) {
-        drafts[answerCode] = value;
-      }
     }
   },
 };
@@ -180,13 +206,25 @@ export const FinancialEligibilityEffects: FinancialEligibilityEffectShape = {
     'LoadCaseDetails',
     FinancialEligibilityEffectsImplementations.LoadCaseDetails,
   ),
-  LoadCaseFinancialEligibility: FinancialEligibilityEffectsRegistry.register(
-    'LoadCaseFinancialEligibility',
-    FinancialEligibilityEffectsImplementations.LoadCaseFinancialEligibility,
+  RestoreCaseDraft: FinancialEligibilityEffectsRegistry.register(
+    'RestoreCaseDraft',
+    FinancialEligibilityEffectsImplementations.RestoreCaseDraft,
   ),
-  PersistSavedAnswers: FinancialEligibilityEffectsRegistry.register(
-    'PersistSavedAnswers',
-    FinancialEligibilityEffectsImplementations.PersistSavedAnswers,
+  ValidateDraftAnswers: FinancialEligibilityEffectsRegistry.register(
+    'ValidateDraftAnswers',
+    FinancialEligibilityEffectsImplementations.ValidateDraftAnswers,
+  ),
+  PrepareSubmission: FinancialEligibilityEffectsRegistry.register(
+    'PrepareSubmission',
+    FinancialEligibilityEffectsImplementations.PrepareSubmission,
+  ),
+  CheckPreparedSubmission: FinancialEligibilityEffectsRegistry.register(
+    'CheckPreparedSubmission',
+    FinancialEligibilityEffectsImplementations.CheckPreparedSubmission,
+  ),
+  RestoreSubmissionError: FinancialEligibilityEffectsRegistry.register(
+    'RestoreSubmissionError',
+    FinancialEligibilityEffectsImplementations.RestoreSubmissionError,
   ),
   ClearDraftAnswers: FinancialEligibilityEffectsRegistry.register(
     'ClearDraftAnswers',
@@ -306,6 +344,8 @@ const PatternEffectImplementations = {
 
         updated.push(Object.fromEntries(fieldCodes.map(code => [code, ''])))
         stored[collectionCode] = updated
+        invalidatePreparedEligibilitySnapshot(session, caseId)
+        clearEligibilitySubmissionError(session, caseId)
 
         context.setData(collectionCode, updated)
 
@@ -365,6 +405,8 @@ const PatternEffectImplementations = {
         updated = [...updated.slice(0, index), ...updated.slice(index + 1)]
 
         stored[collectionCode] = updated
+        invalidatePreparedEligibilitySnapshot(session, caseId)
+        clearEligibilitySubmissionError(session, caseId)
 
         context.setData(collectionCode, updated)
 
@@ -412,6 +454,8 @@ const PatternEffectImplementations = {
 
           return merged
         })
+        invalidatePreparedEligibilitySnapshot(session, caseId)
+        clearEligibilitySubmissionError(session, caseId)
       },
   ),
 };

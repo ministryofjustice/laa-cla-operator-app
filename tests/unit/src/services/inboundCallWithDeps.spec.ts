@@ -158,6 +158,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
       getAnswer,
       setData,
       getData,
+      getSession: sinon.stub().returns(undefined),
     };
 
     await effect(context as any);
@@ -219,6 +220,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
       getAnswer,
       setData,
       getData,
+      getSession: sinon.stub().returns(undefined),
     };
 
     await effect(context as any);

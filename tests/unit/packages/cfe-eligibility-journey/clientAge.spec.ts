@@ -109,7 +109,7 @@ describe('Client age from date of birth', () => {
       clock.restore();
     });
 
-    it('sets the age answers, the age data and the drafts from the date of birth', () => {
+    it('sets age answers and derived-age data without saving derived answers as user-entered drafts', () => {
       const context = createTestEffectContext({
         params: { caseId: 'CASE1' },
         data: { [CLIENT_DATE_OF_BIRTH_DATA_KEY]: '1960-01-01' },
@@ -126,14 +126,12 @@ describe('Client age from date of birth', () => {
       expect(context.getAnswer('60-or-over-with-partner')).to.equal('yes');
       const session = context.getSession() as unknown as FinancialEligibilitySession;
       expect(session.financialEligibilityDrafts.CASE1).to.deep.equal({
-        'under-18': 'no',
+        'under-18': 'yes',
         'has-partner': 'no',
-        '60-or-over': 'yes',
-        '60-or-over-with-partner': 'yes',
       });
     });
 
-    it('creates the drafts for the case when there are none yet', () => {
+    it('does not create a draft solely for derived age answers', () => {
       const context = createTestEffectContext({
         params: { caseId: 'CASE1' },
         data: { [CLIENT_DATE_OF_BIRTH_DATA_KEY]: '2010-01-01' },
@@ -145,7 +143,7 @@ describe('Client age from date of birth', () => {
       expect(context.getData(CLIENT_IS_UNDER_18_DATA_KEY)).to.equal(true);
       expect(context.getData(CLIENT_IS_60_OR_OVER_DATA_KEY)).to.equal(false);
       const session = context.getSession() as unknown as FinancialEligibilitySession;
-      expect(session.financialEligibilityDrafts.CASE1).to.deep.equal({ 'under-18': 'yes', '60-or-over': 'no' });
+      expect(session.financialEligibilityDrafts).to.equal(undefined);
     });
 
     it('still sets the answers when there is no caseId', () => {
@@ -183,15 +181,15 @@ describe('Client age from date of birth', () => {
         (hook.next ?? []).map((outcome) => ('goto' in outcome ? outcome.goto : null)),
       );
 
-    it('applies the client age after loading the saved answers, so it takes precedence', () => {
+    it('restores case drafts before deriving the client age on access', () => {
       const effectNames = (eligibilityJourney.onAccess ?? []).flatMap((hook) =>
         (hook.effects ?? []).map((effect) => (effect as unknown as { name: string }).name),
       );
 
       expect(effectNames.indexOf('ApplyClientAgeFromDob')).to.be.greaterThan(
-        effectNames.indexOf('LoadCaseFinancialEligibility'),
+        effectNames.indexOf('RestoreCaseDraft'),
       );
-      expect(effectNames.indexOf('LoadCaseFinancialEligibility')).to.be.greaterThan(
+      expect(effectNames.indexOf('RestoreCaseDraft')).to.be.greaterThan(
         effectNames.indexOf('LoadCaseDetails'),
       );
     });

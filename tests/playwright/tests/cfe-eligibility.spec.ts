@@ -118,10 +118,16 @@ test.describe("Client details eligibility entry", () => {
     );
     await answerYesNo(page, "No");
     await expect(page).toHaveURL(`${journeyPath("EL-CHILD")}/check-answers`);
-    await page.getByRole("button", { name: "Submit", exact: true }).click();
-    await expect(page).toHaveURL(detailsPath("EL-CHILD"));
-
-    await page.goto(`${journeyPath("EL-CHILD")}/check-answers`);
+    await page.getByRole("button", { name: "Prepare submission" }).click();
+    await expect(page).toHaveURL(`${journeyPath("EL-CHILD")}/submission-ready`);
+    await expect(
+      page.getByText(/No financial eligibility calculation has run/u),
+    ).toBeVisible();
+    await expect(page.getByText(/no assessment has been saved/u)).toBeVisible();
+    await page
+      .getByRole("link", { name: "Return to check your answers" })
+      .click();
+    await expect(page).toHaveURL(`${journeyPath("EL-CHILD")}/check-answers`);
     await expect(page.getByText("Are you aged 17 or under?")).toBeVisible();
     await expect(
       page.locator(".govuk-summary-list__row").filter({
@@ -176,6 +182,76 @@ test.describe("Client details eligibility entry", () => {
     await expect(page).toHaveURL(`${path}/benefits`);
   });
 
+  test("requires an explicit property answer and validates property details when Yes is selected", async ({
+    page,
+  }) => {
+    const path = journeyPath("EL-PROPERTY-ANSWER");
+    await startFromDetails(page, "EL-PROPERTY-ANSWER");
+    await answerYesNo(page, "No");
+    await completeBenefits(page, false);
+
+    await expect(page).toHaveURL(`${path}/properties`);
+    await continueJourney(page);
+    await expect(page.locator(".govuk-error-summary")).toContainText(
+      "Select yes if you own or part-own any property",
+    );
+
+    await page.getByRole("radio", { name: "Yes", exact: true }).check();
+    await continueJourney(page);
+    await expect(page.locator(".govuk-error-summary")).toContainText(
+      "Add at least one property",
+    );
+
+    await page.getByRole("button", { name: "Add property" }).click();
+    await page
+      .getByRole("spinbutton", {
+        name: "What is the current market value of the property?",
+      })
+      .fill("100000");
+    await page
+      .getByRole("spinbutton", {
+        name: "How much is left to pay on the mortgage?",
+      })
+      .fill("50000");
+    await page
+      .getByRole("group", { name: "Is this your main property?" })
+      .getByLabel("Yes")
+      .check();
+    await page
+      .getByRole("spinbutton", {
+        name: "What percentage of the property do you own?",
+      })
+      .fill("100");
+    await continueJourney(page);
+    await expect(page).toHaveURL(`${path}/your-savings`);
+  });
+
+  test("an incomplete direct review returns to the first missing question", async ({
+    page,
+  }) => {
+    const path = journeyPath("EL-INCOMPLETE");
+    await login(page, `${path}/check-answers`);
+    await expect(page).toHaveURL(`${path}/has-partner`);
+    await expect(
+      page.getByText(
+        "Complete or correct this answer before preparing the submission.",
+      ),
+    ).toBeVisible();
+  });
+
+  test("direct access to preparation cannot bypass draft validation", async ({
+    page,
+  }) => {
+    const path = journeyPath("EL-PREPARE-DIRECT");
+    await login(page, `${path}/submission-ready`);
+    await expect(page).toHaveURL(`${path}/has-partner`);
+    await expect(
+      page.getByText(
+        "Complete or correct this answer before preparing the submission.",
+      ),
+    ).toBeVisible();
+  });
+
   test("discard confirmation returns to the journey or discards to client details", async ({
     page,
   }) => {
@@ -220,6 +296,7 @@ test.describe("CFE eligibility financial questions", () => {
       await expect(page).toHaveURL(
         `${path}/${partner === "Yes" ? "client-partner-properties" : "properties"}`,
       );
+      await page.getByRole("radio", { name: "No", exact: true }).check();
       await continueJourney(page);
       await expect(page).toHaveURL(`${path}/your-savings`);
       await fillZeroAmounts(page);
@@ -263,30 +340,29 @@ test.describe("CFE eligibility financial questions", () => {
         page.getByRole("heading", { name: "Check your answers", exact: true }),
       ).toBeVisible();
       await checkAccessibility();
-      await page.getByRole("button", { name: "Submit", exact: true }).click();
-      await expect(page).toHaveURL(detailsPath(caseId));
+      await page.getByRole("button", { name: "Prepare submission" }).click();
+      await expect(page).toHaveURL(`${path}/submission-ready`);
+      await expect(
+        page.getByText(/No financial eligibility calculation has run/u),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/no assessment has been saved/u),
+      ).toBeVisible();
+      await checkAccessibility();
+      await page
+        .getByRole("link", { name: "Return to check your answers" })
+        .click();
+      await expect(page).toHaveURL(`${path}/check-answers`);
 
-      // A separate browser session proves answers are reloaded from the API.
+      // Draft answers remain available during this session but do not persist across sessions.
       const reloaded = await browser.newPage();
       try {
         await login(reloaded, `${path}/has-partner`);
-        await expect(
-          reloaded.getByRole("radio", { name: partner, exact: true }),
-        ).toBeChecked();
         await reloaded.goto(`${path}/your-savings`);
         const bankBalance = reloaded.getByRole("spinbutton", {
           name: "How much was in your bank",
         });
-        await expect(bankBalance).toHaveValue("125");
-        await bankBalance.fill("250");
-        await continueJourney(reloaded);
-        await reloaded.goto(`${path}/check-answers`);
-        await reloaded
-          .getByRole("button", { name: "Submit", exact: true })
-          .click();
-        await expect(reloaded).toHaveURL(detailsPath(caseId));
-        await reloaded.goto(`${path}/your-savings`);
-        await expect(bankBalance).toHaveValue("250");
+        await expect(bankBalance).toHaveValue("");
       } finally {
         await reloaded.close();
       }
@@ -300,6 +376,7 @@ test.describe("CFE eligibility financial questions", () => {
     await expect(page).toHaveURL(`${path}/benefits`);
     await completeBenefits(page, true);
     await expect(page).toHaveURL(`${path}/properties`);
+    await page.getByRole("radio", { name: "No", exact: true }).check();
     await continueJourney(page);
     await expect(page).toHaveURL(`${path}/your-savings`);
     await fillZeroAmounts(page);

@@ -233,12 +233,14 @@ Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will 
 
 ### Financial eligibility journey
 
-The financial eligibility (means test) journey lives in `packages/cfe-eligibility-journey` as a standalone Forge package. It started as a copy of the journey in [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases), which reflects the questions cla_frontend asks. This version is changing to map more closely to CFE Civil, and will be handed back to manage-your-civil-cases to run alongside its own version for cases created in this app. Its journey code (`cfe-eligibility`), URL, import alias (`@ministryofjustice/cfe-eligibility-journey`) and global Forge function names (prefixed `Cfe`) are distinct from manage's so both can be registered in one app. `packages/` keeps the original code style, so it is excluded from ESLint and Prettier here.
+The financial eligibility journey lives in `packages/cfe-eligibility-journey` as a standalone Forge package. It started as a copy of the journey in [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases), which reflects the questions cla_frontend asks. Its journey code (`cfe-eligibility`), URL, import alias (`@ministryofjustice/cfe-eligibility-journey`) and global Forge function names are distinct from manage's so both can be registered in one app.
 
-- The journey runs at `/cases/:caseId/cfe-eligibility/change`. Leaving the journey (submit or discard) goes back to the client details page.
-- Select **Check financial eligibility** on client details to start. This validates and saves the details first, so eligibility uses the latest date of birth. **Save and continue** still goes to address lookup.
-- The age questions are answered from the client's date of birth when the case has one, and skipped. The host supplies the date of birth by setting Forge Data `clientDateOfBirth` (ISO `YYYY-MM-DD`) in its `LoadCaseDetails` effect. "Are you or your partner aged 60 or over?" is still asked when the client is under 60, because the partner's age decides it.
-- App-specific behaviour is supplied through the package's `effectsWithDeps` dependency, implemented in `src/services/financialEligibilityWithDeps.ts`. It reads and writes the call centre `eligibility_check` API. A case has no eligibility check until the first submit, which creates it.
+- The journey runs at `/cases/:caseId/cfe-eligibility/change`. The **Check financial eligibility** button validates and saves client details before starting it; ordinary **Save and continue** still goes to address lookup.
+- Client age answers are derived from the saved date of birth when available. The partner's age is still asked when the client is under 60, because the partner's age decides that branch.
+- Financial answers are restored from a case-scoped session draft. The journey does not read or write legacy financial eligibility data. Drafts are temporary and are not recoverable after the session expires.
+- **Prepare submission** validates active-branch answers and stores a versioned answer snapshot in the session. The submission-ready page explicitly states that no CFE calculation has run and no assessment has been saved. There is no CFE request, result, or backend assessment persistence in this phase.
+- The properties question includes an explicit yes/no ownership answer. Selecting **Yes** requires at least one complete property entry; selecting **No** excludes any inactive property draft from the prepared snapshot.
+- Before a CFE request can be implemented, the business must confirm the CFE API version, proceeding mapping, assessment date/exemption policy, and any additional CFE inputs not represented by the current questions. In particular, partner date of birth and the exact CFE treatment of some existing financial questions remain to be agreed. The phase-one snapshot is not a CFE request contract.
 
 ### Pre-commit checks
 

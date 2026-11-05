@@ -1,6 +1,4 @@
 import { expect } from 'chai';
-import sinon from 'sinon';
-import { createTestEffectContext } from '@ministryofjustice/hmpps-forge/core/testing';
 import { ExpressionType } from '@ministryofjustice/hmpps-forge/core/authoring';
 import type { PredicateExpr, ReferenceExpr } from '@ministryofjustice/hmpps-forge/core/authoring';
 import {
@@ -23,8 +21,6 @@ import {
   expensesSummaryList,
   partnerExpensesSummaryList,
 } from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersBlock.js';
-import type { Deps } from '#packages/cfe-eligibility-journey/src/api.js';
-import { FinancialEligibilityEffectsWithDepsImpl } from '#src/services/financialEligibilityWithDeps.js';
 
 /**
  * Reads the `answers.*` path off a reference expression, if it is one.
@@ -103,74 +99,6 @@ describe('Check your answers: "Do you have a partner?" row visibility', () => {
     expect(referencedAnswerPaths(partnerRowVisibleWhen())).to.include('under-18');
   });
 
-  describe('LoadCaseFinancialEligibility scenarios', () => {
-    const deps = {} as Deps;
-    let getFinancialEligibilityStub: sinon.SinonStub;
-    let effects: FinancialEligibilityEffectsWithDepsImpl;
-
-    beforeEach(() => {
-      getFinancialEligibilityStub = sinon.stub();
-      effects = new FinancialEligibilityEffectsWithDepsImpl({
-        getFinancialEligibility: getFinancialEligibilityStub,
-        updateFinancialEligibility: sinon.stub(),
-      });
-    });
-
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('Boolean values are shown empty when nothing has been selected', async () => {
-      // Real case WE-5647-7943: is_you_under_18/under_18_receive_regular_payment/under_18_has_valuables all null
-      const context = createTestEffectContext({ params: { caseId: 'CASE1' }, session: {} });
-      getFinancialEligibilityStub.resolves({
-        data: {
-          hasPartner: false,
-          isUnder17: null,
-          isOver60: null,
-          specificBenefits: {},
-          under18RegularPayment: null,
-          under18HasValuables: null,
-          propertySet: [],
-          clientData: {},
-          partnerData: {},
-          disputedSavings: null,
-          disregards: [],
-        },
-      });
-
-      await effects.LoadCaseFinancialEligibility(deps, context);
-
-      expect(context.getAnswer('under-18')).to.equal('');
-      expect(context.getAnswer('under-18-receives-regular-payment')).to.equal('');
-      expect(context.getAnswer('under-18-has-valuables')).to.equal('');
-    });
-
-    it('hides the partner row for a client who is genuinely under-18 passported', async () => {
-      const context = createTestEffectContext({ params: { caseId: 'CASE2' }, session: {} });
-      getFinancialEligibilityStub.resolves({
-        data: {
-          hasPartner: false,
-          isUnder17: true,
-          isOver60: false,
-          specificBenefits: {},
-          under18RegularPayment: false,
-          under18HasValuables: false,
-          propertySet: [],
-          clientData: {},
-          partnerData: {},
-          disputedSavings: null,
-          disregards: [],
-        },
-      });
-
-      await effects.LoadCaseFinancialEligibility(deps, context);
-
-      expect(context.getAnswer('under-18')).to.equal('yes');
-      expect(context.getAnswer('under-18-receives-regular-payment')).to.equal('no');
-      expect(context.getAnswer('under-18-has-valuables')).to.equal('no');
-    });
-  });
 });
 
 describe('Check your answers: other rows with conditional visibility', () => {
@@ -296,4 +224,3 @@ describe('Check your answers: other rows with conditional visibility', () => {
     });
   });
 });
-

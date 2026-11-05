@@ -147,7 +147,41 @@ export const financesHeading = GovUKHeading({
   size: 's',
 })
 
+export const propertyOwnershipSummaryList = GovUKSummaryList({
+  visibleWhen: not(under18Passported),
+  card: {
+    title: {
+      text: 'Properties',
+      headingLevel: 4,
+    },
+    actions: {
+      items: [
+        {
+          href: Data('propertiesStepPath'),
+          text: 'Change',
+          visuallyHiddenText: 'Change, Properties',
+        },
+      ],
+    },
+  },
+  rows: [
+    {
+      key: {
+        text: 'Do you own or part-own any property?',
+        classes: GovUKUtilityClasses.Width.TwoThirds,
+      },
+      value: {
+        text: Answer('has-property').pipe(Transformer.String.Capitalize()),
+      },
+    },
+  ],
+})
+
 export const propertiesSummaryList = CollectionBlock({
+  visibleWhen: and(
+    not(under18Passported),
+    Answer('has-property').match(Condition.Equals('yes')),
+  ),
   collection: Data('propertySet').each(
     Iterator.Map([
       GovUKSummaryList({
@@ -159,7 +193,7 @@ export const propertiesSummaryList = CollectionBlock({
           },
           actions: {
             items: [
-              { href: 'properties', text: 'Change', visuallyHiddenText: Format('Change, Property %1', Loop.Index()) },
+              { href: Data('propertiesStepPath'), text: 'Change', visuallyHiddenText: Format('Change, Property %1', Loop.Index()) },
             ],
           },
         },
@@ -203,7 +237,7 @@ export const propertiesSummaryList = CollectionBlock({
 export const noPropertiesSummaryList = GovUKSummaryList({
   visibleWhen: and(
     not(under18Passported),
-    Data('propertySet').not.match(Condition.IsRequired())
+    Answer('has-property').match(Condition.Equals('no')),
   ),
   card: {
     title: {
@@ -213,7 +247,7 @@ export const noPropertiesSummaryList = GovUKSummaryList({
     actions: {
       items: [
         {
-          href: 'properties',
+          href: Data('propertiesStepPath'),
           text: 'Change',
           visuallyHiddenText: 'Change, Properties',
         },
