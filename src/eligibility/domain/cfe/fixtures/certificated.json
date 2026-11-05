@@ -1,0 +1,103 @@
+{
+  "input": {
+    "level_of_help": "certificated",
+    "client_age": "standard",
+    "date_of_birth": "1985-07-22",
+    "passporting": false,
+    "immigration_or_asylum_type_upper_tribunal": "immigration_upper",
+    "asylum_support": false,
+    "employment_status": "unemployed",
+    "friends_or_family_relevant": false,
+    "maintenance_relevant": false,
+    "property_or_lodger_relevant": false,
+    "pension_relevant": false,
+    "student_finance_relevant": false,
+    "other_relevant": false,
+    "childcare_payments_relevant": false,
+    "maintenance_payments_relevant": false,
+    "legal_aid_payments_relevant": false,
+    "property_owned": "outright",
+    "house_value": 150000,
+    "percentage_owned": 100,
+    "valuables": 1000,
+    "bank_accounts": [
+      {
+        "amount": 2000
+      }
+    ],
+    "adult_dependants": false,
+    "child_dependants": false,
+    "vehicle_owned": false,
+    "domestic_abuse_applicant": false,
+    "partner": false,
+    "receives_benefits": false,
+    "additional_property_owned": "none",
+    "investments_relevant": false,
+    "valuables_relevant": true
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "domestic_abuse_applicant",
+    "immigration_or_asylum_type_upper_tribunal",
+    "asylum_support",
+    "applicant",
+    "dependant_details",
+    "employment_status",
+    "benefits",
+    "other_income",
+    "outgoings",
+    "property",
+    "property_entry",
+    "additional_property",
+    "assets",
+    "vehicle"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "certificated"
+    },
+    "dependants": [],
+    "proceeding_types": [
+      {
+        "ccms_code": "IM030",
+        "client_involvement_type": "A"
+      }
+    ],
+    "irregular_incomes": {
+      "payments": []
+    },
+    "capitals": {
+      "bank_accounts": [
+        {
+          "value": "2000.0",
+          "description": "Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ],
+      "non_liquid_capital": [
+        {
+          "value": "1000.0",
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ]
+    },
+    "properties": {
+      "main_home": {
+        "value": "150000.0",
+        "outstanding_mortgage": 0,
+        "percentage_owned": 100,
+        "subject_matter_of_dispute": false,
+        "shared_with_housing_assoc": false
+      }
+    },
+    "regular_transactions": [],
+    "applicant": {
+      "date_of_birth": "1974-06-01",
+      "receives_qualifying_benefit": false,
+      "receives_asylum_support": false
+    }
+  }
+}

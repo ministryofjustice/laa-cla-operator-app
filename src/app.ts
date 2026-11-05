@@ -35,6 +35,12 @@ import {
   setAuthStatus,
 } from "./middleware/apiMiddleware.js";
 import { PostcodeLookupService } from "./services/postcodeLookup.js";
+import { CfeHttpClient } from "./eligibility/adapters/cfe-http-client.js";
+import { CaseResultHandler } from "./eligibility/adapters/case-result-handler.js";
+import {
+  SessionAnswerStore,
+  setCurrentRequest,
+} from "./eligibility/adapters/session-answer-store.js";
 
 const TRUST_FIRST_PROXY = 1;
 /**
@@ -122,6 +128,12 @@ const createApp = async (): Promise<express.Application> => {
   // Set up Nunjucks as the template engine
   const nunjucksEnv = nunjucksSetup(app);
 
+  // Middleware to set current request context for SessionAnswerStore
+  app.use((req, _res, next) => {
+    setCurrentRequest(req);
+    next();
+  });
+
   const forge = new Forge({})
     .registerGlobalComponents(govukComponents)
     // MoJ components don't have an "all" option, so we need to register them individually
@@ -130,6 +142,11 @@ const createApp = async (): Promise<express.Application> => {
   // Everytime a new journey is added to the project,
   // it'll be automatically registered with Forge here.
   const postcodeServiceInstance = new PostcodeLookupService();
+  const cfeHttpClient = new CfeHttpClient({
+    baseUrl: config.cfe.baseUrl,
+  });
+  const sessionAnswerStore = new SessionAnswerStore();
+
   const pathLookup: Record<string, string> = {};
   for (const journeyPackage of journeyPackages) {
     const steps = journeyPackage.journey.steps ?? [];
@@ -140,10 +157,21 @@ const createApp = async (): Promise<express.Application> => {
       const stepPath = step.path.replace(/^\/+|\/+$/gu, "");
       pathLookup[code] = `/${journeyPath}/${stepPath}`;
     }
-    forge.registerPackage<Deps>(journeyPackage, {
-      caseApi: apiService,
-      postCodeApi: postcodeServiceInstance,
-    });
+
+    if (journeyPackage.journey.code === "eligibility") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Type assertion needed due to dependency injection mismatch
+      forge.registerPackage(journeyPackage as never, {
+        assessor: cfeHttpClient,
+        resultHandler: new CaseResultHandler(apiService),
+        answerStore: sessionAnswerStore,
+        caseApi: apiService,
+      });
+    } else {
+      forge.registerPackage<Deps>(journeyPackage, {
+        caseApi: apiService,
+        postCodeApi: postcodeServiceInstance,
+      });
+    }
   }
 
   /**
@@ -175,7 +203,51 @@ const createApp = async (): Promise<express.Application> => {
   };
 
   app.use(express.urlencoded({ extended: true }));
-  app.use("/", createExpressRouter(forge, { nunjucksEnv }));
+
+  // Wrap Forge router with error catching middleware
+  let forgeRouter: any;
+  try {
+    console.error("[Forge] Creating Forge Express router...");
+    forgeRouter = createExpressRouter(forge, { nunjucksEnv });
+    console.error("[Forge] Forge Express router created successfully");
+  } catch (error) {
+    console.error(
+      `[Forge] Error creating router: ${error instanceof Error ? error.stack : String(error)}`,
+    );
+    throw error;
+  }
+
+  app.use((req, res, next) => {
+    try {
+      console.error(`[Forge] Processing request: ${req.method} ${req.path}`);
+      next();
+    } catch (error) {
+      console.error(
+        `[Forge] Request error: ${error instanceof Error ? error.stack : String(error)}`,
+      );
+      next(error);
+    }
+  });
+
+  app.use("/", forgeRouter);
+
+  // Catch any errors from Forge router
+  app.use(
+    (
+      error: unknown,
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      console.error(
+        `[Forge] Error handler caught: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      console.error(
+        `[Forge] Full error: ${error instanceof Error ? error.stack : String(error)}`,
+      );
+      next(error);
+    },
+  );
 
   // Register last to catch errors from routes, controllers, and services.
   setupGlobalErrorHandler(app);

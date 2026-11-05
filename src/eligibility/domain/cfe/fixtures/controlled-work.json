@@ -1,0 +1,123 @@
+{
+  "input": {
+    "level_of_help": "controlled",
+    "client_age": "standard",
+    "date_of_birth": "1978-03-15",
+    "passporting": false,
+    "employment_status": "in_work",
+    "incomes": [
+      {
+        "income_type": "employment",
+        "income_frequency": "monthly",
+        "gross_income": 2500,
+        "income_tax": 400,
+        "national_insurance": 250
+      }
+    ],
+    "friends_or_family_relevant": false,
+    "maintenance_relevant": false,
+    "property_or_lodger_relevant": false,
+    "pension_relevant": false,
+    "student_finance_relevant": false,
+    "other_relevant": false,
+    "childcare_payments_relevant": false,
+    "maintenance_payments_relevant": false,
+    "legal_aid_payments_relevant": false,
+    "property_owned": "outright",
+    "house_value": 250000,
+    "percentage_owned": 100,
+    "investments": 5000,
+    "bank_accounts": [
+      {
+        "amount": 10000,
+        "account_in_dispute": false
+      }
+    ],
+    "adult_dependants": false,
+    "child_dependants": false,
+    "immigration_or_asylum": false,
+    "partner": false,
+    "receives_benefits": false,
+    "house_in_dispute": false,
+    "additional_property_owned": "none",
+    "investments_relevant": true,
+    "investments_in_dispute": false,
+    "valuables_relevant": false,
+    "valuables_in_dispute": false
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "immigration_or_asylum",
+    "applicant",
+    "dependant_details",
+    "employment_status",
+    "income",
+    "benefits",
+    "other_income",
+    "outgoings",
+    "property",
+    "property_entry",
+    "additional_property",
+    "assets"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "controlled"
+    },
+    "dependants": [],
+    "proceeding_types": [
+      {
+        "ccms_code": "SE003",
+        "client_involvement_type": "A"
+      }
+    ],
+    "employment_details": [
+      {
+        "income": {
+          "frequency": "monthly",
+          "gross": "2500.0",
+          "benefits_in_kind": 0,
+          "tax": "-400.0",
+          "national_insurance": "-250.0",
+          "receiving_only_statutory_sick_or_maternity_pay": false
+        }
+      }
+    ],
+    "self_employment_details": [],
+    "irregular_incomes": {
+      "payments": []
+    },
+    "capitals": {
+      "bank_accounts": [
+        {
+          "value": "10000.0",
+          "description": "Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ],
+      "non_liquid_capital": [
+        {
+          "value": "5000.0",
+          "description": "Non Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ]
+    },
+    "properties": {
+      "main_home": {
+        "value": "250000.0",
+        "outstanding_mortgage": 0,
+        "percentage_owned": 100,
+        "subject_matter_of_dispute": false,
+        "shared_with_housing_assoc": false
+      }
+    },
+    "regular_transactions": [],
+    "applicant": {
+      "date_of_birth": "1974-06-01",
+      "receives_qualifying_benefit": false
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "input": {
+    "level_of_help": "certificated",
+    "client_age": "standard",
+    "domestic_abuse_applicant": false,
+    "date_of_birth": "1995-03-30",
+    "immigration_or_asylum_type_upper_tribunal": "asylum_upper",
+    "asylum_support": false,
+    "partner": false,
+    "passporting": true,
+    "property_owned": "none",
+    "additional_property_owned": "none",
+    "bank_accounts": [
+      {
+        "amount": 0
+      }
+    ],
+    "investments_relevant": false,
+    "valuables_relevant": false,
+    "vehicle_owned": false
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "domestic_abuse_applicant",
+    "immigration_or_asylum_type_upper_tribunal",
+    "asylum_support",
+    "applicant",
+    "property",
+    "additional_property",
+    "assets",
+    "vehicle"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "certificated"
+    },
+    "proceeding_types": [
+      {
+        "ccms_code": "IA031",
+        "client_involvement_type": "A"
+      }
+    ],
+    "applicant": {
+      "date_of_birth": "1974-06-01",
+      "receives_qualifying_benefit": true,
+      "receives_asylum_support": false
+    }
+  }
+}

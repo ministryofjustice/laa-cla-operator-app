@@ -37,6 +37,7 @@ export const nunjucksSetup = (app: Application): nunjucks.Environment => {
   const nunjucksEnv = nunjucks.configure(
     [
       path.join(path.resolve(), "views"), // Main views directory
+      path.join(path.resolve(), "src/eligibility/views"), // Eligibility module views
       "node_modules/govuk-frontend/dist", // GOV.UK Frontend templates
       "node_modules/govuk-frontend/dist/components/", // GOV.UK components
       "node_modules/@ministryofjustice/frontend", // MoJ Design System components
@@ -45,7 +46,7 @@ export const nunjucksSetup = (app: Application): nunjucks.Environment => {
     {
       autoescape: true, // Enable auto escaping to prevent XSS attacks
       express: appInstance, // Bind Nunjucks to the Express app instance
-      watch: true, // Watch for changes in template files during development
+      watch: false, // Disable watch due to chokidar version conflict
     },
   );
 

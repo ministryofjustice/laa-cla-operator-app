@@ -1,0 +1,20 @@
+{
+  "level_of_help": "certificated",
+  "client_age": "standard",
+  "domestic_abuse_applicant": false,
+  "date_of_birth": "1995-03-30",
+  "immigration_or_asylum_type_upper_tribunal": "asylum_upper",
+  "asylum_support": false,
+  "partner": false,
+  "passporting": true,
+  "property_owned": "none",
+  "additional_property_owned": "none",
+  "bank_accounts": [
+    {
+      "amount": 0
+    }
+  ],
+  "investments_relevant": false,
+  "valuables_relevant": false,
+  "vehicle_owned": false
+}

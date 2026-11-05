@@ -1,0 +1,172 @@
+{
+  "input": {
+    "level_of_help": "controlled",
+    "client_age": "standard",
+    "date_of_birth": "1990-02-11",
+    "passporting": false,
+    "partner": false,
+    "employment_status": "in_work",
+    "incomes": [
+      {
+        "income_type": "employment",
+        "income_frequency": "monthly",
+        "gross_income": 1500,
+        "income_tax": 100,
+        "national_insurance": 50
+      }
+    ],
+    "receives_benefits": false,
+    "friends_or_family_relevant": false,
+    "maintenance_relevant": false,
+    "property_or_lodger_relevant": false,
+    "pension_relevant": false,
+    "student_finance_relevant": false,
+    "other_relevant": false,
+    "childcare_payments_relevant": false,
+    "maintenance_payments_relevant": false,
+    "legal_aid_payments_relevant": false,
+    "property_owned": "with_mortgage",
+    "housing_loan_payments": 650.25,
+    "housing_payments_loan_frequency": "every_two_weeks",
+    "house_value": 180000,
+    "mortgage": 120000,
+    "percentage_owned": 100,
+    "house_in_dispute": false,
+    "additional_property_owned": "none",
+    "investments": 0,
+    "valuables": 0,
+    "bank_accounts": [
+      {
+        "amount": 200,
+        "account_in_dispute": false
+      }
+    ],
+    "vehicle_owned": false,
+    "adult_dependants": true,
+    "adult_dependants_count": 1,
+    "child_dependants": true,
+    "child_dependants_count": 2,
+    "dependants_get_income": true,
+    "dependant_incomes": [
+      {
+        "amount": 100,
+        "frequency": "monthly"
+      },
+      {
+        "amount": 80,
+        "frequency": "every_week"
+      }
+    ],
+    "immigration_or_asylum": false,
+    "investments_relevant": false,
+    "valuables_relevant": false,
+    "investments_in_dispute": false,
+    "valuables_in_dispute": false
+  },
+  "relevant_steps": [
+    "client_age",
+    "level_of_help",
+    "immigration_or_asylum",
+    "applicant",
+    "dependant_details",
+    "dependant_income",
+    "dependant_income_details",
+    "employment_status",
+    "income",
+    "benefits",
+    "other_income",
+    "outgoings",
+    "property",
+    "mortgage_or_loan_payment",
+    "property_entry",
+    "additional_property",
+    "assets"
+  ],
+  "payload": {
+    "assessment": {
+      "submission_date": "2024-06-01",
+      "level_of_help": "controlled"
+    },
+    "dependants": [
+      {
+        "date_of_birth": "2003-06-01",
+        "in_full_time_education": false,
+        "relationship": "adult_relative",
+        "assets_value": 0,
+        "income": {
+          "frequency": "monthly",
+          "amount": "100.0"
+        }
+      },
+      {
+        "date_of_birth": "2007-06-01",
+        "in_full_time_education": true,
+        "relationship": "child_relative",
+        "assets_value": 0,
+        "income": {
+          "frequency": "weekly",
+          "amount": "80.0"
+        }
+      },
+      {
+        "date_of_birth": "2013-06-01",
+        "in_full_time_education": true,
+        "relationship": "child_relative",
+        "assets_value": 0
+      }
+    ],
+    "proceeding_types": [
+      {
+        "ccms_code": "SE003",
+        "client_involvement_type": "A"
+      }
+    ],
+    "employment_details": [
+      {
+        "income": {
+          "frequency": "monthly",
+          "gross": "1500.0",
+          "benefits_in_kind": 0,
+          "tax": "-100.0",
+          "national_insurance": "-50.0",
+          "receiving_only_statutory_sick_or_maternity_pay": false
+        }
+      }
+    ],
+    "self_employment_details": [],
+    "irregular_incomes": {
+      "payments": []
+    },
+    "capitals": {
+      "bank_accounts": [
+        {
+          "value": "200.0",
+          "description": "Liquid Asset",
+          "subject_matter_of_dispute": false
+        }
+      ],
+      "non_liquid_capital": []
+    },
+    "properties": {
+      "main_home": {
+        "value": "180000.0",
+        "outstanding_mortgage": "120000.0",
+        "percentage_owned": 100,
+        "subject_matter_of_dispute": false,
+        "shared_with_housing_assoc": false
+      }
+    },
+    "regular_transactions": [
+      {
+        "operation": "debit",
+        "category": "rent_or_mortgage",
+        "frequency": "two_weekly",
+        "amount": "650.25"
+      }
+    ],
+    "applicant": {
+      "date_of_birth": "1974-06-01",
+      "receives_qualifying_benefit": false
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "level_of_help": "controlled",
+  "client_age": "standard",
+  "date_of_birth": "1990-02-11",
+  "passporting": false,
+  "partner": false,
+  "employment_status": "in_work",
+  "incomes": [
+    {
+      "income_type": "employment",
+      "income_frequency": "monthly",
+      "gross_income": 1500,
+      "income_tax": 100,
+      "national_insurance": 50
+    }
+  ],
+  "receives_benefits": false,
+  "friends_or_family_relevant": false,
+  "maintenance_relevant": false,
+  "property_or_lodger_relevant": false,
+  "pension_relevant": false,
+  "student_finance_relevant": false,
+  "other_relevant": false,
+  "childcare_payments_relevant": true,
+  "childcare_payments_conditional_value": 300,
+  "childcare_payments_frequency": "monthly",
+  "maintenance_payments_relevant": false,
+  "legal_aid_payments_relevant": false,
+  "property_owned": "with_mortgage",
+  "housing_loan_payments": 650.25,
+  "housing_payments_loan_frequency": "every_two_weeks",
+  "house_value": 180000,
+  "mortgage": 120000,
+  "percentage_owned": 100,
+  "house_in_dispute": false,
+  "additional_property_owned": "none",
+  "investments": 0,
+  "valuables": 0,
+  "bank_accounts": [
+    {
+      "amount": 200,
+      "account_in_dispute": false
+    }
+  ],
+  "vehicle_owned": false,
+  "adult_dependants": false,
+  "child_dependants": true,
+  "child_dependants_count": 1,
+  "immigration_or_asylum": false,
+  "investments_relevant": false,
+  "valuables_relevant": false,
+  "investments_in_dispute": false,
+  "valuables_in_dispute": false
+}

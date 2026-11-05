@@ -1,0 +1,179 @@
+---
+title: Plan - CFE payload builders and parity fixtures
+last_reviewed_on: 2026-10-06
+review_in: 4 weeks
+---
+
+# Plan: CFE payload builders and parity fixtures
+
+| | |
+|---|---|
+| Status | In review |
+| Author | Will Clarke |
+| Reviewers | _To be added_ |
+| Last updated | 2026-10-06 |
+
+This is step 3 (the final part of Phase 1) of the
+[reusable eligibility journey plan](eligibility-journey.html).
+
+## Context
+
+Steps 1 and 2 of the eligibility-journey plan ported CCQ's step branching
+(`Steps::Logic` + the six section classes → `stepsFor(answers)`) into
+`src/eligibility/domain/`. Step 3 is the last piece of Phase 1 (rules engine,
+no UI): port CCQ's CFE payload builders so this module can call CFE directly
+(D6), and build parity fixtures proving the port is faithful. Everything here
+is pinned to the same CCQ commit as the earlier port, `1a30ea3f`
+(`~/dev/laa-check-client-qualifies`).
+
+Scope, confirmed with the user:
+- **In scope**: `CfeService` + the 10 `Cfe::*PayloadService` classes +
+  `CfeParamBuilders::*` → one TS function, `buildAssessment(answers, today)`.
+  Plus Mocha ports of their RSpec specs, and parity fixtures built from
+  hand-written representative answer sets.
+- **Out of scope**: `CfeResult` / `CalculationResult` (interpreting CFE's
+  *response*, for the results page). That belongs to the Phase 2/3 UI work,
+  not this rules-engine step.
+- `buildAssessment` takes an explicit `today: Date` — no implicit
+  `new Date()` default — so CCQ's `n.years.ago` / `Time.zone.today` date
+  arithmetic stays deterministic for callers and for the parity test.
+
+## File layout
+
+All new files under `src/eligibility/domain/cfe/`, next to the existing
+`domain/logic.ts`, `domain/navigation.ts`, `domain/sections/`.
+
+| TS file | Ports | Notes |
+|---|---|---|
+| `payload.ts` | `Cfe::BaseService` + `CfeService.call` | `buildAssessment(answers, today)`: computes `relevantSteps = new Set(stepsFor(answers))` (reusing `stepsFor` from `../navigation.js`), calls every builder below, merges their (disjoint) top-level keys into one payload object. |
+| `assessment-section.ts` | `Cfe::AssessmentPayloadService` | needs `today` |
+| `applicant.ts` | `Cfe::ApplicantPayloadService` | needs `today` for `submission_date`; reads a real `date_of_birth` answer (no bracket synthesis — see Dates gotcha) |
+| `proceedings.ts` | `Cfe::ProceedingsPayloadService` | |
+| `assets.ts` | `Cfe::AssetsPayloadService` + `CfeParamBuilders::Capitals` | capitals + properties (main home + additional properties) |
+| `dependants.ts` | `Cfe::DependantsPayloadService` + `CfeParamBuilders::Dependants` | |
+| `employment-income.ts` | `Cfe::EmploymentIncomePayloadService` + `CfeParamBuilders::Employment` + `::SelfEmployment` | exports a shared `buildEmploymentDetails(incomes)` / `buildSelfEmploymentDetails(incomes)` taking the raw income-row array, so client and partner sections both call it instead of duplicating the frequency table and sign-flipping logic |
+| `irregular-income.ts` | `Cfe::IrregularIncomePayloadService` + `CfeParamBuilders::IrregularIncome` | shared builder taking normalised `{studentFinanceRelevant, studentFinanceAmount, otherRelevant, otherAmount, levelOfHelp}`, called once for client fields and once for `partner_`-prefixed fields |
+| `regular-transactions.ts` | `Cfe::RegularTransactionsPayloadService` + `CfeParamBuilders::RegularTransactions` | shared builder taking normalised outgoings/other-income/benefits/housing field objects; housing only ever applies to the client call (see gotchas) |
+| `vehicles.ts` | `Cfe::VehiclePayloadService` + `CfeParamBuilders::Vehicles` | |
+| `partner.ts` | `Cfe::PartnerPayloadService` | composes `assets.ts`'s capitals builder, `employment-income.ts`, `irregular-income.ts`, `regular-transactions.ts`; uses `partnerEmployed` from `../logic.js`; reads a real `partner_date_of_birth` answer (no bracket synthesis — see Dates gotcha) |
+
+No `Check`/form-instantiation layer is ported — CCQ's `Check#method_missing`
+and `BaseService#instantiate_form` exist only to read session fields and
+validate them; this module already has the flat `answers` bag and
+`relevantSteps` (from `stepsFor`), so each builder reads `answers.<field>`
+directly, guarded by `relevantSteps.has("<step_code>")` wherever CCQ calls
+`relevant_form?(:step_code)`.
+
+## Gotchas found while reading the CCQ source (must carry over)
+
+- **`AdditionalPropertyModel#owned_with_mortgage?`**: for row 0, "owned with
+  mortgage" comes from the step-level `additional_property_owned` /
+  `partner_additional_property_owned` answer; for every other row it comes
+  from that row's own `inline_owned_with_mortgage` field. Needs a small
+  shared `resolveOwnedWithMortgage(item, index, ownershipAnswer)` helper, used
+  by both the client and partner additional-property row builders (which
+  otherwise differ: the partner row never has a `subject_matter_of_dispute`
+  key at all, not even `false`).
+- **Housing benefit only applies to two of the three housing steps.**
+  `MortgageOrLoanPaymentForm` does *not* extend `BaseHousingCostsForm`, so
+  `build_housing_benefits` only fires when `housing_costs` or
+  `shared_ownership_housing_costs` is the relevant step — never for
+  `mortgage_or_loan_payment`. This matches the real-world distinction: housing
+  costs/shared ownership steps are for people who rent (housing benefit is a
+  rental-support benefit), while mortgage-or-loan-payment is for people who
+  own their home outright or are buying it — housing benefit doesn't apply.
+- **Housing payment lookup order** in `RegularTransactionsPayloadService` is
+  `mortgage_or_loan_payment`, then `shared_ownership_housing_costs`, then
+  `housing_costs` (`if`/`elsif` chain) — check in that order.
+- **Tax/NI are sign-flipped**: `express_as_negative_figure` negates
+  `income_tax` and `national_insurance` for both employment and
+  self-employment rows.
+- **Dependants' assumed ages** (21 for adults, 17 for children with income,
+  11 for children without) and the frequency translation reused from
+  `CfeParamBuilders::Employment::FREQUENCY_TRANSLATIONS` — see the comment
+  already in `dependants.rb` explaining *why* (CFE can't take "unknown
+  age", so these are deliberate stand-ins, not real ages).
+- **`other_income` frequency differs by level of help**: `monthly` for
+  controlled, `quarterly` for certificated (`irregular_income.rb`).
+- **`not_aggregated_no_income_low_capital` is currently unexported** from
+  `domain/logic.ts` (it's a private helper at line 148) — needs an `export`
+  added since `assessment-section.ts` needs it (port of
+  `check.not_aggregated_no_income_low_capital?`).
+- **Raw booleans pass straight through**, not via `logic.ts`'s `truthy()`:
+  e.g. `controlled_legal_representation` in `assessment-section.ts` is
+  assigned as CCQ's form attribute value directly (already a real boolean in
+  our session), not re-derived.
+- **Dates**: CCQ only ever collects an age *bracket* (`client_age`:
+  under_18/over_60/standard, `partner_over_60`: boolean) and fakes a
+  `date_of_birth` for CFE via `n.years.ago.to_date`, because CFE only cares
+  which bracket a date falls into. This reusable component collects real
+  dates of birth, so `applicant.ts` and `partner.ts` read them straight from
+  the answers bag instead of synthesizing anything:
+  - `applicant.ts` reads a new `date_of_birth` answer field and passes it
+    through as-is (formatted `YYYY-MM-DD`) — no `yearsAgo`/bracket logic.
+  - `partner.ts` reads a new `partner_date_of_birth` answer field the same
+    way.
+  - `client_age` / `partner_over_60` keep driving branching logic in
+    `logic.ts` (unchanged from steps 1-2); they're just no longer the source
+    for the CFE payload's date_of_birth fields.
+  - Add both new keys to `STEP_ANSWER_KEYS` (`step-answer-keys.ts`) under
+    `client_age` and `partner_details` respectively, alongside the existing
+    bracket answers — this is the only change needed outside `cfe/`.
+  - `submission_date` is still just `today`, formatted `YYYY-MM-DD`.
+
+## Parity fixtures
+
+CCQ's `instant_controlled_session` / `instant_certificated_session` /
+`rich_instant_controlled_session` FactoryBot factories exist only to power
+CCQ's dev-only `InstantSessionsController` (a "jump straight into a session"
+shortcut for manual QA in that app). That's CCQ-specific test tooling, not
+something this reusable component should depend on or carry a reference to.
+
+Instead, hand-write our own representative answer sets directly as plain TS
+objects in this repo (not sourced from any CCQ factory), covering the key
+branches we need parity on: a controlled-work case, a certificated case, a
+passported case, and a case with a partner plus properties/vehicles/
+dependants. These live with the fixtures, e.g.
+`src/eligibility/domain/cfe/fixtures/*.answers.json`.
+
+Plan:
+1. Write a small Ruby script (not run in this repo's CI — CCQ is a separate
+   repo) that takes each hand-written answers JSON file as input (plain
+   `JSON.parse`, no FactoryBot) and, for each:
+   - freezes "today" to a fixed constant date (e.g. `2024-06-01`, matching
+     across both the Ruby script and the TS parity test)
+   - computes `relevant_steps` via `Steps::Helper.relevant_steps(session_data)`
+   - runs the same 10 `Cfe::*PayloadService.call` steps `CfeService.call`
+     does, but against a local `payload = {}` hash instead of calling
+     `CfeConnection.assess` (same approach `cfe_service_spec.rb` takes, minus
+     the mocks)
+   - prints `{ input: session_data, relevant_steps:, payload: }` as JSON
+2. Run it once with `bin/rails runner` against the pinned CCQ commit, and
+   commit the resulting JSON files as
+   `src/eligibility/domain/cfe/fixtures/*.json`. Keep the generator script
+   alongside them (`fixtures/generate-ccq-fixtures.rb`) with a one-line
+   comment on how to re-run it, for when CCQ's pinned commit is bumped or a
+   new answer set is added.
+3. A Mocha parity test (`domain/cfe/parity.spec.ts`) reads each fixture,
+   asserts `stepsFor(fixture.input)` equals `fixture.relevant_steps`, and
+   `buildAssessment(fixture.input, FIXED_TODAY)` deep-equals `fixture.payload`.
+
+## Unit tests
+
+Port the existing RSpec files 1:1 into Mocha, same style as
+`domain/logic.spec.ts` / `domain/navigation.spec.ts` (plain `describe`/`it` +
+node `assert`, not a table-testing library despite the plan doc's wording):
+
+`spec/services/cfe/{applicant,assets,dependants,employment_income,irregular_income,partner,proceedings,regular_transactions,vehicle}_payload_service_spec.rb`
+→ one `*.spec.ts` per TS file above, reusing their literal input/output
+fixtures.
+
+## Verification
+
+- `yarn test:unit` (Mocha picks up `src/eligibility/**/*.spec.ts` per
+  `.mocharc.json`) — all ported unit specs plus the parity test must pass.
+- `yarn tsc`/lint as this repo normally runs for TS changes.
+- Spot check one fixture by hand: confirm the committed JSON's `payload`
+  matches what `bin/rails runner` prints when re-run against CCQ at
+  `1a30ea3f` (sanity check the generator script itself is correct before
+  trusting the fixtures it produced).

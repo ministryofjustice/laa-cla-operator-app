@@ -92,6 +92,59 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
     },
   },
+  // Eligibility module boundary rules
+  {
+    files: ["src/eligibility/**/*.ts", "!src/eligibility/**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "#src/*",
+                "#utils/*",
+                "#types/*",
+                "#routes/*",
+                "#middleware/*",
+                "#helpers/*",
+              ],
+              message:
+                "The eligibility module must stay reusable. Import only from within src/eligibility/ or from @ministryofjustice/hmpps-forge.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Eligibility adapter-specific rules: relax JSDoc for complex nested types (TypeScript covers the typing)
+  {
+    files: ["src/eligibility/adapters/**/*.ts"],
+    rules: {
+      "jsdoc/require-param": "off", // TypeScript types cover this
+      "jsdoc/require-param-type": "off", // TypeScript types cover this
+      "jsdoc/require-param-description": "off", // Optional for adapters
+      "jsdoc/require-returns-type": "off", // TypeScript return types cover this
+      "jsdoc/check-param-names": "off", // TypeScript covers this
+    },
+  },
+  // Host code must import eligibility only from index.ts
+  {
+    files: ["src/journeys/**/*.ts", "src/controllers/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["src/eligibility/*"],
+              message: "Import from src/eligibility/index.ts only",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Add a separate config for declaration files
   {
     files: ["**/*.d.ts"],
@@ -107,6 +160,7 @@ export default [
       "node_modules/*",
       "public/*",
       "tests/**/*.spec.ts", // Unit test specs (if any remain in tests/)
+      "src/eligibility/**/*.spec.ts", // Eligibility module specs live with the module
       "tests/playwright/**/*.spec.ts", // E2E test specs in new Playwright structure
       "tests/playwright/fixtures/*", // Test fixtures
       "tests/playwright/factories/*", // Test factories and mock handlers

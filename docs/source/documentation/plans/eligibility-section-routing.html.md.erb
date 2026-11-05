@@ -1,0 +1,575 @@
+---
+title: Plan - Eligibility income, outgoings and property routing
+last_reviewed_on: 2026-10-19
+review_in: 4 weeks
+---
+
+# Plan: eligibility income, outgoings and property routing
+
+| | |
+|---|---|
+| Status | Draft |
+| Author | Will Clarke |
+| Reviewers | _To be added_ |
+| Last updated | 2026-10-19 |
+
+## Summary
+
+The non-financial section routes correctly. The income, outgoings and property sections do not.
+
+The step order logic is not the problem. `src/eligibility/domain/` is a faithful port of CCQ's `Steps::Logic`, `Steps::Helper` and the six `Steps::*Section` classes (pinned at CCQ commit `1a30ea3f`, which is still CCQ `main`). The problem is that the **Forge step definitions under `src/eligibility/journey/` save different answer keys and option values from the ones the domain logic reads**. The branch predicates then never fire, so steps are skipped or never reached.
+
+The non-financial blocks were built against CCQ's form classes (same field codes, same option values), so they work. The other three sections were built as placeholders (one text box per step) and were not.
+
+This plan maps how each section works in CCQ, what the operator app has today, and the gaps. Each section is a separate piece of work.
+
+## Decisions
+
+| # | Decision | Date |
+|---|---|---|
+| 1 | Amount and frequency fields are **always shown**, not revealed by the preceding yes/no. They are validated only when the yes/no is "yes". Revisit conditional reveal later (Forge supports it with `visibleWhen`) | 2026-10-19 |
+| 2 | The state benefit type list for `benefit_details` and `partner_benefit_details` comes **from CFE** at request time. No static list to maintain | 2026-10-19 |
+| 3 | `rented` is dropped. The main-home question has four options, and the fourth is "No" with the CCQ value `none` | 2026-10-19 |
+| 4 | If CFE does not return a benefit type list (the call fails, or the list is empty), the operator sees an **error page** so they can report the problem. Do not fall back to an empty list as CCQ does | 2026-10-19 |
+| 5 | Existing sessions do not matter. The service is not live, so any saved sessions are test data and field codes can change freely | 2026-10-19 |
+
+## How routing works
+
+### In CCQ
+
+- `Steps::Helper` (`app/lib/steps/helper.rb`) rebuilds the ordered step list from the whole session on every request. Sections run in a fixed order: NonFinancial, Income, Partner, Outgoings, Property, AssetsAndVehicles.
+- Each section returns **groups** of step codes. A group is a run of steps handled together in the change-answers loop.
+- Every conditional comes from predicates in `Steps::Logic` that read **session keys written by the forms**, for example `employment_status == "in_work"`, `property_owned in [outright, with_mortgage, shared_ownership]`, `additional_property_owned`.
+- The next step is the one after the current step in that list. `cannot_use_service?` overrides it for unsupported shared-ownership answers.
+
+### In this app
+
+- `domain/navigation.ts` and `domain/sections/*.ts` port the above one-to-one.
+- `registries/effects.ts` `publishNavigation` runs after every load and save. It builds a `nav` map of step to next path from `stepsFor(answers)`. Each step redirects with `Data("nav.<step>")`.
+- Answers are saved under the Forge **field code**. The domain reads that same key, so **the field code and option values must be exactly CCQ's**.
+- `domain/step-answer-keys.ts` already lists the CCQ keys for every step. It is the contract for field codes. `domain/cfe/*` also reads CCQ-shaped answers (`incomes`, `benefits`, `housing_loan_payments`, `partner_incomes`, ...).
+
+### What goes wrong (verified with `stepsFor`)
+
+| Block saves | Domain reads | Effect |
+|---|---|---|
+| `employment_status` = `not_in_work` / `self_employed` | `in_work` / `unemployed` | `self_employed` never reaches `income` |
+| `additional_property` = `true` | `additional_property_owned` = `none` / `outright` / `with_mortgage` / `shared_ownership` | `additional_property_details` never reached. Shared-ownership "cannot use service" never fires |
+| `property_owned` = `rented` | `none` | Works by accident for routing, but the value is not CCQ's. Replace with "No" / `none` (decision 3) |
+| `partner_benefits` (yes/no) | `partner_receives_benefits` | Partner benefit-details routing never fires |
+| No `partner_additional_property*` steps exist | Domain emits them when there is a partner | `nav` points at a path with no step |
+| `housing_costs`, `mortgage_or_loan_payment`, `shared_ownership_housing_costs`, `partner_outgoings` (one text box each) | 2 to 12 fields each (see below) | Answers are dropped by `relevantAnswers`, so CFE gets nothing |
+| `income`, `benefit_details`, `other_income` single fields | `incomes[]`, `benefits[]`, 16 `*_relevant` / `*_conditional_value` / `*_frequency` fields | Same: dropped, and `childcare` eligibility cannot be computed |
+
+## Approach for every section
+
+1. Make the Forge fields use the CCQ field codes, option values and validation from the form class. The CCQ form is the spec. The CCQ slim view is the spec for conditional reveals.
+2. Do not change `domain/sections/*` or `domain/logic.ts` unless a parity test proves a difference. They are correct.
+3. Register any new step in `journey/index.ts` and give it a `Data("nav.<code>")` redirect. The step code must be the CCQ code, and the path must be the code with `_` as `-`.
+4. Convert yes/no with the existing `toDomainAnswers` (`"true"`/`"false"` to booleans). Do not hand-roll.
+5. Show amount and frequency fields all the time (decision 1). Keep the existing "validate only when the yes/no is yes" conditions (`poundsAmountWhenAnswered` and friends). Add `dependentWhen` on those fields so a value left behind after switching back to "no" is cleared on save. `dependentWhen` does not change rendering.
+6. For add-another lists, follow the bank-accounts pattern (`Data("bankAccountRows").each`, `AddBankAccountRow` effect, `bankAccountsFromFormAnswers`). Generalise it rather than copying it a third time. See "Shared work".
+7. Add or extend: a `stepsFor` routing test, a block field-code test, a short Playwright spec (see [Test strategy](#test-strategy)), and the check-your-answers summary entry.
+
+## Section 1: Income
+
+Do this first. Outgoings needs its output.
+
+### CCQ behaviour
+
+`Steps::IncomeSection`: skipped entirely when `skip_income_questions?` (non-means-tested or passported).
+
+```
+employment_status
+[income]                  only if employment_status == "in_work"
+benefits
+[benefit_details]         only if receives_benefits
+other_income
+```
+
+Groups: `[employment_status]`, `[income]`, `[benefits, benefit_details]`, `[other_income]`.
+
+| Step | CCQ form | Session keys | Notes |
+|---|---|---|---|
+| `employment_status` | `EmploymentStatusForm` | `employment_status` | Options `in_work`, `unemployed`. Required |
+| `income` | `IncomeForm` + `IncomeModel` (add-another) | `incomes[]` of `income_type`, `income_frequency`, `gross_income`, `income_tax`, `national_insurance` | Type: `employment`, `statutory_pay`, `self_employment`. Frequency: `every_week`, `every_two_weeks`, `every_four_weeks`, `monthly`, `three_months`, plus `year` only when certificated. `gross_income > 0`, tax and NI `>= 0`, net must be `> 0`. Type hints depend on level of help and on partner vs client |
+| `benefits` | `BenefitsForm` | `receives_benefits` | Boolean |
+| `benefit_details` | `BenefitDetailsForm` + `BenefitModel` (add-another) | `benefits[]` of `benefit_type`, `benefit_amount`, `benefit_frequency` | Types come from CFE `GET /state_benefit_type`, minus an omit list and entries with `exclude_from_gross_income`, de-duplicated by `name` (CCQ `BenefitDetailsForm#benefit_list`). CCQ returns an empty list if the call fails. Frequency: `every_week`, `every_two_weeks`, `every_four_weeks`, `monthly`. Amount `> 0` |
+| `other_income` | `OtherIncomeForm` | `{friends_or_family,maintenance,property_or_lodger,pension}_{relevant,conditional_value,frequency}`, `student_finance_{relevant,conditional_value}`, `other_{relevant,conditional_value}` | Each `*_relevant` is boolean. Value `> 0` and frequency required when relevant. Frequencies: `every_week`, `every_two_weeks`, `every_four_weeks`, `monthly`, `total` (`total` removed for controlled work). Student finance and other have no frequency. Early gross-income result follows this step (already tracked as Phase 4 in the main plan) |
+
+### Today
+
+`journey/employment-status`, `income`, `benefits`, `benefit-details`, `other-income`. Wrong options on `employment_status`. Single free-text field for `income`, `benefit_details` and a single yes/no for `other_income`. `benefits` (`receives_benefits`) is already correct.
+
+### Tasks
+
+1. `employment_status`: options `in_work` / `unemployed` with CCQ labels. Smallest change, and fixes the routing bug.
+2. `income`: add-another rows with the five fields, level-of-help-dependent frequency list and type hints, net-positive validation.
+3. `benefit_details` and `partner_benefit_details`: add-another rows with a benefit type select fed from CFE (decision 2).
+   - `Assessor.stateBenefitTypes()` and `CfeHttpClient.stateBenefitTypes()` already exist but nothing calls them yet. The existing `StateBenefitType` type (`code`, `label`, `category_description`) does not match the fields CCQ reads (`name`, `label`, `exclude_from_gross_income`). Check the live response and fix the type first.
+   - Fetch in `LoadAnswers` (only when the step being loaded is a benefit-details step) and publish with `context.setData("benefitTypes", ...)`. The select reads it with `Data("benefitTypes")`.
+   - Port the omit list and filter from CCQ into `domain/` with a unit test.
+   - Failure behaviour (decision 4): if the fetch throws or returns an empty list, show an error page instead of the form. The page should say the benefit list could not be loaded from CFE, tell the operator to report it, and let them go back. Include enough detail to raise the issue (the step, CFE status or message, and the case ID). Log the same detail with `console.error`. Do not swallow the error, and do not use the existing `views/main/error.njk` as is: it is login-specific ("Back to login").
+   - Implementation: add a small step outside the domain step list, like `cannot_use_service` (`benefit_types_unavailable`, with its own block and no nav entry). The fetch happens in the benefit-details step's access hook. On failure, redirect to that step. Spike how to redirect from an access hook or effect in Forge (`throwError` and `redirect` outcomes), and add the case to `tests/forge-assumptions`.
+   - Cache the response in memory for a short time, because the list rarely changes. Cache only successful, non-empty responses, so a CFE outage is never remembered.
+4. `other_income`: the 16 fields, conditional value and frequency per type, `total` removed for controlled.
+5. Partner equivalents (`partner-blocks.ts`) use the same shapes with the `partner_` prefix: `partner_employment_status`, `partner_incomes`, `partner_receives_benefits`, `partner_benefits`, `partner_*`. Rename `partner_benefits` (yes/no) to `partner_receives_benefits`. Do these in the same pass, reusing the same block factories with a prefix.
+
+### Done when
+
+- `stepsFor` tests: `in_work` adds `income`, `unemployed` does not. `receives_benefits` true adds `benefit_details`. Passported and non-means-tested skip the whole section.
+- Saved answers survive `relevantAnswers` (every key is in `STEP_ANSWER_KEYS`).
+- `domain/cfe/employment-income` and `irregular-income` build a payload from answers entered through the UI.
+
+### Status: implemented
+
+All five client steps and their partner equivalents now use CCQ's field codes and values. What was built, and where it differs from the plan above:
+
+- **Add-another lists** are generic: `src/eligibility/lists/` holds the row conversion (`add-another.ts`) and the lists (`incomes`, `partner_incomes`, `benefits`, `partner_benefits`, and `bank_accounts`, moved onto the same mechanism). `journey/add-another-step.ts` builds a step from a list. Rows are Add another / Remove / Continue, without JavaScript. A hidden first submit button makes Enter continue rather than click Remove. A row must exist (be added) before its fields are read, so Forge ignores fields posted for rows that were never saved.
+- **Frequency lists** are in `domain/frequency-options.ts` and published as `Data("incomeFrequencyOptions")`, `Data("otherIncomeFrequencyOptions")` and `Data("benefitFrequencyOptions")`. Radio `items: Data(...)` works, so the open question is closed. Labels are in that module rather than `locales/en.json`, which the blocks do not read.
+- **Partner steps** are built by the same block factories, with an `IncomeSubject` (`journey/income-subject.ts`) for the wording and key prefix. `partner_benefits` (yes/no) is now `partner_receives_benefits`.
+- **Benefit types** come from CFE, filtered by `domain/benefit-types.ts`, and are cached in memory for 10 minutes (`registries/benefit-types.ts`). The `StateBenefitType` type now has `name`, `label`, `exclude_from_gross_income`, `dwp_code` and `category`, as CFE returns them. The type is picked from a select, not CCQ's autocomplete.
+- **Benefit types unavailable** is a step outside the domain list (`benefit_types_unavailable`). Redirecting from an access hook works (`access({ next: [redirect(...)] })`), but Forge treats a step with no route to it as unreachable, so it needs `reachability: { entryWhen: true }`. The page shows the step, case ID and CFE error, logs the same with `console.error`, and visiting it again retries the call and returns to the benefit step once CFE answers. The `from` query value is only looked up in a fixed list, never used as a path.
+- **Dependent fields** (`dependentWhen`) on the other income amount and frequency fields skip validation, and clear the saved value, when the yes/no is not yes.
+- **Net income** is checked by the `NetIncomeIsPositive` condition (`domain/income.ts`). It uses exact amounts, where CCQ truncates to whole pounds.
+- **Check your answers** shows one line per answered field of each add-another row, and uses `metadata.summaryLabel` where a field's own label is not enough (the other income amounts and frequencies).
+- **Amounts** saved from `*_conditional_value` fields and add-another rows are numbers, as the CFE payload builders require.
+
+Tests: `journey/income-section.spec.ts` (routing, validation, what is saved, CFE payloads, the error page, partner), `journey/field-codes.spec.ts` (field codes against `STEP_ANSWER_KEYS`), `lists/add-another.spec.ts`, the domain and registry specs, extra `check-your-answers` cases, and `tests/playwright/tests/eligibility-journey-income.spec.ts`.
+
+Not done, found on the way:
+
+- The older `eligibility-journey-*` Playwright specs (certificated, controlled, domestic abuse, asylum and immigration, under 18, change answers, regression, property, employment and assets) were removed on 2026-10-20. They looked for labels that no longer exist, so none of them could pass. Most only repeated routing that `journey.spec.ts` and `domain/navigation.spec.ts` already test. See [Test strategy](#test-strategy).
+- CCQ also checks that a posted frequency or income type is one of the allowed values. Forge's radios do not, so a tampered value is saved as posted.
+
+## Section 2: Property
+
+Independent of income, so it can be done second or in parallel.
+
+### CCQ behaviour
+
+Property steps are spread across two sections. They are interleaved in the final order.
+
+`Steps::OutgoingsSection` contributes (position: after `outgoings` / `partner_outgoings`):
+
+```
+property
+[property_landlord]       only if property_owned == "shared_ownership"
+housing costs step        see Outgoings
+```
+
+`Steps::PropertySection` contributes (after housing costs):
+
+```
+[property_entry]                        only if the client owns the property
+additional_property
+[additional_property_details]           only if additional_property_owned is an owned value
+[partner_additional_property]           only if partner
+[partner_additional_property_details]   only if partner owns an additional property
+```
+
+Skip rules:
+
+- Non-means-tested: neither section produces property steps.
+- Passported (income skipped but capital not): only `property`, `[property_landlord]`, `property_entry`, and the additional-property steps. No housing costs.
+
+Exits: `property_landlord == false` goes to cannot-use-service. `additional_property_owned == "shared_ownership"` and `partner_additional_property_owned == "shared_ownership"` do the same (`cannotUseService`, already implemented).
+
+| Step | CCQ form | Session keys | Notes |
+|---|---|---|---|
+| `property` | `PropertyForm` | `property_owned` | Four options, in this order (decision 3): "Yes, with a mortgage or loan" (`with_mortgage`), "Yes, through a shared ownership scheme" (`shared_ownership`), "Yes, owned outright" (`outright`), "No" (`none`). Legend: "Does your client own the home they usually live in?". With a partner: "Does your client or their partner own the home the client usually lives in?". Error: "Select if your client owns the home they live in" |
+| `property_landlord` | `PropertyLandlordForm` | `property_landlord` | Boolean. Back link is always `property` (special case in `QuestionFlowController#show`) |
+| `property_entry` | `PropertyEntryForm` | `house_value`, `mortgage`, `percentage_owned`, `house_in_dispute` | `house_value > 0`. `mortgage > 0`, required for `with_mortgage` **and** `shared_ownership` (CCQ also hides it otherwise. We show it always, decision 1). `percentage_owned` integer 1 to 100. `house_in_dispute` only when SMOD applies (not immigration or asylum). Heading and hints differ for shared ownership |
+| `additional_property` | `AdditionalPropertyForm < PropertyForm` | `additional_property_owned` | Same options as `property`, key prefixed `additional_` |
+| `additional_property_details` | `AdditionalPropertyDetailsForm` + `AdditionalPropertyModel` (add-another) | `additional_properties[]` | First row's ownership status comes from `additional_property_owned`. SMOD applies per row |
+| `partner_additional_property` | `PartnerAdditionalPropertyForm` | `partner_additional_property_owned` | Prefix `partner_additional_` |
+| `partner_additional_property_details` | `PartnerAdditionalPropertyDetailsForm` | `partner_additional_properties[]` | SMOD never applies |
+
+### Today
+
+- `property`: the legend is "Does the client own the property?" and the options are "Owned outright", "Owned with a mortgage", "Shared ownership", "Rented" (`rented`). Partner-aware legend is missing.
+- `property_entry`: the mortgage field is always shown (this stays, decision 1) but is only validated for `with_mortgage`. It must also be required for `shared_ownership`. Remove the TODO about conditional rendering. `house_in_dispute` is always shown.
+- `additional_property`: yes/no saved under `additional_property`, which the domain never reads.
+- `additional_property_details`: one free-text box.
+- `partner_additional_property` and `partner_additional_property_details`: **steps do not exist**.
+
+### Tasks
+
+1. `property`: replace the options with the four above, remove `rented`, and use the CCQ legend with the partner variant (the partner variant can use `visibleWhen` on two legend blocks, or a `Format`/conditional string driven by the saved `partner` answer).
+2. `property_landlord`: confirm it works. Add the fixed back link to `property`.
+3. `property_entry`: require the mortgage for `with_mortgage` and `shared_ownership`. Shared-ownership headings. The SMOD checkbox only when it applies (`visibleWhen` on the not-immigration-or-asylum predicate).
+4. `additional_property`: radio with `additional_property_owned`, same options as `property`. Keep `cannot-use-service` routing.
+5. `additional_property_details`: add-another rows of `AdditionalPropertyModel` fields. Check the model in CCQ `app/models/additional_property_model.rb` for fields and validation.
+6. Create `partner_additional_property` and `partner_additional_property_details` (blocks, steps, `index.ts` registration).
+7. Add a Playwright `eligibility-journey-property.spec.ts` and page objects, following the [Test strategy](#test-strategy). The old property spec was removed.
+
+### Done when
+
+- `stepsFor` tests cover every `property_owned` x `additional_property_owned` x partner x passported combination.
+- Both shared-ownership exits reach cannot-use-service.
+- `domain/cfe/assets` builds property data from UI-entered answers.
+
+### Status: implemented
+
+- Journey blocks use CCQ field codes and values for the main property, landlord, property entry, and client and partner additional-property steps (client and partner details use add-another lists).
+- Property form data (legends, hints, SMOD visibility) is published from `LoadAnswers`.
+- Tests: `property-section.spec.ts` routing matrix, journey, field-code, add-another and summary specs, and `eligibility-journey-property.spec.ts` (Playwright).
+- Partner wording on the property steps (`propertyOwnedLegend`, `propertyEntryHint`, `propertyPercentageHint`) is published from `LoadAnswers`, using the saved `partner` answer.
+
+## Section 3: Outgoings and housing costs
+
+Do this last. It needs income answers (childcare eligibility) and `property_owned`.
+
+### CCQ behaviour
+
+`Steps::OutgoingsSection` (only when income questions are not skipped):
+
+```
+outgoings
+[partner_outgoings]       only if partner
+property [property_landlord]   (see Property)
+housing costs step:
+  shared_ownership_housing_costs   if property_owned == "shared_ownership"
+  mortgage_or_loan_payment         if property_owned == "with_mortgage"
+  housing_costs                    unless owns outright
+  (nothing)                        if owns outright
+```
+
+`none` (and unanswered) falls into `housing_costs`.
+
+| Step | CCQ form | Session keys | Notes |
+|---|---|---|---|
+| `outgoings` | `OutgoingsForm` | per `childcare_payments`, `maintenance_payments`, `legal_aid_payments`: `_relevant`, `_conditional_value`, `_value`, `_frequency` | Childcare question only appears when `ChildcareEligibilityService` is true: client has child dependants, and (student finance, or any non-`statutory_pay` income), and the same for the partner. Value `> 0` when relevant. Frequencies: `every_week`, `every_two_weeks`, `every_four_weeks`, `monthly`, `total` (`total` removed for controlled) |
+| `partner_outgoings` | `PartnerOutgoingsForm < OutgoingsForm` | same, `partner_` prefix | Same behaviour. Same childcare rule |
+| `housing_costs` | `HousingCostsForm` | `housing_benefit_{relevant,value,frequency}`, `housing_payments`, `housing_payments_frequency` | Payments `>= 0`. Frequency required when payments `> 0`. Housing benefit value `> 0` when relevant, and must not exceed annual housing costs |
+| `mortgage_or_loan_payment` | `MortgageOrLoanPaymentForm` | `housing_loan_payments`, `housing_payments_loan_frequency` | Payment `>= 0`. Frequency required when `> 0` |
+| `shared_ownership_housing_costs` | `SharedOwnershipHousingCostsForm` | `housing_benefit_*`, `shared_ownership_mortgage`, `rent`, `combined_frequency` | `rent` and mortgage `>= 0`. Frequency required when the combined amount `> 0`. Housing benefit must not exceed combined annual costs |
+
+Special case: for shared ownership in the change-answers loop, CCQ sends the user back through `property_entry` (`display_property_entry_in_change_answers?`). This is already in `navigation.ts`. Check that the check-your-answers change flow uses it.
+
+### Today
+
+Every step is one free-text field with a made-up code (`housing_costs`, `mortgage_or_loan_payment`, `shared_ownership_housing_costs`, `partner_outgoings`). `outgoings` has the right field codes for all three payment types, but its frequency values are `weekly` / `fortnightly` / `four_weekly` / `monthly` / `three_monthly`, not CCQ's. The childcare question is always shown, and nothing checks eligibility or the `_value` attribute.
+
+### Tasks
+
+1. `outgoings`: fix frequency values. Show the childcare question only when eligible: port `ChildcareEligibilityService` into `domain/` with a unit test, publish the result from `LoadAnswers` as `Data("showChildcare")`, and put `visibleWhen` and `dependentWhen` on the childcare fields. (Decision 1 is about the amount and frequency under each yes/no. This is the whole childcare question, which CCQ omits entirely.) Remove `total` for controlled.
+2. `partner_outgoings`: generate from the same block factory as `outgoings`, with the `partner_` prefix.
+3. `housing_costs`: the five fields, the benefit-must-not-exceed-costs validation.
+4. `mortgage_or_loan_payment`: `housing_loan_payments` and `housing_payments_loan_frequency`.
+5. `shared_ownership_housing_costs`: the six fields and the combined-amount frequency rule.
+6. Share the housing-benefit sub-block and the frequency options. Do not copy them three times.
+
+### Done when
+
+- `stepsFor` tests cover the four housing-cost outcomes, partner on and off, and passported skipping housing costs but keeping property.
+- Childcare question hidden and shown by test, driven from income and dependant answers.
+- `domain/cfe/regular-transactions` builds outgoings and housing payments from UI-entered answers.
+
+### Status: implemented
+
+All five steps now use CCQ's field codes, values, wording and error messages. `domain/sections/*`, `domain/logic.ts` and `domain/cfe/regular-transactions.ts` are unchanged.
+
+- **Outgoings** (`journey/outgoings/block.ts`): `createOutgoingsBlock(subject)` builds both `outgoings` and `partner_outgoings` (via `partner-blocks.ts`), with the `CLIENT` / `PARTNER` subjects for wording and the `partner_` prefix. Frequencies come from `Data("outgoingsFrequencyOptions")` (`domain/frequency-options.ts`), which uses CCQ's values and drops `total` for controlled work. Amounts must be more than 0 when the answer is yes. The amount and frequency use `dependentWhen`. The UI saves `<type>_payments_conditional_value`, which is the key the regular-transactions builder reads. `_payments_value` is never rendered.
+- **Childcare**: `domain/childcare-eligibility.ts` is a port of CCQ's `ChildcareEligibilityService`. `LoadAnswers` publishes the result as `Data("showChildcare")`, and the childcare fields use it in `visibleWhen` and `dependentWhen`.
+- **Housing steps** share `journey/housing-blocks.ts`: the heading and details, the payment field, the payment-frequency field, and `createHousingBenefitBlock`. The housing-benefit sums are in `domain/housing-benefit.ts`, and the conditions are in `registries/conditions.ts` (`HousingBenefitWithinHousingPayments`, `HousingBenefitWithinSharedOwnershipPayments`, `CombinedPaymentNeedsFrequency`). The cap check compares in pence. Partner wording is published as `Data("housingBenefitHint")` and `Data("sharedOwnershipHousingBenefitLegend")`.
+- **Amounts are numbers**: `toDomainAnswers` converts every step answer ending `_value`, plus `mortgage`, `percentage_owned`, `housing_payments`, `housing_loan_payments`, `rent` and `shared_ownership_mortgage`. This replaces `PROPERTY_NUMBER_ANSWER_CODES`. Add-another rows are unchanged, and `toFormValue` still turns them back into strings for Forge.
+- **Forge workarounds**:
+  - Forge clears every field code on an unreachable step, even when the current step has the same code. So the shared-ownership step posts `shared_ownership_housing_benefit_*`, and `registries/field-aliases.ts` maps these to CCQ's `housing_benefit_*` keys when saving and loading.
+  - Forge evaluates `dependentWhen` in block order, so `combined_frequency` (first on the page, as in CCQ) cannot depend on the rent and mortgage below it. It uses conditional validation instead.
+- **Outright owners** get no housing-cost step, as in CCQ.
+- **Change answers**: changing shared-ownership costs from check your answers goes on to `property_entry`.
+
+Tests:
+- `domain/sections/outgoings-section.spec.ts`: the `stepsFor` matrix (5 `property_owned` values × partner × passported).
+- `domain/childcare-eligibility.spec.ts`, `domain/housing-benefit.spec.ts`, `domain/frequency-options.spec.ts`.
+- `journey/outgoings-section.spec.ts`: validation, what is saved, the CFE payload, the redirect and the next GET for each step; childcare shown and hidden; the housing-benefit cap; the change-answers flow.
+- `registries/effects.spec.ts`: answers as the forms save them, through `collapseLists` and `toDomainAnswers`, into the regular-transactions builder.
+- `registries/field-aliases.spec.ts`, `journey/field-codes.spec.ts` and `journey/check-your-answers/summary.spec.ts` cases.
+- Two parity cases in `domain/cfe/parity.spec.ts`, `outgoings-shared-ownership` and `outgoings-mortgage-childcare`. These fixtures were generated by CCQ itself (`generate-ccq-fixtures.rb` at 1a30ea3f, time frozen at 2024-06-01). They are compared after turning Ruby's decimal strings into numbers and using the real applicant date of birth.
+- `tests/playwright/tests/eligibility-journey-outgoings.spec.ts`.
+
+#### Found outside Section 3 (not fixed)
+
+These were found while building Section 3 and are listed here rather than fixed.
+
+- `vehicles` is still a placeholder step; dependant answers now save `child_dependants` through the real form and make the childcare question available from the UI.
+- Amounts with commas are rejected by `POUNDS_AMOUNT_PATTERN` across the app. CCQ accepts them.
+- `investments` and `valuables` are saved as strings, so the CFE payload builders silently drop them. They need adding to the amount rule in `toDomainAnswers` when those steps are rebuilt.
+- The four older parity fixtures (`certificated`, `controlled-work`, `passported`, `partner-with-assets`) were not generated by CCQ. CCQ's own validation rejects them (no `investments_relevant`, `valuables_relevant` or dispute flags, for example), and `controlled-work` has a `housing_costs: true` key that no step saves. They should be regenerated with `generate-ccq-fixtures.rb`; the parity spec header now scopes its provenance statement to the generated outgoings and dependant fixtures.
+- A partner fixture cannot match CCQ exactly, because CCQ fakes the partner's date of birth from `over_60` where this journey asks for the real one. The parity normaliser would need to handle `partner.date_of_birth` too.
+- CCQ behaviour not copied:
+  - `SharedOwnershipHousingCostsForm` validates `combined_frequency` against `total`, which its view never offers.
+  - CCQ's `to_i.positive?` lets a combined rent and mortgage under £1 through without a frequency. This journey uses `> 0`.
+  - CCQ's "parter" typo is spelt "partner" here.
+  - CCQ has no message for negative housing payments, rent or mortgage. This journey uses "Housing payments must be 0 or more", "Rent must be 0 or more." and "Mortgage payment must be 0 or more.".
+  - CCQ's mortgage form uses a `greater_than` message key for a `>=` validation.
+- An untracked `app/controllers/cloud-platform-environments/` folder in the local CCQ checkout stops Rails booting under Zeitwerk. Fixture generation ignored it with `Rails.autoloaders.main.ignore(...)`.
+- In a debug run, Forge cleared `immigration_or_asylum` on a certificated journey (the step is unreachable there, so its codes are cleared). It looked harmless but was not investigated.
+
+## Follow-up 0: Eligibility copy and locale consistency
+
+Do this before Follow-ups 1 and 2, so new steps use the same copy convention rather than extending the current mix of locale keys and hard-coded English.
+
+### Goal
+
+Make `src/eligibility/locales/en.json` the single source of user-facing copy in the eligibility package: headings, questions, options, hints, help text, validation messages, buttons and check-your-answers labels. Keep answer codes, option values, validation rules and calculations in code.
+
+### Tasks
+
+1. Inventory eligibility copy in `locales/en.json`, journey blocks, effects, domain option lists and check-your-answers code. Identify unused locale keys, duplicated strings and any dynamic or partner / level-of-help variants.
+2. Verify Forge's existing locale-loading and interpolation mechanism. Prove the supported pattern with a field label, a validation message, a dynamic option list and an add-another row before migrating broadly. Do not add a second translation framework or a generic copy abstraction unless the supported mechanism requires one.
+3. Migrate existing eligibility copy to locale keys without changing the rendered wording. Journey blocks, effects and option builders should select whole-message variants and pass interpolation values; they should not assemble sentences from fragments.
+4. Move frequency labels to the locale while keeping frequency codes and filtering in the domain. Apply the same separation to client / partner and controlled / certificated variants.
+5. Remove stale keys after confirming there are no consumers. Make missing translations visible during tests; do not retain hard-coded English fallbacks.
+6. Add focused checks for key existence and interpolation if the current locale setup allows it, and retain representative journey assertions for rendered questions and errors.
+7. Update this plan's copy convention and use the established locale pattern for both subsequent follow-ups.
+
+### Copy convention
+
+Eligibility steps import `src/eligibility/locales/en.json` directly with a JSON import attribute; Forge does not load this package locale through the host application's i18next middleware. Use `Format()` for messages with interpolation and select complete locale messages for partner and level-of-help variants. Keep option codes and filtering in the domain, and map those codes to locale labels in the journey layer. Do not add English fallbacks: a missing dynamic label must fail visibly.
+
+### Done when
+
+- Eligibility user-facing copy has one source in `locales/en.json`; no eligibility block or effect contains duplicate hard-coded copy.
+- Domain code contains option values and rules, not presentation labels or prose.
+- Client / partner and level-of-help variants render as before, and representative field, validation, dynamic-option and add-another tests pass.
+- Follow-ups 1 and 2 can add copy using this convention without introducing a new mechanism.
+
+## Follow-up 1: Dependants
+
+**Status: Implemented; automated validation passed.** The CCQ browser flow was not manually inspected.
+
+Dependants are asked before income in the journey. This follow-up comes next because the answers determine dependant allowances and income in the CFE payload, and `child_dependants` is also required for Section 3's childcare eligibility rule.
+
+### CCQ behaviour
+
+`Steps::NonFinancialSection` skips dependant questions for passported clients. Otherwise it asks `dependant_details`; if the client has either adult or child dependants it asks `dependant_income`, and if any dependant income is declared it asks `dependant_income_details`.
+
+| Step | CCQ form | Session keys | Notes |
+|---|---|---|---|
+| `dependant_details` | `DependantDetailsForm` | `child_dependants`, `child_dependants_count`, `adult_dependants`, `adult_dependants_count` | Both yes/no answers are required. A count is required and must be a positive integer only when its corresponding answer is yes. Copy CCQ's partner-specific legends, hints and guidance. |
+| `dependant_income` | `DependantIncomeForm` | `dependants_get_income` | Required yes/no. |
+| `dependant_income_details` | `DependantIncomeDetailsForm` + `DependantIncomeModel` (add-another) | `dependant_incomes[]` of `amount`, `frequency` | One row per dependant, capped at adult plus child count. Amount `> 0`; frequency is `every_week`, `every_two_weeks`, `every_four_weeks`, `monthly` or `three_months` (no `year`). CCQ also rejects amounts at or above the corresponding frequency-specific limit (monthly equivalent £381.86). |
+
+CCQ pairs income rows positionally with dependants in adult-then-child order. Its CFE builder assumes dependant ages: adults 21, children with income 17, and children without income 11. Preserve the existing TypeScript payload behaviour unless a parity test proves it differs.
+
+### Today
+
+The routing in `domain/sections/non-financial-section.ts` follows CCQ, and all three dependant steps now use the answer shapes in `STEP_ANSWER_KEYS`. The details form saves numeric counts, the income form saves its yes/no answer, and the capped add-another list saves numeric income amounts and frequencies. The Forge journey tests cover validation, save/load, row limits and redirects; the dependant payload matches CCQ for both no-dependant and adult-and-child-with-income cases. `yarn test:unit` passed (615 passing, 3 pending), `npx tsc --noEmit` passed, `yarn build` passed, and `yarn test:e2e eligibility-journey` passed (11 tests).
+
+### Tasks
+
+1. Replace `dependant_details` with CCQ's two yes/no questions and conditional count inputs. Use `visibleWhen` for the reveals and `dependentWhen` so hidden counts are cleared. Enforce positive whole-number counts when relevant.
+2. Replace `dependant_income` with the required yes/no question and CCQ's wording and help text.
+3. Build `dependant_income_details` as an add-another list using the existing list mechanism. Limit its rows to the combined dependant count; use the CCQ frequency values and level-of-help-independent options, amount and frequency validation, and the frequency-specific income ceiling.
+4. Convert count fields to numbers before the domain payload builders read them. Ensure dependant income rows are collapsed with numeric amounts. Keep `toFormValue` so saved numeric values are strings when returned to Forge.
+5. Wire all fields to `STEP_ANSWER_KEYS`; add per-step check-your-answers summary and field-code specs. Reuse CCQ wording and validation messages from its forms, views and `config/locales/en.yml`.
+6. Add a unit test for any new dependant-income ceiling logic. Add journey tests for routing, validation, saved numeric values, row limits and redirects; add a payload test using answers in the exact shape saved by the UI.
+7. Add a short Playwright happy path from the start through dependants and onward, with axe checks and selectors by Forge field code. Do not repeat routing matrices in Playwright.
+8. Add or update a CCQ parity case covering no dependants and dependants with income. Do not change `domain/sections/*`, `domain/logic.ts` or `domain/cfe/dependants.ts` unless parity proves a difference.
+
+### Done when
+
+- The existing `stepsFor` routing has tests for passported, no dependants, dependants without income and dependants with income.
+- Each step's rendered field codes exactly match `STEP_ANSWER_KEYS`, and tests prove that relevant answers survive save/load as numbers or booleans.
+- The childcare eligibility test can use answers saved by the real dependant form, not hand-seeded `child_dependants` values.
+- CFE dependants payloads match CCQ fixtures, and the Playwright path reaches the next section.
+
+### Found outside Follow-up 1 (not fixed)
+
+- Amounts with commas are still rejected by `POUNDS_AMOUNT_PATTERN`, while CCQ accepts them. This affects amount entry across the app and is outside this follow-up.
+- The new dependant source modules pass ESLint. Linting the existing `summary.ts`, `conditions.ts` and `effects.ts` still reports unrelated pre-existing JSDoc, complexity and style violations; those are not addressed here.
+
+## Follow-up 2: Assets and vehicles
+
+**Status: Implemented; automated validation passed.** The CCQ browser flow was not manually inspected.
+
+This follow-up covers means-tested client and partner capital and vehicle details. It does not include the separate under-18 `under_eighteen_assets` question.
+
+### CCQ behaviour
+
+`Steps::AssetsAndVehiclesSection` skips all these steps when `skip_capital_questions?` is true. Otherwise it asks `assets`, then `partner_assets` when there is a partner. Vehicles are not asked for controlled work. For other levels of help, `vehicle` is required, and `vehicles_details` follows only when `vehicle_owned` is true.
+
+| Step | CCQ form | Session keys | Notes |
+|---|---|---|---|
+| `assets` | `ClientAssetsForm` + `BankAccountModel` (add-another) | `investments_relevant`, `investments`, `valuables_relevant`, `valuables`, `investments_in_dispute`, `valuables_in_dispute`, `bank_accounts[]` of `amount`, `account_in_dispute` | Both relevance answers are required. Investments must be `> 0` when relevant; valuables must be `>= 500` when relevant. Client dispute fields are required only when SMOD applies. Bank accounts use add-another; dispute controls are shown when applicable. |
+| `partner_assets` | `PartnerAssetsForm` + `BankAccountModel` (add-another) | `partner_investments_relevant`, `partner_investments`, `partner_valuables_relevant`, `partner_valuables`, `partner_bank_accounts[]` of `amount` | Same relevance and amount rules, with partner wording and `partner_` field codes. No partner asset dispute fields. |
+| `vehicle` | `VehicleForm` | `vehicle_owned` | Required yes/no. CCQ wording changes when there is a partner; include the partner's vehicles in the answer. |
+| `vehicles_details` | `VehiclesDetailsForm` + `VehicleModel` (add-another) | `vehicles[]` of `vehicle_value`, `vehicle_pcp`, `vehicle_finance`, `vehicle_over_3_years_ago`, `vehicle_in_regular_use`, `vehicle_in_dispute` | Vehicle value `> 0`; PCP, age and regular-use answers are required; finance `> 0` when PCP is true; dispute answer is required only when SMOD applies. Multiple vehicles are allowed. |
+
+Copy the wording, conditional reveals, validation messages and level-of-help variants from the corresponding CCQ forms, views and `config/locales/en.yml`. The CFE builders already expect numeric asset values, bank-account row amounts, vehicle values and finance amounts.
+
+### Today
+
+The `stepsFor` routing in `domain/sections/assets-and-vehicles-section.ts` already matched CCQ and is unchanged. `assets-and-vehicles-section.spec.ts` covers it for partner and no partner, capital skips (passported controlled work and under-18 routes), controlled work without vehicles, vehicle yes/no and vehicle details.
+
+- `assets` and `partner_assets` share one block factory in `journey/assets/block.ts`. Each asks the required investments and valuables questions, and reveals an amount only when the asset is relevant. Hidden amounts are cleared with `dependentWhen`. Investments must be greater than 0 and valuables at least £500. The client's investment and valuables dispute checkboxes are shown only when SMOD applies. The partner step uses `partner_` codes and partner wording and has no dispute fields.
+- Bank accounts use the shared add-another mechanism (`lists/bank-accounts.ts`), with one list for the client (`amount`, `account_in_dispute`) and one for the partner (`amount`). The old unregistered `journey/bank-accounts` step was removed.
+- `vehicle` saves `vehicle_owned`, with CCQ's partner wording. `vehicles_details` is an add-another list (`lists/vehicles.ts`) of `vehicle_value`, `vehicle_pcp`, `vehicle_finance` (revealed and required only when PCP is yes), `vehicle_over_3_years_ago`, `vehicle_in_regular_use` and `vehicle_in_dispute` (only when SMOD applies). Value and finance must be greater than 0.
+- `investments`, `valuables` and the partner equivalents are saved as numbers, and their dispute checkboxes as booleans. `toDomainAnswers` and the load-back conversion moved to `registries/answer-conversion.ts` so that `registries/effects.ts` stays under the lint line limit; `effects.ts` re-exports `toDomainAnswers`. Row amounts use the list's amount conversion. Answers load back into Forge as strings, and a ticked checkbox as `["true"]`.
+- The assets steps show CCQ's guidance links. The business-capital link appears only when the client or partner has self-employment income.
+- `field-codes.spec.ts` checks the four steps' static and row codes against `STEP_ANSWER_KEYS`, and `summary.spec.ts` checks their check-your-answers rows. `journey/assets-and-vehicles-section.spec.ts` covers validation, conditional clearing, add and remove rows, numeric save and string load, redirects and the CFE payload built from saved answers. `eligibility-journey-assets.spec.ts` covers the browser happy path and the valuables error summary.
+- The `certificated`, `controlled-work`, `passported` and `partner-with-assets` fixtures were regenerated from valid CCQ sessions. The new `assets-vehicles-disputed`, `assets-vehicles-partner` and `assets-no-capital-no-vehicle` fixtures were added. All CFE parity fixtures now come from CCQ, and the payload builders and domain routing needed no change.
+
+Validation:
+
+- `set -o pipefail; yarn test:unit` passed (691 passing, 3 pending).
+- `npx tsc --noEmit` passed.
+- `yarn build` passed.
+- `yarn test:e2e eligibility-journey` passed (13 tests).
+
+### Findings
+
+- **Fixed in this follow-up, as tightly coupled bugs:**
+  - Check-your-answers skipped questions nested inside a radio reveal. `questionsIn` now includes them.
+  - The add-another mechanism reloaded a ticked row checkbox as `"true"`. Forge ticks a checkbox only when its value is an array, so the box showed unticked and the answer was lost on resubmit. This also affected additional-property `house_in_dispute` rows.
+- **Fixture generation:**
+  - Ran from a temporary CCQ worktree at `1a30ea3f`, through a wrapper outside both repositories. The wrapper ignored `app/controllers/cloud-platform-environments` before Rails initialised and froze time at 2024-06-01.
+  - `generate-ccq-fixtures.rb` now rejects a session if any relevant step's CCQ form is invalid.
+  - To make the four older fixtures valid sessions, they gained the answers CCQ requires (relevance, benefits, partner, dispute and mortgage-payment answers) and lost answers for steps that are not reached.
+- **Normalisation:**
+  - The parity normaliser now replaces CCQ's bracket-derived `partner.date_of_birth` with the input `partner_date_of_birth`, just as it already did for the applicant. The partner fixtures keep `partner_over_60` consistent with the real date.
+- **Documented session-level differences:**
+  - CCQ saves `false` for an unticked or hidden dispute checkbox (`account_in_dispute`, `investments_in_dispute`, `valuables_in_dispute`) whenever SMOD applies.
+  - This journey omits an unticked row checkbox, and clears a dispute answer whose asset is not relevant.
+  - Both CFE builders treat a missing answer as `false`, so the payloads match. The fixture inputs use CCQ's `false`.
+
+### Found outside Follow-up 2 (not fixed)
+
+- The property-entry `house_in_dispute` checkbox is saved as an array, so the CFE builder never sees `true`. It also loads back as `"true"`, so the box shows unticked. It needs the same `CHECKBOX_ANSWER_CODES` handling as the asset dispute checkboxes.
+- The Forge `immigration_or_asylum_type_upper_tribunal` question offers `upper_tribunal` and `other`. CCQ and `domain/logic.ts` use `immigration_upper`, `asylum_upper` and `none`, so a certificated upper-tribunal matter in the UI is never treated as immigration or asylum, and SMOD questions are still asked.
+- The existing CCQ-generated `outgoings-mortgage-childcare` session fails CCQ validation: `dependant_income` is relevant but `dependants_get_income` is missing. Its payload still matches, but it fails the generator's new validity check if regenerated.
+- CCQ's sidebar guidance links, for example the certificated vehicle guidance, are not implemented.
+- Saved amounts reload without trailing zeros (`1250.50` reloads as `1250.5`) across all add-another lists.
+
+### Tasks
+
+1. Keep the existing `stepsFor` logic unless a parity test proves a difference. Add routing coverage for partner on/off, passported or other capital-skip cases, controlled work, no vehicle, and vehicle details.
+2. Fix `vehicle` to save `vehicle_owned` and implement its partner-specific wording. Replace `vehicles_details` with the CCQ add-another vehicle rows, preserving the CFE schema and the CCQ conditionals and validations.
+3. Verify and complete `assets` and `partner_assets` against CCQ. Keep the shared bank-account add-another implementation; use the same field shapes and client/partner prefixes rather than duplicating the client block. Apply client-only SMOD dispute fields and visibility where CCQ does.
+4. Extend numeric conversion for the top-level `investments` / `valuables` and partner equivalents. Ensure bank-account and vehicle row money fields use the list mechanism's amount conversion. Test that amounts saved from Forge are numbers and that answers load back to Forge as strings.
+5. Keep `STEP_ANSWER_KEYS` in sync for all four steps. Add field-code and check-your-answers summary specs for each step.
+6. Add journey tests for relevant amount validation, conditional reveals and clearing, add/remove rows, numeric saved values, redirect from every step, and the CFE payload built from those saved answers. Add a Playwright happy path through assets and vehicles where the level of help permits it, plus a skip path if there is browser-only behaviour.
+7. Regenerate the four older parity fixtures (`certificated`, `controlled-work`, `passported`, `partner-with-assets`) from CCQ and correct the parity-spec header. Add CCQ-generated asset and vehicle cases, including a partner case if the date-of-birth normalisation can preserve the real input date. Do not change `domain/sections/*`, `domain/logic.ts` or `domain/cfe/assets.ts` / `vehicles.ts` unless parity proves a difference.
+
+### Done when
+
+- The UI saves every CCQ answer key and renders all applicable rows and conditional fields.
+- All monetary fields and add-another rows reach the CFE builders as numbers; the payload tests prove non-zero investments and valuables are not dropped.
+- Field-code, summary, journey, routing, payload, parity and Playwright tests cover the four steps.
+- The regenerated fixtures are independently generated by CCQ and match the TypeScript payload after only documented representation normalisation.
+
+## Shared work
+
+These come up in more than one section, so do them once before or alongside Section 1.
+
+| Item | Why |
+|---|---|
+| Generic add-another block factory | `incomes`, `benefits`, `additional_properties` and their partner equivalents. Bank accounts and vehicles now use the same mechanism (`lists/add-another.ts`). See also `tests/forge-assumptions/s2-add-another.spec.ts` |
+| Frequency option lists | Domain owns allowed values and level-of-help filtering; presentation labels come from `locales/en.json` |
+| Partner prefix factory | `partner_*` blocks are copies of the client ones |
+| Level of help in blocks | Frequency lists, hints and the `total` option depend on it. See "Level of help in the step forms" below |
+| `STEP_ANSWER_KEYS` | Keep in sync. Add `partner_additional_property*` keys if they are missing |
+| Check-your-answers summary | `journey/check-your-answers/summary.ts` reads from block definitions. New fields should appear automatically, but add a spec per step |
+| Locales and error messages | Use CCQ `config/locales/en.yml` as the wording reference, with `locales/en.json` as the single source of eligibility copy |
+
+## Order of work
+
+1. Shared work: frequency lists, add-another factory, partner prefix factory.
+2. Section 1 (Income, including the partner equivalents).
+3. Section 2 (Property, including both additional-property steps and the partner steps).
+4. Section 3 (Outgoings and housing costs).
+5. Follow-up 0 (eligibility copy and locale consistency), before implementing new follow-up steps.
+6. Follow-up 1 (Dependants). Although this work follows the locale cleanup, these questions occur before income in the journey.
+7. Follow-up 2 (Assets and vehicles).
+8. Regenerate the existing CCQ parity fixtures and add any remaining fixtures needed to cover the journey.
+9. Phase 4 in the main plan (the early gross-income result banner), after the sections that supply its inputs are complete.
+
+Within each section, fix the routing-critical field first (`employment_status`, `property_owned`, `additional_property_owned`, `partner_receives_benefits`, the missing partner steps). That is one small change each and restores correct routing before the larger forms are rebuilt.
+
+## Test strategy
+
+Routing is decided in `domain/` and in the Forge journey, so most of it is tested without a browser. Playwright only covers what a browser adds.
+
+| Layer | Tool | Owns | Location |
+|---|---|---|---|
+| Domain | mocha | Step order for every branch (`stepsFor`, `nextStep`, `relevantAnswers`), eligibility rules, CFE payload builders, parity with CCQ fixtures | `src/eligibility/domain/*.spec.ts`, `domain/cfe/parity.spec.ts` |
+| Journey | mocha | The real Forge journey driven through `ForgeTestHarness` (no browser): redirects between steps, validation, what is saved, change-answers loops, unreachable steps, the check-your-answers summary, field codes against `STEP_ANSWER_KEYS` | `src/eligibility/journey/*.spec.ts` |
+| Forge assumptions | mocha | Spikes that pin framework behaviour we depend on (dynamic `goto`, add-another, session persistence) | `src/eligibility/tests/forge-assumptions/` |
+| End to end | Playwright | One happy path per section through the real UI, plus the browser-only behaviour listed below | `tests/playwright/tests/eligibility-journey-<section>.spec.ts` |
+
+Do not test a routing branch in Playwright if a unit or journey test can test it. A branch matrix belongs in `stepsFor` tests.
+
+### What a Playwright section spec covers
+
+- The section can be reached from the start by answering earlier questions (a `beforeEach` that submits the forms, not `page.goto` between steps).
+- The page renders and passes axe (`checkAccessibility`) at least once per new step type.
+- Behaviour that needs JavaScript or real form submission: add-another and remove, option lists that change with an earlier answer, the error summary after an invalid submit.
+- One happy path that ends at the next section or at check your answers, and one skip path if the section can be skipped.
+
+### Rules for Playwright specs
+
+- One spec per section, named `eligibility-journey-<section>.spec.ts`. Page objects for a step live in `pages/EligibilitySteps.ts` and are registered in `PageFactory`.
+- Select fields by Forge field code (`input[name="level_of_help"][value="controlled"]`, `#incomes_0_gross_income`) or by role. Do not use `label:has-text(...)` for options, because the copy changes.
+- Assert the URL or visible content. Never accept either of two outcomes (for example status 200 or 302).
+- CFE is stubbed with MSW handlers in `tests/playwright/factories/handlers`. Never call the real service.
+- A spec that cannot pass is deleted or fixed in the same change. Do not leave failing specs for a later section.
+- The test server raises `RATE_LIMIT_MAX` in `playwright.config.ts`. All tests share one IP, so the production limit of 100 requests per 15 minutes returns "Too many requests" part way through a run.
+- First run on a machine: `npx playwright install chromium`. Then `yarn test:e2e eligibility-journey`, or `npx playwright test --config=tests/playwright/playwright.config.ts eligibility-journey` if yarn cannot find the `playwright` binary.
+
+### Checklist per section
+
+- `stepsFor` test for each branch in the section's table.
+- Block test: every Forge field code is in `STEP_ANSWER_KEYS[step]`, and every key in that list has a field.
+- Journey test for validation, what is saved, and the redirect out of each new step.
+- Parity: `domain/cfe/parity.spec.ts` against the CCQ fixtures for the section's answers.
+- One Playwright spec as described above.
+- Manual: compare the step order against a CCQ instance for the same answers.
+
+### Current state
+
+| Section | Unit and journey | Playwright |
+|---|---|---|
+| Eligibility copy | Mixed: some copy comes from `locales/en.json`, while some is hard-coded in blocks, effects and option lists. Standardise before the two follow-ups | N/A |
+| Non-financial | Applicant and matter routing covered; dependant validation, persistence, routing, field codes and CCQ payload parity covered by journey/domain specs | `eligibility-journey-dependants.spec.ts` |
+| Income | Covered (`income-section.spec.ts`, `field-codes.spec.ts`, domain and registry specs) | `eligibility-journey-income.spec.ts` |
+| Property | Covered (`property-section.spec.ts`, `field-codes.spec.ts`, add-another and summary specs) | `eligibility-journey-property.spec.ts` |
+| Outgoings | Covered (`outgoings-section.spec.ts` journey and `stepsFor` matrix, `field-codes.spec.ts`, domain, registry, summary and parity specs) | `eligibility-journey-outgoings.spec.ts` |
+| Assets and vehicles | Covered (`assets-and-vehicles-section.spec.ts` journey and `stepsFor` matrix, `field-codes.spec.ts`, add-another, summary and CCQ parity specs) | `eligibility-journey-assets.spec.ts` |
+
+## Out of scope
+
+- The early gross-income result banner (Phase 4 in [the main plan](eligibility-journey.html)).
+- The separate under-18 `under_eighteen_assets` form and the `how_to_aggregate` step remain outside Follow-ups 1 and 2.
+- The early gross-income result banner remains tracked as Phase 4 in [the main plan](eligibility-journey.html).
+
+## Level of help in the step forms
+
+Several forms change with the level of help (`controlled` or `certificated`):
+
+- The `total` frequency (total in last 3 months) is removed for controlled work, in `outgoings`, `partner_outgoings`, `other_income`, `housing_costs` and `mortgage_or_loan_payment`.
+- The `year` income frequency is removed for controlled work.
+- Income-type hints and amount hints differ by level of help.
+- Error messages for `other_income` differ by level of help.
+- Some steps are not on the route at all (vehicles are skipped for controlled work). That is already handled by `stepsFor`.
+
+How it reaches the forms:
+
+- `level_of_help` is a real step, the first one in the journey, and its answer is saved like any other.
+- `LoadAnswers` runs on every step and calls `context.setAnswer` for every saved answer. So `Answer("level_of_help")` is available in every block on every later step.
+- The `presetAnswers` option on `createEligibilityPackage` is declared but never read. Do not rely on it.
+- Forge accepts `Answer(...)` in `visibleWhen`, `dependentWhen`, `validWhen`, and radio `items` is a resolvable array, so it can be data-driven.
+
+Recommended approach: have `publishNavigation` also publish one value per variant, for example `Data("frequencyOptions")` (the list of `{ value, text }`, with `total` removed for controlled) and `Data("incomeFrequencyOptions")`. Blocks then use `items: Data("frequencyOptions")`. This keeps the rule in `domain/` where it is unit tested, and avoids duplicate blocks. Use `Answer("level_of_help").match(Condition.Equals("controlled"))` directly only for one-off hints and messages. Confirm in a spike that radio `items` accepts `Data(...)` (the `forge-assumptions` specs are the place for this).
+
+## Open questions
+
+- **`Data(...)`-driven radio items.** Resolved in Section 1: radio `items: Data(...)` works.
+- **Redirecting to the benefit error page.** Resolved in Section 1: redirect from an access hook with `next: [redirect(...)]`, and give the target step `reachability: { entryWhen: true }`.
+
+## Review checklist
+
+- [ ] The root cause (field codes and values, not step order) is agreed
+- [ ] The order of work is agreed
+- [ ] Open questions have an owner

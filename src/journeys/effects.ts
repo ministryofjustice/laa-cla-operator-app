@@ -114,6 +114,7 @@ export const InboundCallEffectsImplementation: Record<
     const authenticatedAxiosState = getAuthenticatedAxios(context);
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
+    context.setData("caseId", caseId);
   },
 
   /**

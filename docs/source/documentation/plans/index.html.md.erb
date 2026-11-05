@@ -1,0 +1,36 @@
+---
+title: Plans
+last_reviewed_on: 2026-10-06
+review_in: 6 weeks
+---
+
+# Plans
+
+This section tracks design and delivery plans for work that changes how the service is built, or that produces components other services may reuse.
+
+A plan must be reviewed and marked **Approved** before the work it describes is integrated into any new front end.
+
+## How to add a plan
+
+1. Create a page in `docs/source/documentation/plans/` named after the work, for example `eligibility-journey.html.md.erb`.
+2. Set `last_reviewed_on` and `review_in` in the front matter.
+3. Start the page with a status table: status, author, reviewers, last updated.
+4. Add a row to the register below.
+5. Raise a pull request so the plan is reviewed like code. Record decisions made in review in the plan's decision log.
+
+## Statuses
+
+| Status | Meaning |
+|---|---|
+| Draft | Being written, not ready for review |
+| In review | Open for comment in a pull request |
+| Approved | Agreed; work can be integrated |
+| Superseded | Replaced by a later plan (link to it) |
+| Abandoned | Not going ahead (record why) |
+
+## Register
+
+| Plan | Status | Author | Last updated |
+|---|---|---|---|
+| [Reusable eligibility journey](eligibility-journey.html) | In review | Will Clarke | 2026-10-06 |
+| [Eligibility income, outgoings and property routing](eligibility-section-routing.html) | Draft | Will Clarke | 2026-10-19 |

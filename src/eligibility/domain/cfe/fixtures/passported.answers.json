@@ -1,0 +1,28 @@
+{
+  "level_of_help": "certificated",
+  "client_age": "standard",
+  "date_of_birth": "1980-11-05",
+  "passporting": true,
+  "property_owned": "with_mortgage",
+  "house_value": 200000,
+  "percentage_owned": 100,
+  "mortgage": 150000,
+  "investments": 20000,
+  "valuables": 5000,
+  "bank_accounts": [
+    {
+      "amount": 30000,
+      "account_in_dispute": false
+    }
+  ],
+  "vehicle_owned": false,
+  "domestic_abuse_applicant": false,
+  "partner": false,
+  "immigration_or_asylum_type_upper_tribunal": "none",
+  "house_in_dispute": false,
+  "additional_property_owned": "none",
+  "investments_relevant": true,
+  "investments_in_dispute": false,
+  "valuables_relevant": true,
+  "valuables_in_dispute": false
+}

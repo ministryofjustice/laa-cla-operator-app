@@ -28,7 +28,13 @@ envVars:
   BACKEND_BASE_URL:
     # Using service name instead of external domain name
     value: "http://cla-backend-app.laa-cla-backend-uat.svc.cluster.local"
+  CFE_HOST:
+    # Using public HTTPS endpoint for UAT (no network policy needed)
+    # Can switch to internal cluster URL once network policy is approved
+    value: "https://cfe-civil-staging.cloud-platform.service.justice.gov.uk"
   NODE_ENV:
     value: "uat"
   ENTRA_REDIRECT_URI:
     value: "https://laa-cla-operator-app-uat.cloud-platform.service.justice.gov.uk/redirect"
+  RATELIMIT_HEADERS_ENABLED:
+    value: "false"
