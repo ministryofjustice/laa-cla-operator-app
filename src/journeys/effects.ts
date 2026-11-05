@@ -17,6 +17,8 @@ import type { InboundCallContext } from "./types.js";
 import type { Session } from "express-session";
 import type { Address } from "#src/services/postcodeLookup.js";
 import { ZERO } from "#src/constants.js";
+import type { FinancialEligibilitySession } from "#packages/cfe-eligibility-journey/src/context.type.js";
+import { invalidatePreparedEligibilitySnapshot } from "#packages/cfe-eligibility-journey/src/draftState.js";
 
 /**
  * Get the current case
@@ -239,6 +241,13 @@ export const InboundCallEffectsImplementation: Record<
       _case.reference,
       apiPersonalDetails,
     );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Forge returns the Express session used by this journey.
+    const session = context.getSession() as
+      FinancialEligibilitySession | undefined;
+    if (session !== undefined) {
+      invalidatePreparedEligibilitySnapshot(session, _case.reference);
+    }
   },
 
   /**

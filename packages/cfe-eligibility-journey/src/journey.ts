@@ -23,9 +23,9 @@ import { undisputedSavingsStep } from './undisputedSavings/undisputedSavingsStep
 import { partnerUndisputedSavingsStep } from './partnerUndisputedSavings/partnerUndisputedSavingsStep.js'
 import { partnerDependantsStep } from './partnerDependantsPage/partnerDependantsStep.js'
 import { discardStep } from './discardChangesPage/discardChangesStep.js'
+import { submissionReadyStep } from './submissionReadyPage/submissionReadyStep.js'
 
-// The loads any stored draft answers on every access, so switching between branches preserves earlier input.
-// The summary page filters rows to the  branch the user is currently on.
+// Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
   code: 'cfe-eligibility',
   title: 'Financial eligibility',
@@ -34,8 +34,9 @@ export const eligibilityJourney = journey({
     access({
       effects: [
         FinancialEligibilityEffects.LoadCaseDetails(),
-        FinancialEligibilityEffects.LoadCaseFinancialEligibility(),
+        FinancialEligibilityEffects.RestoreCaseDraft(),
         FinancialEligibilityEffects.ApplyClientAgeFromDob(),
+        FinancialEligibilityEffects.RestoreSubmissionError(),
         FinancialEligibilityEffects.SaveDiscardReturnPath(),
       ],
     }),
@@ -65,5 +66,6 @@ export const eligibilityJourney = journey({
     checkAnswersStep,
     partnerDependantsStep,
     discardStep,
+    submissionReadyStep,
   ],
 })

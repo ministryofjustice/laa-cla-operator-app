@@ -1,4 +1,4 @@
-import { Self, Answer, Condition, validation, Iterator, Data, Format, Loop, Item, Transformer, or, not } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { Self, Answer, Condition, validation, Iterator, Data, Format, Loop, Item, Transformer, or, not, and } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { GovUKHeading, GovUKTextInput, GovUKBody, GovUKButton, GovUKUtilityClasses, GovUKRadioInput, GovUKSectionBreak, GovUKGridRow } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { CollectionBlock } from '@ministryofjustice/hmpps-forge/core/components'
 import { decimalPlacesValidation, moneyMaxValueValidation } from '../moneyFieldHelpers.js'
@@ -14,6 +14,7 @@ export const propertiesHeading = GovUKHeading({
 })
 
 export const propertySet = CollectionBlock({
+  visibleWhen: Answer('has-property').match(Condition.Equals('yes')),
   collection: Data('propertySet').each(
     Iterator.Map([
       GovUKGridRow({
@@ -164,17 +165,22 @@ export const addAnotherButton = GovUKGridRow({
           name: 'action',
           value: 'add-another-property',
           classes: 'govuk-button--secondary',
-          visibleWhen: Data('propertySet').not.match(Condition.IsRequired()),
+          visibleWhen: and(
+            Answer('has-property').match(Condition.Equals('yes')),
+            Data('propertySet').not.match(Condition.IsRequired()),
+          ),
         }),
         GovUKButton({
           text: 'Add another property',
           name: 'action',
           value: 'add-another-property',
           classes: 'govuk-button--secondary',
-          visibleWhen: Data('propertySet').match(Condition.IsRequired()),
+          visibleWhen: and(
+            Answer('has-property').match(Condition.Equals('yes')),
+            Data('propertySet').match(Condition.IsRequired()),
+          ),
         }),
       ],
     }
   ],
 })
-

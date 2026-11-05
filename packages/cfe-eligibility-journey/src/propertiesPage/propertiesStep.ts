@@ -1,6 +1,6 @@
-import { submit, redirect, Condition, or, Post, access, validation, Data, Iterator, Answer, Format, Loop, Transformer } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { submit, redirect, Condition, or, Post, access, validation, Data, Iterator, Answer, Format, Loop, Transformer, not } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { mainForgeJourneyActions } from '../commonBlocks.js'
-import { propertiesHeading, propertySet, addAnotherButton } from './propertiesBlock.js'
+import { propertiesHeading, hasPropertyField, propertySet, addAnotherButton } from './propertiesBlock.js'
 import { FinancialEligibilityEffects, PatternEffects } from '../effects.js'
 import { step, type StepDefinition } from '../authoring.js'
 import { savingsStep } from '../savingsPage/savingsStep.js'
@@ -14,6 +14,7 @@ const fieldCodes = ['value', 'mortgage-left', 'disputed', 'main', 'share']
 const mainPropertiesCount = Data(collectionCode)
   .each(Iterator.Filter(Answer(Format('main_%1', Loop.Index0())).match(Condition.Equals('yes'))))
   .pipe(Transformer.Array.Length())
+const propertyCount = Data(collectionCode).pipe(Transformer.Array.Length())
 
 export const propertiesStep: StepDefinition = step({
   code: STEP_CODE,
@@ -22,11 +23,21 @@ export const propertiesStep: StepDefinition = step({
   reachability: { entryWhen: true },
   validWhen: [
     validation({
-      condition: mainPropertiesCount.match(Condition.Number.LessThanOrEqual(1)),
+      condition: or(
+        not(Answer('has-property').match(Condition.Equals('yes'))),
+        propertyCount.match(Condition.Number.GreaterThanOrEqual(1)),
+      ),
+      message: 'Add at least one property, or select no if you do not own any property',
+    }),
+    validation({
+      condition: or(
+        not(Answer('has-property').match(Condition.Equals('yes'))),
+        mainPropertiesCount.match(Condition.Number.LessThanOrEqual(1)),
+      ),
       message: 'Only one property can be your main property',
     }),
   ],
-  blocks: [propertiesHeading, propertySet, addAnotherButton, mainForgeJourneyActions],
+  blocks: [propertiesHeading, hasPropertyField, propertySet, addAnotherButton, mainForgeJourneyActions],
   onAccess: [
     access({
       effects: [PatternEffects.InitialiseRepeatingFieldset(STEP_CODE, collectionCode, fieldCodes)],

@@ -1,11 +1,16 @@
-import { GovUKButton } from '@ministryofjustice/hmpps-forge/govuk-components'
+import { GovUKButton, GovUKInsetText } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { HtmlBlock } from '@ministryofjustice/hmpps-forge/core/components'
 import { GovUKUtilityClasses } from '@ministryofjustice/hmpps-forge/govuk-components'
-import { Format, Params } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { Condition, Data, Format, Params } from '@ministryofjustice/hmpps-forge/core/authoring'
 
 export const continueButton = GovUKButton({ text: 'Continue' })
 
-export const submitButton = GovUKButton({ text: 'Submit' })
+export const submitButton = GovUKButton({ text: 'Prepare submission' })
+
+export const eligibilitySubmissionError = GovUKInsetText({
+  text: 'Complete or correct this answer before preparing the submission.',
+  visibleWhen: Data('submissionValidationStep').match(Condition.IsRequired()),
+})
 
 export const discardChangesLink = HtmlBlock({
   tag: 'a',
@@ -18,6 +23,7 @@ export const mainForgeJourneyActions = HtmlBlock({
   tag: 'div',
   classes: "govuk-button-group",
   content: [
+    eligibilitySubmissionError,
     continueButton,
     discardChangesLink,
   ],
@@ -27,6 +33,7 @@ export const checkYourAnswersForgeJourneyActions = HtmlBlock({
   tag: 'div',
   classes: "govuk-button-group",
   content: [
+    eligibilitySubmissionError,
     submitButton,
     discardChangesLink,
   ],

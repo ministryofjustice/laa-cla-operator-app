@@ -11,7 +11,7 @@ const JOURNEY_PATH = '/cases/CASE1/cfe-eligibility/change';
 
 /**
  * Registers the real package with Forge (strictly, so AST validation errors fail the test) and stubs the host
- * effects so the case has the given date of birth and no saved eligibility check.
+ * effects so the case has the given date of birth and no saved answer draft.
  * @param {string | null} dateOfBirth The client's date of birth
  * @returns {ReturnType<ForgeTestHarness['createClient']>} A client for making requests to the journey
  */
@@ -21,8 +21,11 @@ function createClient(dateOfBirth: string | null) {
     LoadCaseDetails: async (_deps: Deps, context: EffectFunctionContext) => {
       context.setData(CLIENT_DATE_OF_BIRTH_DATA_KEY, dateOfBirth);
     },
-    LoadCaseFinancialEligibility: noop,
-    PersistSavedAnswers: noop,
+    RestoreCaseDraft: noop,
+    ValidateDraftAnswers: noop,
+    PrepareSubmission: noop,
+    CheckPreparedSubmission: noop,
+    RestoreSubmissionError: noop,
     ClearDraftAnswers: noop,
     SaveNewAnswerIfAnswered: noop,
   };
