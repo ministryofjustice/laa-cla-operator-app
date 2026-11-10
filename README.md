@@ -70,6 +70,43 @@ yarn dev
 
 Then, load http://localhost:3000/ in your browser to access the app.
 
+### Synthetic CFE staging demonstration (phase 2A)
+
+The optional `/dev/cfe-synthetic-assessment` page demonstrates a server-side
+controlled-work assessment using a fixed synthetic fixture. It is authenticated,
+uses the application's CSRF protection, is disabled unless explicitly enabled,
+and is always unavailable in production. Its result is kept in the current
+session only; it is not a client assessment and is not saved to a case. It does
+not use the client journey's answers.
+
+In a local development `.env`, set:
+
+```shell
+CFE_SYNTHETIC_DEMO_ENABLED=true
+CFE_API_BASE_URL=https://cfe-civil-staging.cloud-platform.service.justice.gov.uk
+CFE_REQUEST_TIMEOUT_MS=10000
+```
+
+Restart the app and visit `http://localhost:3000/dev/cfe-synthetic-assessment`.
+The CFE client accepts only the documented staging origin, sends no backend
+credentials and has no automatic POST retries. Do not change the fixture to
+include client or case data.
+
+To run a one-off live staging smoke test without starting the web app, use:
+
+```shell
+CFE_SYNTHETIC_DEMO_ENABLED=true yarn cfe:synthetic-smoke
+```
+
+The smoke test prints only the HTTP status, API version, overall result and
+whether CFE returned remarks. It makes a real assessment POST only when run
+explicitly and never runs as part of CI tests. Staging version 7 is used for
+this integration proof; that choice is not production approval. The fixture
+uses the schema-enumerated `DA001` proceeding with involvement type `A`, a
+fixed synthetic date of birth (`1980-01-01`), no income/outgoing payments and
+no bank accounts. These fixture selections are solely for exercising the API
+and do not represent eligibility policy.
+
 #### Install dependencies and run application for production
 
 ```shell

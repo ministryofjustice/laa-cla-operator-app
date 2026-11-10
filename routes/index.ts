@@ -6,9 +6,11 @@ import {
   logOut,
 } from "#src/controllers/silasController.js";
 import { requireAuth } from "#src/middleware/apiMiddleware.js";
+import syntheticCfeDemoRouter from "#routes/syntheticCfeDemo.js";
 
 // Create a new router
 const router = express.Router();
+router.use(syntheticCfeDemoRouter);
 
 const SUCCESSFUL_REQUEST = 200;
 const UNSUCCESSFUL_REQUEST = 500;

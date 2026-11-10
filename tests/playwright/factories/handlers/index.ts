@@ -8,6 +8,7 @@
  */
 
 import { http, HttpResponse } from "msw";
+import { cfeSyntheticHandlers } from "./cfeSynthetic.js";
 
 type EligibilityCheck = Record<string, unknown>;
 
@@ -20,6 +21,7 @@ const personalDetails = new Map<string, Record<string, unknown>>();
  * Combined handlers array
  */
 export const handlers = [
+  ...cfeSyntheticHandlers,
   http.get("*/call_centre/api/v1/case/", () =>
     HttpResponse.json({
       count: 0,
