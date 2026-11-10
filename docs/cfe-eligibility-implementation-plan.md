@@ -1,14 +1,16 @@
-# CFE eligibility implementation plan and phase-one handoff
+# CFE eligibility implementation plan and agent handoff
 
 ## Instructions for the implementing agent
 
-Implement **phase one only** in `laa-cla-operator-app`, on the existing
+Implement **phase 2A only: the synthetic CFE integration proof** in
+`laa-cla-operator-app`, on the existing
 `eligibility-client-details-entry` branch. Read this plan and the repository's
 instructions before editing. Inspect the actual worktree; the status below is
 handoff context, not permission to overwrite existing changes.
 
-Do not change `laa-manage-your-civil-cases` or `cla_backend`. Do not submit to
-CFE, introduce backend storage, or invent an eligibility result in phase one.
+Do not change `laa-manage-your-civil-cases` or `cla_backend`. Submit only
+explicitly synthetic fixture data to CFE staging. Do not send real case data,
+introduce backend storage, or invent a successful eligibility result.
 Do not stage or commit changes unless requested.
 
 Deliver working code, focused tests and updated documentation. Report exact
@@ -18,8 +20,13 @@ validation commands/results and outstanding business decisions.
 
 1. **Journey:** start from client details, collect answers and reach a validated
    submission boundary.
-2. **CFE integration:** submit directly from the operator server and display the
-   genuine returned result.
+2. **CFE integration and question redesign:**
+   - **2A (next):** prove server-to-server submission and result display using a
+     known-valid synthetic controlled-work request, independent of the questions.
+   - **2B:** define and implement the intended Check Client Qualifies question
+     flow, validated assessment data and exact request mapping.
+   - **2C:** connect real journey answers to the proven CFE client and verify
+     complete end-to-end assessments.
 3. **Persistence:** add backend storage for multiple dated assessments, then wire
    operator saving, reopening and history.
 
@@ -34,10 +41,26 @@ Legacy frontend calculation must remain unchanged.
 
 ## Current foundation
 
+As of 5 November 2026, the user confirms that the journey works through to the
+submission-ready page. The current question flow mirrors manage, but is not
+the desired final flow: the operator flow must be redesigned against Check
+Client Qualifies. Do not build a full mapper for the current questions first.
+
+The desired separation is:
+
+```text
+Operator questions -> validated assessment data -> CFE request
+                   -> CFE response -> result page
+```
+
+Different question flows may supply the same CFE request structure, but their
+information completeness and semantics must be verified, not assumed.
+
 The package has already been copied and renamed, and DOB-derived age answers
 have been added. Client-details entry work exists on this branch.
 
-At handoff, the following existing changes were uncommitted:
+Historical phase-one work included the following files (these are not a current
+worktree status report):
 
 - [README](../README.md)
 - [Host journey effects](../src/journeys/effects.ts)
@@ -48,10 +71,16 @@ At handoff, the following existing changes were uncommitted:
 - [Client-details service tests](../tests/unit/src/services/inboundCallWithDeps.spec.ts)
 - New [eligibility end-to-end tests](../tests/playwright/tests/cfe-eligibility.spec.ts)
 
-Preserve and integrate these changes. In particular, client-details saving now
-converts DOB into the ISO date string rather than sending the raw date object.
+Preserve this work. DOB remains ISO internally, but the backend personal-details
+endpoint requires `dob` as `{ day, month, year }`. That contract mismatch was
+fixed and the mock corrected; do not revert it. Case reads supply ISO
+`date_of_birth` for age derivation.
 
 ### Implementation surfaces to inspect
+
+The table below records the original phase-one starting points. Phase one has
+since changed the loading, review and submission behaviour; inspect the current
+implementation rather than restoring the original legacy behaviour.
 
 | Surface                                                                                     | Current role / required attention                                                                 |
 | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -71,7 +100,7 @@ The entry screen is `/case/:caseId/add-client-details`.
 Confirm route registration, templates, authentication and return paths in the
 actual code before making changes.
 
-## Phase one: journey and submission boundary
+## Phase one: journey and submission boundary (delivered foundation)
 
 ### 1. Finish client-details entry
 
@@ -190,24 +219,90 @@ only when justified, and report failures or validation limitations explicitly.
 - Fake eligibility responses or fallback to the legacy calculator.
 - Changes to manage or its deployment configuration.
 
-## Phase two: CFE submission and result display
+## Phase 2A: synthetic CFE integration proof (next implementation stage)
 
-After phase one is reviewed:
+### Objective
 
-1. Confirm the approved API version, proceeding mapping, assessment date policy,
-   exemption rules and legal help versus controlled legal representation.
-2. Build a tested exact request mapper with explicit controlled-work scope.
-3. Add a dedicated server-side CFE client, runtime validation, environment
-   configuration and explicit error handling.
-4. Replace the preparation boundary with genuine assessment submission.
-5. Display overall result, reasons/warnings, gross/disposable income and capital
-   breakdown using CFE output rather than locally duplicated eligibility rules.
-6. Keep a dated answer/request/response snapshot and application assessment
-   identity in the session. New calculations create new snapshots.
-7. Clearly label results as not saved to the case while backend persistence
-   is unavailable. Do not offer a save retry before the API exists.
-8. Test service failures, malformed responses, duplicate submissions,
-   out-of-date results after editing, accessibility and synthetic staging calls.
+Prove that the operator server can submit a known-valid synthetic controlled-work
+payload to CFE staging and display the genuine returned assessment. Keep this
+independent of real case answers and the current manage-derived question flow.
+
+### Implementation tasks
+
+1. Inspect current configuration, routing, authentication, services, tests and
+   the published CFE schema. Use v7 for the staging proof if the specification
+   supports the fixture; document the choice without implying production approval.
+2. Create a minimal, clearly synthetic request fixture based on the published
+   schema/examples. Set controlled-work scope explicitly and document fixture
+   proceeding/date choices. Do not treat those choices as business policy.
+3. Implement a reusable, dedicated server-side CFE client with typed contracts,
+   runtime response validation, a configured base URL and bounded timeout.
+   Reuse existing HTTP/error-handling patterns without forwarding backend tokens.
+4. Add a small development/test-only authenticated demonstration page and POST
+   action using normal CSRF protection. Use a server-side fixture, not arbitrary
+   browser-supplied payloads or destination URLs. Do not calculate on page GET.
+5. Gate the page/action off by default and prevent production access even if the
+   development flag is accidentally enabled. Verify the gate in tests.
+   Keep it separate from the real case's submission-ready action.
+6. Clearly label entry and result pages "Synthetic test assessment - not a client
+   assessment". No real case identifier, DOB, answers or personal details may be
+   included in the outgoing request or associated result.
+7. Display the genuine overall financial eligibility, applicable reasons/warnings
+   and gross/disposable income and capital breakdown returned by CFE. Do not
+   invent reasons, recompute thresholds, or treat omitted components as zero.
+8. Handle request validation failures, unexpected statuses, network failures,
+   timeout and malformed responses explicitly. Never fall back to a fake success
+   or the legacy calculator. Avoid automatic assessment-POST retries.
+9. Keep any result in the current test session only; label it as not saved to
+   the case. Refresh/result viewing must not silently submit another assessment.
+10. Add focused client tests and mocked browser tests. Mocks must be distinguishable
+    from evidence of a live staging response. Do not make external calls in CI.
+11. Run an explicit synthetic staging smoke test if network/access permits.
+    Record the command, HTTP outcome and high-level assessment result without
+    credentials or financial payload dumps. If blocked, report the exact blocker
+    and do not claim live connectivity is verified.
+12. Document local configuration, demonstration route, how to run the synthetic
+    check, safety gate and exact validation commands/results.
+
+### Acceptance criteria
+
+- An authenticated developer can run the synthetic assessment and view its
+  genuine returned outcome and available financial breakdown.
+- Only the documented synthetic fixture is sent, and only to staging for the proof.
+- The demonstration is unavailable by default and in production.
+- The actual client journey remains unchanged and makes no assessment call.
+- No legacy eligibility endpoint or backend assessment persistence is used.
+- Success/error, authentication/gating and result rendering tests pass.
+- A live staging smoke test is evidenced, or its access blocker is explicit.
+
+### Out of scope
+
+- Changing questions to Check Client Qualifies.
+- A full mapper from current journey answers to CFE.
+- Production enablement or deployment, real-client submission and backend storage.
+- History UI, save retries or changes to manage/cla_backend.
+
+## Phase 2B: Check Client Qualifies questions and mapping
+
+1. Identify and agree the exact Check Client Qualifies journey/version and
+   controlled-work subset to use; obtain a reference from the user if unclear.
+2. Map each question/branch to the information required by CFE, including
+   amounts, frequencies, dates, partner details, dependants and exemptions.
+3. Resolve missing inputs and business choices before implementing approximations.
+4. Implement the revised standalone journey and a validated assessment-data
+   contract independent of page/question codes.
+5. Build the pure assessment-data-to-CFE mapper and test exact payload values
+   and branch behaviour. Do not assume the previous questions are equivalent.
+
+## Phase 2C: genuine journey assessment
+
+1. Connect the validated journey snapshot and mapper to the proven CFE client.
+2. Replace the real journey's preparation boundary with explicit assessment submission.
+3. Render the real result and retain its dated input/request/response snapshot
+   and application assessment identity in the session.
+4. Clearly show that results are not saved to the case yet.
+5. Test supported branches, request values, expected assessment outcomes,
+   duplicate submissions, edits invalidating results, errors and accessibility.
 
 Use a separate CFE HTTP client; never forward backend credentials to CFE or log
 full financial answers/payloads.
@@ -219,8 +314,9 @@ The documentation publishes v6 and v7. v7 is the proposed target, not yet an
 approved production contract. Its `assessment.level_of_help` must explicitly be
 `controlled`; omission defaults to `certificated`.
 
-Acceptance: a genuine controlled-work CFE response is displayed without legacy
-calculation or assessment persistence. Session loss can still lose results.
+Phase 2C acceptance: a genuine controlled-work result from the revised journey
+is displayed without legacy calculation or assessment persistence. Session loss
+can still lose results. Phase 2A alone does not establish this.
 
 ## Phase three: backend persistence and multiple dated results
 
@@ -267,11 +363,36 @@ Do not silently drop supported branches or approximate missing inputs.
 
 ## Suggested prompt for the next agent
 
-> Read docs/cfe-eligibility-implementation-plan.md and implement phase one only
-> on the existing eligibility-client-details-entry branch in
-> laa-cla-operator-app. Preserve the current uncommitted changes. Complete
-> client-details entry, session-only eligibility drafts, active-journey
-> validation and the submission-ready boundary. Remove legacy financial
-> eligibility reads/writes from this journey. Do not call CFE, change
-> cla_backend/manage, or stage/commit. Ask about essential unresolved business
-> inputs; run focused tests and report validation results.
+> Work in laa-cla-operator-app on the existing eligibility-client-details-entry
+> branch. Read docs/cfe-eligibility-implementation-plan.md and repository
+> instructions, inspect current code/worktree and preserve existing changes.
+> Implement phase 2A only: a development/test-only synthetic CFE integration proof.
+>
+> Phase one works through the submission-ready page. The questions currently
+> mirror manage; they will later be redesigned against Check Client Qualifies.
+> Do not change those questions or build a full mapper for them now.
+>
+> Use the CFE staging documentation at
+> https://cfe-civil-staging.cloud-platform.service.justice.gov.uk/api-docs/index.html
+> to build a known-valid synthetic controlled-work fixture and a reusable
+> server-side client with typed contracts, runtime validation and timeout/error
+> handling. Add an authenticated, CSRF-protected development demonstration page
+> and POST action, off by default and inaccessible in production. Keep it separate
+> from the client journey and label every demonstration result as synthetic,
+> not a client assessment and not saved.
+>
+> Send only the synthetic fixture to staging; do not send real case data or
+> backend credentials. Display the genuine returned eligibility, applicable
+> reasons/warnings and available income/capital breakdown. Never invent results
+> or silently substitute missing figures. No calculation on GET, no implicit
+> repeat calculation on refresh and no automatic POST retries.
+>
+> Add focused mocked client/browser tests, verify safety gates and unchanged
+> client-journey behaviour, and run a synthetic live staging smoke test if access
+> permits. Distinguish mocked verification from live evidence and report exact
+> blockers if connectivity cannot be verified. Document local usage and exact
+> commands/results without logging sensitive payloads.
+>
+> Do not change manage or cla_backend, implement persistence/history, enable
+> production use, or stage/commit. Stop after phase 2A and summarise the files
+> changed, verification and decisions needed for phase 2B.
