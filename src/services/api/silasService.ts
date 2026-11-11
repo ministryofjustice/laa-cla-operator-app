@@ -356,7 +356,6 @@ export class SilasService {
    * @returns {string} - The Key ID used in the access token
    */
   getAccessTokenKID(accessToken: string): string {
-    console.log("The token", accessToken);
     const parts = accessToken.split(".");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- this returns an object
     const header = JSON.parse(
