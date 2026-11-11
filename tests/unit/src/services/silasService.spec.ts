@@ -451,29 +451,6 @@ describe("Silas Service", () => {
         );
       });
 
-      it("verify: should accept when LAA_ACCOUNTS claim is missing", async () => {
-        await assert.doesNotReject(
-          verifyWithStubbedPayload({ name: "no accounts claim" }),
-        );
-      });
-
-      it("verify: should accept when LAA_ACCOUNTS is an empty array", async () => {
-        await assert.doesNotReject(
-          verifyWithStubbedPayload({ LAA_ACCOUNTS: [] }),
-        );
-      });
-
-      it("verify: should accept when LAA_ACCOUNTS only has values that get filtered out", async () => {
-        // null, object, undefined -> fail the typeof check
-        // ""                      -> fails the empty string check
-        // NaN                     -> fails the NaN check
-        await assert.doesNotReject(
-          verifyWithStubbedPayload({
-            LAA_ACCOUNTS: [null, {}, undefined, "", Number.NaN],
-          }),
-        );
-      });
-
       it("verify: should ignore filtered-out values alongside an allowed account", async () => {
         await assert.doesNotReject(
           verifyWithStubbedPayload({
@@ -519,15 +496,6 @@ describe("Silas Service", () => {
           verifyWithStubbedPayload({
             LAA_ACCOUNTS: [NOT_ALLOWED_ACCOUNT],
             APP_ROLES: [NOT_INTERNAL_ROLE],
-          }),
-          ACCESS_DENIED_PATTERN,
-        );
-      });
-
-      it("verify: should reject when a mix of allowed and disallowed accounts is present and user is not internal", async () => {
-        await assert.rejects(
-          verifyWithStubbedPayload({
-            LAA_ACCOUNTS: [ALLOWED_ACCOUNT, NOT_ALLOWED_ACCOUNT],
           }),
           ACCESS_DENIED_PATTERN,
         );

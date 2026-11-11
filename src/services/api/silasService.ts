@@ -306,14 +306,13 @@ export class SilasService {
 
 
     /**
- * Flattens a claim into a list of non-empty strings.
- * Accepts scalars or nested arrays; drops null, undefined, objects,
- * empty strings and NaN. Booleans become "1" / "0".
- * 
- * @param {unknown} value Raw claim value from the token payload.
- * @returns {string[]} Normalised claim values as strings.
- */
-
+     * Flattens a claim into a list of non-empty strings.
+     * Accepts scalars or nested arrays; drops null, undefined, objects,
+     * empty strings and NaN. Booleans become "1" / "0".
+     * 
+     * @param {unknown} value Raw claim value from the token payload.
+     * @returns {string[]} Normalised claim values as strings.
+     */
   const normalise = (value: unknown): string[] =>
   [value]
     .flat(Infinity)
@@ -327,9 +326,7 @@ export class SilasService {
 
   // Check 1: every LAA account (if any) is in the allowed list
   const laaAccounts = normalise(payload.LAA_ACCOUNTS);
-
-  // Check if at least one LAA account is in the allowed list
-  const allowedSet = ALLOWED_LAA_ACCOUNTS.map(code => String(code).toUpperCase());
+  const allowedSet = ALLOWED_LAA_ACCOUNTS.map(code => code.toUpperCase());
 
   const atLeastOneAllowed = laaAccounts.some(account => 
       allowedSet.includes(account.toUpperCase())
