@@ -304,32 +304,31 @@ export class SilasService {
     }
     const payload: jsonwebtoken.JwtPayload = verified;
 
-
     /**
      * Flattens a claim into a list of non-empty strings.
      * Accepts scalars or nested arrays; drops null, undefined, objects,
      * empty strings and NaN. Booleans become "1" / "0".
-     * 
+     *
      * @param {unknown} value Raw claim value from the token payload.
      * @returns {string[]} Normalised claim values as strings.
      */
-  const normalise = (value: unknown): string[] =>
-  [value]
-    .flat(Infinity)
-    .filter(
-      (x): x is string | number | bigint | boolean =>
-        ["string", "number", "bigint", "boolean"].includes(typeof x) &&
-        x !== "" &&
-        !(typeof x === "number" && Number.isNaN(x)),
-    )
-    .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
+    const normalise = (value: unknown): string[] =>
+      [value]
+        .flat(Infinity)
+        .filter(
+          (x): x is string | number | bigint | boolean =>
+            ["string", "number", "bigint", "boolean"].includes(typeof x) &&
+            x !== "" &&
+            !(typeof x === "number" && Number.isNaN(x)),
+        )
+        .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
 
-  // Check 1: every LAA account (if any) is in the allowed list
-  const laaAccounts = normalise(payload.LAA_ACCOUNTS);
-  const allowedSet = ALLOWED_LAA_ACCOUNTS.map(code => code.toUpperCase());
+    // Check 1: every LAA account (if any) is in the allowed list
+    const laaAccounts = normalise(payload.LAA_ACCOUNTS);
+    const allowedSet = ALLOWED_LAA_ACCOUNTS.map((code) => code.toUpperCase());
 
-  const atLeastOneAllowed = laaAccounts.some(account => 
-      allowedSet.includes(account.toUpperCase())
+    const atLeastOneAllowed = laaAccounts.some((account) =>
+      allowedSet.includes(account.toUpperCase()),
     );
 
     if (atLeastOneAllowed) {
@@ -357,7 +356,7 @@ export class SilasService {
    * @returns {string} - The Key ID used in the access token
    */
   getAccessTokenKID(accessToken: string): string {
-    console.log("The token", accessToken)
+    console.log("The token", accessToken);
     const parts = accessToken.split(".");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- this returns an object
     const header = JSON.parse(
