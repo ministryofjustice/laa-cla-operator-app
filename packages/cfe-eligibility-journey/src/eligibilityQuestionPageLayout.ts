@@ -4,6 +4,7 @@ import type { BlockDefinition } from '@ministryofjustice/hmpps-forge/core/compon
 interface ControlledWorkQuestionPageOptions {
   questionBlocks: BlockDefinition[]
   guidanceBlocks: BlockDefinition[]
+  continueButtonText?: string
 }
 
 /**
@@ -14,12 +15,13 @@ interface ControlledWorkQuestionPageOptions {
 export function eligibilityQuestionPageLayout({
   questionBlocks,
   guidanceBlocks,
+  continueButtonText = 'Save and continue',
 }: ControlledWorkQuestionPageOptions): BlockDefinition {
   return GovUKGridRow({
     columns: [
       {
         width: 'two-thirds',
-        blocks: [...questionBlocks, GovUKButton({ text: 'Save and continue' })],
+        blocks: [...questionBlocks, GovUKButton({ text: continueButtonText })],
       },
       {
         width: 'one-third',

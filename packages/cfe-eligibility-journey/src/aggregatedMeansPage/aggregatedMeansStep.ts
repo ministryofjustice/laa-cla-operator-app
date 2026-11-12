@@ -33,7 +33,13 @@ export const aggregatedMeansStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(CONTROLLED_WORK_STEP_CODES.howToAggregate)),
+            goto: CONTROLLED_WORK_STEP_CODES.howToAggregate,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],
