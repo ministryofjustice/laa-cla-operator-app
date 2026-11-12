@@ -203,6 +203,40 @@ describe('Controlled-work effects', () => {
     expect(restored.answers.has('under-18-assets')).to.equal(false)
   })
 
+  it('persists and prepopulates the asset answer, then prunes matter answers when it changes to no', () => {
+    const session = newSession()
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'no' })
+    save(session, MINOR_DOB, STEPS.aggregatedMeans, { 'aggregated-means': 'no' })
+    save(session, MINOR_DOB, STEPS.regularIncome, { 'regular-income': 'no' })
+
+    const meansRoute = save(session, MINOR_DOB, STEPS.under18Assets, { 'under-18-assets': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['under-18-assets']).to.equal('yes')
+    expect(meansRoute.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.immigrationOrAsylumType)
+
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylumType, { 'immigration-or-asylum-type': 'asylum' })
+    save(session, MINOR_DOB, STEPS.asylumSupport, { 'asylum-support': 'no' })
+    const revisited = restore(session, MINOR_DOB)
+    expect(revisited.answers.get('under-18-assets')).to.equal('yes')
+    expect(revisited.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.include(STEPS.under18Assets)
+
+    const exemptRoute = save(session, MINOR_DOB, STEPS.under18Assets, { 'under-18-assets': 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'yes',
+      'controlled-legal-representation': 'no',
+      'aggregated-means': 'no',
+      'regular-income': 'no',
+      'under-18-assets': 'no',
+    })
+    expect(exemptRoute.answers.has('immigration-or-asylum-type')).to.equal(false)
+    expect(exemptRoute.answers.has('asylum-support')).to.equal(false)
+    expect(exemptRoute.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal('')
+
+    const restored = restore(session, MINOR_DOB)
+    expect(restored.answers.get('under-18-assets')).to.equal('no')
+    expect(restored.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.not.include(STEPS.immigrationOrAsylumType)
+  })
+
   it('continues past the informational aggregation page without storing an answer', () => {
     const session = newSession()
     save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

@@ -48,6 +48,12 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
         }),
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.under18Assets),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.under18Assets,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
             Condition.Equals(CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum),
           ),
           goto: CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum,
