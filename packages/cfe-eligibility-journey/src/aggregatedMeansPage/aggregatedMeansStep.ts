@@ -1,11 +1,12 @@
-import { access, Condition, Data, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { access, Condition, Data, Post, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { step, type StepDefinition } from '../authoring.js'
 import { CONTROLLED_WORK_DATA_KEYS, ControlledWorkEffects } from '../controlledWork/controlledWorkEffects.js'
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWorkIncompleteStep.js'
 import { aggregatedMeansPageContent } from './aggregatedMeansBlock.js'
 
-const { aggregatedMeans: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
+const { aggregatedMeans: STEP_CODE, howToAggregate: HOW_TO_AGGREGATE_STEP_CODE, regularIncome: REGULAR_INCOME_STEP_CODE } =
+  CONTROLLED_WORK_STEP_CODES
 
 export const aggregatedMeansStep: StepDefinition = step({
   code: STEP_CODE,
@@ -35,8 +36,12 @@ export const aggregatedMeansStep: StepDefinition = step({
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
         next: [
           redirect({
-            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(CONTROLLED_WORK_STEP_CODES.howToAggregate)),
-            goto: CONTROLLED_WORK_STEP_CODES.howToAggregate,
+            when: Post('aggregated-means').match(Condition.Equals('yes')),
+            goto: HOW_TO_AGGREGATE_STEP_CODE,
+          }),
+          redirect({
+            when: Post('aggregated-means').match(Condition.Equals('no')),
+            goto: REGULAR_INCOME_STEP_CODE,
           }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],

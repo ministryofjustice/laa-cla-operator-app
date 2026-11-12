@@ -212,6 +212,61 @@ test.describe("Client details eligibility entry", () => {
     ).toContainText("No");
   });
 
+  test("asks about regular income after under-18 CLR and aggregation screening", async ({
+    page,
+  }) => {
+    const caseId = "EL-REGULAR-INCOME";
+    const path = journeyPath(caseId);
+    await startFromDetails(page, caseId, String(new Date().getFullYear() - 10));
+
+    await expect(page).toHaveURL(`${path}/immigration-or-asylum`);
+    await page.getByRole("radio", { name: "No", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${path}/under-18-clr`);
+    await page.getByRole("radio", { name: "No", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${path}/aggregated-means`);
+    await page.getByRole("radio", { name: "No", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${path}/regular-income`);
+
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "Does your client get regular income?",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "For example, payment from a full time job or local authority financial support for a care leaver. If they get regular income, they must have a full means test.",
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText("part-time earnings (less than 16 hours per week)"),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Income (PDF, 599KB)" }),
+    ).toHaveAttribute(
+      "href",
+      "https://assets.publishing.service.gov.uk/media/684ff44229fb1002010c4e6c/LC_s_guidance_on_determining_financial_eligibility__controlled_and_mediation_.pdf#page=49",
+    );
+
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${path}/regular-income`);
+    await expect(page.locator(".govuk-error-summary")).toContainText(
+      "Select yes if your client gets regular income",
+    );
+
+    await page.getByRole("radio", { name: "No", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${path}/controlled-work-incomplete`);
+
+    await page.goto(`${path}/regular-income`);
+    await expect(
+      page.getByRole("radio", { name: "No", exact: true }),
+    ).toBeChecked();
+  });
+
   test("adult entry skips client age but still asks about a partner's age", async ({
     page,
     checkAccessibility,

@@ -178,6 +178,31 @@ describe('Controlled-work effects', () => {
     expect(restored.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.not.include(STEPS.regularIncome)
   })
 
+  it('persists regular income and removes the asset-screen answer when income changes to yes', () => {
+    const session = newSession()
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'no' })
+    save(session, MINOR_DOB, STEPS.aggregatedMeans, { 'aggregated-means': 'no' })
+    const noIncome = save(session, MINOR_DOB, STEPS.regularIncome, { 'regular-income': 'no' })
+    save(session, MINOR_DOB, STEPS.under18Assets, { 'under-18-assets': 'no' })
+
+    expect(noIncome.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.under18Assets)
+    const changed = save(session, MINOR_DOB, STEPS.regularIncome, { 'regular-income': 'yes' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      'controlled-legal-representation': 'no',
+      'aggregated-means': 'no',
+      'regular-income': 'yes',
+    })
+    expect(changed.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.applicant)
+    expect(changed.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.applicant)
+
+    const restored = restore(session, MINOR_DOB)
+    expect(restored.answers.get('regular-income')).to.equal('yes')
+    expect(restored.answers.has('under-18-assets')).to.equal(false)
+  })
+
   it('continues past the informational aggregation page without storing an answer', () => {
     const session = newSession()
     save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
