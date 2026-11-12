@@ -24,6 +24,7 @@ import { partnerUndisputedSavingsStep } from './partnerUndisputedSavings/partner
 import { partnerDependantsStep } from './partnerDependantsPage/partnerDependantsStep.js'
 import { discardStep } from './discardChangesPage/discardChangesStep.js'
 import { submissionReadyStep } from './submissionReadyPage/submissionReadyStep.js'
+import { ControlledWorkEffects } from './controlledWork/controlledWorkEffects.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -36,6 +37,7 @@ export const eligibilityJourney = journey({
         FinancialEligibilityEffects.LoadCaseDetails(),
         FinancialEligibilityEffects.RestoreCaseDraft(),
         FinancialEligibilityEffects.ApplyClientAgeFromDob(),
+        ControlledWorkEffects.RestoreControlledWorkAnswers(),
         FinancialEligibilityEffects.RestoreSubmissionError(),
         FinancialEligibilityEffects.SaveDiscardReturnPath(),
       ],

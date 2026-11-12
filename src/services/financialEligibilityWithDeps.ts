@@ -4,6 +4,7 @@ import type {
   FinancialEligibilityEffectsWithDeps,
 } from "#packages/cfe-eligibility-journey/src/api.js";
 import { getOrMigrateCasePatternDrafts } from "#packages/cfe-eligibility-journey/src/casePatternDrafts.js";
+import { clearControlledWorkAnswers } from "#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSession.js";
 import {
   CLIENT_DATE_OF_BIRTH_DATA_KEY,
   type EligibilityAnswerSnapshot,
@@ -313,6 +314,7 @@ export class FinancialEligibilityEffectsWithDepsImpl implements FinancialEligibi
     if (session.casePatternDrafts) {
       delete session.casePatternDrafts[caseId];
     }
+    clearControlledWorkAnswers(session, caseId);
     invalidatePreparedEligibilitySnapshot(session, caseId);
     clearEligibilitySubmissionError(session, caseId);
   };

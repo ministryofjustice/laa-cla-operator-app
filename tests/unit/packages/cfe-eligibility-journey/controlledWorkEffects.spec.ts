@@ -1,0 +1,169 @@
+import { expect } from 'chai'
+import type { EffectFunctionContext } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { FinancialEligibilityEffectsRegistry } from '#packages/cfe-eligibility-journey/src/effects.js'
+import '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
+import { CONTROLLED_WORK_DATA_KEYS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
+import { readControlledWorkAnswers } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSession.js'
+import { CONTROLLED_WORK_STEP_CODES as STEPS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
+import { CLIENT_DATE_OF_BIRTH_DATA_KEY } from '#packages/cfe-eligibility-journey/src/clientAge.js'
+import type { Deps } from '#packages/cfe-eligibility-journey/src/api.js'
+import type { FinancialEligibilitySession } from '#packages/cfe-eligibility-journey/src/context.type.js'
+
+const CASE_ID = 'CASE1'
+const ADULT_DOB = '1990-01-01'
+const MINOR_DOB = `${new Date().getFullYear() - 10}-01-01`
+
+const registry = FinancialEligibilityEffectsRegistry.build({} as Deps)
+
+interface FakeContextOptions {
+  session: FinancialEligibilitySession
+  dateOfBirth: string | null
+  posted?: Record<string, unknown>
+  caseId?: string
+}
+
+/**
+ * Builds the subset of the Forge effect context the controlled-work effects use.
+ * @param {FakeContextOptions} options Session, DOB and posted values for the simulated request
+ * @returns {{ context: EffectFunctionContext, answers: Map<string, unknown>, data: Map<string, unknown> }} The context and its state
+ */
+function fakeContext({ session, dateOfBirth, posted = {}, caseId = CASE_ID }: FakeContextOptions) {
+  const answers = new Map<string, unknown>()
+  const data = new Map<string, unknown>([[CLIENT_DATE_OF_BIRTH_DATA_KEY, dateOfBirth]])
+  const context = {
+    getRequestParam: (name: string) => (name === 'caseId' ? caseId : undefined),
+    getSession: () => session,
+    getData: (key: string) => data.get(key),
+    setData: (key: string, value: unknown) => data.set(key, value),
+    setAnswer: (code: string, value: unknown) => answers.set(code, value),
+    clearAnswer: (code: string) => answers.delete(code),
+    getAllPostData: () => posted,
+  } as unknown as EffectFunctionContext
+  return { context, answers, data }
+}
+
+const restore = (session: FinancialEligibilitySession, dateOfBirth: string | null) => {
+  const request = fakeContext({ session, dateOfBirth })
+  registry.RestoreControlledWorkAnswers.evaluate(request.context)
+  return request
+}
+
+const save = (session: FinancialEligibilitySession, dateOfBirth: string | null, stepCode: string, posted: Record<string, unknown>) => {
+  const request = fakeContext({ session, dateOfBirth, posted })
+  registry.SaveControlledWorkAnswers.evaluate(request.context, stepCode)
+  return request
+}
+
+const newSession = (): FinancialEligibilitySession => ({ financialEligibilityDrafts: {} }) as FinancialEligibilitySession
+
+describe('Controlled-work effects', () => {
+  it('saves a posted answer, sets Forge answers and returns the next step', () => {
+    const session = newSession()
+    const { answers, data } = save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({ 'immigration-or-asylum': 'yes' })
+    expect(answers.get('immigration-or-asylum')).to.equal('yes')
+    expect(data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.immigrationOrAsylumType)
+    expect(data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.deep.equal([
+      STEPS.immigrationOrAsylum,
+      STEPS.immigrationOrAsylumType,
+      STEPS.asylumSupport,
+    ])
+    expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.immigrationOrAsylumType)
+  })
+
+  it('only saves the answers that belong to the submitted step', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no', partner: 'yes', unrelated: 'x' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({ 'immigration-or-asylum': 'no' })
+  })
+
+  it('restores saved answers on a later request and when revisiting a page', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+
+    const { answers, data } = restore(session, ADULT_DOB)
+    expect(Object.fromEntries(answers)).to.deep.equal({ 'immigration-or-asylum': 'no', partner: 'yes', passporting: 'no' })
+    expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.employmentStatus)
+  })
+
+  it('removes irrelevant answers when a gate changes, keeps the rest, and persists the result', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylumType, { 'immigration-or-asylum-type': 'asylum' })
+    save(session, ADULT_DOB, STEPS.asylumSupport, { 'asylum-support': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+
+    const { answers } = save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      partner: 'no',
+      passporting: 'yes',
+    })
+    expect(answers.has('immigration-or-asylum-type')).to.equal(false)
+    expect(answers.has('asylum-support')).to.equal(false)
+    expect(answers.get('partner')).to.equal('no')
+  })
+
+  it('ignores an invalid posted value rather than saving it', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'maybe' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({})
+    expect(session.controlledWorkAnswers?.[CASE_ID]).to.deep.equal({})
+  })
+
+  it('uses the DOB-derived age so under-18 clients get the CLR question and adults do not', () => {
+    const minor = save(newSession(), MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    expect(minor.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.under18Clr)
+
+    const adult = save(newSession(), ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    expect(adult.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.applicant)
+  })
+
+  it('prunes saved answers on restore when the DOB changes the route, and persists the pruning', () => {
+    const session = newSession()
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'no' })
+
+    const { answers } = restore(session, ADULT_DOB)
+
+    expect(answers.has('controlled-legal-representation')).to.equal(false)
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({ 'immigration-or-asylum': 'no' })
+  })
+
+  it('invalidates a prepared snapshot when an answer changes', () => {
+    const session = newSession()
+    session.preparedEligibilitySnapshots = { [CASE_ID]: { schemaVersion: 1, caseId: CASE_ID, answers: {} } }
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+
+    expect(session.preparedEligibilitySnapshots?.[CASE_ID]).to.equal(undefined)
+  })
+
+  it('does not touch the existing eligibility drafts, pattern drafts or other cases', () => {
+    const session = newSession()
+    session.financialEligibilityDrafts[CASE_ID] = { 'under-18': 'no' }
+    session.casePatternDrafts = { [CASE_ID]: { properties: { propertySet: [{ value: '1' }] } } }
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    const other = fakeContext({ session, dateOfBirth: ADULT_DOB, caseId: 'CASE2', posted: { 'immigration-or-asylum': 'no' } })
+    registry.SaveControlledWorkAnswers.evaluate(other.context, STEPS.immigrationOrAsylum)
+
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+
+    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ 'under-18': 'no' })
+    expect(session.casePatternDrafts[CASE_ID]).to.deep.equal({ properties: { propertySet: [{ value: '1' }] } })
+    expect(readControlledWorkAnswers(session, 'CASE2')).to.deep.equal({ 'immigration-or-asylum': 'no' })
+  })
+
+  it('does nothing without a case id or session', () => {
+    const session = newSession()
+    const { context, answers } = fakeContext({ session, dateOfBirth: ADULT_DOB, caseId: '' })
+    registry.SaveControlledWorkAnswers.evaluate(context, STEPS.immigrationOrAsylum)
+
+    expect(session.controlledWorkAnswers).to.equal(undefined)
+    expect(answers.size).to.equal(0)
+  })
+})
