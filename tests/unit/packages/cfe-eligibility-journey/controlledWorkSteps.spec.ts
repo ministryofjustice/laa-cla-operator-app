@@ -101,6 +101,46 @@ describe('Controlled-work journey rules', () => {
       expect(getApplicableSteps(support, ADULT)).to.not.include(STEPS.applicant)
     })
 
+    it('requires the first matter answer but suppresses matter details for an exempt under-18 route', () => {
+      const clrExempt: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'yes',
+        'controlled-legal-representation': 'yes',
+        'immigration-or-asylum-type': 'asylum',
+        'asylum-support': 'no',
+      }
+
+      expect(getApplicableSteps(clrExempt, MINOR)).to.deep.equal([
+        STEPS.immigrationOrAsylum,
+        STEPS.under18Clr,
+      ])
+      expect(resolveControlledWorkJourney(clrExempt, MINOR).removedCodes).to.have.members([
+        'immigration-or-asylum-type',
+        'asylum-support',
+      ])
+      expect(isControlledWorkComplete(clrExempt, MINOR)).to.equal(true)
+    })
+
+    it('asks matter details after under-18 screening when the route is means-tested', () => {
+      const meansRoute: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'yes',
+        'controlled-legal-representation': 'no',
+        'aggregated-means': 'yes',
+      }
+
+      expect(getApplicableSteps(meansRoute, MINOR)).to.deep.equal([
+        STEPS.immigrationOrAsylum,
+        STEPS.under18Clr,
+        STEPS.aggregatedMeans,
+        STEPS.howToAggregate,
+        STEPS.immigrationOrAsylumType,
+        STEPS.asylumSupport,
+      ])
+      expect(
+        getApplicableSteps({ ...meansRoute, 'immigration-or-asylum-type': 'asylum', 'asylum-support': 'no' }, MINOR),
+      ).to.include(STEPS.applicant)
+      expect(getNextStep(STEPS.immigrationOrAsylum, meansRoute, MINOR)).to.equal(STEPS.under18Clr)
+    })
+
     it('adds income steps only when means tested and not passported, and partner steps only with a partner', () => {
       const base: ControlledWorkAnswers = { 'immigration-or-asylum': 'no', partner: 'yes', passporting: 'yes' }
       expect(getApplicableSteps(base, ADULT)).to.deep.equal([STEPS.immigrationOrAsylum, STEPS.applicant])
