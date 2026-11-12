@@ -12,7 +12,7 @@ export type FinancialEligibilitySession = Session & {
   financialEligibilityDrafts: Record<string, Record<string, unknown>>; // session-stored draft answers for financial eligibility questions, keyed by caseId
   casePatternDrafts?: Record<string, Record<string, Record<string, unknown[]>>>;  // session-stored draft answers for repeating pattern data in the financial eligibility journey
   discardReturnPaths?: Record<string, string>; // last forge journey page visited before the discard interruption page, keyed by caseId
-  controlledWorkAnswers?: Record<string, ControlledWorkAnswers>; // session-stored controlled-work answers, keyed by caseId and kept separate from the legacy drafts
+  controlledWorkAnswers?: Record<string, ControlledWorkAnswers>; // Legacy controlled-work answers, migrated into financialEligibilityDrafts on write
   preparedEligibilitySnapshots?: Record<string, EligibilityAnswerSnapshot>;
   eligibilitySubmissionErrors?: Record<string, string>;
 }

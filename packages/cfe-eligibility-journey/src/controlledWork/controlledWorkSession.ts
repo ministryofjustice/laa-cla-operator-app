@@ -1,6 +1,8 @@
 import type { FinancialEligibilitySession } from '../context.type.js'
 import { isControlledWorkAnswerCode, isValidControlledWorkAnswer } from './controlledWorkSteps.js'
-import type { ControlledWorkAnswerCode, ControlledWorkAnswers } from './controlledWorkTypes.js'
+import { CONTROLLED_WORK_ANSWER_OPTIONS, type ControlledWorkAnswerCode, type ControlledWorkAnswers } from './controlledWorkTypes.js'
+
+const CONTROLLED_WORK_ANSWER_CODES = Object.keys(CONTROLLED_WORK_ANSWER_OPTIONS) as ControlledWorkAnswerCode[]
 
 /**
  * Keeps only known answer codes holding allowed values; session data is untrusted at this boundary.
@@ -26,7 +28,10 @@ export function sanitiseControlledWorkAnswers(stored: unknown): ControlledWorkAn
  * @returns {ControlledWorkAnswers} A copy of the saved answers, empty when none exist
  */
 export function readControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string): ControlledWorkAnswers {
-  return sanitiseControlledWorkAnswers(session.controlledWorkAnswers?.[caseId])
+  return {
+    ...sanitiseControlledWorkAnswers(session.controlledWorkAnswers?.[caseId]),
+    ...sanitiseControlledWorkAnswers(session.financialEligibilityDrafts?.[caseId]),
+  }
 }
 
 /**
@@ -38,7 +43,13 @@ export function readControlledWorkAnswers(session: FinancialEligibilitySession, 
  * @returns {void}
  */
 export function writeControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string, answers: ControlledWorkAnswers): void {
-  session.controlledWorkAnswers = { ...session.controlledWorkAnswers, [caseId]: { ...answers } }
+  session.financialEligibilityDrafts ??= {}
+  const draft = { ...session.financialEligibilityDrafts[caseId] }
+  for (const code of CONTROLLED_WORK_ANSWER_CODES) delete draft[code]
+  Object.assign(draft, answers)
+  session.financialEligibilityDrafts = { ...session.financialEligibilityDrafts, [caseId]: draft }
+
+  clearLegacyControlledWorkAnswers(session, caseId)
 }
 
 /**
@@ -61,6 +72,15 @@ export function mergeControlledWorkAnswers(
  * @returns {void}
  */
 export function clearControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string): void {
+  if (session.financialEligibilityDrafts?.[caseId]) {
+    const draft = { ...session.financialEligibilityDrafts[caseId] }
+    for (const code of CONTROLLED_WORK_ANSWER_CODES) delete draft[code]
+    session.financialEligibilityDrafts = { ...session.financialEligibilityDrafts, [caseId]: draft }
+  }
+  clearLegacyControlledWorkAnswers(session, caseId)
+}
+
+function clearLegacyControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string): void {
   if (!session.controlledWorkAnswers) return
   const { [caseId]: _removed, ...remaining } = session.controlledWorkAnswers
   session.controlledWorkAnswers = remaining

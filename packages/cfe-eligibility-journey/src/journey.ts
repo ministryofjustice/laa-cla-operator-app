@@ -27,6 +27,7 @@ import { submissionReadyStep } from './submissionReadyPage/submissionReadyStep.j
 import { ControlledWorkEffects } from './controlledWork/controlledWorkEffects.js'
 import { controlledWorkIncompleteStep } from './controlledWork/controlledWorkIncompleteStep.js'
 import { immigrationOrAsylumStep } from './immigrationOrAsylumPage/immigrationOrAsylumStep.js'
+import { under18ClrStep } from './under18ClrPage/under18ClrStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -49,6 +50,7 @@ export const eligibilityJourney = journey({
   steps: [
     immigrationOrAsylumStep,
     controlledWorkIncompleteStep,
+    under18ClrStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,
