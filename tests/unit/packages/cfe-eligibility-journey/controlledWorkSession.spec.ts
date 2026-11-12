@@ -19,6 +19,10 @@ describe('Controlled-work session storage', () => {
     writeControlledWorkAnswers(session, CASE_ID, { 'immigration-or-asylum': 'yes', 'immigration-or-asylum-type': 'asylum' })
 
     const reloaded = JSON.parse(JSON.stringify(session)) as FinancialEligibilitySession
+    expect(reloaded.financialEligibilityDrafts[CASE_ID]).to.deep.equal({
+      'immigration-or-asylum': 'yes',
+      'immigration-or-asylum-type': 'asylum',
+    })
     expect(readControlledWorkAnswers(reloaded, CASE_ID)).to.deep.equal({
       'immigration-or-asylum': 'yes',
       'immigration-or-asylum-type': 'asylum',
@@ -28,11 +32,11 @@ describe('Controlled-work session storage', () => {
   it('reassigns the session property so modification-tracking stores see the change', () => {
     const session = newSession()
     writeControlledWorkAnswers(session, CASE_ID, { partner: 'no' })
-    const first = session.controlledWorkAnswers
+    const first = session.financialEligibilityDrafts
     writeControlledWorkAnswers(session, CASE_ID, { partner: 'yes' })
 
-    expect(session.controlledWorkAnswers).to.not.equal(first)
-    expect(first?.[CASE_ID]).to.deep.equal({ partner: 'no' })
+    expect(session.financialEligibilityDrafts).to.not.equal(first)
+    expect(first[CASE_ID]).to.deep.equal({ partner: 'no' })
   })
 
   it('does not alias the stored answers', () => {
@@ -54,15 +58,26 @@ describe('Controlled-work session storage', () => {
     expect(readControlledWorkAnswers(session, OTHER_CASE_ID)).to.deep.equal({ partner: 'no' })
   })
 
-  it('is separate from the existing eligibility drafts and prepared snapshots', () => {
+  it('preserves unrelated draft answers and clears only controlled-work answers', () => {
     const session = newSession()
     session.financialEligibilityDrafts[CASE_ID] = { 'under-18': 'no' }
     writeControlledWorkAnswers(session, CASE_ID, { partner: 'yes' })
 
-    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ 'under-18': 'no' })
+    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ 'under-18': 'no', partner: 'yes' })
+    expect(session.controlledWorkAnswers).to.equal(undefined)
 
     clearControlledWorkAnswers(session, CASE_ID)
     expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ 'under-18': 'no' })
+  })
+
+  it('reads legacy controlled-work answers and migrates them on write', () => {
+    const session = newSession()
+    session.controlledWorkAnswers = { [CASE_ID]: { partner: 'yes' } }
+
+    writeControlledWorkAnswers(session, CASE_ID, readControlledWorkAnswers(session, CASE_ID))
+
+    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ partner: 'yes' })
+    expect(session.controlledWorkAnswers?.[CASE_ID]).to.equal(undefined)
   })
 
   it('clears one case without touching another', () => {

@@ -113,7 +113,7 @@ describe('Controlled-work effects', () => {
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'maybe' })
 
     expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({})
-    expect(session.controlledWorkAnswers?.[CASE_ID]).to.deep.equal({})
+    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({})
   })
 
   it('uses the DOB-derived age so under-18 clients get the CLR question and adults do not', () => {
@@ -122,6 +122,30 @@ describe('Controlled-work effects', () => {
 
     const adult = save(newSession(), ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
     expect(adult.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.applicant)
+  })
+
+  it('persists and restores CLR, and prunes screening answers when CLR changes to yes', () => {
+    const session = newSession()
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    const clrNo = save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'no' })
+
+    expect(clrNo.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.aggregatedMeans)
+    save(session, MINOR_DOB, STEPS.aggregatedMeans, { 'aggregated-means': 'no' })
+    save(session, MINOR_DOB, STEPS.regularIncome, { 'regular-income': 'no' })
+    save(session, MINOR_DOB, STEPS.under18Assets, { 'under-18-assets': 'no' })
+
+    const clrYes = save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      'controlled-legal-representation': 'yes',
+    })
+    expect(clrYes.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal('')
+
+    const restored = restore(session, MINOR_DOB)
+    expect(restored.answers.get('controlled-legal-representation')).to.equal('yes')
+    expect(restored.answers.has('aggregated-means')).to.equal(false)
+    expect(restored.answers.has('regular-income')).to.equal(false)
+    expect(restored.answers.has('under-18-assets')).to.equal(false)
   })
 
   it('prunes saved answers on restore when the DOB changes the route, and persists the pruning', () => {
@@ -143,7 +167,7 @@ describe('Controlled-work effects', () => {
     expect(session.preparedEligibilitySnapshots?.[CASE_ID]).to.equal(undefined)
   })
 
-  it('does not touch the existing eligibility drafts, pattern drafts or other cases', () => {
+  it('preserves unrelated drafts and repeating data while keeping controlled answers case-scoped', () => {
     const session = newSession()
     session.financialEligibilityDrafts[CASE_ID] = { 'under-18': 'no' }
     session.casePatternDrafts = { [CASE_ID]: { properties: { propertySet: [{ value: '1' }] } } }
@@ -153,7 +177,7 @@ describe('Controlled-work effects', () => {
 
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
 
-    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ 'under-18': 'no' })
+    expect(session.financialEligibilityDrafts[CASE_ID]).to.deep.equal({ 'under-18': 'no', 'immigration-or-asylum': 'no' })
     expect(session.casePatternDrafts[CASE_ID]).to.deep.equal({ properties: { propertySet: [{ value: '1' }] } })
     expect(readControlledWorkAnswers(session, 'CASE2')).to.deep.equal({ 'immigration-or-asylum': 'no' })
   })
@@ -163,7 +187,7 @@ describe('Controlled-work effects', () => {
     const { context, answers } = fakeContext({ session, dateOfBirth: ADULT_DOB, caseId: '' })
     registry.SaveControlledWorkAnswers.evaluate(context, STEPS.immigrationOrAsylum)
 
-    expect(session.controlledWorkAnswers).to.equal(undefined)
+    expect(session.financialEligibilityDrafts[CASE_ID]).to.equal(undefined)
     expect(answers.size).to.equal(0)
   })
 })
