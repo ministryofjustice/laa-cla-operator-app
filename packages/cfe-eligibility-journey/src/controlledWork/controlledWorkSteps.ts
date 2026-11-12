@@ -40,11 +40,6 @@ export function deriveControlledWorkContext(dateOfBirth: unknown, now: Date): Co
   return age === null ? {} : { isUnder18: age < ADULT_AGE }
 }
 
-function isMatterResolved({ answers }: RoutingState): boolean {
-  if (answers['immigration-or-asylum'] === NO) return true
-  return answers['immigration-or-asylum'] === YES && answers['asylum-support'] !== undefined
-}
-
 function resolveUnder18Route({ answers }: RoutingState): AssessmentRoute {
   const { 'controlled-legal-representation': clr, 'aggregated-means': aggregated } = answers
   if (clr === YES) return ASSESSMENT_ROUTES.exempt
@@ -58,15 +53,45 @@ function resolveUnder18Route({ answers }: RoutingState): AssessmentRoute {
 }
 
 /**
+ * Determines whether the CCQ matter-type and asylum-support questions apply.
+ * @param {RoutingState} state The current answers and DOB-derived context
+ * @returns {boolean} True when matter details must be collected
+ */
+function shouldAskMatterDetails({ answers, context }: RoutingState): boolean {
+  if (answers['immigration-or-asylum'] !== YES) return false
+  return context.isUnder18 !== true || resolveUnder18Route({ answers, context }) === ASSESSMENT_ROUTES.means
+}
+
+/**
+ * Resolves the additional route decision made by the matter-type and asylum-support answers.
+ * @param {RoutingState} state The current answers and DOB-derived context
+ * @returns {AssessmentRoute | undefined} A known route, or undefined when those answers do not change it
+ */
+function resolveMatterRoute(state: RoutingState): AssessmentRoute | undefined {
+  if (!shouldAskMatterDetails(state)) return undefined
+  const { answers } = state
+  if (answers['immigration-or-asylum-type'] === undefined || answers['asylum-support'] === undefined) {
+    return ASSESSMENT_ROUTES.undetermined
+  }
+  return answers['asylum-support'] === YES ? ASSESSMENT_ROUTES.exempt : undefined
+}
+
+/**
  * Classifies the assessment as means-tested, exempt, or not yet determinable from the answers so far.
  * @param {RoutingState} state The answers collected by earlier steps and the derived context
  * @returns {AssessmentRoute} The assessment route
  */
 function resolveRoute(state: RoutingState): AssessmentRoute {
   const { answers, context } = state
-  if (context.isUnder18 === undefined || !isMatterResolved(state)) return ASSESSMENT_ROUTES.undetermined
-  if (answers['asylum-support'] === YES) return ASSESSMENT_ROUTES.exempt
-  return context.isUnder18 ? resolveUnder18Route(state) : ASSESSMENT_ROUTES.means
+  if (context.isUnder18 === undefined || answers['immigration-or-asylum'] === undefined) {
+    return ASSESSMENT_ROUTES.undetermined
+  }
+
+  const under18Route = context.isUnder18 ? resolveUnder18Route(state) : undefined
+  if (under18Route === ASSESSMENT_ROUTES.undetermined || under18Route === ASSESSMENT_ROUTES.exempt) return under18Route
+  const matterRoute = resolveMatterRoute(state)
+  if (matterRoute !== undefined) return matterRoute
+  return under18Route ?? ASSESSMENT_ROUTES.means
 }
 
 function isMeansTestedWithoutPassporting(state: RoutingState): boolean {
@@ -108,12 +133,12 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
   {
     code: STEPS.immigrationOrAsylumType,
     answerCodes: ['immigration-or-asylum-type'],
-    isApplicable: ({ answers }) => answers['immigration-or-asylum'] === YES,
+    isApplicable: shouldAskMatterDetails,
   },
   {
     code: STEPS.asylumSupport,
     answerCodes: ['asylum-support'],
-    isApplicable: ({ answers }) => answers['immigration-or-asylum'] === YES,
+    isApplicable: shouldAskMatterDetails,
   },
   {
     code: STEPS.applicant,

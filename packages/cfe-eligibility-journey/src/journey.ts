@@ -25,6 +25,8 @@ import { partnerDependantsStep } from './partnerDependantsPage/partnerDependants
 import { discardStep } from './discardChangesPage/discardChangesStep.js'
 import { submissionReadyStep } from './submissionReadyPage/submissionReadyStep.js'
 import { ControlledWorkEffects } from './controlledWork/controlledWorkEffects.js'
+import { controlledWorkIncompleteStep } from './controlledWork/controlledWorkIncompleteStep.js'
+import { immigrationOrAsylumStep } from './immigrationOrAsylumPage/immigrationOrAsylumStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -45,6 +47,8 @@ export const eligibilityJourney = journey({
   ],
   view: { template: 'case_details/forge_forms/cfe-eligibility-form' },
   steps: [
+    immigrationOrAsylumStep,
+    controlledWorkIncompleteStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,
