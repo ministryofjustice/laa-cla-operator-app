@@ -28,6 +28,7 @@ import { ControlledWorkEffects } from './controlledWork/controlledWorkEffects.js
 import { controlledWorkIncompleteStep } from './controlledWork/controlledWorkIncompleteStep.js'
 import { immigrationOrAsylumStep } from './immigrationOrAsylumPage/immigrationOrAsylumStep.js'
 import { under18ClrStep } from './under18ClrPage/under18ClrStep.js'
+import { aggregatedMeansStep } from './aggregatedMeansPage/aggregatedMeansStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -51,6 +52,7 @@ export const eligibilityJourney = journey({
     immigrationOrAsylumStep,
     controlledWorkIncompleteStep,
     under18ClrStep,
+    aggregatedMeansStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,
