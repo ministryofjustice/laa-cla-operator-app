@@ -1,9 +1,13 @@
 import { expect } from 'chai'
 import { eligibilityJourney } from '#packages/cfe-eligibility-journey/src/journey.js'
 import { controlledWorkIncompleteStep } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkIncompleteStep.js'
+import { eligibilityQuestionPageLayout } from '#packages/cfe-eligibility-journey/src/eligibilityQuestionPageLayout.js'
 import { CONTROLLED_WORK_STEP_CODES } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
 import { isValidControlledWorkAnswer } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSteps.js'
-import { controlledWorkGuidanceLink, immigrationOrAsylumField } from '#packages/cfe-eligibility-journey/src/immigrationOrAsylumPage/immigrationOrAsylumBlock.js'
+import {
+  immigrationOrAsylumField,
+  immigrationOrAsylumPageContent,
+} from '#packages/cfe-eligibility-journey/src/immigrationOrAsylumPage/immigrationOrAsylumBlock.js'
 import { immigrationOrAsylumStep } from '#packages/cfe-eligibility-journey/src/immigrationOrAsylumPage/immigrationOrAsylumStep.js'
 
 describe('Immigration or asylum page', () => {
@@ -15,6 +19,7 @@ describe('Immigration or asylum page', () => {
 
   it('renders the exact required Yes/No question and rejects values outside the answer set', () => {
     expect(immigrationOrAsylumField.fieldset?.legend?.text).to.equal('Is this an immigration or asylum matter?')
+    expect(immigrationOrAsylumField.fieldset?.legend?.classes).to.equal('govuk-visually-hidden')
     expect(immigrationOrAsylumField.items).to.deep.equal([
       { value: 'yes', text: 'Yes' },
       { value: 'no', text: 'No' },
@@ -27,14 +32,25 @@ describe('Immigration or asylum page', () => {
     for (const invalid of ['', 'true', 'false', 'maybe', true, false]) {
       expect(isValidControlledWorkAnswer('immigration-or-asylum', invalid)).to.equal(false)
     }
-    expect(JSON.stringify(immigrationOrAsylumStep.blocks)).to.include('"text":"Save and continue"')
+    expect(immigrationOrAsylumStep.view?.template).to.equal('case_details/forge_forms/eligibility-question-form')
   })
 
-  it('includes the CCQ controlled-work guidance link', () => {
-    expect(controlledWorkGuidanceLink.content).to.equal('Controlled work (PDF, 599KB)')
-    expect(JSON.stringify(controlledWorkGuidanceLink.attributes)).to.include(
+  it('places the question, submit button and Guidance panel in responsive left and right columns', () => {
+    const layout = JSON.stringify(immigrationOrAsylumPageContent)
+    const sharedLayout = JSON.stringify(
+      eligibilityQuestionPageLayout({ questionBlocks: [], guidanceBlocks: [] }),
+    )
+    expect(layout).to.include('"width":"two-thirds"')
+    expect(layout).to.include('"width":"one-third"')
+    expect(layout).to.include('"text":"Is this an immigration or asylum matter?"')
+    expect(layout).to.include('"text":"Save and continue"')
+    expect(layout).to.include('"text":"Guidance"')
+    expect(layout).to.include('"content":"Controlled work (PDF, 599KB)"')
+    expect(layout).to.include(
       'https://assets.publishing.service.gov.uk/media/684ff44229fb1002010c4e6c/LC_s_guidance_on_determining_financial_eligibility__controlled_and_mediation_.pdf',
     )
+    expect(sharedLayout).to.include('"text":"Save and continue"')
+    expect(sharedLayout).to.include('"text":"Guidance"')
   })
 
   it('saves the answer before displaying a boundary that states the assessment is incomplete', () => {
