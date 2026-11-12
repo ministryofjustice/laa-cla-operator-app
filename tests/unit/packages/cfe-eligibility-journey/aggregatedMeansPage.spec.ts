@@ -83,6 +83,7 @@ describe('Aggregated means page', () => {
 
     expect(submission).to.include('SaveControlledWorkAnswers')
     expect(submission).to.include('validate')
+    expect(submission).to.include(STEPS.howToAggregate)
     expect(submission).to.include('controlled-work-incomplete')
     expect(JSON.stringify(controlledWorkIncompleteStep.onAccess)).to.include(STEPS.aggregatedMeans)
   })

@@ -51,13 +51,14 @@ Create your local config file `.env` from the template file:
 cp .env.example .env
 ```
 
-#### Align to the Node Version specified for this project
+#### Use the Node version specified for this project
 
-If using Node Version Manager (nvm), use the following command to switch to the correct version:
+From the repository root, install and activate the version pinned in `.nvmrc`:
 
 ```shell
-nvm use
 nvm install
+nvm use
+node --version
 ```
 
 #### Install dependencies and run application for development
@@ -117,10 +118,11 @@ yarn start
 
 ##### Node Version Manager
 
-You may have to tell your local machine to use the latest version of node already installed on your device, before installing and running the application. Use the following command.
+Before installing and running the application, use the Node version pinned in `.nvmrc`:
 
 ```shell
-nvm install node
+nvm install
+nvm use
 ```
 
 ##### Running locally with docker

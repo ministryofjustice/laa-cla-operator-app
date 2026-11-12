@@ -178,6 +178,23 @@ describe('Controlled-work effects', () => {
     expect(restored.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.not.include(STEPS.regularIncome)
   })
 
+  it('continues past the informational aggregation page without storing an answer', () => {
+    const session = newSession()
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'no' })
+    save(session, MINOR_DOB, STEPS.aggregatedMeans, { 'aggregated-means': 'yes' })
+
+    const continued = save(session, MINOR_DOB, STEPS.howToAggregate, {})
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      'controlled-legal-representation': 'no',
+      'aggregated-means': 'yes',
+    })
+    expect(continued.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.applicant)
+    expect(restore(session, MINOR_DOB).answers.get('aggregated-means')).to.equal('yes')
+  })
+
   it('prunes saved answers on restore when the DOB changes the route, and persists the pruning', () => {
     const session = newSession()
     save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
