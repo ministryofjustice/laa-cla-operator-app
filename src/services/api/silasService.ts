@@ -17,7 +17,7 @@ import config from "#config.js";
 import {
   EMPTY_LENGTH,
   ZERO,
-  ALLOWED_LAA_ACCOUNTS,
+  ALLOWED_FIRM_CODE,
   INTERNAL_USERS,
 } from "#src/constants.js";
 import jsonwebtoken, {
@@ -304,51 +304,38 @@ export class SilasService {
     }
     const payload: jsonwebtoken.JwtPayload = verified;
 
-    /**
-     * Flattens a claim into a list of non-empty strings.
-     * Accepts scalars or nested arrays; drops null, undefined, objects,
-     * empty strings and NaN. Booleans become "1" / "0".
-     *
-     * @param {unknown} value Raw claim value from the token payload.
-     * @returns {string[]} Normalised claim values as strings.
-     */
-    const normalise = (value: unknown): string[] =>
-      [value]
-        .flat(Infinity)
-        .filter(
-          (x): x is string | number | bigint | boolean =>
-            ["string", "number", "bigint", "boolean"].includes(typeof x) &&
-            x !== "" &&
-            !(typeof x === "number" && Number.isNaN(x)),
-        )
-        .map((x) => (typeof x === "boolean" ? String(+x) : String(x)));
+  /**
+   * Normalizes a value for case-insensitive comparison.
+   * @param {unknown} value - The value to normalize. Non-string values are treated as empty.
+   * @returns {string} The trimmed, upper-cased string, or an empty string if the value is not a string.
+   */
+  const normalize = (value: unknown): string =>
+    typeof value === "string" ? value.trim().toUpperCase() : "";
 
-    // Check 1: every LAA account (if any) is in the allowed list
-    const laaAccounts = normalise(payload.LAA_ACCOUNTS);
-    const allowedSet = ALLOWED_LAA_ACCOUNTS.map((code) => code.toUpperCase());
+  const allowedFirmCodes = new Set(ALLOWED_FIRM_CODE.map(normalize));
+  const internalRoles = new Set(INTERNAL_USERS.map(normalize));
 
-    const atLeastOneAllowed = laaAccounts.some((account) =>
-      allowedSet.includes(account.toUpperCase()),
-    );
+  const firmCode = normalize(payload.FIRM_CODE);
 
-    if (atLeastOneAllowed) {
-      return;
-    }
+  if (firmCode !== "" && allowedFirmCodes.has(firmCode)) {
+    return;
+  }
 
-    // Check 2: user has an internal role
-    const appRoles = normalise(payload.APP_ROLES);
-    const isInternalUser = appRoles.some((role) =>
-      INTERNAL_USERS.includes(role),
-    );
+  const appRoles: unknown[] = Array.isArray(payload.APP_ROLES)
+    ? payload.APP_ROLES
+    : [];
+  const isInternalUser = appRoles.some((role) =>
+    internalRoles.has(normalize(role)),
+  );
 
-    if (isInternalUser) {
-      return;
-    }
+  if (isInternalUser) {
+    return;
+  }
 
-    // Neither check passed
-    throw new Error(
-      "Access denied: LAA accounts are not allowed and user is not an internal user",
-    );
+  throw new Error(
+    "Access denied: invalid or missing firm code, and user is not an internal user",
+  );
+      
   }
   /**
    * Get key id used in a given access token.
