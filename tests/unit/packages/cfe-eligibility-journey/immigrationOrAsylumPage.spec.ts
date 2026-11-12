@@ -3,6 +3,7 @@ import { eligibilityJourney } from '#packages/cfe-eligibility-journey/src/journe
 import { controlledWorkIncompleteStep } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkIncompleteStep.js'
 import { eligibilityQuestionPageLayout } from '#packages/cfe-eligibility-journey/src/eligibilityQuestionPageLayout.js'
 import { CONTROLLED_WORK_STEP_CODES } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
+import { CONTROLLED_WORK_DATA_KEYS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
 import { isValidControlledWorkAnswer } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSteps.js'
 import {
   immigrationOrAsylumField,
@@ -53,10 +54,12 @@ describe('Immigration or asylum page', () => {
     expect(sharedLayout).to.include('"text":"Guidance"')
   })
 
-  it('saves the answer before displaying a boundary that states the assessment is incomplete', () => {
+  it('continues to under-18 CLR when applicable and otherwise keeps unimplemented routes incomplete', () => {
     const submission = JSON.stringify(immigrationOrAsylumStep.onSubmission)
     expect(immigrationOrAsylumStep.onSubmission).to.have.length(1)
     expect(submission).to.include('SaveControlledWorkAnswers')
+    expect(submission).to.include(CONTROLLED_WORK_DATA_KEYS.nextStep)
+    expect(submission).to.include(CONTROLLED_WORK_STEP_CODES.under18Clr)
     expect(submission).to.include('controlled-work-incomplete')
     expect(controlledWorkIncompleteStep.code).to.equal('controlled-work-incomplete')
     const boundaryBlocks = JSON.stringify(controlledWorkIncompleteStep.blocks)
