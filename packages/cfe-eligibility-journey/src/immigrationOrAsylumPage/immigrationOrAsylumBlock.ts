@@ -1,15 +1,22 @@
 import { Condition, Self, validation } from '@ministryofjustice/hmpps-forge/core/authoring'
-import { GovUKButton, GovUKRadioInput, GovUKUtilityClasses } from '@ministryofjustice/hmpps-forge/govuk-components'
+import { GovUKHeading, GovUKRadioInput, GovUKUtilityClasses } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { HtmlBlock } from '@ministryofjustice/hmpps-forge/core/components'
+import { eligibilityQuestionPageLayout } from '../eligibilityQuestionPageLayout.js'
 
-export const immigrationOrAsylumSubmitButton = GovUKButton({ text: 'Save and continue' })
+const QUESTION = 'Is this an immigration or asylum matter?'
+
+const immigrationOrAsylumHeading = GovUKHeading({
+  text: QUESTION,
+  size: 'l',
+  level: 2, // eslint-disable-line @typescript-eslint/no-magic-numbers -- The user requested an H2 question heading.
+})
 
 export const immigrationOrAsylumField = GovUKRadioInput({
   code: 'immigration-or-asylum',
   fieldset: {
     legend: {
-      text: 'Is this an immigration or asylum matter?',
-      isPageHeading: true,
+      text: QUESTION,
+      classes: 'govuk-visually-hidden',
     },
   },
   classes: GovUKUtilityClasses.Radios.Inline,
@@ -25,7 +32,7 @@ export const immigrationOrAsylumField = GovUKRadioInput({
   ],
 })
 
-export const controlledWorkGuidanceLink = HtmlBlock({
+const controlledWorkGuidanceLink = HtmlBlock({
   tag: 'a',
   classes: 'govuk-link',
   attributes: {
@@ -36,4 +43,9 @@ export const controlledWorkGuidanceLink = HtmlBlock({
     rel: ['noreferrer noopener'],
   },
   content: 'Controlled work (PDF, 599KB)',
+})
+
+export const immigrationOrAsylumPageContent = eligibilityQuestionPageLayout({
+  questionBlocks: [immigrationOrAsylumHeading, immigrationOrAsylumField],
+  guidanceBlocks: [controlledWorkGuidanceLink],
 })

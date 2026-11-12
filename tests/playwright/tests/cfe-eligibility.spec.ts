@@ -62,6 +62,48 @@ async function continueJourney(page: Page): Promise<void> {
 }
 
 test.describe("Client details eligibility entry", () => {
+  test("opens the matter question with the question left and guidance right", async ({
+    page,
+    checkAccessibility,
+  }) => {
+    await startFromDetails(page, "EL-MATTER-PAGE");
+    await expect(page).toHaveURL(
+      `${journeyPath("EL-MATTER-PAGE")}/immigration-or-asylum`,
+    );
+
+    const question = page
+      .locator("h2")
+      .filter({ hasText: "Is this an immigration or asylum matter?" });
+    const guidance = page.locator("h2").filter({ hasText: "Guidance" });
+    const leftColumn = page.locator(".govuk-grid-column-two-thirds");
+    const rightColumn = page.locator(".govuk-grid-column-one-third");
+
+    await expect(question).toBeVisible();
+    await expect(guidance).toBeVisible();
+    await expect(
+      leftColumn.getByRole("radio", { name: "Yes", exact: true }),
+    ).toBeVisible();
+    await expect(
+      rightColumn.getByRole("link", { name: "Controlled work (PDF, 599KB)" }),
+    ).toHaveAttribute(
+      "href",
+      "https://assets.publishing.service.gov.uk/media/684ff44229fb1002010c4e6c/LC_s_guidance_on_determining_financial_eligibility__controlled_and_mediation_.pdf",
+    );
+
+    const submitButton = leftColumn.getByRole("button", {
+      name: "Save and continue",
+    });
+    await expect(submitButton).toBeVisible();
+    const questionBottom = await page
+      .locator("#immigration-or-asylum")
+      .evaluate((element) => element.getBoundingClientRect().bottom);
+    const buttonTop = await submitButton.evaluate(
+      (element) => element.getBoundingClientRect().top,
+    );
+    expect(buttonTop).toBeGreaterThan(questionBottom);
+    await checkAccessibility();
+  });
+
   test("validates details before starting eligibility", async ({ page }) => {
     const path = detailsPath("EL-INVALID");
     await login(page, path);
