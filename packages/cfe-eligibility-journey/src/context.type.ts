@@ -1,6 +1,7 @@
 import type { EffectFunctionContext } from '@ministryofjustice/hmpps-forge/core/authoring'
 import type { Session } from 'express-session'
 import type { EligibilityAnswerSnapshot } from './answerSnapshot.js'
+import type { ControlledWorkAnswers } from './controlledWork/controlledWorkTypes.js'
 
 /**
  * Define what needs to be stored in the session for the financial eligibility
@@ -11,6 +12,7 @@ export type FinancialEligibilitySession = Session & {
   financialEligibilityDrafts: Record<string, Record<string, unknown>>; // session-stored draft answers for financial eligibility questions, keyed by caseId
   casePatternDrafts?: Record<string, Record<string, Record<string, unknown[]>>>;  // session-stored draft answers for repeating pattern data in the financial eligibility journey
   discardReturnPaths?: Record<string, string>; // last forge journey page visited before the discard interruption page, keyed by caseId
+  controlledWorkAnswers?: Record<string, ControlledWorkAnswers>; // session-stored controlled-work answers, keyed by caseId and kept separate from the legacy drafts
   preparedEligibilitySnapshots?: Record<string, EligibilityAnswerSnapshot>;
   eligibilitySubmissionErrors?: Record<string, string>;
 }
