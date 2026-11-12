@@ -1,11 +1,15 @@
-import { access, Condition, Data, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { access, Condition, Data, Post, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { step, type StepDefinition } from '../authoring.js'
 import { ControlledWorkEffects, CONTROLLED_WORK_DATA_KEYS } from '../controlledWork/controlledWorkEffects.js'
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWorkIncompleteStep.js'
 import { under18ClrPageContent } from './under18ClrBlock.js'
 
-const STEP_CODE = CONTROLLED_WORK_STEP_CODES.under18Clr
+const {
+  under18Clr: STEP_CODE,
+  immigrationOrAsylum: IMMIGRATION_OR_ASYLUM_STEP_CODE,
+  aggregatedMeans: AGGREGATED_MEANS_STEP_CODE,
+} = CONTROLLED_WORK_STEP_CODES
 
 export const under18ClrStep: StepDefinition = step({
   code: STEP_CODE,
@@ -21,7 +25,7 @@ export const under18ClrStep: StepDefinition = step({
       next: [
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
-            Condition.Equals(CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum),
+            Condition.Equals(IMMIGRATION_OR_ASYLUM_STEP_CODE),
           ),
           goto: controlledWorkIncompleteStepCode,
         }),
@@ -33,7 +37,13 @@ export const under18ClrStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Post('controlled-legal-representation').match(Condition.Equals('no')),
+            goto: AGGREGATED_MEANS_STEP_CODE,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

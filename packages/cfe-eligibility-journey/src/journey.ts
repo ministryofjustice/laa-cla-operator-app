@@ -30,6 +30,7 @@ import { immigrationOrAsylumStep } from './immigrationOrAsylumPage/immigrationOr
 import { under18ClrStep } from './under18ClrPage/under18ClrStep.js'
 import { aggregatedMeansStep } from './aggregatedMeansPage/aggregatedMeansStep.js'
 import { howToAggregateStep } from './howToAggregatePage/howToAggregateStep.js'
+import { regularIncomeStep } from './regularIncomePage/regularIncomeStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -55,6 +56,7 @@ export const eligibilityJourney = journey({
     under18ClrStep,
     aggregatedMeansStep,
     howToAggregateStep,
+    regularIncomeStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,

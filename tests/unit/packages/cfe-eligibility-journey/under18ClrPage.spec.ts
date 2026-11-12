@@ -61,6 +61,7 @@ describe('Under-18 CLR page', () => {
     expect(access).to.include('controlled-work-incomplete')
     expect(submission).to.include('SaveControlledWorkAnswers')
     expect(submission).to.include('controlled-work-incomplete')
+    expect(submission).to.include(CONTROLLED_WORK_STEP_CODES.aggregatedMeans)
     expect(boundary).to.include(CONTROLLED_WORK_STEP_CODES.under18Clr)
   })
 })
