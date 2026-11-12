@@ -104,6 +104,33 @@ test.describe("Client details eligibility entry", () => {
     await checkAccessibility();
   });
 
+  test("requires a matter answer, saves it, and continues to under-18 CLR when applicable", async ({
+    page,
+  }) => {
+    const caseId = "EL-MATTER-BRANCH";
+    await startFromDetails(page, caseId, String(new Date().getFullYear() - 10));
+
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(
+      `${journeyPath(caseId)}/immigration-or-asylum`,
+    );
+    await expect(page.locator(".govuk-error-summary")).toContainText(
+      "Select yes if this is an immigration or asylum matter",
+    );
+
+    await page.getByRole("radio", { name: "Yes", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${journeyPath(caseId)}/under-18-clr`);
+
+    await page.goto(`${journeyPath(caseId)}/immigration-or-asylum`);
+    await expect(
+      page.getByRole("radio", { name: "Yes", exact: true }),
+    ).toBeChecked();
+    await page.getByRole("radio", { name: "No", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${journeyPath(caseId)}/under-18-clr`);
+  });
+
   test("validates details before starting eligibility", async ({ page }) => {
     const path = detailsPath("EL-INVALID");
     await login(page, path);
