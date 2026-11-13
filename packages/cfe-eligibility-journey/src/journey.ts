@@ -35,6 +35,7 @@ import { underEighteenAssetsStep } from './underEighteenAssetsPage/underEighteen
 import { immigrationOrAsylumTypeStep } from './immigrationOrAsylumTypePage/immigrationOrAsylumTypeStep.js'
 import { asylumSupportStep } from './asylumSupportPage/asylumSupportStep.js'
 import { applicantStep } from './applicantPage/applicantStep.js'
+import { dependantDetailsStep } from './dependantDetailsPage/dependantDetailsStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -65,6 +66,7 @@ export const eligibilityJourney = journey({
     immigrationOrAsylumTypeStep,
     asylumSupportStep,
     applicantStep,
+    dependantDetailsStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,

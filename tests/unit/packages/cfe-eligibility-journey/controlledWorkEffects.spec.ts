@@ -86,7 +86,7 @@ describe('Controlled-work effects', () => {
 
     const { answers, data } = restore(session, ADULT_DOB)
     expect(Object.fromEntries(answers)).to.deep.equal({ 'immigration-or-asylum': 'no', partner: 'yes', passporting: 'no' })
-    expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.employmentStatus)
+    expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.dependantDetails)
   })
 
   it('preserves client answers and clears only partner answers when the partner answer changes to no', () => {
@@ -127,7 +127,64 @@ describe('Controlled-work effects', () => {
     const notPassported = save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
     expect(notPassported.answers.get('partner')).to.equal('yes')
     expect(notPassported.answers.has('employment-status')).to.equal(false)
-    expect(notPassported.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.employmentStatus)
+    expect(notPassported.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.dependantDetails)
+  })
+
+  it('persists and prepopulates dependant answers, routes by selection, and removes a count when its answer changes to no', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+
+    const childSelected = save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'yes',
+      'child-dependants-count': '2',
+      'adult-dependants': 'no',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      partner: 'no',
+      passporting: 'no',
+      'child-dependants': 'yes',
+      'child-dependants-count': '2',
+      'adult-dependants': 'no',
+    })
+    expect(childSelected.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.dependantIncome)
+
+    const revisited = restore(session, ADULT_DOB)
+    expect(revisited.answers.get('child-dependants')).to.equal('yes')
+    expect(revisited.answers.get('child-dependants-count')).to.equal('2')
+
+    const changedToNo = save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      partner: 'no',
+      passporting: 'no',
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+    expect(changedToNo.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.employmentStatus)
+  })
+
+  it('removes dependant answers when passporting makes the page inapplicable', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'yes',
+      'child-dependants-count': '3',
+      'adult-dependants': 'no',
+    })
+
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      partner: 'no',
+      passporting: 'yes',
+    })
   })
 
   it('persists and prepopulates the selected immigration matter type when revisiting', () => {

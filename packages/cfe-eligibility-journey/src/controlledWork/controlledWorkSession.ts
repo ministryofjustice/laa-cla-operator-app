@@ -1,8 +1,12 @@
 import type { FinancialEligibilitySession } from '../context.type.js'
 import { isControlledWorkAnswerCode, isValidControlledWorkAnswer } from './controlledWorkSteps.js'
-import { CONTROLLED_WORK_ANSWER_OPTIONS, type ControlledWorkAnswerCode, type ControlledWorkAnswers } from './controlledWorkTypes.js'
+import {
+  CONTROLLED_WORK_ANSWER_CODES,
+  type ControlledWorkAnswerCode,
+  type ControlledWorkAnswers,
+} from './controlledWorkTypes.js'
 
-const CONTROLLED_WORK_ANSWER_CODES = Object.keys(CONTROLLED_WORK_ANSWER_OPTIONS) as ControlledWorkAnswerCode[]
+const CONTROLLED_WORK_ANSWER_CODE_LIST: ControlledWorkAnswerCode[] = [...CONTROLLED_WORK_ANSWER_CODES]
 
 /**
  * Keeps only known answer codes holding allowed values; session data is untrusted at this boundary.
@@ -45,7 +49,7 @@ export function readControlledWorkAnswers(session: FinancialEligibilitySession, 
 export function writeControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string, answers: ControlledWorkAnswers): void {
   session.financialEligibilityDrafts ??= {}
   const draft = { ...session.financialEligibilityDrafts[caseId] }
-  for (const code of CONTROLLED_WORK_ANSWER_CODES) delete draft[code]
+  for (const code of CONTROLLED_WORK_ANSWER_CODE_LIST) delete draft[code]
   Object.assign(draft, answers)
   session.financialEligibilityDrafts = { ...session.financialEligibilityDrafts, [caseId]: draft }
 
@@ -74,7 +78,7 @@ export function mergeControlledWorkAnswers(
 export function clearControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string): void {
   if (session.financialEligibilityDrafts?.[caseId]) {
     const draft = { ...session.financialEligibilityDrafts[caseId] }
-    for (const code of CONTROLLED_WORK_ANSWER_CODES) delete draft[code]
+    for (const code of CONTROLLED_WORK_ANSWER_CODE_LIST) delete draft[code]
     session.financialEligibilityDrafts = { ...session.financialEligibilityDrafts, [caseId]: draft }
   }
   clearLegacyControlledWorkAnswers(session, caseId)

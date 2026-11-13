@@ -4,8 +4,9 @@ export const YES_NO_OPTIONS = [YES, NO] as const
 
 export const MATTER_TYPE_OPTIONS = ['immigration_clr', 'immigration_legal_help', 'asylum'] as const
 export const EMPLOYMENT_STATUS_OPTIONS = ['in_work', 'unemployed'] as const
+export const CONTROLLED_WORK_COUNT_ANSWER_CODES = ['child-dependants-count', 'adult-dependants-count'] as const
 
-/** Every controlled-work answer code, mapped to the exact values it may hold. */
+/** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'immigration-or-asylum': YES_NO_OPTIONS,
   'controlled-legal-representation': YES_NO_OPTIONS,
@@ -16,16 +17,40 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'asylum-support': YES_NO_OPTIONS,
   partner: YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
+  'child-dependants': YES_NO_OPTIONS,
+  'adult-dependants': YES_NO_OPTIONS,
+  'dependants-get-income': YES_NO_OPTIONS,
   'employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
 } as const
 
-export type ControlledWorkAnswerCode = keyof typeof CONTROLLED_WORK_ANSWER_OPTIONS
+type ChoiceAnswerCode = keyof typeof CONTROLLED_WORK_ANSWER_OPTIONS
+export type ControlledWorkCountAnswerCode = (typeof CONTROLLED_WORK_COUNT_ANSWER_CODES)[number]
+export type ControlledWorkAnswerCode = ChoiceAnswerCode | ControlledWorkCountAnswerCode
+export type ControlledWorkCountAnswer = number | string
+
+export const CONTROLLED_WORK_ANSWER_CODES = [
+  'immigration-or-asylum',
+  'controlled-legal-representation',
+  'aggregated-means',
+  'regular-income',
+  'under-18-assets',
+  'immigration-or-asylum-type',
+  'asylum-support',
+  'partner',
+  'passporting',
+  'child-dependants',
+  'adult-dependants',
+  'dependants-get-income',
+  'employment-status',
+  'partner-employment-status',
+  ...CONTROLLED_WORK_COUNT_ANSWER_CODES,
+] as const satisfies readonly ControlledWorkAnswerCode[]
 
 /** Typed controlled-work answers. A missing key means "not answered", which is never treated as "no". */
 export type ControlledWorkAnswers = {
-  [Code in ControlledWorkAnswerCode]?: (typeof CONTROLLED_WORK_ANSWER_OPTIONS)[Code][number]
-}
+  [Code in ChoiceAnswerCode]?: (typeof CONTROLLED_WORK_ANSWER_OPTIONS)[Code][number]
+} & Partial<Record<ControlledWorkCountAnswerCode, ControlledWorkCountAnswer>>
 
 export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylum: 'immigration-or-asylum',
@@ -37,6 +62,8 @@ export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylumType: 'immigration-or-asylum-type',
   asylumSupport: 'asylum-support',
   applicant: 'applicant',
+  dependantDetails: 'dependant-details',
+  dependantIncome: 'dependant-income',
   employmentStatus: 'employment-status',
   partnerEmploymentStatus: 'partner-employment-status',
 } as const

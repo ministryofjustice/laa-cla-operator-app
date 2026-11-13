@@ -148,12 +148,46 @@ describe('Controlled-work journey rules', () => {
       expect(getApplicableSteps({ ...base, passporting: 'no' }, ADULT)).to.deep.equal([
         STEPS.immigrationOrAsylum,
         STEPS.applicant,
+        STEPS.dependantDetails,
         STEPS.employmentStatus,
         STEPS.partnerEmploymentStatus,
       ])
       expect(getApplicableSteps({ ...base, passporting: 'no', partner: 'no' }, ADULT)).to.not.include(
         STEPS.partnerEmploymentStatus,
       )
+    })
+
+    it('adds the dependant-income boundary only when a child or adult dependant is selected', () => {
+      const base = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+      } as const
+      const withChild = {
+        ...base,
+        'child-dependants': 'yes',
+        'child-dependants-count': '2',
+        'adult-dependants': 'no',
+      } as const
+      const withoutDependants = {
+        ...base,
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+      } as const
+      const withAdult = {
+        ...base,
+        'child-dependants': 'no',
+        'adult-dependants': 'yes',
+        'adult-dependants-count': '1',
+      } as const
+
+      expect(getNextStep(STEPS.applicant, base, ADULT)).to.equal(STEPS.dependantDetails)
+      expect(getApplicableSteps(withChild, ADULT)).to.include(STEPS.dependantIncome)
+      expect(getApplicableSteps(withAdult, ADULT)).to.include(STEPS.dependantIncome)
+      expect(getNextStep(STEPS.dependantDetails, withChild, ADULT)).to.equal(STEPS.dependantIncome)
+      expect(getNextStep(STEPS.dependantDetails, withAdult, ADULT)).to.equal(STEPS.dependantIncome)
+      expect(getApplicableSteps(withoutDependants, ADULT)).to.not.include(STEPS.dependantIncome)
+      expect(getNextStep(STEPS.dependantDetails, withoutDependants, ADULT)).to.equal(STEPS.employmentStatus)
     })
 
     it('treats an unanswered gate as unanswered, never as no', () => {
@@ -202,7 +236,7 @@ describe('Controlled-work journey rules', () => {
     it('goes back to the previous applicable step so a user can revisit earlier pages', () => {
       const answers: ControlledWorkAnswers = { 'immigration-or-asylum': 'no', partner: 'no', passporting: 'no' }
       expect(getPreviousStep(STEPS.applicant, answers, ADULT)).to.equal(STEPS.immigrationOrAsylum)
-      expect(getPreviousStep(STEPS.employmentStatus, answers, ADULT)).to.equal(STEPS.applicant)
+      expect(getPreviousStep(STEPS.employmentStatus, answers, ADULT)).to.equal(STEPS.dependantDetails)
       expect(getPreviousStep(STEPS.immigrationOrAsylum, answers, ADULT)).to.equal(undefined)
     })
   })
@@ -297,7 +331,10 @@ describe('Controlled-work journey rules', () => {
       const resolved = resolveControlledWorkJourney({ 'immigration-or-asylum': 'no', passporting: 'yes', partner: 'no' }, ADULT)
       const flipped = resolveControlledWorkJourney({ ...resolved.answers, passporting: 'no' }, ADULT)
       expect(flipped.answers['employment-status']).to.equal(undefined)
-      expect(findMissingSteps(flipped.answers, ADULT).map((step) => step.stepCode)).to.deep.equal([STEPS.employmentStatus])
+      expect(findMissingSteps(flipped.answers, ADULT).map((step) => step.stepCode)).to.deep.equal([
+        STEPS.dependantDetails,
+        STEPS.employmentStatus,
+      ])
     })
   })
 
@@ -316,6 +353,46 @@ describe('Controlled-work journey rules', () => {
       expect(findMissingSteps({ 'immigration-or-asylum': 'no', partner: 'yes' }, ADULT)).to.deep.equal([
         { stepCode: STEPS.applicant, answerCodes: ['passporting'] },
       ])
+    })
+
+    it('requires a dependant count only when the corresponding answer is yes', () => {
+      const childCountMissing: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'yes',
+        'adult-dependants': 'no',
+      }
+      const adultCountMissing: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'yes',
+      }
+
+      expect(findMissingSteps(childCountMissing, ADULT)).to.deep.equal([
+        { stepCode: STEPS.dependantDetails, answerCodes: ['child-dependants-count'] },
+        { stepCode: STEPS.dependantIncome, answerCodes: ['dependants-get-income'] },
+        { stepCode: STEPS.employmentStatus, answerCodes: ['employment-status'] },
+      ])
+      expect(findMissingSteps(adultCountMissing, ADULT)[0]).to.deep.equal({
+        stepCode: STEPS.dependantDetails,
+        answerCodes: ['adult-dependants-count'],
+      })
+    })
+
+    it('does not complete the journey while a subsequent controlled-work page is unavailable', () => {
+      const answers: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+      }
+
+      expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
+      expect(getFirstMissingStep(answers, ADULT)).to.equal(STEPS.employmentStatus)
     })
 
     it('never requires an answer for informational pages', () => {
