@@ -104,6 +104,45 @@ describe('Controlled-work effects', () => {
     expect(revisited.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.asylumSupport)
   })
 
+  it('persists and prepopulates the asylum-support answer when revisiting', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylumType, { 'immigration-or-asylum-type': 'asylum' })
+    const saved = save(session, ADULT_DOB, STEPS.asylumSupport, { 'asylum-support': 'no' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)['asylum-support']).to.equal('no')
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.applicant)
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.applicant)
+
+    const revisited = restore(session, ADULT_DOB)
+    expect(revisited.answers.get('asylum-support')).to.equal('no')
+    expect(revisited.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.applicant)
+  })
+
+  it('removes applicant answers when asylum support changes to yes and requires them again if changed back', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylumType, { 'immigration-or-asylum-type': 'asylum' })
+    save(session, ADULT_DOB, STEPS.asylumSupport, { 'asylum-support': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+
+    const exempt = save(session, ADULT_DOB, STEPS.asylumSupport, { 'asylum-support': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'yes',
+      'immigration-or-asylum-type': 'asylum',
+      'asylum-support': 'yes',
+    })
+    expect(exempt.answers.has('partner')).to.equal(false)
+    expect(exempt.answers.has('passporting')).to.equal(false)
+    expect(exempt.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal('')
+
+    const meansCheck = save(session, ADULT_DOB, STEPS.asylumSupport, { 'asylum-support': 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['asylum-support']).to.equal('no')
+    expect(meansCheck.answers.has('partner')).to.equal(false)
+    expect(meansCheck.answers.has('passporting')).to.equal(false)
+    expect(meansCheck.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.applicant)
+  })
+
   it('removes irrelevant answers when a gate changes, keeps the rest, and persists the result', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })

@@ -76,10 +76,11 @@ describe('Immigration or asylum type page', () => {
     expect(sharedLayout).to.include('"text":"Guidance"')
   })
 
-  it('saves valid answers and keeps the unimplemented asylum-support step at the incomplete boundary', () => {
+  it('saves valid answers and continues to the asylum-support page', () => {
     const submission = JSON.stringify(immigrationOrAsylumTypeStep.onSubmission)
     expect(submission).to.include('SaveControlledWorkAnswers')
     expect(submission).to.include(CONTROLLED_WORK_STEP_CODES.immigrationOrAsylumType)
-    expect(submission).to.include(controlledWorkIncompleteStepCode)
+    expect(submission).to.include(CONTROLLED_WORK_STEP_CODES.asylumSupport)
+    expect(submission).not.to.include(controlledWorkIncompleteStepCode)
   })
 })
