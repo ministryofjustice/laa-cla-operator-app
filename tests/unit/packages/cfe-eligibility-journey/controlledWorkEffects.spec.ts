@@ -37,6 +37,8 @@ function fakeContext({ session, dateOfBirth, posted = {}, caseId = CASE_ID }: Fa
     setData: (key: string, value: unknown) => data.set(key, value),
     setAnswer: (code: string, value: unknown) => answers.set(code, value),
     clearAnswer: (code: string) => answers.delete(code),
+    getAnswer: (code: string) => answers.get(code),
+    getPostData: (name: string) => posted[name],
     getAllPostData: () => posted,
   } as unknown as EffectFunctionContext
   return { context, answers, data }
@@ -195,6 +197,93 @@ describe('Controlled-work effects', () => {
       'adult-dependants': 'no',
     })
     expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('dependants-get-income')
+  })
+
+  it('persists, restores, and prunes repeatable dependant-income rows when the dependant count or gate changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'yes',
+      'child-dependants-count': '2',
+      'adult-dependants': 'no',
+    })
+    save(session, ADULT_DOB, STEPS.dependantIncome, { 'dependants-get-income': 'yes' })
+
+    const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PrepareDependantIncomeDetails.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.dependantIncomeMaxRows)).to.equal(2)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection)).to.deep.equal([{ amount: '', frequency: '' }])
+
+    page.answers.set('amount_0', '50')
+    page.answers.set('frequency_0', 'every_week')
+    registry.AddRepeatingItem.evaluate(
+      page.context,
+      STEPS.dependantIncomeDetails,
+      CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection,
+      ['amount', 'frequency'],
+    )
+    page.answers.set('amount_1', '100')
+    page.answers.set('frequency_1', 'monthly')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.dependantIncomeDetails,
+      CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection,
+      ['amount', 'frequency'],
+    )
+
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.dependantIncomeDetails]?.[CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection],
+    ).to.deep.equal([
+      { amount: '50', frequency: 'every_week' },
+      { amount: '100', frequency: 'monthly' },
+    ])
+
+    const removeSecondRow = fakeContext({ session, dateOfBirth: ADULT_DOB, posted: { action: 'remove_1' } })
+    registry.PrepareDependantIncomeDetails.evaluate(removeSecondRow.context)
+    registry.RemoveRepeatingItem.evaluate(
+      removeSecondRow.context,
+      STEPS.dependantIncomeDetails,
+      CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection,
+      ['amount', 'frequency'],
+    )
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.dependantIncomeDetails]?.[CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection],
+    ).to.deep.equal([{ amount: '50', frequency: 'every_week' }])
+
+    registry.AddRepeatingItem.evaluate(
+      removeSecondRow.context,
+      STEPS.dependantIncomeDetails,
+      CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection,
+      ['amount', 'frequency'],
+    )
+    removeSecondRow.answers.set('amount_1', '100')
+    removeSecondRow.answers.set('frequency_1', 'monthly')
+    registry.SaveRepeatingItems.evaluate(
+      removeSecondRow.context,
+      STEPS.dependantIncomeDetails,
+      CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection,
+      ['amount', 'frequency'],
+    )
+
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'yes',
+      'child-dependants-count': '1',
+      'adult-dependants': 'no',
+    })
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.dependantIncomeDetails]?.[CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection],
+    ).to.deep.equal([
+      { amount: '50', frequency: 'every_week' },
+    ])
+
+    const revisited = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PrepareDependantIncomeDetails.evaluate(revisited.context)
+    expect(revisited.answers.get('amount_0')).to.equal('50')
+    expect(revisited.answers.get('frequency_0')).to.equal('every_week')
+
+    save(session, ADULT_DOB, STEPS.dependantIncome, { 'dependants-get-income': 'no' })
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.dependantIncomeDetails]).to.equal(undefined)
   })
 
   it('removes dependant answers when passporting makes the page inapplicable', () => {
