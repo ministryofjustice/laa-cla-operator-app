@@ -89,6 +89,21 @@ describe('Controlled-work effects', () => {
     expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.employmentStatus)
   })
 
+  it('persists and prepopulates the selected immigration matter type when revisiting', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    const saved = save(session, ADULT_DOB, STEPS.immigrationOrAsylumType, {
+      'immigration-or-asylum-type': 'immigration_legal_help',
+    })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)['immigration-or-asylum-type']).to.equal('immigration_legal_help')
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.asylumSupport)
+
+    const revisited = restore(session, ADULT_DOB)
+    expect(revisited.answers.get('immigration-or-asylum-type')).to.equal('immigration_legal_help')
+    expect(revisited.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.asylumSupport)
+  })
+
   it('removes irrelevant answers when a gate changes, keeps the rest, and persists the result', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
