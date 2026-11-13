@@ -5,8 +5,11 @@ import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWo
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { immigrationOrAsylumTypePageContent } from './immigrationOrAsylumTypeBlock.js'
 
-const { immigrationOrAsylumType: STEP_CODE, immigrationOrAsylum: IMMIGRATION_OR_ASYLUM_STEP_CODE } =
-  CONTROLLED_WORK_STEP_CODES
+const {
+  immigrationOrAsylumType: STEP_CODE,
+  immigrationOrAsylum: IMMIGRATION_OR_ASYLUM_STEP_CODE,
+  asylumSupport: ASYLUM_SUPPORT_STEP_CODE,
+} = CONTROLLED_WORK_STEP_CODES
 
 export const immigrationOrAsylumTypeStep: StepDefinition = step({
   code: STEP_CODE,
@@ -34,7 +37,7 @@ export const immigrationOrAsylumTypeStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [redirect({ goto: ASYLUM_SUPPORT_STEP_CODE })],
       },
     }),
   ],
