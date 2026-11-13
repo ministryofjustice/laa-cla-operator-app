@@ -5,7 +5,10 @@ import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkType
 import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWorkIncompleteStep.js'
 import { howToAggregatePageContent } from './howToAggregateBlock.js'
 
-const { howToAggregate: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
+const {
+  howToAggregate: STEP_CODE,
+  immigrationOrAsylumType: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
+} = CONTROLLED_WORK_STEP_CODES
 
 export const howToAggregateStep: StepDefinition = step({
   code: STEP_CODE,
@@ -45,7 +48,15 @@ export const howToAggregateStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE),
+            ),
+            goto: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

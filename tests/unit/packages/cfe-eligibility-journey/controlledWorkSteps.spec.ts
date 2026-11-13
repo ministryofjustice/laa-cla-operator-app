@@ -177,6 +177,13 @@ describe('Controlled-work journey rules', () => {
       expect(getNextStep(STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' }, ADULT)).to.equal(
         STEPS.immigrationOrAsylumType,
       )
+      expect(
+        getNextStep(
+          STEPS.immigrationOrAsylumType,
+          { 'immigration-or-asylum': 'yes', 'immigration-or-asylum-type': 'asylum' },
+          ADULT,
+        ),
+      ).to.equal(STEPS.asylumSupport)
       expect(getNextStep(STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' }, MINOR)).to.equal(STEPS.under18Clr)
     })
 

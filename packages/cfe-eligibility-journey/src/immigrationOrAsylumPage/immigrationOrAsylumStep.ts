@@ -5,7 +5,11 @@ import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkType
 import { immigrationOrAsylumPageContent } from './immigrationOrAsylumBlock.js'
 import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWorkIncompleteStep.js'
 
-const { immigrationOrAsylum: STEP_CODE, under18Clr: UNDER_18_CLR_STEP_CODE } = CONTROLLED_WORK_STEP_CODES
+const {
+  immigrationOrAsylum: STEP_CODE,
+  immigrationOrAsylumType: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
+  under18Clr: UNDER_18_CLR_STEP_CODE,
+} = CONTROLLED_WORK_STEP_CODES
 
 export const immigrationOrAsylumStep: StepDefinition = step({
   code: STEP_CODE,
@@ -20,6 +24,12 @@ export const immigrationOrAsylumStep: StepDefinition = step({
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
         next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE),
+            ),
+            goto: IMMIGRATION_OR_ASYLUM_TYPE_STEP_CODE,
+          }),
           redirect({
             when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(UNDER_18_CLR_STEP_CODE)),
             goto: UNDER_18_CLR_STEP_CODE,

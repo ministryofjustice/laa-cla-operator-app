@@ -131,6 +131,91 @@ test.describe("Client details eligibility entry", () => {
     await expect(page).toHaveURL(`${journeyPath(caseId)}/under-18-clr`);
   });
 
+  test("validates and saves an immigration matter type, then prepopulates it on revisit", async ({
+    page,
+  }) => {
+    const caseId = "EL-MATTER-TYPE";
+    await startFromDetails(page, caseId);
+    await page.getByRole("radio", { name: "Yes", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(
+      `${journeyPath(caseId)}/immigration-or-asylum-type`,
+    );
+
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "What type of immigration or asylum matter is this?",
+      }),
+    ).toBeVisible();
+    await expect(page.locator(".govuk-hint")).toContainText(
+      "Guidance for these matters is in paragraphs 24 to 30, 32(1) and 32A(1) of Part 1 of Schedule 1 to the Legal Aid, Sentencing and Punishment of Offenders Act 2012 (LASPO).",
+    );
+    await expect(
+      page.getByRole("link", {
+        name: "Legal Aid, Sentencing and Punishment of Offenders Act 2012",
+      }),
+    ).toHaveAttribute(
+      "href",
+      "https://www.legislation.gov.uk/ukpga/2012/10/schedule/1",
+    );
+    await expect(
+      page.getByRole("link", {
+        name: "Legacy case Appeals and Reviews in the Upper Tribunal (PDF, 599KB)",
+      }),
+    ).toHaveAttribute(
+      "href",
+      "https://assets.publishing.service.gov.uk/media/684ff44229fb1002010c4e6c/LC_s_guidance_on_determining_financial_eligibility__controlled_and_mediation_.pdf#page=3",
+    );
+
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page.locator(".govuk-error-summary")).toContainText(
+      "Select what type of immigration or asylum matter this is",
+    );
+    await page
+      .getByRole("radio", {
+        name: "Immigration - legal help or help at court",
+        exact: true,
+      })
+      .check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(
+      `${journeyPath(caseId)}/controlled-work-incomplete`,
+    );
+
+    await page.goto(`${journeyPath(caseId)}/immigration-or-asylum-type`);
+    await expect(
+      page.getByRole("radio", {
+        name: "Immigration - legal help or help at court",
+        exact: true,
+      }),
+    ).toBeChecked();
+  });
+
+  test("shows the matter type after an under-18 client enters the means route", async ({
+    page,
+  }) => {
+    const caseId = "EL-CHILD-MATTER-TYPE";
+    await startFromDetails(page, caseId, String(new Date().getFullYear() - 10));
+
+    await page.getByRole("radio", { name: "Yes", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${journeyPath(caseId)}/under-18-clr`);
+
+    await page.getByRole("radio", { name: "No", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${journeyPath(caseId)}/aggregated-means`);
+
+    await page.getByRole("radio", { name: "Yes", exact: true }).check();
+    await page.getByRole("button", { name: "Save and continue" }).click();
+    await expect(page).toHaveURL(`${journeyPath(caseId)}/how-to-aggregate`);
+
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(page).toHaveURL(
+      `${journeyPath(caseId)}/immigration-or-asylum-type`,
+    );
+  });
+
   test("validates details before starting eligibility", async ({ page }) => {
     const path = detailsPath("EL-INVALID");
     await login(page, path);
