@@ -168,6 +168,35 @@ describe('Controlled-work effects', () => {
     expect(changedToNo.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.employmentStatus)
   })
 
+  it('persists and prepopulates the dependant income answer and removes it when dependants are no longer selected', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'yes',
+      'child-dependants-count': '1',
+      'adult-dependants': 'no',
+    })
+
+    const saved = save(session, ADULT_DOB, STEPS.dependantIncome, { 'dependants-get-income': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['dependants-get-income']).to.equal('yes')
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.dependantIncomeDetails)
+
+    const revisited = restore(session, ADULT_DOB)
+    expect(revisited.answers.get('dependants-get-income')).to.equal('yes')
+
+    const changed = save(session, ADULT_DOB, STEPS.dependantIncome, { 'dependants-get-income': 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['dependants-get-income']).to.equal('no')
+    expect(changed.answers.get('dependants-get-income')).to.equal('no')
+    expect(changed.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.employmentStatus)
+
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('dependants-get-income')
+  })
+
   it('removes dependant answers when passporting makes the page inapplicable', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
