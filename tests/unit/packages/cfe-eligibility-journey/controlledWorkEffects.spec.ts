@@ -74,6 +74,24 @@ describe('Controlled-work effects', () => {
     expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.immigrationOrAsylumType)
   })
 
+  it('persists and prepopulates employment status, replacing the answer when it changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'in_work' })
+    expect(restore(session, ADULT_DOB).answers.get('employment-status')).to.equal('in_work')
+    expect(readControlledWorkAnswers(session, CASE_ID)['employment-status']).to.equal('in_work')
+
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'unemployed' })
+    expect(restore(session, ADULT_DOB).answers.get('employment-status')).to.equal('unemployed')
+    expect(readControlledWorkAnswers(session, CASE_ID)['employment-status']).to.equal('unemployed')
+  })
+
   it('only saves the answers that belong to the submitted step', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no', partner: 'yes', unrelated: 'x' })
