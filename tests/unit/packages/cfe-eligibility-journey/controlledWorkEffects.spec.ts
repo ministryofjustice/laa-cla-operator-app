@@ -89,6 +89,47 @@ describe('Controlled-work effects', () => {
     expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.employmentStatus)
   })
 
+  it('preserves client answers and clears only partner answers when the partner answer changes to no', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'in_work' })
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'unemployed' })
+
+    const changed = save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      partner: 'no',
+      passporting: 'no',
+      'employment-status': 'in_work',
+    })
+    expect(changed.answers.get('employment-status')).to.equal('in_work')
+    expect(changed.answers.has('partner-employment-status')).to.equal(false)
+  })
+
+  it('clears income answers when passporting becomes yes and requires them again when it becomes no', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'in_work' })
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'unemployed' })
+
+    const passported = save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.deep.equal({
+      'immigration-or-asylum': 'no',
+      partner: 'yes',
+      passporting: 'yes',
+    })
+    expect(passported.answers.has('employment-status')).to.equal(false)
+    expect(passported.answers.has('partner-employment-status')).to.equal(false)
+
+    const notPassported = save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+    expect(notPassported.answers.get('partner')).to.equal('yes')
+    expect(notPassported.answers.has('employment-status')).to.equal(false)
+    expect(notPassported.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.employmentStatus)
+  })
+
   it('persists and prepopulates the selected immigration matter type when revisiting', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
