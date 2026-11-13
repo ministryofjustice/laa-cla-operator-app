@@ -38,7 +38,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "yarn exec tsx scripts/test-server-with-msw.js",
+    command: "yarn exec tsx scripts/test-server-with-msw.ts",
     url: "http://127.0.0.1:3001",
     reuseExistingServer: process.env.CI !== "true",
     stdout: "pipe",
@@ -52,6 +52,11 @@ export default defineConfig({
       SESSION_NAME: "test-session",
       TEST_ACCESS_TOKEN: "test-access-token",
       BACKEND_BASE_URL: MSW_CONFIG.API_BASE_URL,
+      CFE_SYNTHETIC_DEMO_ENABLED: "true",
+      CFE_API_BASE_URL:
+        "https://cfe-civil-staging.cloud-platform.service.justice.gov.uk",
+      // Parallel browser tests share one IP and exceed the production rate limit.
+      RATE_LIMIT_MAX: "10000",
     },
   },
 });

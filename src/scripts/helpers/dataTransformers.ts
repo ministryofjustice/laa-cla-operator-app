@@ -295,3 +295,108 @@ export const isYes = (value: unknown): boolean => {
   // fall back: treat non-empty as truthy
   return Boolean(selection);
 };
+
+/**
+ * Convert a value to boolean
+ * @param {unknown} value - Value to convert
+ * @returns {boolean} True if value is truthy, false otherwise
+ */
+export function toBoolean(value: unknown): boolean {
+  return (
+    value === true ||
+    String(value).toLowerCase() === "yes" ||
+    String(value).toLowerCase() === "true"
+  );
+}
+
+/**
+ * Convert a value to number
+ * @param {unknown} value - Value to convert
+ * @returns {number} Numeric value or 0 if not a number
+ */
+export function toNumber(value: unknown): number {
+  const parsed = Number(value);
+  const fallback = 0;
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+/**
+ * Convert a boolean or string value to 'yes' or 'no' for form submission
+ * @param {unknown} value - Value to convert
+ * @returns {string} 'yes', 'no', or empty string if value is not boolean-like
+ */
+export function toYesNo(value: unknown): string {
+  if (toBoolean(value)) {
+    return "yes";
+  }
+
+  if (
+    value === false ||
+    String(value).toLowerCase() === "no" ||
+    String(value).toLowerCase() === "false"
+  ) {
+    return "no";
+  }
+
+  return "";
+}
+
+/**
+ * Normalises checkbox-ish data into selected key names
+ * Accepts either an array of selected keys or an object map of key to boolean-like value
+ * @param {unknown} value - Raw checkbox value from API/session
+ * @returns {string[]} Selected key names
+ */
+export function normaliseSelectedKeys(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((x): x is string => typeof x === "string");
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  return Object.entries(value)
+    .filter(([, selected]) => Boolean(selected))
+    .map(([key]) => key);
+}
+
+/**
+ * Format boolean values and retain any null values
+ * @param {unknown} value - Value to be formatted to either true, false or null
+ * @returns {boolean | null} A boolean, or null when the value is null or undefined
+ */
+export function formatBooleanToRetainNullValue(value: unknown): boolean | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return Boolean(value);
+}
+
+/**
+ * Format a number as GBP currency, dropping pence for whole pounds
+ * @param {number | string} value - The numeric or string value to format
+ * @returns {string} A formatted currency string with a £ sign
+ */
+export const formatCurrency = (value: number | string): string => {
+  const numericValue = typeof value === "string" ? parseFloat(value) : value;
+  const NO_PENCE = 0;
+  const PENCE_DIGITS = 2;
+
+  if (Number.isInteger(numericValue)) {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+      minimumFractionDigits: NO_PENCE,
+      maximumFractionDigits: NO_PENCE,
+    }).format(numericValue);
+  }
+
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    minimumFractionDigits: PENCE_DIGITS,
+    maximumFractionDigits: PENCE_DIGITS,
+  }).format(numericValue);
+};

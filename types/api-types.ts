@@ -29,6 +29,7 @@ export interface CaseDetails {
   is_urgent: boolean;
   organisation_name: string | null;
   adaptation_details?: string | null;
+  eligibility_check?: string | null;
 }
 
 export interface GetAllCasesResponse {
@@ -73,4 +74,134 @@ export interface saveAdaptationDetailsResponse {
   reference: string;
   callback_preference: boolean;
   no_adaptations_required: boolean | null;
+}
+
+/**
+ * API response wrapper for a single case (client details)
+ */
+export interface ClientDetailsApiResponse {
+  data: CaseDetails | null;
+  status: "success" | "error";
+  message?: string;
+}
+
+/**
+ * Interface for money per interval object
+ */
+export interface MoneyPerInterval {
+  amount: number | null;
+  time:
+    "per_month" | "per_year" | "per_week" | "per_4week" | "per_2week" | null;
+}
+
+/**
+ * Interface for savings data
+ */
+export interface SavingsData {
+  bankBalance: number;
+  investmentBalance: number;
+  assetBalance: number;
+  creditBalance: number;
+  total: number;
+}
+
+/**
+ * Interface for disputed savings data, where each field stays null until answered
+ */
+export interface DisputedSavingsData {
+  bankBalance: number | null;
+  investmentBalance: number | null;
+  assetBalance: number | null;
+  creditBalance: number | null;
+  total: number | null;
+}
+
+/**
+ * Interface for deduction data
+ */
+export interface DeductionData {
+  incomeTax: MoneyPerInterval;
+  nationalInsurance: MoneyPerInterval;
+  maintenance: MoneyPerInterval;
+  childcare: MoneyPerInterval;
+  mortgage: MoneyPerInterval;
+  rent: MoneyPerInterval;
+  criminalContributions: MoneyPerInterval;
+  total: number;
+}
+
+/**
+ * Interface for income data
+ */
+export interface IncomeData {
+  earnings: MoneyPerInterval;
+  selfEmploymentDrawings: MoneyPerInterval;
+  benefits: MoneyPerInterval;
+  taxCredits: MoneyPerInterval;
+  childBenefit: MoneyPerInterval;
+  maintenanceReceived: MoneyPerInterval;
+  pension: MoneyPerInterval;
+  otherIncome: MoneyPerInterval;
+  selfEmployed: boolean;
+  total: number;
+}
+
+/**
+ * Interface for property data
+ */
+export interface PropertySetData {
+  value: number;
+  mortgageLeft: number;
+  share: number;
+  disputed: boolean;
+  main: boolean;
+}
+
+/**
+ * Interface for financial eligibility data
+ */
+export interface FinancialEligibilityData {
+  hasPartner: boolean | null;
+  isUnder17: boolean | null;
+  isOver60: boolean | null;
+
+  specificBenefits: {
+    pensionCredit: boolean | null;
+    jobSeekers: boolean | null;
+    employmentSupport: boolean | null;
+    universalCredit: boolean | null;
+    incomeSupport: boolean | null;
+  };
+  propertySet: PropertySetData[];
+  clientData: {
+    income: IncomeData;
+    savings: SavingsData | null;
+    deductions: DeductionData;
+  };
+  partnerData: {
+    partnerIncome: IncomeData;
+    partnerSavings: SavingsData | null;
+    partnerDeductions: DeductionData;
+  };
+  disputedSavings: DisputedSavingsData | null;
+  disregards: string[];
+  dependantsYoung: number;
+  dependantsOld: number;
+  under18RegularPayment?: boolean | null;
+  under18HasValuables?: boolean | null;
+  state: string;
+  hasPassportedProceedingsLetter: boolean | null;
+  passportedBenefits: boolean | null;
+  under18passportedBenefits: boolean | null;
+  category: string;
+  nationalInsurance?: string;
+}
+
+/**
+ * Response type for financial eligibility data
+ */
+export interface GetFinancialEligibilityApiResponse {
+  data: FinancialEligibilityData | null;
+  status: "success" | "error";
+  message?: string;
 }

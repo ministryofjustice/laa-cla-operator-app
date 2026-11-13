@@ -81,4 +81,37 @@ describe("setupGlobalErrorHandler", () => {
     assert.equal(status.called, false);
     assert.equal(render.called, false);
   });
+
+  it("renders a forbidden response for invalid CSRF requests", () => {
+    const use = sinon.stub();
+    const app = { use } as unknown as Application;
+
+    setupGlobalErrorHandler(app);
+
+    const registeredHandler = use.firstCall.args[0] as (
+      error: unknown,
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => void;
+    const render = sinon.stub();
+    const res = {
+      headersSent: false,
+      status: sinon.stub().returnsThis(),
+      render,
+    } as unknown as Response;
+    const next: NextFunction = () => {};
+
+    registeredHandler({ code: "EBADCSRFTOKEN" }, {} as Request, res, next);
+
+    assert.equal(
+      (res.status as unknown as sinon.SinonStub).calledOnceWithExactly(403),
+      true,
+    );
+    assert.equal(render.calledOnce, true);
+    assert.deepEqual(render.firstCall.args[1], {
+      status: 403,
+      error: "Your session could not be verified. Please try again.",
+    });
+  });
 });

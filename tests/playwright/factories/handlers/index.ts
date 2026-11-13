@@ -8,11 +8,20 @@
  */
 
 import { http, HttpResponse } from "msw";
+import { cfeSyntheticHandlers } from "./cfeSynthetic.js";
+
+type EligibilityCheck = Record<string, unknown>;
+
+// In-memory eligibility checks keyed by case reference. Like cla_backend, a case has no
+// eligibility check (404) until one is created with POST; PATCH then updates it.
+const eligibilityChecks = new Map<string, EligibilityCheck>();
+const personalDetails = new Map<string, Record<string, unknown>>();
 
 /**
  * Combined handlers array
  */
 export const handlers = [
+  ...cfeSyntheticHandlers,
   http.get("*/call_centre/api/v1/case/", () =>
     HttpResponse.json({
       count: 0,
@@ -26,11 +35,87 @@ export const handlers = [
     ({ params }) =>
       HttpResponse.json({
         reference: params.caseId,
+        date_of_birth:
+          params.caseId === "EL-NO-DOB"
+            ? null
+            : (personalDetails.get(params.caseId)?.dob ?? "1980-05-14"),
       }),
   ),
-  http.put(
+  http.patch<{ caseId: string }, Record<string, unknown>>(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
-    () => new HttpResponse(null, { status: 204 }),
+    async ({ params, request }) => {
+      if (params.caseId === "EL-SAVE-FAIL") {
+        return HttpResponse.json(
+          { detail: "Unable to save personal details." },
+          { status: 500 },
+        );
+      }
+      const details = await request.json();
+      const dob = details.dob;
+      if (
+        dob !== undefined &&
+        (typeof dob !== "object" ||
+          dob === null ||
+          !("day" in dob) ||
+          !("month" in dob) ||
+          !("year" in dob) ||
+          !/^\d{1,2}$/u.test(String(dob.day)) ||
+          !/^\d{1,2}$/u.test(String(dob.month)) ||
+          !/^\d{4}$/u.test(String(dob.year)))
+      ) {
+        return HttpResponse.json(
+          {
+            dob: [
+              'Date field has wrong format. Use { "day": 25, "month": 12, "year": 2012 }',
+            ],
+          },
+          { status: 400 },
+        );
+      }
+      personalDetails.set(params.caseId, {
+        ...personalDetails.get(params.caseId),
+        ...details,
+        ...(typeof dob === "object" &&
+        dob !== null &&
+        "day" in dob &&
+        "month" in dob &&
+        "year" in dob
+          ? {
+              dob: `${String(dob.year)}-${String(dob.month).padStart(2, "0")}-${String(dob.day).padStart(2, "0")}`,
+            }
+          : {}),
+      });
+      return new HttpResponse(null, { status: 204 });
+    },
+  ),
+  http.get<{ caseId: string }>(
+    "*/call_centre/api/v1/case/:caseId/eligibility_check/",
+    ({ params }) => {
+      const check = eligibilityChecks.get(params.caseId);
+      return check === undefined
+        ? HttpResponse.json({ detail: "Not found." }, { status: 404 })
+        : HttpResponse.json(check);
+    },
+  ),
+  http.post<{ caseId: string }, EligibilityCheck>(
+    "*/call_centre/api/v1/case/:caseId/eligibility_check/",
+    async ({ params, request }) => {
+      const check = { reference: params.caseId, ...(await request.json()) };
+      eligibilityChecks.set(params.caseId, check);
+      return HttpResponse.json(check, { status: 201 });
+    },
+  ),
+  http.patch<{ caseId: string }, EligibilityCheck>(
+    "*/call_centre/api/v1/case/:caseId/eligibility_check/",
+    async ({ params, request }) => {
+      const existing = eligibilityChecks.get(params.caseId);
+      if (existing === undefined) {
+        return HttpResponse.json({ detail: "Not found." }, { status: 404 });
+      }
+      const check = { ...existing, ...(await request.json()) };
+      eligibilityChecks.set(params.caseId, check);
+      return HttpResponse.json(check);
+    },
   ),
   // Health check endpoint for testing
   http.get("/health", () =>

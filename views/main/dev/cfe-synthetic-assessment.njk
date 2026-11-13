@@ -1,0 +1,85 @@
+{% extends "base.njk" %}
+
+{% block pageTitle %}Synthetic test assessment - not a client assessment – GOV.UK{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Synthetic test assessment - not a client assessment</h1>
+
+      <div class="govuk-inset-text">
+        This uses fixed synthetic data to contact CFE staging. It is not a client assessment and is not saved to the case.
+      </div>
+
+      {% if error %}
+        <div class="govuk-error-summary" role="alert" aria-labelledby="cfe-error-title">
+          <h2 class="govuk-error-summary__title" id="cfe-error-title">The assessment could not be completed</h2>
+          <div class="govuk-error-summary__body">
+            <p class="govuk-body">{{ error }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if response %}
+        <h2 class="govuk-heading-l">CFE result</h2>
+        <p class="govuk-body">CFE API version {{ response.version }} · Controlled work</p>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Overall financial eligibility</dt>
+            <dd class="govuk-summary-list__value">
+              <h3 class="govuk-heading-m">{{ response.result_summary.overall_result.result }}</h3>
+            </dd>
+          </div>
+        </dl>
+
+        <h2 class="govuk-heading-m">Proceeding outcomes</h2>
+        <ul class="govuk-list govuk-list--bullet">
+          {% for proceeding in response.result_summary.overall_result.proceeding_types %}
+            <li>{{ proceeding.ccms_code }} ({{ proceeding.client_involvement_type }}): {{ proceeding.result }}</li>
+          {% endfor %}
+        </ul>
+
+        <h2 class="govuk-heading-m">CFE remarks and warnings</h2>
+        {% if remarks.length %}
+          <dl class="govuk-summary-list">
+            {% for remark in remarks %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ remark.label }}</dt>
+                <dd class="govuk-summary-list__value">{{ remark.detail }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% else %}
+          <p class="govuk-body">CFE returned no remarks or warnings.</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-m">Returned financial breakdown</h2>
+        {% if breakdown.length %}
+          {% for group in breakdown %}
+            <h3 class="govuk-heading-s">{{ group.section }}</h3>
+            <dl class="govuk-summary-list">
+              {% for item in group.items %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ item.label }}</dt>
+                  <dd class="govuk-summary-list__value">{{ item.amount }}</dd>
+                </div>
+              {% endfor %}
+            </dl>
+          {% endfor %}
+        {% else %}
+          <p class="govuk-body">CFE did not return numeric values for the displayed breakdown.</p>
+        {% endif %}
+
+        <p class="govuk-body">
+          This is a synthetic test assessment, not a client assessment, and it has not been saved to the case.
+        </p>
+      {% else %}
+        <p class="govuk-body">No assessment result is available yet.</p>
+        <form method="post" action="/dev/cfe-synthetic-assessment">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button" type="submit">Run synthetic assessment</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
