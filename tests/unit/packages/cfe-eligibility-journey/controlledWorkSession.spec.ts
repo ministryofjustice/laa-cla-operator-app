@@ -106,6 +106,21 @@ describe('Controlled-work session storage', () => {
     }
   })
 
+  it('persists valid dependant counts while rejecting non-positive or fractional counts', () => {
+    expect(
+      sanitiseControlledWorkAnswers({
+        'child-dependants': 'yes',
+        'child-dependants-count': '2',
+        'adult-dependants': 'no',
+        'adult-dependants-count': '1.5',
+      }),
+    ).to.deep.equal({
+      'child-dependants': 'yes',
+      'child-dependants-count': '2',
+      'adult-dependants': 'no',
+    })
+  })
+
   it('merges submitted answers over saved ones and ignores invalid submissions', () => {
     const merged = mergeControlledWorkAnswers(
       { partner: 'yes', passporting: 'no' },

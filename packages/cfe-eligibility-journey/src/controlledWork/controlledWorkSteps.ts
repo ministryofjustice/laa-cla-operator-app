@@ -1,13 +1,16 @@
 import { ADULT_AGE, calculateAge } from '../clientAge.js'
 import {
   ASSESSMENT_ROUTES,
+  CONTROLLED_WORK_ANSWER_CODES,
   CONTROLLED_WORK_ANSWER_OPTIONS,
+  CONTROLLED_WORK_COUNT_ANSWER_CODES,
   CONTROLLED_WORK_STEP_CODES,
   NO,
   YES,
   type AssessmentRoute,
   type ControlledWorkAnswerCode,
   type ControlledWorkAnswers,
+  type ControlledWorkCountAnswerCode,
   type ControlledWorkContext,
   type ControlledWorkStepCode,
   type MissingControlledWorkStep,
@@ -15,6 +18,18 @@ import {
 } from './controlledWorkTypes.js'
 
 const STEPS = CONTROLLED_WORK_STEP_CODES
+const NO_DEPENDANTS = 0
+const COUNT_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_COUNT_ANSWER_CODES)
+const CONTROLLED_WORK_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_ANSWER_CODES)
+
+/**
+ * Checks whether a controlled-work answer is a dependant-count code.
+ * @param {ControlledWorkAnswerCode} code The answer code
+ * @returns {boolean} True for child or adult dependant counts
+ */
+function isCountAnswerCode(code: ControlledWorkAnswerCode): code is ControlledWorkCountAnswerCode {
+  return COUNT_ANSWER_CODE_SET.has(code)
+}
 
 interface RoutingState {
   answers: ControlledWorkAnswers
@@ -98,6 +113,44 @@ function isMeansTestedWithoutPassporting(state: RoutingState): boolean {
   return resolveRoute(state) === ASSESSMENT_ROUTES.means && state.answers.passporting === NO
 }
 
+/**
+ * Checks whether either dependant category has been selected.
+ * @param {RoutingState} state The current controlled-work state
+ * @returns {boolean} True when child or adult dependants are present
+ */
+function hasDependants({ answers }: RoutingState): boolean {
+  return answers['child-dependants'] === YES || answers['adult-dependants'] === YES
+}
+
+/**
+ * Checks whether a count belongs to a selected dependant category.
+ * @param {ControlledWorkAnswerCode} code The answer code
+ * @param {ControlledWorkAnswers} answers The answers resolved so far
+ * @returns {boolean} True when the count is applicable
+ */
+function isCountAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers): boolean {
+  if (code === 'child-dependants-count') return answers['child-dependants'] === YES
+  if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
+  return true
+}
+
+/**
+ * Checks whether an answer is required on its page for the current route.
+ * @param {ControlledWorkStepCode} stepCode The page code
+ * @param {ControlledWorkAnswerCode} code The answer code
+ * @param {ControlledWorkAnswers} answers The relevant answers
+ * @returns {boolean} True when the answer is conditionally required
+ */
+function isRequiredAnswer(stepCode: ControlledWorkStepCode, code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers): boolean {
+  if (stepCode === STEPS.dependantDetails && code === 'child-dependants-count') {
+    return answers['child-dependants'] === YES
+  }
+  if (stepCode === STEPS.dependantDetails && code === 'adult-dependants-count') {
+    return answers['adult-dependants'] === YES
+  }
+  return true
+}
+
 /** Ordered journey definition: the single source of truth for navigation, clean-up and validation. */
 export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
   {
@@ -146,6 +199,16 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     isApplicable: (state) => resolveRoute(state) === ASSESSMENT_ROUTES.means,
   },
   {
+    code: STEPS.dependantDetails,
+    answerCodes: ['child-dependants', 'child-dependants-count', 'adult-dependants', 'adult-dependants-count'],
+    isApplicable: isMeansTestedWithoutPassporting,
+  },
+  {
+    code: STEPS.dependantIncome,
+    answerCodes: ['dependants-get-income'],
+    isApplicable: (state) => isMeansTestedWithoutPassporting(state) && hasDependants(state),
+  },
+  {
     code: STEPS.employmentStatus,
     answerCodes: ['employment-status'],
     isApplicable: isMeansTestedWithoutPassporting,
@@ -166,6 +229,10 @@ const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) 
  * @returns {boolean} True when the value is allowed
  */
 export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, value: unknown): boolean {
+  if (isCountAnswerCode(code)) {
+    if (typeof value === 'number') return Number.isInteger(value) && value > NO_DEPENDANTS
+    return typeof value === 'string' && /^\+?\d+$/u.test(value) && Number(value) > NO_DEPENDANTS
+  }
   return (CONTROLLED_WORK_ANSWER_OPTIONS[code] as readonly unknown[]).includes(value)
 }
 
@@ -175,7 +242,7 @@ export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, valu
  * @returns {boolean} True when the code belongs to the controlled-work journey
  */
 export function isControlledWorkAnswerCode(code: string): code is ControlledWorkAnswerCode {
-  return Object.hasOwn(CONTROLLED_WORK_ANSWER_OPTIONS, code)
+  return CONTROLLED_WORK_ANSWER_CODE_SET.has(code)
 }
 
 /**
@@ -205,7 +272,9 @@ export function resolveControlledWorkJourney(
     if (!definition.isApplicable({ answers: relevant, context })) continue
     steps.push(definition.code)
     for (const code of definition.answerCodes) {
-      if (isValidControlledWorkAnswer(code, answers[code])) Object.assign(relevant, { [code]: answers[code] })
+      if (isCountAnswerRelevant(code, relevant) && isValidControlledWorkAnswer(code, answers[code])) {
+        Object.assign(relevant, { [code]: answers[code] })
+      }
     }
   }
 
@@ -236,7 +305,9 @@ export function findMissingSteps(answers: ControlledWorkAnswers, context: Contro
   const missing: MissingControlledWorkStep[] = []
 
   for (const stepCode of resolved.steps) {
-    const answerCodes = getStepAnswerCodes(stepCode).filter((code) => resolved.answers[code] === undefined)
+    const answerCodes = getStepAnswerCodes(stepCode).filter(
+      (code) => isRequiredAnswer(stepCode, code, resolved.answers) && resolved.answers[code] === undefined,
+    )
     if (answerCodes.length > 0) missing.push({ stepCode, answerCodes })
   }
   return missing

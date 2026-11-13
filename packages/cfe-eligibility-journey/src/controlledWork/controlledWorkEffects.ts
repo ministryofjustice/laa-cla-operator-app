@@ -12,8 +12,7 @@ import {
 } from './controlledWorkSteps.js'
 import { mergeControlledWorkAnswers, readControlledWorkAnswers, writeControlledWorkAnswers } from './controlledWorkSession.js'
 import {
-  CONTROLLED_WORK_ANSWER_OPTIONS,
-  type ControlledWorkAnswerCode,
+  CONTROLLED_WORK_ANSWER_CODES,
   type ControlledWorkAnswers,
   type ControlledWorkContext,
   type ControlledWorkStepCode,
@@ -33,7 +32,7 @@ export interface ControlledWorkEffectShape {
   SaveControlledWorkAnswers: (stepCode: ControlledWorkStepCode) => EffectFunctionExpr
 }
 
-const ALL_ANSWER_CODES = Object.keys(CONTROLLED_WORK_ANSWER_OPTIONS) as ControlledWorkAnswerCode[]
+const ALL_ANSWER_CODES = [...CONTROLLED_WORK_ANSWER_CODES]
 const NO_STEP = ''
 
 function getCaseId(context: EffectFunctionContext): string | undefined {
