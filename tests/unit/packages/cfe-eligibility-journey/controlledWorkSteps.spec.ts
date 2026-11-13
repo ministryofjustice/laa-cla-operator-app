@@ -157,7 +157,7 @@ describe('Controlled-work journey rules', () => {
       )
     })
 
-    it('adds the dependant-income boundary only when a child or adult dependant is selected', () => {
+    it('adds the dependant-income question only when a child or adult dependant is selected', () => {
       const base = {
         'immigration-or-asylum': 'no',
         partner: 'no',
@@ -188,6 +188,12 @@ describe('Controlled-work journey rules', () => {
       expect(getNextStep(STEPS.dependantDetails, withAdult, ADULT)).to.equal(STEPS.dependantIncome)
       expect(getApplicableSteps(withoutDependants, ADULT)).to.not.include(STEPS.dependantIncome)
       expect(getNextStep(STEPS.dependantDetails, withoutDependants, ADULT)).to.equal(STEPS.employmentStatus)
+      const dependantIncomeYes = { ...withChild, 'dependants-get-income': 'yes' } as const
+      const dependantIncomeNo = { ...withChild, 'dependants-get-income': 'no' } as const
+      expect(getApplicableSteps(dependantIncomeYes, ADULT)).to.include(STEPS.dependantIncomeDetails)
+      expect(getNextStep(STEPS.dependantIncome, dependantIncomeYes, ADULT)).to.equal(STEPS.dependantIncomeDetails)
+      expect(getApplicableSteps(dependantIncomeNo, ADULT)).to.not.include(STEPS.dependantIncomeDetails)
+      expect(getNextStep(STEPS.dependantIncome, dependantIncomeNo, ADULT)).to.equal(STEPS.employmentStatus)
     })
 
     it('treats an unanswered gate as unanswered, never as no', () => {

@@ -64,6 +64,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   applicant: 'applicant',
   dependantDetails: 'dependant-details',
   dependantIncome: 'dependant-income',
+  dependantIncomeDetails: 'dependant-income-details',
   employmentStatus: 'employment-status',
   partnerEmploymentStatus: 'partner-employment-status',
 } as const

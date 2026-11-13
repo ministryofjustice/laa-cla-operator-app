@@ -36,6 +36,7 @@ import { immigrationOrAsylumTypeStep } from './immigrationOrAsylumTypePage/immig
 import { asylumSupportStep } from './asylumSupportPage/asylumSupportStep.js'
 import { applicantStep } from './applicantPage/applicantStep.js'
 import { dependantDetailsStep } from './dependantDetailsPage/dependantDetailsStep.js'
+import { dependantIncomeStep } from './dependantIncomePage/dependantIncomeStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -67,6 +68,7 @@ export const eligibilityJourney = journey({
     asylumSupportStep,
     applicantStep,
     dependantDetailsStep,
+    dependantIncomeStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,

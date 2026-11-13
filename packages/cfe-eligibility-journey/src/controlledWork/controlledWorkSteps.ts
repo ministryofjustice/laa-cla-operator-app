@@ -123,6 +123,15 @@ function hasDependants({ answers }: RoutingState): boolean {
 }
 
 /**
+ * Checks whether a selected dependant has income.
+ * @param {RoutingState} state The current controlled-work state
+ * @returns {boolean} True when dependant income details apply
+ */
+function dependantsGetIncomeSelected({ answers }: RoutingState): boolean {
+  return answers['dependants-get-income'] === YES
+}
+
+/**
  * Checks whether a count belongs to a selected dependant category.
  * @param {ControlledWorkAnswerCode} code The answer code
  * @param {ControlledWorkAnswers} answers The answers resolved so far
@@ -207,6 +216,11 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     code: STEPS.dependantIncome,
     answerCodes: ['dependants-get-income'],
     isApplicable: (state) => isMeansTestedWithoutPassporting(state) && hasDependants(state),
+  },
+  {
+    code: STEPS.dependantIncomeDetails,
+    answerCodes: [],
+    isApplicable: dependantsGetIncomeSelected,
   },
   {
     code: STEPS.employmentStatus,
