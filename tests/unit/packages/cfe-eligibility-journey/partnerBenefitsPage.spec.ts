@@ -143,7 +143,7 @@ describe('Partner benefits page', () => {
     ).to.not.include(STEPS.partnerBenefits)
   })
 
-  it('routes Yes and No to their corresponding unimplemented pages without completing the journey', () => {
+  it('routes Yes to benefit details and No to the unimplemented other-income page', () => {
     const yesAnswers = { ...BASE_ANSWERS, 'partner-receives-benefits': 'yes' } as const
     const detailsAnswered = { ...yesAnswers, 'partner-benefit-details-completed': 'yes' } as const
     const noAnswers = { ...BASE_ANSWERS, 'partner-receives-benefits': 'no' } as const

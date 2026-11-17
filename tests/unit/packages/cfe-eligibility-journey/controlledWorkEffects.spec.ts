@@ -213,6 +213,49 @@ describe('Controlled-work effects', () => {
     expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.benefitDetails]).to.equal(undefined)
   })
 
+  it('initialises, persists, restores and prunes partner benefit rows when the Benefits answer changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'unemployed' })
+    save(session, ADULT_DOB, STEPS.partnerBenefits, { 'partner-receives-benefits': 'yes' })
+
+    const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerBenefitDetails.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection)).to.deep.equal([
+      { benefit_type: '', benefit_amount: '', benefit_frequency: '' },
+    ])
+
+    page.answers.set('benefit_type_0', 'Child Benefit')
+    page.answers.set('benefit_amount_0', '123.45')
+    page.answers.set('benefit_frequency_0', 'monthly')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.partnerBenefitDetails,
+      CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
+      ['benefit_type', 'benefit_amount', 'benefit_frequency'],
+    )
+    const saved = save(session, ADULT_DOB, STEPS.partnerBenefitDetails, {})
+
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-benefit-details-completed']).to.equal('yes')
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.partnerOtherIncome)
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerBenefitDetails]?.[
+        CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection
+      ],
+    ).to.deep.equal([{ benefit_type: 'Child Benefit', benefit_amount: '123.45', benefit_frequency: 'monthly' }])
+
+    const revisited = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerBenefitDetails.evaluate(revisited.context)
+    expect(revisited.answers.get('benefit_type_0')).to.equal('Child Benefit')
+    expect(revisited.answers.get('benefit_amount_0')).to.equal('123.45')
+    expect(revisited.answers.get('benefit_frequency_0')).to.equal('monthly')
+
+    save(session, ADULT_DOB, STEPS.partnerBenefits, { 'partner-receives-benefits': 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('partner-benefit-details-completed')
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerBenefitDetails]).to.equal(undefined)
+  })
+
   it('persists and prepopulates other-income answers, prunes conditional values, and clears the page when passporting changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

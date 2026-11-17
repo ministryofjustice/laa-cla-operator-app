@@ -30,6 +30,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   incomeCollection: 'incomes',
   partnerIncomeCollection: 'partner_incomes',
   benefitCollection: 'benefits',
+  partnerBenefitCollection: 'partner_benefits',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
 } as const
 
@@ -46,6 +47,8 @@ export interface ControlledWorkEffectShape {
   PreparePartnerIncomeDetails: () => EffectFunctionExpr
   /** Loads repeating client benefit rows and supplies the initial blank row */
   PrepareBenefitDetails: () => EffectFunctionExpr
+  /** Loads repeating partner benefit rows and supplies the initial blank row */
+  PreparePartnerBenefitDetails: () => EffectFunctionExpr
 }
 
 const ALL_ANSWER_CODES = [...CONTROLLED_WORK_ANSWER_CODES]
@@ -55,6 +58,7 @@ const DEPENDANT_INCOME_FIELD_CODES = ['amount', 'frequency']
 const INCOME_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.income
 const INCOME_FIELD_CODES = ['income_type', 'income_frequency', 'gross_income', 'income_tax', 'national_insurance']
 const PARTNER_INCOME_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerIncome
+const PARTNER_BENEFIT_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerBenefitDetails
 const PARTNER_INCOME_FIELD_CODES = [
   'partner_income_type',
   'partner_income_frequency',
@@ -64,6 +68,12 @@ const PARTNER_INCOME_FIELD_CODES = [
 ]
 const BENEFIT_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.benefitDetails
 const BENEFIT_DETAILS_FIELD_CODES = ['benefit_type', 'benefit_amount', 'benefit_frequency']
+
+interface BenefitDetailsDraftConfig {
+  patternCode: ControlledWorkStepCode
+  collectionCode: string
+  gateAnswerCode: keyof ControlledWorkAnswers
+}
 
 function getCaseId(context: EffectFunctionContext): string | undefined {
   const caseId = context.getRequestParam('caseId')
@@ -180,25 +190,33 @@ function reconcilePartnerIncomeDrafts(
   return true
 }
 
+/**
+ * Removes benefit rows when the corresponding benefits answer no longer applies.
+ * @param {FinancialEligibilitySession} session The session containing case-scoped pattern drafts
+ * @param {string} caseId The current case identifier
+ * @param {ControlledWorkAnswers} answers The resolved answers for the current route
+ * @param {BenefitDetailsDraftConfig} config The pattern, collection and gate associated with the page
+ * @returns {boolean} Whether a saved collection was removed
+ */
 function reconcileBenefitDetailsDrafts(
   session: FinancialEligibilitySession,
   caseId: string,
   answers: ControlledWorkAnswers,
+  { patternCode, collectionCode, gateAnswerCode }: BenefitDetailsDraftConfig,
 ): boolean {
   const patternsByCase = session.casePatternDrafts
   const casePatterns = patternsByCase?.[caseId]
-  const pattern = casePatterns?.[BENEFIT_DETAILS_PATTERN_CODE]
-  const collectionCode = CONTROLLED_WORK_DATA_KEYS.benefitCollection
+  const pattern = casePatterns?.[patternCode]
 
-  if (!pattern?.[collectionCode] || answers['receives-benefits'] === 'yes') return false
+  if (!pattern?.[collectionCode] || answers[gateAnswerCode] === 'yes') return false
 
   const updatedPatterns = { ...(patternsByCase ?? {}) }
   const updatedCasePatterns = { ...(casePatterns ?? {}) }
   const updatedPattern = { ...pattern }
   delete updatedPattern[collectionCode]
 
-  if (Object.keys(updatedPattern).length === 0) delete updatedCasePatterns[BENEFIT_DETAILS_PATTERN_CODE]
-  else updatedCasePatterns[BENEFIT_DETAILS_PATTERN_CODE] = updatedPattern
+  if (Object.keys(updatedPattern).length === 0) delete updatedCasePatterns[patternCode]
+  else updatedCasePatterns[patternCode] = updatedPattern
 
   updatedPatterns[caseId] = updatedCasePatterns
   session.casePatternDrafts = updatedPatterns
@@ -216,6 +234,9 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
   }
   if (stepCode === BENEFIT_DETAILS_PATTERN_CODE) {
     return { ...submitted, 'benefit-details-completed': 'yes' }
+  }
+  if (stepCode === PARTNER_BENEFIT_DETAILS_PATTERN_CODE) {
+    return { ...submitted, 'partner-benefit-details-completed': 'yes' }
   }
   if (stepCode === CONTROLLED_WORK_STEP_CODES.otherIncome) {
     return { ...submitted, 'other-income-completed': 'yes' }
@@ -277,14 +298,24 @@ function preparePartnerIncomeDetails(context: EffectFunctionContext): void {
   })
 }
 
-function prepareBenefitDetails(context: EffectFunctionContext): void {
+/**
+ * Loads saved benefit rows into Forge and initializes the first blank row when needed.
+ * @param {EffectFunctionContext} context The Forge page effect context
+ * @param {ControlledWorkStepCode} patternCode The page code owning the session rows
+ * @param {string} collectionCode The Forge data key for those rows
+ * @returns {void}
+ */
+function prepareBenefitDetailsForStep(
+  context: EffectFunctionContext,
+  patternCode: ControlledWorkStepCode,
+  collectionCode: string,
+): void {
   const caseId = getCaseId(context)
   const session = context.getSession() as FinancialEligibilitySession | undefined
   if (!caseId || !session) return
 
   const casePatterns = getOrMigrateCasePatternDrafts(session, caseId)
-  const pattern = casePatterns[BENEFIT_DETAILS_PATTERN_CODE] ?? {}
-  const collectionCode = CONTROLLED_WORK_DATA_KEYS.benefitCollection
+  const pattern = casePatterns[patternCode] ?? {}
   const savedRows = pattern[collectionCode] as Array<Record<string, unknown>> | undefined
   const rows = savedRows?.length
     ? savedRows
@@ -292,7 +323,7 @@ function prepareBenefitDetails(context: EffectFunctionContext): void {
 
   if (!savedRows?.length) {
     pattern[collectionCode] = rows
-    casePatterns[BENEFIT_DETAILS_PATTERN_CODE] = pattern
+    casePatterns[patternCode] = pattern
     session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: casePatterns }
   }
 
@@ -302,6 +333,23 @@ function prepareBenefitDetails(context: EffectFunctionContext): void {
       context.setAnswer(`${code}_${index}`, row[code] ?? '')
     }
   })
+}
+
+function prepareBenefitDetails(context: EffectFunctionContext): void {
+  prepareBenefitDetailsForStep(context, BENEFIT_DETAILS_PATTERN_CODE, CONTROLLED_WORK_DATA_KEYS.benefitCollection)
+}
+
+/**
+ * Loads the partner's saved benefit rows into Forge.
+ * @param {EffectFunctionContext} context The Forge page effect context
+ * @returns {void}
+ */
+function preparePartnerBenefitDetails(context: EffectFunctionContext): void {
+  prepareBenefitDetailsForStep(
+    context,
+    PARTNER_BENEFIT_DETAILS_PATTERN_CODE,
+    CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
+  )
 }
 
 export const ControlledWorkEffects: ControlledWorkEffectShape = {
@@ -318,14 +366,34 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       const dependantIncomeRowsChanged = reconcileDependantIncomeDrafts(session, caseId, answers)
       const incomeRowsChanged = reconcileIncomeDrafts(session, caseId, answers)
       const partnerIncomeRowsChanged = reconcilePartnerIncomeDrafts(session, caseId, answers)
-      const benefitRowsChanged = reconcileBenefitDetailsDrafts(session, caseId, answers)
+      const benefitRowsChanged = reconcileBenefitDetailsDrafts(
+        session,
+        caseId,
+        answers,
+        {
+          patternCode: BENEFIT_DETAILS_PATTERN_CODE,
+          collectionCode: CONTROLLED_WORK_DATA_KEYS.benefitCollection,
+          gateAnswerCode: 'receives-benefits',
+        },
+      )
+      const partnerBenefitRowsChanged = reconcileBenefitDetailsDrafts(
+        session,
+        caseId,
+        answers,
+        {
+          patternCode: PARTNER_BENEFIT_DETAILS_PATTERN_CODE,
+          collectionCode: CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
+          gateAnswerCode: 'partner-receives-benefits',
+        },
+      )
 
       if (
         removedCodes.length > 0 ||
         dependantIncomeRowsChanged ||
         incomeRowsChanged ||
         partnerIncomeRowsChanged ||
-        benefitRowsChanged
+        benefitRowsChanged ||
+        partnerBenefitRowsChanged
       ) {
         writeControlledWorkAnswers(session, caseId, answers)
         invalidatePreparedEligibilitySnapshot(session, caseId)
@@ -351,7 +419,26 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       reconcileDependantIncomeDrafts(session, caseId, answers)
       reconcileIncomeDrafts(session, caseId, answers)
       reconcilePartnerIncomeDrafts(session, caseId, answers)
-      reconcileBenefitDetailsDrafts(session, caseId, answers)
+      reconcileBenefitDetailsDrafts(
+        session,
+        caseId,
+        answers,
+        {
+          patternCode: BENEFIT_DETAILS_PATTERN_CODE,
+          collectionCode: CONTROLLED_WORK_DATA_KEYS.benefitCollection,
+          gateAnswerCode: 'receives-benefits',
+        },
+      )
+      reconcileBenefitDetailsDrafts(
+        session,
+        caseId,
+        answers,
+        {
+          patternCode: PARTNER_BENEFIT_DETAILS_PATTERN_CODE,
+          collectionCode: CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
+          gateAnswerCode: 'partner-receives-benefits',
+        },
+      )
 
       writeControlledWorkAnswers(session, caseId, answers)
       invalidatePreparedEligibilitySnapshot(session, caseId)
@@ -413,5 +500,10 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
   PrepareBenefitDetails: FinancialEligibilityEffectsRegistry.register(
     'PrepareBenefitDetails',
     () => prepareBenefitDetails,
+  ),
+
+  PreparePartnerBenefitDetails: FinancialEligibilityEffectsRegistry.register(
+    'PreparePartnerBenefitDetails',
+    () => preparePartnerBenefitDetails,
   ),
 }
