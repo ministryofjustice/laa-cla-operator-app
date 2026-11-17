@@ -5,7 +5,7 @@ import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWo
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { applicantPageContent } from './applicantBlock.js'
 
-const { applicant: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
+const { applicant: STEP_CODE, partnerDetails: PARTNER_DETAILS_STEP_CODE } = CONTROLLED_WORK_STEP_CODES
 
 const PRIOR_ANSWER_STEPS = [
   CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum,
@@ -41,7 +41,13 @@ export const applicantStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(PARTNER_DETAILS_STEP_CODE)),
+            goto: PARTNER_DETAILS_STEP_CODE,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

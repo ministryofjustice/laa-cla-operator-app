@@ -39,6 +39,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'immigration-or-asylum-type': MATTER_TYPE_OPTIONS,
   'asylum-support': YES_NO_OPTIONS,
   partner: YES_NO_OPTIONS,
+  'partner-over-60': YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
   'child-dependants': YES_NO_OPTIONS,
   'adult-dependants': YES_NO_OPTIONS,
@@ -77,6 +78,7 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'immigration-or-asylum-type',
   'asylum-support',
   'partner',
+  'partner-over-60',
   'passporting',
   'child-dependants',
   'adult-dependants',
@@ -118,6 +120,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   benefits: 'controlled-work-benefits',
   benefitDetails: 'benefit-details',
   otherIncome: 'other-income',
+  partnerDetails: 'partner-details',
   partnerEmploymentStatus: 'partner-employment-status',
 } as const
 

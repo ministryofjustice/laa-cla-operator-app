@@ -144,7 +144,11 @@ describe('Controlled-work journey rules', () => {
 
     it('adds income steps only when means tested and not passported, and partner steps only with a partner', () => {
       const base: ControlledWorkAnswers = { 'immigration-or-asylum': 'no', partner: 'yes', passporting: 'yes' }
-      expect(getApplicableSteps(base, ADULT)).to.deep.equal([STEPS.immigrationOrAsylum, STEPS.applicant])
+      expect(getApplicableSteps(base, ADULT)).to.deep.equal([
+        STEPS.immigrationOrAsylum,
+        STEPS.applicant,
+        STEPS.partnerDetails,
+      ])
 
       expect(getApplicableSteps({ ...base, passporting: 'no' }, ADULT)).to.deep.equal([
         STEPS.immigrationOrAsylum,
@@ -152,6 +156,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.dependantDetails,
         STEPS.employmentStatus,
         STEPS.benefits,
+        STEPS.partnerDetails,
         STEPS.partnerEmploymentStatus,
       ])
       expect(getApplicableSteps({ ...base, passporting: 'no', partner: 'no' }, ADULT)).to.not.include(
@@ -335,13 +340,14 @@ describe('Controlled-work journey rules', () => {
     it('removes only partner answers when the partner answer changes to no', () => {
       const answers: ControlledWorkAnswers = {
         'immigration-or-asylum': 'no',
-        partner: 'no',
+        partner: 'yes',
         passporting: 'no',
+        'partner-over-60': 'yes',
         'employment-status': 'in_work',
         'partner-employment-status': 'in_work',
       }
-      const resolved = resolveControlledWorkJourney(answers, ADULT)
-      expect(resolved.removedCodes).to.deep.equal(['partner-employment-status'])
+      const resolved = resolveControlledWorkJourney({ ...answers, partner: 'no' }, ADULT)
+      expect(resolved.removedCodes).to.have.members(['partner-over-60', 'partner-employment-status'])
       expect(resolved.answers['employment-status']).to.equal('in_work')
     })
 

@@ -324,6 +324,14 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
         (answers['receives-benefits'] === YES && answers['benefit-details-completed'] === YES)),
   },
   {
+    code: STEPS.partnerDetails,
+    answerCodes: ['partner-over-60'],
+    isApplicable: (state) =>
+      resolveRoute(state) === ASSESSMENT_ROUTES.means &&
+      state.answers.partner === YES &&
+      state.answers.passporting !== undefined,
+  },
+  {
     code: STEPS.partnerEmploymentStatus,
     answerCodes: ['partner-employment-status'],
     isApplicable: (state) => isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,

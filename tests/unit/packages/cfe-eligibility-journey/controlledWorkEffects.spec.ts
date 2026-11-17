@@ -92,6 +92,24 @@ describe('Controlled-work effects', () => {
     expect(readControlledWorkAnswers(session, CASE_ID)['employment-status']).to.equal('unemployed')
   })
 
+  it('persists and prepopulates the partner age answer and removes it when the partner gate changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
+
+    save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-over-60']).to.equal('yes')
+    expect(restore(session, ADULT_DOB).answers.get('partner-over-60')).to.equal('yes')
+
+    save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-over-60']).to.equal('no')
+    expect(restore(session, ADULT_DOB).answers.get('partner-over-60')).to.equal('no')
+
+    const changedPartner = save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('partner-over-60')
+    expect(changedPartner.answers.has('partner-over-60')).to.equal(false)
+  })
+
   it('persists and prepopulates the benefits answer, replacing it when the answer changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
