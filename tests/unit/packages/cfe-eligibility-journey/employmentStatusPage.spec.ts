@@ -10,6 +10,7 @@ import {
   employmentStatusPageContent,
 } from '#packages/cfe-eligibility-journey/src/employmentStatusPage/employmentStatusBlock.js'
 import { employmentStatusStep } from '#packages/cfe-eligibility-journey/src/employmentStatusPage/employmentStatusStep.js'
+import { incomeStep } from '#packages/cfe-eligibility-journey/src/controlledWorkIncomePage/incomeStep.js'
 
 const QUESTION = "What is your client's employment status?"
 const CONTROLLED_ANSWERS = {
@@ -73,12 +74,13 @@ describe('Controlled-work employment status page', () => {
     expect(getApplicableSteps({ ...CONTROLLED_ANSWERS, passporting: 'yes' }, ADULT)).to.not.include(STEPS.employmentStatus)
   })
 
-  it('saves valid answers and keeps both unimplemented branches at the incomplete boundary', () => {
+  it('routes employed clients to income and keeps unemployed clients at the incomplete boundary', () => {
     const submission = JSON.stringify(employmentStatusStep.onSubmission)
     const access = JSON.stringify(employmentStatusStep.onAccess)
 
     expect(submission).to.include('SaveControlledWorkAnswers')
     expect(submission).to.include('"validate":true')
+    expect(submission).to.include(incomeStep.code)
     expect(submission).to.include(controlledWorkIncompleteStepCode)
     expect(access).to.include(STEPS.dependantIncome)
     expect(controlledWorkIncompleteStep.code).to.equal(controlledWorkIncompleteStepCode)

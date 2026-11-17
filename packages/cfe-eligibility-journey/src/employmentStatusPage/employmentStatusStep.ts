@@ -1,9 +1,10 @@
-import { access, Condition, Data, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { access, Answer, Condition, Data, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { step, type StepDefinition } from '../authoring.js'
 import { CONTROLLED_WORK_DATA_KEYS, ControlledWorkEffects } from '../controlledWork/controlledWorkEffects.js'
 import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWorkIncompleteStep.js'
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { employmentStatusPageContent } from './employmentStatusBlock.js'
+import { incomeStep } from '../controlledWorkIncomePage/incomeStep.js'
 
 const { employmentStatus: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
 
@@ -18,6 +19,7 @@ const PRIOR_ANSWER_STEPS = [
   CONTROLLED_WORK_STEP_CODES.applicant,
   CONTROLLED_WORK_STEP_CODES.dependantDetails,
   CONTROLLED_WORK_STEP_CODES.dependantIncome,
+  CONTROLLED_WORK_STEP_CODES.dependantIncomeDetails,
 ]
 
 export const employmentStatusStep: StepDefinition = step({
@@ -44,7 +46,13 @@ export const employmentStatusStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Answer('employment-status').match(Condition.Equals('in_work')),
+            goto: incomeStep.code,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

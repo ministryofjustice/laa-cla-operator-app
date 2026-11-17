@@ -21,6 +21,8 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'adult-dependants': YES_NO_OPTIONS,
   'dependants-get-income': YES_NO_OPTIONS,
   'employment-status': EMPLOYMENT_STATUS_OPTIONS,
+  'income-completed': ['yes'],
+  'benefits-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
 } as const
 
@@ -43,6 +45,8 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'adult-dependants',
   'dependants-get-income',
   'employment-status',
+  'income-completed',
+  'benefits-completed',
   'partner-employment-status',
   ...CONTROLLED_WORK_COUNT_ANSWER_CODES,
 ] as const satisfies readonly ControlledWorkAnswerCode[]
@@ -66,6 +70,8 @@ export const CONTROLLED_WORK_STEP_CODES = {
   dependantIncome: 'dependant-income',
   dependantIncomeDetails: 'dependant-income-details',
   employmentStatus: 'employment-status',
+  income: 'income',
+  benefits: 'benefits',
   partnerEmploymentStatus: 'partner-employment-status',
 } as const
 

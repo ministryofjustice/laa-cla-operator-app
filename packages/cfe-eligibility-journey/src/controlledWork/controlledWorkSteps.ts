@@ -228,6 +228,17 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     isApplicable: isMeansTestedWithoutPassporting,
   },
   {
+    code: STEPS.income,
+    answerCodes: ['income-completed'],
+    isApplicable: (state) =>
+      isMeansTestedWithoutPassporting(state) && state.answers['employment-status'] === 'in_work',
+  },
+  {
+    code: STEPS.benefits,
+    answerCodes: ['benefits-completed'],
+    isApplicable: isMeansTestedWithoutPassporting,
+  },
+  {
     code: STEPS.partnerEmploymentStatus,
     answerCodes: ['partner-employment-status'],
     isApplicable: (state) => isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,

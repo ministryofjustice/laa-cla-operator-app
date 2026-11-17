@@ -150,6 +150,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.applicant,
         STEPS.dependantDetails,
         STEPS.employmentStatus,
+        STEPS.benefits,
         STEPS.partnerEmploymentStatus,
       ])
       expect(getApplicableSteps({ ...base, passporting: 'no', partner: 'no' }, ADULT)).to.not.include(
@@ -340,6 +341,7 @@ describe('Controlled-work journey rules', () => {
       expect(findMissingSteps(flipped.answers, ADULT).map((step) => step.stepCode)).to.deep.equal([
         STEPS.dependantDetails,
         STEPS.employmentStatus,
+        STEPS.benefits,
       ])
     })
   })
@@ -381,6 +383,7 @@ describe('Controlled-work journey rules', () => {
         { stepCode: STEPS.dependantDetails, answerCodes: ['child-dependants-count'] },
         { stepCode: STEPS.dependantIncome, answerCodes: ['dependants-get-income'] },
         { stepCode: STEPS.employmentStatus, answerCodes: ['employment-status'] },
+        { stepCode: STEPS.benefits, answerCodes: ['benefits-completed'] },
       ])
       expect(findMissingSteps(adultCountMissing, ADULT)[0]).to.deep.equal({
         stepCode: STEPS.dependantDetails,
@@ -399,6 +402,24 @@ describe('Controlled-work journey rules', () => {
 
       expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
       expect(getFirstMissingStep(answers, ADULT)).to.equal(STEPS.employmentStatus)
+    })
+
+    it('keeps benefits as the first incomplete page after either employment branch', () => {
+      const base: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+      }
+
+      expect(getFirstMissingStep({ ...base, 'employment-status': 'unemployed' }, ADULT)).to.equal(STEPS.benefits)
+      expect(
+        getFirstMissingStep({ ...base, 'employment-status': 'in_work', 'income-completed': 'yes' }, ADULT),
+      ).to.equal(STEPS.benefits)
+      expect(
+        isControlledWorkComplete({ ...base, 'employment-status': 'in_work', 'income-completed': 'yes' }, ADULT),
+      ).to.equal(false)
     })
 
     it('never requires an answer for informational pages', () => {

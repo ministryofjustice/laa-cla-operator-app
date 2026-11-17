@@ -12,7 +12,7 @@ import { savingsStep } from './savingsPage/savingsStep.js'
 import { partnerSavingsStep } from './partnerSavingsPage/partnerSavingsStep.js'
 import { disputedSavingsStep } from './disputedSavingsPage/disputedSavingsStep.js'
 import { disregardsStep } from './disregardsPage/disregardsStep.js'
-import { incomeStep } from './incomePage/incomeStep.js'
+import { incomeStep as legacyIncomeStep } from './incomePage/incomeStep.js'
 import { partnerIncomeStep } from './partnerIncomePage/partnerIncomeStep.js'
 import { dependantsStep } from './dependantsPage/dependantsStep.js'
 import { expensesStep } from './expensesPage/expensesStep.js'
@@ -39,6 +39,7 @@ import { dependantDetailsStep } from './dependantDetailsPage/dependantDetailsSte
 import { dependantIncomeStep } from './dependantIncomePage/dependantIncomeStep.js'
 import { dependantIncomeDetailsStep } from './dependantIncomeDetailsPage/dependantIncomeDetailsStep.js'
 import { employmentStatusStep } from './employmentStatusPage/employmentStatusStep.js'
+import { incomeStep } from './controlledWorkIncomePage/incomeStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -73,6 +74,7 @@ export const eligibilityJourney = journey({
     dependantIncomeStep,
     dependantIncomeDetailsStep,
     employmentStatusStep,
+    incomeStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,
@@ -88,7 +90,7 @@ export const eligibilityJourney = journey({
     partnerSavingsStep,
     disputedSavingsStep,
     disregardsStep,
-    incomeStep,
+    legacyIncomeStep,
     partnerIncomeStep,
     dependantsStep,
     expensesStep,

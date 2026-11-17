@@ -92,6 +92,61 @@ describe('Controlled-work effects', () => {
     expect(readControlledWorkAnswers(session, CASE_ID)['employment-status']).to.equal('unemployed')
   })
 
+  it('initialises, persists, restores and prunes controlled income rows when employment changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'in_work' })
+
+    const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PrepareIncomeDetails.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.incomeCollection)).to.deep.equal([
+      { income_type: '', income_frequency: '', gross_income: '', income_tax: '', national_insurance: '' },
+    ])
+
+    page.answers.set('income_type_0', 'employment')
+    page.answers.set('income_frequency_0', 'every_week')
+    page.answers.set('gross_income_0', '123')
+    page.answers.set('income_tax_0', '22')
+    page.answers.set('national_insurance_0', '11')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.income,
+      CONTROLLED_WORK_DATA_KEYS.incomeCollection,
+      ['income_type', 'income_frequency', 'gross_income', 'income_tax', 'national_insurance'],
+    )
+    const saved = save(session, ADULT_DOB, STEPS.income, {})
+
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.benefits)
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.income]?.[CONTROLLED_WORK_DATA_KEYS.incomeCollection],
+    ).to.deep.equal([
+      {
+        income_type: 'employment',
+        income_frequency: 'every_week',
+        gross_income: '123',
+        income_tax: '22',
+        national_insurance: '11',
+      },
+    ])
+
+    const revisited = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PrepareIncomeDetails.evaluate(revisited.context)
+    expect(revisited.answers.get('income_type_0')).to.equal('employment')
+    expect(revisited.answers.get('income_frequency_0')).to.equal('every_week')
+    expect(revisited.answers.get('gross_income_0')).to.equal('123')
+    expect(revisited.answers.get('income_tax_0')).to.equal('22')
+    expect(revisited.answers.get('national_insurance_0')).to.equal('11')
+
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'unemployed' })
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.income]).to.equal(undefined)
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('income-completed')
+  })
+
   it('only saves the answers that belong to the submitted step', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no', partner: 'yes', unrelated: 'x' })
