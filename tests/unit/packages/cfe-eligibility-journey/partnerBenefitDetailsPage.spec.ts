@@ -144,7 +144,7 @@ describe('Partner benefit details page', () => {
     }
   })
 
-  it('routes only the Yes branch to details and keeps the following page incomplete', () => {
+  it('routes only the Yes branch to details and then continues to partner other income', () => {
     const yesAnswers = { ...BASE_ANSWERS }
     const detailsAnswered = { ...yesAnswers, 'partner-benefit-details-completed': 'yes' } as const
     const noAnswers = { ...BASE_ANSWERS, 'partner-receives-benefits': 'no' } as const

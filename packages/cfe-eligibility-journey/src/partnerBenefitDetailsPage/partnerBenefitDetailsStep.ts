@@ -6,7 +6,10 @@ import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkType
 import { FinancialEligibilityEffects, PatternEffects } from '../effects.js'
 import { partnerBenefitDetailsPageContent } from './partnerBenefitDetailsBlock.js'
 
-const { partnerBenefitDetails: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
+const {
+  partnerBenefitDetails: STEP_CODE,
+  partnerOtherIncome: PARTNER_OTHER_INCOME_STEP_CODE,
+} = CONTROLLED_WORK_STEP_CODES
 const { partnerBenefitCollection: COLLECTION_CODE } = CONTROLLED_WORK_DATA_KEYS
 const FIELD_CODES = ['benefit_type', 'benefit_amount', 'benefit_frequency']
 
@@ -75,7 +78,13 @@ export const partnerBenefitDetailsStep: StepDefinition = step({
           PatternEffects.SaveRepeatingItems(STEP_CODE, COLLECTION_CODE, FIELD_CODES),
           ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE),
         ],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(PARTNER_OTHER_INCOME_STEP_CODE)),
+            goto: PARTNER_OTHER_INCOME_STEP_CODE,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

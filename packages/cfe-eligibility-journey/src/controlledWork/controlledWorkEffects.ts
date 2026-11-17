@@ -241,6 +241,9 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
   if (stepCode === CONTROLLED_WORK_STEP_CODES.otherIncome) {
     return { ...submitted, 'other-income-completed': 'yes' }
   }
+  if (stepCode === CONTROLLED_WORK_STEP_CODES.partnerOtherIncome) {
+    return { ...submitted, 'partner-other-income-completed': 'yes' }
+  }
   return submitted
 }
 

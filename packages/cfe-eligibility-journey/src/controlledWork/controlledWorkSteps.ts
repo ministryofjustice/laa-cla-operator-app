@@ -10,6 +10,9 @@ import {
   OTHER_INCOME_FREQUENCY_CODES,
   OTHER_INCOME_RELEVANT_CODES,
   OTHER_INCOME_VALUE_CODES,
+  PARTNER_OTHER_INCOME_FREQUENCY_CODES,
+  PARTNER_OTHER_INCOME_RELEVANT_CODES,
+  PARTNER_OTHER_INCOME_VALUE_CODES,
   YES,
   type AssessmentRoute,
   type ControlledWorkAnswerCode,
@@ -26,10 +29,21 @@ const NO_DEPENDANTS = 0
 const COUNT_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_COUNT_ANSWER_CODES)
 const CONTROLLED_WORK_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_ANSWER_CODES)
 const CHOICE_ANSWER_CODE_SET = new Set<string>(Object.keys(CONTROLLED_WORK_ANSWER_OPTIONS))
-const OTHER_INCOME_VALUE_CODE_SET = new Set<string>(OTHER_INCOME_VALUE_CODES)
-const OTHER_INCOME_FREQUENCY_CODE_SET = new Set<string>(OTHER_INCOME_FREQUENCY_CODES)
-const OTHER_INCOME_RELEVANT_CODE_SET = new Set<string>(OTHER_INCOME_RELEVANT_CODES)
-const OTHER_INCOME_CONDITIONAL_CODE_SET = new Set<string>([...OTHER_INCOME_VALUE_CODES, ...OTHER_INCOME_FREQUENCY_CODES])
+const OTHER_INCOME_VALUE_CODE_SET = new Set<string>([...OTHER_INCOME_VALUE_CODES, ...PARTNER_OTHER_INCOME_VALUE_CODES])
+const OTHER_INCOME_FREQUENCY_CODE_SET = new Set<string>([
+  ...OTHER_INCOME_FREQUENCY_CODES,
+  ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
+])
+const OTHER_INCOME_RELEVANT_CODE_SET = new Set<string>([
+  ...OTHER_INCOME_RELEVANT_CODES,
+  ...PARTNER_OTHER_INCOME_RELEVANT_CODES,
+])
+const OTHER_INCOME_CONDITIONAL_CODE_SET = new Set<string>([
+  ...OTHER_INCOME_VALUE_CODES,
+  ...OTHER_INCOME_FREQUENCY_CODES,
+  ...PARTNER_OTHER_INCOME_VALUE_CODES,
+  ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
+])
 const OTHER_INCOME_FREQUENCY_SET = new Set<string>(OTHER_INCOME_FREQUENCIES)
 const OTHER_INCOME_AMOUNT_PATTERN = /^-?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/u
 
@@ -65,7 +79,9 @@ function getOtherIncomeRelevantCode(code: string): string {
  * @param {string} code The candidate answer code.
  * @returns {boolean} Whether the code belongs to an other-income question.
  */
-function isOtherIncomeRelevantCode(code: string): code is (typeof OTHER_INCOME_RELEVANT_CODES)[number] {
+function isOtherIncomeRelevantCode(
+  code: string,
+): code is (typeof OTHER_INCOME_RELEVANT_CODES)[number] | (typeof PARTNER_OTHER_INCOME_RELEVANT_CODES)[number] {
   return OTHER_INCOME_RELEVANT_CODE_SET.has(code)
 }
 
@@ -220,7 +236,7 @@ function isRequiredAnswer(stepCode: ControlledWorkStepCode, code: ControlledWork
   if (stepCode === STEPS.dependantDetails && code === 'adult-dependants-count') {
     return answers['adult-dependants'] === YES
   }
-  if (stepCode === STEPS.otherIncome && OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) {
+  if ((stepCode === STEPS.otherIncome || stepCode === STEPS.partnerOtherIncome) && OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) {
     return isOtherIncomeConditionalAnswerRelevant(code, answers)
   }
   return true
@@ -353,10 +369,17 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
   },
   {
     code: STEPS.partnerOtherIncome,
-    answerCodes: ['partner-other-income-completed'],
-    isApplicable: ({ answers }) =>
-      answers['partner-receives-benefits'] === NO ||
-      (answers['partner-receives-benefits'] === YES && answers['partner-benefit-details-completed'] === YES),
+    answerCodes: [
+      ...PARTNER_OTHER_INCOME_RELEVANT_CODES,
+      ...PARTNER_OTHER_INCOME_VALUE_CODES,
+      ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
+      'partner-other-income-completed',
+    ],
+    isApplicable: (state) =>
+      isMeansTestedWithoutPassporting(state) &&
+      state.answers.partner === YES &&
+      (state.answers['partner-receives-benefits'] === NO ||
+        (state.answers['partner-receives-benefits'] === YES && state.answers['partner-benefit-details-completed'] === YES)),
   },
 ]
 

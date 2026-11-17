@@ -138,6 +138,24 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
         }),
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.partnerBenefits),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.partnerBenefits,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.partnerBenefitDetails),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.partnerBenefitDetails,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.partnerOtherIncome),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.partnerOtherIncome,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
             Condition.Equals(CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum),
           ),
           goto: CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum,

@@ -48,6 +48,7 @@ import { partnerEmploymentStatusStep } from './partnerEmploymentStatusPage/partn
 import { partnerEmploymentIncomeStep } from './partnerEmploymentIncomePage/partnerEmploymentIncomeStep.js'
 import { partnerBenefitsStep } from './partnerBenefitsPage/partnerBenefitsStep.js'
 import { partnerBenefitDetailsStep } from './partnerBenefitDetailsPage/partnerBenefitDetailsStep.js'
+import { partnerOtherIncomeStep } from './partnerOtherIncomePage/partnerOtherIncomeStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -91,6 +92,7 @@ export const eligibilityJourney = journey({
     partnerEmploymentIncomeStep,
     partnerBenefitsStep,
     partnerBenefitDetailsStep,
+    partnerOtherIncomeStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,

@@ -90,6 +90,65 @@ const OTHER_INCOME_CATEGORIES = [
 ] as const
 type OtherIncomeCategory = (typeof OTHER_INCOME_CATEGORIES)[number]
 type FrequencyOtherIncomeCategory = Extract<OtherIncomeCategory, { frequency: true }>
+interface OtherIncomeCopy {
+  question: string
+  requiredChoiceMessage: string
+  requiredMessage: string
+  invalidMessage: string
+  positiveMessage: string
+  frequencyMessage: string
+}
+
+const PARTNER_OTHER_INCOME_COPY = {
+  friends_or_family: {
+    question: 'Does the partner get financial help from friends or family?',
+    requiredChoiceMessage: 'Select yes if the partner gets financial help from friends or family',
+    requiredMessage: 'Enter amount of financial help from friends and family',
+    invalidMessage: 'Amount of financial help from friends of family must be a number',
+    positiveMessage: 'Amount of financial help from friends and family must be more than 0',
+    frequencyMessage: 'Select frequency of financial help from friends and family',
+  },
+  maintenance: {
+    question: 'Does the partner get maintenance from a former partner?',
+    requiredChoiceMessage: 'Select yes if the partner gets maintenance from a former partner',
+    requiredMessage: 'Enter amount of maintenance from a former partner',
+    invalidMessage: 'Amount of maintenance from a former partner must be a number',
+    positiveMessage: 'Amount of maintenance from a former partner must be more than 0',
+    frequencyMessage: 'Select frequency of maintenance payments from a former partner',
+  },
+  property_or_lodger: {
+    question: 'Does the partner get income from a property or lodger?',
+    requiredChoiceMessage: 'Select yes if the partner gets income from a property or lodger',
+    requiredMessage: 'Enter amount of income from a property or lodger',
+    invalidMessage: 'Amount of income from a property or lodger must be a number',
+    positiveMessage: 'Amount of income from a property or lodger must be more than 0',
+    frequencyMessage: 'Select frequency of income from a property or lodger',
+  },
+  pension: {
+    question: 'Does the partner get income from pensions?',
+    requiredChoiceMessage: 'Select yes if the partner gets income from pensions',
+    requiredMessage: 'Enter amount of income the partner gets from pensions',
+    invalidMessage: 'Amount of income the partner gets from pensions must be a number',
+    positiveMessage: 'Amount of income the partner gets from pensions must be more than 0',
+    frequencyMessage: 'Select frequency of income the partner gets from pensions',
+  },
+  student_finance: {
+    question: 'Does the partner get income from student finance?',
+    requiredChoiceMessage: 'Select yes if the partner gets income from student finance',
+    requiredMessage: 'Enter amount of student finance received this academic year',
+    invalidMessage: 'Amount of student finance received this academic year must be a number',
+    positiveMessage: 'Amount of student finance received this academic year must be more than 0',
+    frequencyMessage: '',
+  },
+  other: {
+    question: 'Does the partner get income from other sources?',
+    requiredChoiceMessage: 'Select yes if the partner gets income from other sources',
+    requiredMessage: 'Enter amount of income from other sources received in the last month',
+    invalidMessage: 'Amount of income from other sources received in the last month must be a number',
+    positiveMessage: 'Amount of income from other sources received in the last month must be more than 0',
+    frequencyMessage: '',
+  },
+} satisfies Record<OtherIncomeCategory['code'], OtherIncomeCopy>
 
 const FREQUENCIES = [
   { value: 'every_week', text: 'Every week' },
@@ -163,15 +222,29 @@ const otherSourcesBeforeInputs = `${otherIncomeGuidanceLinks}
   </div>
 </details>`
 
+const partnerTag = HtmlBlock({
+  tag: 'div',
+  classes: 'govuk-tag govuk-tag--purple govuk-!-margin-bottom-2',
+  content: 'Partner',
+})
+const partnerCaption = HtmlBlock({
+  tag: 'p',
+  classes: 'govuk-body',
+  content: 'Do not include income already entered for your client.',
+})
+
 /**
  * Creates a conditional currency input for an other-income question.
  * @param {OtherIncomeCategory} category The question and its amount validation copy.
+ * @param {boolean} isPartner Whether the field belongs to the partner.
  * @returns {ReturnType<typeof GovUKTextInput>} The conditional amount field.
  */
-const amountField = (category: OtherIncomeCategory): ReturnType<typeof GovUKTextInput> => {
-  const isRelevant = Answer(`${category.code}_relevant`).match(Condition.Equals('yes'))
+const amountField = (category: OtherIncomeCategory, isPartner: boolean): ReturnType<typeof GovUKTextInput> => {
+  const codePrefix = isPartner ? 'partner_' : ''
+  const copy = isPartner ? PARTNER_OTHER_INCOME_COPY[category.code] : category
+  const isRelevant = Answer(`${codePrefix}${category.code}_relevant`).match(Condition.Equals('yes'))
   return GovUKTextInput({
-    code: `${category.code}_conditional_value`,
+    code: `${codePrefix}${category.code}_conditional_value`,
     label: { text: category.amountLabel, classes: 'govuk-label--s' },
     inputType: 'text',
     attributes: { inputmode: 'decimal' },
@@ -182,15 +255,15 @@ const amountField = (category: OtherIncomeCategory): ReturnType<typeof GovUKText
     validWhen: [
       validation({
         condition: Self().match(Condition.IsRequired()),
-        message: category.requiredMessage,
+        message: copy.requiredMessage,
       }),
       validation({
         condition: Self().match(validAmount()),
-        message: category.invalidMessage,
+        message: copy.invalidMessage,
       }),
       validation({
         condition: Self().match(positiveAmount()),
-        message: category.positiveMessage,
+        message: copy.positiveMessage,
       }),
     ],
   })
@@ -199,12 +272,15 @@ const amountField = (category: OtherIncomeCategory): ReturnType<typeof GovUKText
 /**
  * Creates a conditional frequency radio group for a regular other-income question.
  * @param {FrequencyOtherIncomeCategory} category The question and its frequency validation copy.
+ * @param {boolean} isPartner Whether the field belongs to the partner.
  * @returns {ReturnType<typeof GovUKRadioInput>} The conditional frequency field.
  */
-const frequencyField = (category: FrequencyOtherIncomeCategory): ReturnType<typeof GovUKRadioInput> => {
-  const isRelevant = Answer(`${category.code}_relevant`).match(Condition.Equals('yes'))
+const frequencyField = (category: FrequencyOtherIncomeCategory, isPartner: boolean): ReturnType<typeof GovUKRadioInput> => {
+  const codePrefix = isPartner ? 'partner_' : ''
+  const copy = isPartner ? PARTNER_OTHER_INCOME_COPY[category.code] : category
+  const isRelevant = Answer(`${codePrefix}${category.code}_relevant`).match(Condition.Equals('yes'))
   return GovUKRadioInput({
-    code: `${category.code}_frequency`,
+    code: `${codePrefix}${category.code}_frequency`,
     fieldset: {
       legend: {
         text: 'Frequency',
@@ -217,7 +293,7 @@ const frequencyField = (category: FrequencyOtherIncomeCategory): ReturnType<type
     validWhen: [
       validation({
         condition: Self().match(Condition.String.MatchesRegex('^(every_week|every_two_weeks|every_four_weeks|monthly)$')),
-        message: category.frequencyMessage,
+        message: copy.frequencyMessage,
       }),
     ],
   })
@@ -226,15 +302,18 @@ const frequencyField = (category: FrequencyOtherIncomeCategory): ReturnType<type
 /**
  * Creates a Yes/No question with its answer-dependent inputs.
  * @param {OtherIncomeCategory} category The question copy and conditional field configuration.
+ * @param {boolean} isPartner Whether the question is about the partner.
  * @returns {ReturnType<typeof GovUKRadioInput>} The configured question field.
  */
-const otherIncomeQuestion = (category: OtherIncomeCategory): ReturnType<typeof GovUKRadioInput> => {
-  const conditionalFields: BlockDefinition[] = [amountField(category)]
-  if (category.frequency) conditionalFields.push(frequencyField(category))
+const otherIncomeQuestion = (category: OtherIncomeCategory, isPartner: boolean): ReturnType<typeof GovUKRadioInput> => {
+  const codePrefix = isPartner ? 'partner_' : ''
+  const copy = isPartner ? PARTNER_OTHER_INCOME_COPY[category.code] : category
+  const conditionalFields: BlockDefinition[] = [amountField(category, isPartner)]
+  if (category.frequency) conditionalFields.push(frequencyField(category, isPartner))
 
   return GovUKRadioInput({
-    code: `${category.code}_relevant`,
-    fieldset: { legend: { text: category.question } },
+    code: `${codePrefix}${category.code}_relevant`,
+    fieldset: { legend: { text: copy.question } },
     ...(category.hint !== undefined ? { hint: { text: category.hint } } : {}),
     ...(category.code === 'other'
       ? { formGroup: { beforeInputs: { html: otherSourcesBeforeInputs } } }
@@ -251,13 +330,14 @@ const otherIncomeQuestion = (category: OtherIncomeCategory): ReturnType<typeof G
     validWhen: [
       validation({
         condition: Self().match(Condition.String.MatchesRegex('^(yes|no)$')),
-        message: category.requiredChoiceMessage,
+        message: copy.requiredChoiceMessage,
       }),
     ],
   })
 }
 
-export const otherIncomeQuestionFields = OTHER_INCOME_CATEGORIES.map(otherIncomeQuestion)
+export const otherIncomeQuestionFields = OTHER_INCOME_CATEGORIES.map((category) => otherIncomeQuestion(category, false))
+export const partnerOtherIncomeQuestionFields = OTHER_INCOME_CATEGORIES.map((category) => otherIncomeQuestion(category, true))
 
 const otherIncomeGuidance = HtmlBlock({
   tag: 'a',
@@ -270,6 +350,16 @@ export const otherIncomePageContent = eligibilityQuestionPageLayout({
   questionBlocks: [
     GovUKHeading({ text: QUESTION, size: 'l', level: 2 }), // eslint-disable-line @typescript-eslint/no-magic-numbers -- Questions use an H2 heading.
     ...otherIncomeQuestionFields,
+  ],
+  guidanceBlocks: [otherIncomeGuidance],
+})
+
+export const partnerOtherIncomePageContent = eligibilityQuestionPageLayout({
+  questionBlocks: [
+    partnerTag,
+    GovUKHeading({ text: "The partner's other income", size: 'l', level: 2 }), // eslint-disable-line @typescript-eslint/no-magic-numbers -- Questions use an H2 heading.
+    partnerCaption,
+    ...partnerOtherIncomeQuestionFields,
   ],
   guidanceBlocks: [otherIncomeGuidance],
 })

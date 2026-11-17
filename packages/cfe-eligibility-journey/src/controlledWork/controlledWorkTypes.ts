@@ -27,6 +27,28 @@ export const OTHER_INCOME_FREQUENCY_CODES = [
   'property_or_lodger_frequency',
   'pension_frequency',
 ] as const
+export const PARTNER_OTHER_INCOME_RELEVANT_CODES = [
+  'partner_friends_or_family_relevant',
+  'partner_maintenance_relevant',
+  'partner_property_or_lodger_relevant',
+  'partner_pension_relevant',
+  'partner_student_finance_relevant',
+  'partner_other_relevant',
+] as const
+export const PARTNER_OTHER_INCOME_VALUE_CODES = [
+  'partner_friends_or_family_conditional_value',
+  'partner_maintenance_conditional_value',
+  'partner_property_or_lodger_conditional_value',
+  'partner_pension_conditional_value',
+  'partner_student_finance_conditional_value',
+  'partner_other_conditional_value',
+] as const
+export const PARTNER_OTHER_INCOME_FREQUENCY_CODES = [
+  'partner_friends_or_family_frequency',
+  'partner_maintenance_frequency',
+  'partner_property_or_lodger_frequency',
+  'partner_pension_frequency',
+] as const
 export const OTHER_INCOME_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
@@ -54,6 +76,12 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   pension_relevant: YES_NO_OPTIONS,
   student_finance_relevant: YES_NO_OPTIONS,
   other_relevant: YES_NO_OPTIONS,
+  partner_friends_or_family_relevant: YES_NO_OPTIONS,
+  partner_maintenance_relevant: YES_NO_OPTIONS,
+  partner_property_or_lodger_relevant: YES_NO_OPTIONS,
+  partner_pension_relevant: YES_NO_OPTIONS,
+  partner_student_finance_relevant: YES_NO_OPTIONS,
+  partner_other_relevant: YES_NO_OPTIONS,
   'other-income-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'partner-income-completed': ['yes'],
@@ -63,8 +91,12 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
 } as const
 
 type ChoiceAnswerCode = keyof typeof CONTROLLED_WORK_ANSWER_OPTIONS
-export type OtherIncomeValueAnswerCode = (typeof OTHER_INCOME_VALUE_CODES)[number]
-export type OtherIncomeFrequencyAnswerCode = (typeof OTHER_INCOME_FREQUENCY_CODES)[number]
+export type OtherIncomeValueAnswerCode =
+  | (typeof OTHER_INCOME_VALUE_CODES)[number]
+  | (typeof PARTNER_OTHER_INCOME_VALUE_CODES)[number]
+export type OtherIncomeFrequencyAnswerCode =
+  | (typeof OTHER_INCOME_FREQUENCY_CODES)[number]
+  | (typeof PARTNER_OTHER_INCOME_FREQUENCY_CODES)[number]
 export type ControlledWorkCountAnswerCode = (typeof CONTROLLED_WORK_COUNT_ANSWER_CODES)[number]
 export type ControlledWorkAnswerCode =
   | ChoiceAnswerCode
@@ -94,6 +126,9 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   ...OTHER_INCOME_RELEVANT_CODES,
   ...OTHER_INCOME_VALUE_CODES,
   ...OTHER_INCOME_FREQUENCY_CODES,
+  ...PARTNER_OTHER_INCOME_RELEVANT_CODES,
+  ...PARTNER_OTHER_INCOME_VALUE_CODES,
+  ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
