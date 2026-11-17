@@ -110,6 +110,20 @@ describe('Controlled-work effects', () => {
     expect(changedPartner.answers.has('partner-over-60')).to.equal(false)
   })
 
+  it('persists and prepopulates partner employment status and replaces it when the answer changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'in_work' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-employment-status']).to.equal('in_work')
+    expect(restore(session, ADULT_DOB).answers.get('partner-employment-status')).to.equal('in_work')
+
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'unemployed' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-employment-status']).to.equal('unemployed')
+    expect(restore(session, ADULT_DOB).answers.get('partner-employment-status')).to.equal('unemployed')
+  })
+
   it('persists and prepopulates the benefits answer, replacing it when the answer changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
