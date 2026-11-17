@@ -336,6 +336,11 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     answerCodes: ['partner-employment-status'],
     isApplicable: (state) => isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,
   },
+  {
+    code: STEPS.partnerIncome,
+    answerCodes: ['partner-income-completed'],
+    isApplicable: ({ answers }) => answers['partner-employment-status'] === 'in_work',
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))

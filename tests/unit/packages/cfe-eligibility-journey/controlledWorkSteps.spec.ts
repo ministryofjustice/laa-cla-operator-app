@@ -159,6 +159,12 @@ describe('Controlled-work journey rules', () => {
         STEPS.partnerDetails,
         STEPS.partnerEmploymentStatus,
       ])
+      expect(
+        getApplicableSteps(
+          { ...base, passporting: 'no', 'partner-employment-status': 'in_work' },
+          ADULT,
+        ),
+      ).to.include(STEPS.partnerIncome)
       expect(getApplicableSteps({ ...base, passporting: 'no', partner: 'no' }, ADULT)).to.not.include(
         STEPS.partnerEmploymentStatus,
       )
@@ -244,6 +250,26 @@ describe('Controlled-work journey rules', () => {
 
     it('returns undefined at the end of the journey', () => {
       expect(getNextStep(STEPS.applicant, { 'immigration-or-asylum': 'no', passporting: 'yes' }, ADULT)).to.equal(undefined)
+    })
+
+    it('routes employed partners to income and leaves the unemployed branch at the incomplete boundary', () => {
+      const base = {
+        'immigration-or-asylum': 'no',
+        partner: 'yes',
+        passporting: 'no',
+      } as const
+      const employed = { ...base, 'partner-employment-status': 'in_work' } as const
+      const unemployed = { ...base, 'partner-employment-status': 'unemployed' } as const
+
+      expect(getNextStep(STEPS.partnerEmploymentStatus, employed, ADULT)).to.equal(STEPS.partnerIncome)
+      expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(undefined)
+      expect(getNextStep(STEPS.partnerIncome, { ...employed, 'partner-income-completed': 'yes' }, ADULT)).to.equal(
+        undefined,
+      )
+      expect(findMissingSteps(employed, ADULT)).to.deep.include({
+        stepCode: STEPS.partnerIncome,
+        answerCodes: ['partner-income-completed'],
+      })
     })
 
     it('goes back to the previous applicable step so a user can revisit earlier pages', () => {
@@ -345,9 +371,14 @@ describe('Controlled-work journey rules', () => {
         'partner-over-60': 'yes',
         'employment-status': 'in_work',
         'partner-employment-status': 'in_work',
+        'partner-income-completed': 'yes',
       }
       const resolved = resolveControlledWorkJourney({ ...answers, partner: 'no' }, ADULT)
-      expect(resolved.removedCodes).to.have.members(['partner-over-60', 'partner-employment-status'])
+      expect(resolved.removedCodes).to.have.members([
+        'partner-over-60',
+        'partner-employment-status',
+        'partner-income-completed',
+      ])
       expect(resolved.answers['employment-status']).to.equal('in_work')
     })
 

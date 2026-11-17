@@ -28,6 +28,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   dependantIncomeCollection: 'dependant_incomes',
   dependantIncomeMaxRows: 'controlledWorkDependantIncomeMaxRows',
   incomeCollection: 'incomes',
+  partnerIncomeCollection: 'partner_incomes',
   benefitCollection: 'benefits',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
 } as const
@@ -41,6 +42,8 @@ export interface ControlledWorkEffectShape {
   PrepareDependantIncomeDetails: () => EffectFunctionExpr
   /** Loads repeating client income rows and supplies the initial blank row */
   PrepareIncomeDetails: () => EffectFunctionExpr
+  /** Loads repeating partner income rows and supplies the initial blank row */
+  PreparePartnerIncomeDetails: () => EffectFunctionExpr
   /** Loads repeating client benefit rows and supplies the initial blank row */
   PrepareBenefitDetails: () => EffectFunctionExpr
 }
@@ -51,6 +54,14 @@ const DEPENDANT_INCOME_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.dependantIncome
 const DEPENDANT_INCOME_FIELD_CODES = ['amount', 'frequency']
 const INCOME_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.income
 const INCOME_FIELD_CODES = ['income_type', 'income_frequency', 'gross_income', 'income_tax', 'national_insurance']
+const PARTNER_INCOME_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerIncome
+const PARTNER_INCOME_FIELD_CODES = [
+  'partner_income_type',
+  'partner_income_frequency',
+  'partner_gross_income',
+  'partner_income_tax',
+  'partner_national_insurance',
+]
 const BENEFIT_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.benefitDetails
 const BENEFIT_DETAILS_FIELD_CODES = ['benefit_type', 'benefit_amount', 'benefit_frequency']
 
@@ -144,6 +155,31 @@ function reconcileIncomeDrafts(
   return true
 }
 
+function reconcilePartnerIncomeDrafts(
+  session: FinancialEligibilitySession,
+  caseId: string,
+  answers: ControlledWorkAnswers,
+): boolean {
+  const patternsByCase = session.casePatternDrafts
+  const casePatterns = patternsByCase?.[caseId]
+  const pattern = casePatterns?.[PARTNER_INCOME_PATTERN_CODE]
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection
+
+  if (!pattern?.[collectionCode] || answers['partner-employment-status'] === 'in_work') return false
+
+  const updatedPatterns = { ...(patternsByCase ?? {}) }
+  const updatedCasePatterns = { ...(casePatterns ?? {}) }
+  const updatedPattern = { ...pattern }
+  delete updatedPattern[collectionCode]
+
+  if (Object.keys(updatedPattern).length === 0) delete updatedCasePatterns[PARTNER_INCOME_PATTERN_CODE]
+  else updatedCasePatterns[PARTNER_INCOME_PATTERN_CODE] = updatedPattern
+
+  updatedPatterns[caseId] = updatedCasePatterns
+  session.casePatternDrafts = updatedPatterns
+  return true
+}
+
 function reconcileBenefitDetailsDrafts(
   session: FinancialEligibilitySession,
   caseId: string,
@@ -174,6 +210,9 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
   const submitted = Object.fromEntries(getStepAnswerCodes(stepCode).map((code) => [code, posted[code]]))
   if (stepCode === INCOME_PATTERN_CODE) {
     return { ...submitted, 'income-completed': 'yes' }
+  }
+  if (stepCode === PARTNER_INCOME_PATTERN_CODE) {
+    return { ...submitted, 'partner-income-completed': 'yes' }
   }
   if (stepCode === BENEFIT_DETAILS_PATTERN_CODE) {
     return { ...submitted, 'benefit-details-completed': 'yes' }
@@ -206,6 +245,33 @@ function prepareIncomeDetails(context: EffectFunctionContext): void {
   context.setData(collectionCode, rows)
   rows.forEach((row, index) => {
     for (const code of INCOME_FIELD_CODES) {
+      context.setAnswer(`${code}_${index}`, row[code] ?? '')
+    }
+  })
+}
+
+function preparePartnerIncomeDetails(context: EffectFunctionContext): void {
+  const caseId = getCaseId(context)
+  const session = context.getSession() as FinancialEligibilitySession | undefined
+  if (!caseId || !session) return
+
+  const casePatterns = getOrMigrateCasePatternDrafts(session, caseId)
+  const pattern = casePatterns[PARTNER_INCOME_PATTERN_CODE] ?? {}
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection
+  const savedRows = pattern[collectionCode] as Array<Record<string, unknown>> | undefined
+  const rows = savedRows?.length
+    ? savedRows
+    : [Object.fromEntries(PARTNER_INCOME_FIELD_CODES.map((code) => [code, '']))]
+
+  if (!savedRows?.length) {
+    pattern[collectionCode] = rows
+    casePatterns[PARTNER_INCOME_PATTERN_CODE] = pattern
+    session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: casePatterns }
+  }
+
+  context.setData(collectionCode, rows)
+  rows.forEach((row, index) => {
+    for (const code of PARTNER_INCOME_FIELD_CODES) {
       context.setAnswer(`${code}_${index}`, row[code] ?? '')
     }
   })
@@ -251,9 +317,16 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       const { answers, removedCodes } = resolveControlledWorkJourney(saved, journeyContext)
       const dependantIncomeRowsChanged = reconcileDependantIncomeDrafts(session, caseId, answers)
       const incomeRowsChanged = reconcileIncomeDrafts(session, caseId, answers)
+      const partnerIncomeRowsChanged = reconcilePartnerIncomeDrafts(session, caseId, answers)
       const benefitRowsChanged = reconcileBenefitDetailsDrafts(session, caseId, answers)
 
-      if (removedCodes.length > 0 || dependantIncomeRowsChanged || incomeRowsChanged || benefitRowsChanged) {
+      if (
+        removedCodes.length > 0 ||
+        dependantIncomeRowsChanged ||
+        incomeRowsChanged ||
+        partnerIncomeRowsChanged ||
+        benefitRowsChanged
+      ) {
         writeControlledWorkAnswers(session, caseId, answers)
         invalidatePreparedEligibilitySnapshot(session, caseId)
       }
@@ -277,6 +350,7 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       const { answers } = resolveControlledWorkJourney(merged, journeyContext)
       reconcileDependantIncomeDrafts(session, caseId, answers)
       reconcileIncomeDrafts(session, caseId, answers)
+      reconcilePartnerIncomeDrafts(session, caseId, answers)
       reconcileBenefitDetailsDrafts(session, caseId, answers)
 
       writeControlledWorkAnswers(session, caseId, answers)
@@ -329,6 +403,11 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
   PrepareIncomeDetails: FinancialEligibilityEffectsRegistry.register(
     'PrepareIncomeDetails',
     () => prepareIncomeDetails,
+  ),
+
+  PreparePartnerIncomeDetails: FinancialEligibilityEffectsRegistry.register(
+    'PreparePartnerIncomeDetails',
+    () => preparePartnerIncomeDetails,
   ),
 
   PrepareBenefitDetails: FinancialEligibilityEffectsRegistry.register(

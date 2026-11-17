@@ -1,9 +1,10 @@
-import { access, Condition, Data, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { access, Answer, Condition, Data, redirect, submit } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { step, type StepDefinition } from '../authoring.js'
 import { CONTROLLED_WORK_DATA_KEYS, ControlledWorkEffects } from '../controlledWork/controlledWorkEffects.js'
 import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWorkIncompleteStep.js'
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { partnerEmploymentStatusPageContent } from './partnerEmploymentStatusBlock.js'
+import { partnerEmploymentIncomeStep } from '../partnerEmploymentIncomePage/partnerEmploymentIncomeStep.js'
 
 const { partnerEmploymentStatus: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
 
@@ -51,7 +52,13 @@ export const partnerEmploymentStatusStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Answer('partner-employment-status').match(Condition.Equals('in_work')),
+            goto: partnerEmploymentIncomeStep.code,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

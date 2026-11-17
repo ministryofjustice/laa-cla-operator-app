@@ -18,6 +18,7 @@ import {
   partnerEmploymentStatusPageContent,
 } from '#packages/cfe-eligibility-journey/src/partnerEmploymentStatusPage/partnerEmploymentStatusBlock.js'
 import { partnerEmploymentStatusStep } from '#packages/cfe-eligibility-journey/src/partnerEmploymentStatusPage/partnerEmploymentStatusStep.js'
+import { partnerEmploymentIncomeStep } from '#packages/cfe-eligibility-journey/src/partnerEmploymentIncomePage/partnerEmploymentIncomeStep.js'
 
 const ADULT = { isUnder18: false }
 const BASE_ANSWERS = {
@@ -93,19 +94,20 @@ describe('Partner employment status page', () => {
     )
   })
 
-  it('continues from partner details to this page and stops at the incomplete boundary after either answer', () => {
+  it('continues from partner details and routes employed partners to their income page', () => {
     expect(getNextStep(STEPS.partnerDetails, { ...BASE_ANSWERS, 'partner-over-60': 'no' }, ADULT)).to.equal(
       STEPS.partnerEmploymentStatus,
     )
 
-    for (const status of ['in_work', 'unemployed'] as const) {
-      const answers = { ...BASE_ANSWERS, 'partner-employment-status': status }
-      expect(getNextStep(STEPS.partnerEmploymentStatus, answers, ADULT)).to.equal(undefined)
-    }
+    const employed = { ...BASE_ANSWERS, 'partner-employment-status': 'in_work' } as const
+    const unemployed = { ...BASE_ANSWERS, 'partner-employment-status': 'unemployed' } as const
+    expect(getNextStep(STEPS.partnerEmploymentStatus, employed, ADULT)).to.equal(STEPS.partnerIncome)
+    expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(undefined)
 
     const submission = JSON.stringify(partnerEmploymentStatusStep.onSubmission)
     expect(submission).to.include('SaveControlledWorkAnswers')
     expect(submission).to.include('"validate":true')
+    expect(submission).to.include(partnerEmploymentIncomeStep.code)
     expect(submission).to.include(controlledWorkIncompleteStepCode)
   })
 })
