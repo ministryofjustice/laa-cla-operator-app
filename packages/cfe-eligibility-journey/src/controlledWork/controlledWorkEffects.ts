@@ -178,6 +178,9 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
   if (stepCode === BENEFIT_DETAILS_PATTERN_CODE) {
     return { ...submitted, 'benefit-details-completed': 'yes' }
   }
+  if (stepCode === CONTROLLED_WORK_STEP_CODES.otherIncome) {
+    return { ...submitted, 'other-income-completed': 'yes' }
+  }
   return submitted
 }
 

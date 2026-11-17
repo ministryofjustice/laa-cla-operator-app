@@ -5,6 +5,29 @@ export const YES_NO_OPTIONS = [YES, NO] as const
 export const MATTER_TYPE_OPTIONS = ['immigration_clr', 'immigration_legal_help', 'asylum'] as const
 export const EMPLOYMENT_STATUS_OPTIONS = ['in_work', 'unemployed'] as const
 export const CONTROLLED_WORK_COUNT_ANSWER_CODES = ['child-dependants-count', 'adult-dependants-count'] as const
+export const OTHER_INCOME_RELEVANT_CODES = [
+  'friends_or_family_relevant',
+  'maintenance_relevant',
+  'property_or_lodger_relevant',
+  'pension_relevant',
+  'student_finance_relevant',
+  'other_relevant',
+] as const
+export const OTHER_INCOME_VALUE_CODES = [
+  'friends_or_family_conditional_value',
+  'maintenance_conditional_value',
+  'property_or_lodger_conditional_value',
+  'pension_conditional_value',
+  'student_finance_conditional_value',
+  'other_conditional_value',
+] as const
+export const OTHER_INCOME_FREQUENCY_CODES = [
+  'friends_or_family_frequency',
+  'maintenance_frequency',
+  'property_or_lodger_frequency',
+  'pension_frequency',
+] as const
+export const OTHER_INCOME_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
@@ -24,13 +47,25 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'income-completed': ['yes'],
   'receives-benefits': YES_NO_OPTIONS,
   'benefit-details-completed': ['yes'],
+  friends_or_family_relevant: YES_NO_OPTIONS,
+  maintenance_relevant: YES_NO_OPTIONS,
+  property_or_lodger_relevant: YES_NO_OPTIONS,
+  pension_relevant: YES_NO_OPTIONS,
+  student_finance_relevant: YES_NO_OPTIONS,
+  other_relevant: YES_NO_OPTIONS,
   'other-income-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
 } as const
 
 type ChoiceAnswerCode = keyof typeof CONTROLLED_WORK_ANSWER_OPTIONS
+export type OtherIncomeValueAnswerCode = (typeof OTHER_INCOME_VALUE_CODES)[number]
+export type OtherIncomeFrequencyAnswerCode = (typeof OTHER_INCOME_FREQUENCY_CODES)[number]
 export type ControlledWorkCountAnswerCode = (typeof CONTROLLED_WORK_COUNT_ANSWER_CODES)[number]
-export type ControlledWorkAnswerCode = ChoiceAnswerCode | ControlledWorkCountAnswerCode
+export type ControlledWorkAnswerCode =
+  | ChoiceAnswerCode
+  | ControlledWorkCountAnswerCode
+  | OtherIncomeValueAnswerCode
+  | OtherIncomeFrequencyAnswerCode
 export type ControlledWorkCountAnswer = number | string
 
 export const CONTROLLED_WORK_ANSWER_CODES = [
@@ -50,6 +85,9 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'income-completed',
   'receives-benefits',
   'benefit-details-completed',
+  ...OTHER_INCOME_RELEVANT_CODES,
+  ...OTHER_INCOME_VALUE_CODES,
+  ...OTHER_INCOME_FREQUENCY_CODES,
   'other-income-completed',
   'partner-employment-status',
   ...CONTROLLED_WORK_COUNT_ANSWER_CODES,
@@ -59,6 +97,8 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
 export type ControlledWorkAnswers = {
   [Code in ChoiceAnswerCode]?: (typeof CONTROLLED_WORK_ANSWER_OPTIONS)[Code][number]
 } & Partial<Record<ControlledWorkCountAnswerCode, ControlledWorkCountAnswer>>
+  & Partial<Record<OtherIncomeValueAnswerCode, string>>
+  & Partial<Record<OtherIncomeFrequencyAnswerCode, (typeof OTHER_INCOME_FREQUENCIES)[number]>>
 
 export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylum: 'immigration-or-asylum',

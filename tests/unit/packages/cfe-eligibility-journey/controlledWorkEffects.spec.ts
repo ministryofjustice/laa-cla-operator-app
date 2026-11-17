@@ -156,6 +156,53 @@ describe('Controlled-work effects', () => {
     expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.benefitDetails]).to.equal(undefined)
   })
 
+  it('persists and prepopulates other-income answers, prunes conditional values, and clears the page when passporting changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'unemployed' })
+    save(session, ADULT_DOB, STEPS.benefits, { 'receives-benefits': 'no' })
+
+    const posted = {
+      friends_or_family_relevant: 'yes',
+      friends_or_family_conditional_value: '250',
+      friends_or_family_frequency: 'monthly',
+      maintenance_relevant: 'no',
+      property_or_lodger_relevant: 'no',
+      pension_relevant: 'no',
+      student_finance_relevant: 'no',
+      other_relevant: 'no',
+    }
+    save(session, ADULT_DOB, STEPS.otherIncome, posted)
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      friends_or_family_relevant: 'yes',
+      friends_or_family_conditional_value: '250',
+      friends_or_family_frequency: 'monthly',
+      'other-income-completed': 'yes',
+    })
+    const revisited = restore(session, ADULT_DOB)
+    expect(revisited.answers.get('friends_or_family_relevant')).to.equal('yes')
+    expect(revisited.answers.get('friends_or_family_conditional_value')).to.equal('250')
+    expect(revisited.answers.get('friends_or_family_frequency')).to.equal('monthly')
+
+    save(session, ADULT_DOB, STEPS.otherIncome, { ...posted, friends_or_family_relevant: 'no' })
+    const changed = restore(session, ADULT_DOB)
+    expect(changed.answers.get('friends_or_family_relevant')).to.equal('no')
+    expect(changed.answers.has('friends_or_family_conditional_value')).to.equal(false)
+    expect(changed.answers.has('friends_or_family_frequency')).to.equal(false)
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('friends_or_family_conditional_value')
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('friends_or_family_frequency')
+
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('other-income-completed')
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('maintenance_relevant')
+  })
+
   it('initialises, persists, restores and prunes controlled income rows when employment changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

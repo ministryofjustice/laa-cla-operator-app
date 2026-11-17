@@ -6,6 +6,10 @@ import {
   CONTROLLED_WORK_COUNT_ANSWER_CODES,
   CONTROLLED_WORK_STEP_CODES,
   NO,
+  OTHER_INCOME_FREQUENCIES,
+  OTHER_INCOME_FREQUENCY_CODES,
+  OTHER_INCOME_RELEVANT_CODES,
+  OTHER_INCOME_VALUE_CODES,
   YES,
   type AssessmentRoute,
   type ControlledWorkAnswerCode,
@@ -21,6 +25,13 @@ const STEPS = CONTROLLED_WORK_STEP_CODES
 const NO_DEPENDANTS = 0
 const COUNT_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_COUNT_ANSWER_CODES)
 const CONTROLLED_WORK_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_ANSWER_CODES)
+const CHOICE_ANSWER_CODE_SET = new Set<string>(Object.keys(CONTROLLED_WORK_ANSWER_OPTIONS))
+const OTHER_INCOME_VALUE_CODE_SET = new Set<string>(OTHER_INCOME_VALUE_CODES)
+const OTHER_INCOME_FREQUENCY_CODE_SET = new Set<string>(OTHER_INCOME_FREQUENCY_CODES)
+const OTHER_INCOME_RELEVANT_CODE_SET = new Set<string>(OTHER_INCOME_RELEVANT_CODES)
+const OTHER_INCOME_CONDITIONAL_CODE_SET = new Set<string>([...OTHER_INCOME_VALUE_CODES, ...OTHER_INCOME_FREQUENCY_CODES])
+const OTHER_INCOME_FREQUENCY_SET = new Set<string>(OTHER_INCOME_FREQUENCIES)
+const OTHER_INCOME_AMOUNT_PATTERN = /^-?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/u
 
 /**
  * Checks whether a controlled-work answer is a dependant-count code.
@@ -29,6 +40,58 @@ const CONTROLLED_WORK_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_ANSWER_C
  */
 function isCountAnswerCode(code: ControlledWorkAnswerCode): code is ControlledWorkCountAnswerCode {
   return COUNT_ANSWER_CODE_SET.has(code)
+}
+
+/**
+ * Checks whether a controlled-work answer code is one of the configured choice fields.
+ * @param {ControlledWorkAnswerCode} code The candidate answer code.
+ * @returns {boolean} Whether the answer code has a fixed set of string options.
+ */
+function isChoiceAnswerCode(code: ControlledWorkAnswerCode): code is keyof typeof CONTROLLED_WORK_ANSWER_OPTIONS {
+  return CHOICE_ANSWER_CODE_SET.has(code)
+}
+
+/**
+ * Maps an other-income conditional field code to its Yes/No relevance answer.
+ * @param {string} code The amount or frequency answer code.
+ * @returns {string} The matching relevance answer code.
+ */
+function getOtherIncomeRelevantCode(code: string): string {
+  return code.replace(/_(?:conditional_value|frequency)$/u, '_relevant')
+}
+
+/**
+ * Checks whether a string is one of the known other-income relevance answer codes.
+ * @param {string} code The candidate answer code.
+ * @returns {boolean} Whether the code belongs to an other-income question.
+ */
+function isOtherIncomeRelevantCode(code: string): code is (typeof OTHER_INCOME_RELEVANT_CODES)[number] {
+  return OTHER_INCOME_RELEVANT_CODE_SET.has(code)
+}
+
+/**
+ * Checks whether a conditional other-income answer belongs to a Yes response.
+ * @param {ControlledWorkAnswerCode} code The conditional answer code.
+ * @param {ControlledWorkAnswers} answers The answers resolved for the current route.
+ * @returns {boolean} Whether the field remains relevant.
+ */
+function isOtherIncomeConditionalAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers): boolean {
+  if (!OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) return true
+  const relevantCode = getOtherIncomeRelevantCode(code)
+  return isOtherIncomeRelevantCode(relevantCode) && answers[relevantCode] === YES
+}
+
+/**
+ * Checks whether a saved other-income amount is numeric and positive.
+ * @param {unknown} value The saved field value.
+ * @returns {boolean} Whether the value is a valid positive amount.
+ */
+function isValidOtherIncomeAmount(value: unknown): boolean {
+  if (typeof value !== 'string') return false
+  const normalised = value.trim().replace(/^£/u, '')
+  if (!OTHER_INCOME_AMOUNT_PATTERN.test(normalised)) return false
+  const amount = Number(normalised.replace(/,/gu, ''))
+  return Number.isFinite(amount) && amount > NO_DEPENDANTS
 }
 
 interface RoutingState {
@@ -137,10 +200,10 @@ function dependantsGetIncomeSelected({ answers }: RoutingState): boolean {
  * @param {ControlledWorkAnswers} answers The answers resolved so far
  * @returns {boolean} True when the count is applicable
  */
-function isCountAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers): boolean {
+function isAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers): boolean {
   if (code === 'child-dependants-count') return answers['child-dependants'] === YES
   if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
-  return true
+  return isOtherIncomeConditionalAnswerRelevant(code, answers)
 }
 
 /**
@@ -156,6 +219,9 @@ function isRequiredAnswer(stepCode: ControlledWorkStepCode, code: ControlledWork
   }
   if (stepCode === STEPS.dependantDetails && code === 'adult-dependants-count') {
     return answers['adult-dependants'] === YES
+  }
+  if (stepCode === STEPS.otherIncome && OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) {
+    return isOtherIncomeConditionalAnswerRelevant(code, answers)
   }
   return true
 }
@@ -246,7 +312,12 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
   },
   {
     code: STEPS.otherIncome,
-    answerCodes: ['other-income-completed'],
+    answerCodes: [
+      ...OTHER_INCOME_RELEVANT_CODES,
+      ...OTHER_INCOME_VALUE_CODES,
+      ...OTHER_INCOME_FREQUENCY_CODES,
+      'other-income-completed',
+    ],
     isApplicable: ({ answers, context }) =>
       isMeansTestedWithoutPassporting({ answers, context }) &&
       (answers['receives-benefits'] === NO ||
@@ -272,6 +343,11 @@ export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, valu
     if (typeof value === 'number') return Number.isInteger(value) && value > NO_DEPENDANTS
     return typeof value === 'string' && /^\+?\d+$/u.test(value) && Number(value) > NO_DEPENDANTS
   }
+  if (OTHER_INCOME_VALUE_CODE_SET.has(code)) return isValidOtherIncomeAmount(value)
+  if (OTHER_INCOME_FREQUENCY_CODE_SET.has(code)) {
+    return typeof value === 'string' && OTHER_INCOME_FREQUENCY_SET.has(value)
+  }
+  if (!isChoiceAnswerCode(code)) return false
   return (CONTROLLED_WORK_ANSWER_OPTIONS[code] as readonly unknown[]).includes(value)
 }
 
@@ -311,7 +387,7 @@ export function resolveControlledWorkJourney(
     if (!definition.isApplicable({ answers: relevant, context })) continue
     steps.push(definition.code)
     for (const code of definition.answerCodes) {
-      if (isCountAnswerRelevant(code, relevant) && isValidControlledWorkAnswer(code, answers[code])) {
+      if (isAnswerRelevant(code, relevant) && isValidControlledWorkAnswer(code, answers[code])) {
         Object.assign(relevant, { [code]: answers[code] })
       }
     }
@@ -370,9 +446,14 @@ export function getFirstMissingStep(answers: ControlledWorkAnswers, context: Con
  * @returns {boolean} True when nothing further needs answering
  */
 export function isControlledWorkComplete(answers: ControlledWorkAnswers, context: ControlledWorkContext): boolean {
-  const { answers: relevant } = resolveControlledWorkJourney(answers, context)
-  const route = resolveRoute({ answers: relevant, context })
-  return route !== ASSESSMENT_ROUTES.undetermined && findMissingSteps(answers, context).length === 0
+  const resolvedState = { answers: resolveControlledWorkJourney(answers, context).answers, context }
+  const route = resolveRoute(resolvedState)
+  // The non-passported means route still has controlled-work pages after the client income section.
+  return (
+    route !== ASSESSMENT_ROUTES.undetermined &&
+    !isMeansTestedWithoutPassporting(resolvedState) &&
+    findMissingSteps(answers, context).length === 0
+  )
 }
 
 /**
