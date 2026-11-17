@@ -100,7 +100,7 @@ export const partnerIncomeTypeField = GovUKRadioInput({
     {
       value: 'employment',
       text: 'A salary or wage',
-      hint: "Including if your partner is a self-employed company director or in a partnership and is paid as an employee",
+      hint: 'Including if the partner is a self-employed company director or in a partnership and is paid as an employee',
     },
     { value: 'statutory_pay', text: 'Statutory Sick Pay or Statutory Maternity Pay' },
     {
@@ -114,7 +114,7 @@ export const partnerIncomeTypeField = GovUKRadioInput({
       condition: Self().match(Condition.String.MatchesRegex('^(employment|statutory_pay|self_employment)$')),
       message: incomeError(
         'Select the employment income type',
-        'Select the employment income type for partner employment income %1',
+        'Select the employment income type for employment income %1',
       ),
     }),
   ],
@@ -125,12 +125,12 @@ export const partnerIncomeFrequencyField = GovUKRadioInput({
   defaultValue: Item().path('partner_income_frequency'),
   fieldset: {
     legend: {
-      text: 'When does your partner normally get this income?',
+      text: 'When does the partner normally get this income?',
       classes: 'govuk-fieldset__legend--s',
     },
   },
   hint: {
-    text: 'We’ll use this to calculate your partner’s monthly income. If they do not get income regularly, tell us how much they got in the last 3 months.',
+    text: 'We’ll use this to calculate their monthly income. If they do not get income regularly, tell us how much they got in the last 3 months.',
   },
   items: [...FREQUENCIES],
   validWhen: [
@@ -178,28 +178,28 @@ export const partnerGrossIncomeField = partnerIncomeAmountField({
       condition: Self().match(Condition.IsRequired()),
       message: incomeError(
         'Enter the income before any deductions',
-        'Enter the income before any deductions for partner employment income %1',
+        'Enter the income before any deductions for employment income %1',
       ),
     }),
     validation({
       condition: Self().match(validIncomeAmount()),
       message: incomeError(
         'Income before any deductions must be a number',
-        'Income before any deductions for partner employment income %1 must be a number',
+        'Income before any deductions for employment income %1 must be a number',
       ),
     }),
     validation({
       condition: Self().match(positiveIncomeAmount()),
       message: incomeError(
         'Income before any deductions must be more than 0',
-        'Income before any deductions for partner employment income %1 must be more than 0',
+        'Income before any deductions for employment income %1 must be more than 0',
       ),
     }),
     validation({
       condition: Self().match(netIncomePositive(Answer(INCOME_TAX_CODE), Answer(NATIONAL_INSURANCE_CODE))),
       message: incomeError(
         'Income before any deductions must be more than income tax and National Insurance combined',
-        'Income before any deductions for partner employment income %1 must be more than income tax and National Insurance combined',
+        'Income before any deductions for employment income %1 must be more than income tax and National Insurance combined',
       ),
     }),
   ],
@@ -213,21 +213,21 @@ export const partnerIncomeTaxField = partnerIncomeAmountField({
       condition: Self().match(Condition.IsRequired()),
       message: incomeError(
         'Enter the income tax amount',
-        'Enter the income tax amount for partner employment income %1',
+        'Enter the income tax amount for employment income %1',
       ),
     }),
     validation({
       condition: Self().match(validIncomeAmount()),
       message: incomeError(
         'Income tax amount must be a number',
-        'Income tax amount for partner employment income %1 must be a number',
+        'Income tax amount for employment income %1 must be a number',
       ),
     }),
     validation({
       condition: Self().match(nonNegativeIncomeAmount()),
       message: incomeError(
         'Income tax amount must be 0 or more',
-        'Income tax amount for partner employment income %1 must be 0 or more',
+        'Income tax amount for employment income %1 must be 0 or more',
       ),
     }),
   ],
@@ -241,21 +241,21 @@ export const partnerNationalInsuranceField = partnerIncomeAmountField({
       condition: Self().match(Condition.IsRequired()),
       message: incomeError(
         'Enter the National Insurance amount',
-        'Enter the National Insurance amount for partner employment income %1',
+        'Enter the National Insurance amount for employment income %1',
       ),
     }),
     validation({
       condition: Self().match(validIncomeAmount()),
       message: incomeError(
         'National Insurance amount must be a number',
-        'National Insurance amount for partner employment income %1 must be a number',
+        'National Insurance amount for employment income %1 must be a number',
       ),
     }),
     validation({
       condition: Self().match(nonNegativeIncomeAmount()),
       message: incomeError(
         'National Insurance amount must be 0 or more',
-        'National Insurance amount for partner employment income %1 must be 0 or more',
+        'National Insurance amount for employment income %1 must be 0 or more',
       ),
     }),
   ],
@@ -263,16 +263,16 @@ export const partnerNationalInsuranceField = partnerIncomeAmountField({
 
 const policeOfficerDetails = GovUKDetails({
   summaryText: 'Partners who are police officers',
-  html: `<p class="govuk-body">If your partner is a police officer, the salary entered should include:</p>
+  html: `<p class="govuk-body">If the partner is a police officer, the salary entered should include:</p>
 <ul class="govuk-list govuk-list--bullet">
-<li>any rent or force housing allowance your partner gets</li>
-<li>any police compensatory grant your partner gets</li>
+<li>any rent or force housing allowance the partner gets</li>
+<li>any police compensatory grant the partner gets</li>
 </ul>`,
 })
 
 const prisonerDetails = GovUKDetails({
   summaryText: 'Partners in prison',
-  html: `<p class="govuk-body">If your partner is in prison, include any income they get from:</p>
+  html: `<p class="govuk-body">If the partner is in prison, include any income they get from:</p>
 <ul class="govuk-list govuk-list--bullet">
 <li>the pre-release employment scheme</li>
 <li>outside employment where they are participating in a ‘working out’ scheme</li>
@@ -282,13 +282,13 @@ const prisonerDetails = GovUKDetails({
 
 const overseasPartnerDetails = GovUKDetails({
   summaryText: 'Partners living outside the UK',
-  html: `<p class="govuk-body">If your partner lives outside the UK, include all income tax payments they made.</p>
+  html: `<p class="govuk-body">If the partner lives outside the UK, include all income tax payments they made.</p>
 <p class="govuk-body">Only include UK National Insurance contributions.</p>`,
 })
 
 const armedForcesDetails = GovUKDetails({
   summaryText: 'Partners in HM Forces',
-  html: `<p class="govuk-body">If your partner is a member of HM Forces, include any of the following they get in the gross salary you enter:</p>
+  html: `<p class="govuk-body">If the partner is a member of HM Forces, include any of the following they get in the gross salary you enter:</p>
 <ul class="govuk-list govuk-list--bullet">
 <li>Local Overseas Allowance</li>
 <li>Excess Rent Allowance</li>
@@ -299,8 +299,8 @@ const armedForcesDetails = GovUKDetails({
 
 const selfEmploymentDetails = GovUKDetails({
   summaryText: 'Self-employed partners, including partners paid in cash',
-  html: `<p class="govuk-body">If your partner is self-employed, enter their drawings, dividends, bonuses or any benefits in kind from their business as their income.</p>
-<p class="govuk-body">If your partner is paid in cash, their drawings will be any money taken out of their earnings for personal use.</p>`,
+  html: `<p class="govuk-body">If the partner is self-employed, enter their drawings, dividends, bonuses or any benefits in kind from their business as their income.</p>
+<p class="govuk-body">If the partner is paid in cash, their drawings will be any money taken out of their earnings for personal use.</p>`,
 })
 
 const partnerIncomeRows = CollectionBlock({
@@ -308,7 +308,7 @@ const partnerIncomeRows = CollectionBlock({
     Iterator.Map([
       GovUKGridRow({
         columns: [
-          { width: 'one-half', blocks: [GovUKHeading({ text: Format('Partner employment income %1', Loop.Index()), size: 'm' })] },
+          { width: 'one-half', blocks: [GovUKHeading({ text: Format('Employment income %1', Loop.Index()), size: 'm' })] },
           {
             width: 'one-half',
             blocks: [
@@ -335,7 +335,7 @@ const partnerIncomeRows = CollectionBlock({
 })
 
 const addAnotherPartnerIncomeButton = GovUKButton({
-  text: 'Add another partner employment income',
+  text: 'Add another employment income',
   name: 'action',
   value: 'add-another-partner-employment-income',
   classes: 'govuk-button--secondary',
@@ -351,7 +351,7 @@ const guidanceLink = HtmlBlock({
 export const partnerEmploymentIncomePageContent = eligibilityQuestionPageLayout({
   questionBlocks: [
     GovUKHeading({ text: QUESTION, size: 'l', level: QUESTION_HEADING_LEVEL }),
-    GovUKBody({ text: 'You can find this on your partner’s payslips', classes: 'govuk-hint' }),
+    GovUKBody({ text: "You can find this on the partner's payslips.", classes: 'govuk-hint' }),
     policeOfficerDetails,
     prisonerDetails,
     overseasPartnerDetails,

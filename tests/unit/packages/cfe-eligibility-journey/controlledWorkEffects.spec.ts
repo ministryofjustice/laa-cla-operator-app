@@ -426,62 +426,6 @@ describe('Controlled-work effects', () => {
       'adult-dependants': 'no',
     })
 
-    it('persists and prepopulates partner income rows, then prunes them when the partner becomes unemployed', () => {
-      const session = newSession()
-      save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
-      save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
-      save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
-      save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'in_work' })
-
-      const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
-      registry.PreparePartnerIncomeDetails.evaluate(page.context)
-      expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection)).to.deep.equal([
-        {
-          partner_income_type: '',
-          partner_income_frequency: '',
-          partner_gross_income: '',
-          partner_income_tax: '',
-          partner_national_insurance: '',
-        },
-      ])
-
-      page.answers.set('partner_income_type_0', 'employment')
-      page.answers.set('partner_income_frequency_0', 'every_week')
-      page.answers.set('partner_gross_income_0', '123')
-      page.answers.set('partner_income_tax_0', '22')
-      page.answers.set('partner_national_insurance_0', '11')
-      registry.SaveRepeatingItems.evaluate(
-        page.context,
-        STEPS.partnerIncome,
-        CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection,
-        partnerIncomeFieldCodes,
-      )
-      save(session, ADULT_DOB, STEPS.partnerIncome, {})
-
-      expect(readControlledWorkAnswers(session, CASE_ID)['partner-income-completed']).to.equal('yes')
-      expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerIncome]?.[CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection])
-        .to.deep.equal([
-          {
-            partner_income_type: 'employment',
-            partner_income_frequency: 'every_week',
-            partner_gross_income: '123',
-            partner_income_tax: '22',
-            partner_national_insurance: '11',
-          },
-        ])
-
-      const revisited = fakeContext({ session, dateOfBirth: ADULT_DOB })
-      registry.PreparePartnerIncomeDetails.evaluate(revisited.context)
-      expect(revisited.answers.get('partner_income_type_0')).to.equal('employment')
-      expect(revisited.answers.get('partner_income_frequency_0')).to.equal('every_week')
-      expect(revisited.answers.get('partner_gross_income_0')).to.equal('123')
-      expect(revisited.answers.get('partner_income_tax_0')).to.equal('22')
-      expect(revisited.answers.get('partner_national_insurance_0')).to.equal('11')
-
-      save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'unemployed' })
-      expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('partner-income-completed')
-      expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerIncome]).to.equal(undefined)
-    })
     save(session, ADULT_DOB, STEPS.dependantIncome, { 'dependants-get-income': 'yes' })
 
     const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
@@ -558,6 +502,63 @@ describe('Controlled-work effects', () => {
 
     save(session, ADULT_DOB, STEPS.dependantIncome, { 'dependants-get-income': 'no' })
     expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.dependantIncomeDetails]).to.equal(undefined)
+  })
+
+  it('persists and prepopulates partner income rows, then prunes them when the partner becomes unemployed', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'in_work' })
+
+    const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerIncomeDetails.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection)).to.deep.equal([
+      {
+        partner_income_type: '',
+        partner_income_frequency: '',
+        partner_gross_income: '',
+        partner_income_tax: '',
+        partner_national_insurance: '',
+      },
+    ])
+
+    page.answers.set('partner_income_type_0', 'employment')
+    page.answers.set('partner_income_frequency_0', 'every_week')
+    page.answers.set('partner_gross_income_0', '123')
+    page.answers.set('partner_income_tax_0', '22')
+    page.answers.set('partner_national_insurance_0', '11')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.partnerIncome,
+      CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection,
+      partnerIncomeFieldCodes,
+    )
+    save(session, ADULT_DOB, STEPS.partnerIncome, {})
+
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-income-completed']).to.equal('yes')
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerIncome]?.[CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection])
+      .to.deep.equal([
+        {
+          partner_income_type: 'employment',
+          partner_income_frequency: 'every_week',
+          partner_gross_income: '123',
+          partner_income_tax: '22',
+          partner_national_insurance: '11',
+        },
+      ])
+
+    const revisited = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerIncomeDetails.evaluate(revisited.context)
+    expect(revisited.answers.get('partner_income_type_0')).to.equal('employment')
+    expect(revisited.answers.get('partner_income_frequency_0')).to.equal('every_week')
+    expect(revisited.answers.get('partner_gross_income_0')).to.equal('123')
+    expect(revisited.answers.get('partner_income_tax_0')).to.equal('22')
+    expect(revisited.answers.get('partner_national_insurance_0')).to.equal('11')
+
+    save(session, ADULT_DOB, STEPS.partnerEmploymentStatus, { 'partner-employment-status': 'unemployed' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('partner-income-completed')
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerIncome]).to.equal(undefined)
   })
 
   it('removes dependant answers when passporting makes the page inapplicable', () => {

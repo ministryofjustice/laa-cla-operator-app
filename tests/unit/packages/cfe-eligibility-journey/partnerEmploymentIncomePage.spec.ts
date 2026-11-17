@@ -73,15 +73,25 @@ describe('Controlled-work partner employment income page', () => {
     const content = JSON.stringify(partnerEmploymentIncomePageContent)
 
     expect(content).to.include("The partner's employment income")
-    expect(content).to.include('You can find this on your partner’s payslips')
-    expect(content).to.include('Add another partner employment income')
+    expect(content).to.include("You can find this on the partner's payslips.")
+    expect(content).to.include('Add another employment income')
+    expect(content).to.include('Employment income %1')
     expect(content).to.include('Employment income (PDF, 599KB)')
     expect(content).to.include('#page=13')
     expect(content).to.include('Partners who are police officers')
+    expect(content).to.include('If the partner is a police officer, the salary entered should include:')
+    expect(content).to.include('any rent or force housing allowance the partner gets')
+    expect(content).to.include('any police compensatory grant the partner gets')
     expect(content).to.include('Partners in prison')
+    expect(content).to.include('If the partner is in prison, include any income they get from:')
     expect(content).to.include('Partners living outside the UK')
+    expect(content).to.include('If the partner lives outside the UK, include all income tax payments they made.')
+    expect(content).to.include('Only include UK National Insurance contributions.')
     expect(content).to.include('Partners in HM Forces')
+    expect(content).to.include('If the partner is a member of HM Forces, include any of the following they get in the gross salary you enter:')
     expect(content).to.include('Self-employed partners, including partners paid in cash')
+    expect(content).to.include('If the partner is self-employed, enter their drawings, dividends, bonuses or any benefits in kind from their business as their income.')
+    expect(content).to.include('If the partner is paid in cash, their drawings will be any money taken out of their earnings for personal use.')
     expect(partnerIncomeFieldCodes).to.deep.equal([
       'partner_income_type',
       'partner_income_frequency',
@@ -90,10 +100,22 @@ describe('Controlled-work partner employment income page', () => {
       'partner_national_insurance',
     ])
     expect(partnerIncomeTypeField.fieldset?.legend?.text).to.equal('What type of employment income is this?')
-    const typeOptions = JSON.stringify(partnerIncomeTypeField.items)
-    expect(typeOptions).to.include('"value":"employment"')
-    expect(typeOptions).to.include('"value":"statutory_pay"')
-    expect(typeOptions).to.include('"value":"self_employment"')
+    expect(partnerIncomeTypeField.items).to.deep.equal([
+      {
+        value: 'employment',
+        text: 'A salary or wage',
+        hint: 'Including if the partner is a self-employed company director or in a partnership and is paid as an employee',
+      },
+      { value: 'statutory_pay', text: 'Statutory Sick Pay or Statutory Maternity Pay' },
+      {
+        value: 'self_employment',
+        text: 'Self-employment income',
+        hint: 'For example, payment in cash, drawings or dividends or bonuses paid from a company account, and the value of any benefits in kind',
+      },
+    ])
+    expect(partnerIncomeFrequencyField.fieldset?.legend?.text).to.equal(
+      'When does the partner normally get this income?',
+    )
     expect(partnerIncomeFrequencyField.items).to.deep.equal([
       { value: 'every_week', text: 'Every week' },
       { value: 'every_two_weeks', text: 'Every 2 weeks' },
@@ -102,38 +124,46 @@ describe('Controlled-work partner employment income page', () => {
       { value: 'three_months', text: 'Total in last 3 months' },
     ])
     expect(JSON.stringify(partnerIncomeFrequencyField.hint)).to.include(
-      'We’ll use this to calculate your partner’s monthly income.',
+      'We’ll use this to calculate their monthly income. If they do not get income regularly, tell us how much they got in the last 3 months.',
     )
     expect([partnerGrossIncomeField, partnerIncomeTaxField, partnerNationalInsuranceField].map(({ inputType }) => inputType))
       .to.deep.equal(['text', 'text', 'text'])
+    const amountFieldDefinitions = JSON.stringify([
+      partnerGrossIncomeField,
+      partnerIncomeTaxField,
+      partnerNationalInsuranceField,
+    ])
+    for (const label of ['Income before any deductions', 'Income tax', 'National Insurance']) {
+      expect(amountFieldDefinitions).to.include(`"text":"${label}"`)
+    }
   })
 
   it('includes required, format, positive, non-negative and net-income error messages', () => {
     for (const message of [
       'Select the employment income type',
-      'Select the employment income type for partner employment income %1',
+      'Select the employment income type for employment income %1',
       'Select when the partner normally gets this income',
       'Select when the partner normally gets income %1',
       'Enter the income before any deductions',
-      'Enter the income before any deductions for partner employment income %1',
+      'Enter the income before any deductions for employment income %1',
       'Income before any deductions must be a number',
-      'Income before any deductions for partner employment income %1 must be a number',
+      'Income before any deductions for employment income %1 must be a number',
       'Income before any deductions must be more than 0',
-      'Income before any deductions for partner employment income %1 must be more than 0',
+      'Income before any deductions for employment income %1 must be more than 0',
       'Income before any deductions must be more than income tax and National Insurance combined',
-      'Income before any deductions for partner employment income %1 must be more than income tax and National Insurance combined',
+      'Income before any deductions for employment income %1 must be more than income tax and National Insurance combined',
       'Enter the income tax amount',
-      'Enter the income tax amount for partner employment income %1',
+      'Enter the income tax amount for employment income %1',
       'Income tax amount must be a number',
-      'Income tax amount for partner employment income %1 must be a number',
+      'Income tax amount for employment income %1 must be a number',
       'Income tax amount must be 0 or more',
-      'Income tax amount for partner employment income %1 must be 0 or more',
+      'Income tax amount for employment income %1 must be 0 or more',
       'Enter the National Insurance amount',
-      'Enter the National Insurance amount for partner employment income %1',
+      'Enter the National Insurance amount for employment income %1',
       'National Insurance amount must be a number',
-      'National Insurance amount for partner employment income %1 must be a number',
+      'National Insurance amount for employment income %1 must be a number',
       'National Insurance amount must be 0 or more',
-      'National Insurance amount for partner employment income %1 must be 0 or more',
+      'National Insurance amount for employment income %1 must be 0 or more',
     ]) {
       expect(FIELD_VALIDATIONS).to.include(`"${message}"`)
     }
