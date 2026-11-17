@@ -16,16 +16,22 @@ const newSession = (): FinancialEligibilitySession => ({ financialEligibilityDra
 describe('Controlled-work session storage', () => {
   it('persists answers per case and reads them back after session serialisation', () => {
     const session = newSession()
-    writeControlledWorkAnswers(session, CASE_ID, { 'immigration-or-asylum': 'yes', 'immigration-or-asylum-type': 'asylum' })
+    writeControlledWorkAnswers(session, CASE_ID, {
+      'immigration-or-asylum': 'yes',
+      'immigration-or-asylum-type': 'asylum',
+      'receives-benefits': 'yes',
+    })
 
     const reloaded = JSON.parse(JSON.stringify(session)) as FinancialEligibilitySession
     expect(reloaded.financialEligibilityDrafts[CASE_ID]).to.deep.equal({
       'immigration-or-asylum': 'yes',
       'immigration-or-asylum-type': 'asylum',
+      'receives-benefits': 'yes',
     })
     expect(readControlledWorkAnswers(reloaded, CASE_ID)).to.deep.equal({
       'immigration-or-asylum': 'yes',
       'immigration-or-asylum-type': 'asylum',
+      'receives-benefits': 'yes',
     })
   })
 

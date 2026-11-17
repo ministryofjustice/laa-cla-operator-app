@@ -8,6 +8,7 @@ import {
   getPreviousStep,
   isControlledWorkComplete,
   isStepApplicable,
+  isValidControlledWorkAnswer,
   resolveControlledWorkJourney,
 } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSteps.js'
 import {
@@ -314,6 +315,23 @@ describe('Controlled-work journey rules', () => {
       expect(passportingChanged.answers).to.include({ partner: 'yes', passporting: 'yes' })
     })
 
+    it('removes the benefits answer when the client changes to a passported route', () => {
+      const answers: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+        'employment-status': 'unemployed',
+        'receives-benefits': 'yes',
+      }
+
+      const changed = resolveControlledWorkJourney({ ...answers, passporting: 'yes' }, ADULT)
+
+      expect(changed.answers).to.not.have.property('receives-benefits')
+      expect(changed.removedCodes).to.include('receives-benefits')
+    })
+
     it('removes only partner answers when the partner answer changes to no', () => {
       const answers: ControlledWorkAnswers = {
         'immigration-or-asylum': 'no',
@@ -383,7 +401,7 @@ describe('Controlled-work journey rules', () => {
         { stepCode: STEPS.dependantDetails, answerCodes: ['child-dependants-count'] },
         { stepCode: STEPS.dependantIncome, answerCodes: ['dependants-get-income'] },
         { stepCode: STEPS.employmentStatus, answerCodes: ['employment-status'] },
-        { stepCode: STEPS.benefits, answerCodes: ['benefits-completed'] },
+        { stepCode: STEPS.benefits, answerCodes: ['receives-benefits'] },
       ])
       expect(findMissingSteps(adultCountMissing, ADULT)[0]).to.deep.equal({
         stepCode: STEPS.dependantDetails,
@@ -420,6 +438,26 @@ describe('Controlled-work journey rules', () => {
       expect(
         isControlledWorkComplete({ ...base, 'employment-status': 'in_work', 'income-completed': 'yes' }, ADULT),
       ).to.equal(false)
+    })
+
+    it('requires an explicit benefits answer after the applicable employment branch', () => {
+      const answers: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+        'employment-status': 'unemployed',
+      }
+
+      expect(findMissingSteps(answers, ADULT)).to.deep.equal([
+        { stepCode: STEPS.benefits, answerCodes: ['receives-benefits'] },
+      ])
+      expect(isValidControlledWorkAnswer('receives-benefits', 'yes')).to.equal(true)
+      expect(isValidControlledWorkAnswer('receives-benefits', 'no')).to.equal(true)
+      for (const invalid of ['', 'true', 'false', 'maybe', true, false]) {
+        expect(isValidControlledWorkAnswer('receives-benefits', invalid)).to.equal(false)
+      }
     })
 
     it('never requires an answer for informational pages', () => {

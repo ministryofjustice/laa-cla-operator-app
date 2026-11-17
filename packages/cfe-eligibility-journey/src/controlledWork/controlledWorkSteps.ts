@@ -235,7 +235,7 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
   },
   {
     code: STEPS.benefits,
-    answerCodes: ['benefits-completed'],
+    answerCodes: ['receives-benefits'],
     isApplicable: isMeansTestedWithoutPassporting,
   },
   {

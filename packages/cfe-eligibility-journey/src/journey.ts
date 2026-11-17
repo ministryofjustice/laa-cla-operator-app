@@ -40,6 +40,7 @@ import { dependantIncomeStep } from './dependantIncomePage/dependantIncomeStep.j
 import { dependantIncomeDetailsStep } from './dependantIncomeDetailsPage/dependantIncomeDetailsStep.js'
 import { employmentStatusStep } from './employmentStatusPage/employmentStatusStep.js'
 import { incomeStep } from './controlledWorkIncomePage/incomeStep.js'
+import { controlledWorkBenefitsStep } from './controlledWorkBenefitsPage/controlledWorkBenefitsStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -75,6 +76,7 @@ export const eligibilityJourney = journey({
     dependantIncomeDetailsStep,
     employmentStatusStep,
     incomeStep,
+    controlledWorkBenefitsStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,

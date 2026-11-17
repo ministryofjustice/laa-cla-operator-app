@@ -84,6 +84,12 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
         }),
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.dependantIncomeDetails),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.dependantIncomeDetails,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
             Condition.Equals(CONTROLLED_WORK_STEP_CODES.employmentStatus),
           ),
           goto: CONTROLLED_WORK_STEP_CODES.employmentStatus,
@@ -93,6 +99,12 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
             Condition.Equals(CONTROLLED_WORK_STEP_CODES.income),
           ),
           goto: CONTROLLED_WORK_STEP_CODES.income,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.benefits),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.benefits,
         }),
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(

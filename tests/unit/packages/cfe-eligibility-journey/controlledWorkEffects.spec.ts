@@ -92,6 +92,25 @@ describe('Controlled-work effects', () => {
     expect(readControlledWorkAnswers(session, CASE_ID)['employment-status']).to.equal('unemployed')
   })
 
+  it('persists and prepopulates the benefits answer, replacing it when the answer changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+    save(session, ADULT_DOB, STEPS.employmentStatus, { 'employment-status': 'unemployed' })
+
+    save(session, ADULT_DOB, STEPS.benefits, { 'receives-benefits': 'yes' })
+    expect(restore(session, ADULT_DOB).answers.get('receives-benefits')).to.equal('yes')
+    expect(readControlledWorkAnswers(session, CASE_ID)['receives-benefits']).to.equal('yes')
+
+    save(session, ADULT_DOB, STEPS.benefits, { 'receives-benefits': 'no' })
+    expect(restore(session, ADULT_DOB).answers.get('receives-benefits')).to.equal('no')
+    expect(readControlledWorkAnswers(session, CASE_ID)['receives-benefits']).to.equal('no')
+  })
+
   it('initialises, persists, restores and prunes controlled income rows when employment changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
