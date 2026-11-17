@@ -14,6 +14,7 @@ import {
   receivesBenefitsField,
 } from '#packages/cfe-eligibility-journey/src/controlledWorkBenefitsPage/controlledWorkBenefitsBlock.js'
 import { controlledWorkBenefitsStep } from '#packages/cfe-eligibility-journey/src/controlledWorkBenefitsPage/controlledWorkBenefitsStep.js'
+import { benefitDetailsStep } from '#packages/cfe-eligibility-journey/src/benefitDetailsPage/benefitDetailsStep.js'
 
 const QUESTION = 'Does your client get any non-passporting benefits?'
 const ADULT = { isUnder18: false }
@@ -106,12 +107,17 @@ describe('Controlled-work benefits page', () => {
     expect(access).to.include(STEPS.income)
   })
 
-  it('keeps the unimplemented benefit-details and other-income pages at the explicit boundary', () => {
+  it('routes an affirmative answer through benefit details and leaves other income at the explicit boundary', () => {
+    const steps = eligibilityJourney.steps ?? []
+    const benefitsIndex = steps.findIndex(({ code }) => code === STEPS.benefits)
+    const benefitDetailsIndex = steps.findIndex(({ code }) => code === STEPS.benefitDetails)
     const submission = JSON.stringify(controlledWorkBenefitsStep.onSubmission)
 
+    expect(benefitDetailsIndex).to.be.greaterThan(benefitsIndex)
+    expect(steps[benefitDetailsIndex]?.code).to.equal(benefitDetailsStep.code)
     expect(submission).to.include(controlledWorkIncompleteStepCode)
-    expect(submission).to.not.include('benefit-details')
-    expect(submission).to.not.include('other-income')
+    expect(benefitDetailsStep.code).to.equal(STEPS.benefitDetails)
+    expect(JSON.stringify(benefitDetailsStep.onSubmission)).to.include(controlledWorkIncompleteStepCode)
     expect(controlledWorkBenefitsStep.code).to.equal(STEPS.benefits)
   })
 })

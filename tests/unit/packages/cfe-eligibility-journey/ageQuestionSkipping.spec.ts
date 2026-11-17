@@ -21,6 +21,7 @@ function createClient(dateOfBirth: string | null) {
     LoadCaseDetails: async (_deps: Deps, context: EffectFunctionContext) => {
       context.setData(CLIENT_DATE_OF_BIRTH_DATA_KEY, dateOfBirth);
     },
+    LoadBenefitSuggestions: noop,
     RestoreCaseDraft: noop,
     ValidateDraftAnswers: noop,
     PrepareSubmission: noop,

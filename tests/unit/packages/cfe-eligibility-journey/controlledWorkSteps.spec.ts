@@ -460,6 +460,48 @@ describe('Controlled-work journey rules', () => {
       }
     })
 
+    it('requires benefit details after Yes and keeps other income at the incomplete boundary', () => {
+      const base: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+        'employment-status': 'unemployed',
+        'receives-benefits': 'yes',
+      }
+
+      expect(findMissingSteps(base, ADULT)).to.deep.equal([
+        { stepCode: STEPS.benefitDetails, answerCodes: ['benefit-details-completed'] },
+      ])
+      expect(
+        getNextStep(STEPS.benefits, base, ADULT),
+      ).to.equal(STEPS.benefitDetails)
+
+      const benefitDetailsAnswered = { ...base, 'benefit-details-completed': 'yes' } as const
+      expect(getFirstMissingStep(benefitDetailsAnswered, ADULT)).to.equal(STEPS.otherIncome)
+      expect(isControlledWorkComplete(benefitDetailsAnswered, ADULT)).to.equal(false)
+      expect(isValidControlledWorkAnswer('benefit-details-completed', 'yes')).to.equal(true)
+      expect(isValidControlledWorkAnswer('other-income-completed', 'yes')).to.equal(true)
+    })
+
+    it('skips benefit details when Benefits is No and preserves the unavailable next page', () => {
+      const answers: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+        'employment-status': 'unemployed',
+        'receives-benefits': 'no',
+      }
+
+      expect(getApplicableSteps(answers, ADULT)).to.not.include(STEPS.benefitDetails)
+      expect(getNextStep(STEPS.benefits, answers, ADULT)).to.equal(STEPS.otherIncome)
+      expect(getFirstMissingStep(answers, ADULT)).to.equal(STEPS.otherIncome)
+      expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
+    })
+
     it('never requires an answer for informational pages', () => {
       const answers: ControlledWorkAnswers = {
         'immigration-or-asylum': 'no',

@@ -130,7 +130,7 @@ export type CfeClientErrorCode =
   "configuration" | "timeout" | "network" | "http" | "invalid-response";
 
 /**
- * Represents a safe, classified failure from a CFE assessment request.
+ * Represents a safe, classified failure from a CFE request.
  */
 export class CfeClientError extends Error {
   /**

@@ -13,6 +13,7 @@ import {
   findFirstMissingEligibilityAnswer,
   isEligibilityAnswerCode,
 } from "#packages/cfe-eligibility-journey/src/index.js";
+import { CONTROLLED_WORK_DATA_KEYS } from "#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js";
 import {
   clearEligibilitySubmissionError,
   invalidatePreparedEligibilitySnapshot,
@@ -22,12 +23,14 @@ import type { CaseDetails } from "#types/api-types.js";
 import type { AxiosInstanceWrapper } from "#types/axios-instance-wrapper.js";
 import { normaliseSelectedCheckbox } from "#src/scripts/helpers/index.js";
 import type { loadCase } from "#src/services/api/caseDetailsService.js";
+import type { getBenefitTypeSuggestions } from "#src/services/cfeBenefitTypesClient.js";
 
 const PROPERTY_PATTERN_CODE = "properties";
 const PROPERTY_COLLECTION_CODE = "propertySet";
 
 interface HostApiService {
   loadCase: typeof loadCase;
+  getBenefitTypeSuggestions: typeof getBenefitTypeSuggestions;
 }
 
 /**
@@ -165,6 +168,20 @@ export class FinancialEligibilityEffectsWithDepsImpl implements FinancialEligibi
     } else {
       context.clearAnswer("category");
     }
+  };
+
+  /**
+   * Loads CFE benefit names for the controlled-work type-ahead field.
+   * @param {Deps} _deps Forge effect dependencies
+   * @param {EffectFunctionContext} context The Forge effect context
+   * @returns {Promise<void>}
+   */
+  LoadBenefitSuggestions = async (
+    _deps: Deps,
+    context: EffectFunctionContext,
+  ): Promise<void> => {
+    const suggestions = await this.apiService.getBenefitTypeSuggestions();
+    context.setData(CONTROLLED_WORK_DATA_KEYS.benefitSuggestions, suggestions);
   };
 
   /**

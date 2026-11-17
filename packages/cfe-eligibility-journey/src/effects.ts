@@ -22,6 +22,8 @@ export interface FinancialEligibilityEffectShape {
   ClearDraftAnswers: () => EffectFunctionExpr;
   /** Loads case details from middleware (already fetched by fetchClientDetails) and stores them in the context for use in the journey */
   LoadCaseDetails: () => EffectFunctionExpr;
+  /** Loads CFE state-benefit references for the controlled-work type-ahead field */
+  LoadBenefitSuggestions: () => EffectFunctionExpr;
   /** Restores the case-scoped answer draft from the current session */
   RestoreCaseDraft: () => EffectFunctionExpr;
   /** Validates the active draft before review or preparation */
@@ -100,6 +102,15 @@ export const FinancialEligibilityEffectsImplementations: Record<
    */
   LoadCaseDetails: (deps) => async (context: EffectFunctionContext) => {
     await deps.effectsWithDeps.LoadCaseDetails(deps, context);
+  },
+
+  /**
+   * Loads the state-benefit names used by the controlled-work detail page.
+   * @param {unknown} deps Effect dependencies supplied by Forge
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Async benefit suggestion loader
+   */
+  LoadBenefitSuggestions: (deps) => async (context: EffectFunctionContext) => {
+    await deps.effectsWithDeps.LoadBenefitSuggestions(deps, context);
   },
 
   /**
@@ -205,6 +216,10 @@ export const FinancialEligibilityEffects: FinancialEligibilityEffectShape = {
   LoadCaseDetails: FinancialEligibilityEffectsRegistry.register(
     'LoadCaseDetails',
     FinancialEligibilityEffectsImplementations.LoadCaseDetails,
+  ),
+  LoadBenefitSuggestions: FinancialEligibilityEffectsRegistry.register(
+    'LoadBenefitSuggestions',
+    FinancialEligibilityEffectsImplementations.LoadBenefitSuggestions,
   ),
   RestoreCaseDraft: FinancialEligibilityEffectsRegistry.register(
     'RestoreCaseDraft',

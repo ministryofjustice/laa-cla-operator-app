@@ -23,6 +23,8 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'income-completed': ['yes'],
   'receives-benefits': YES_NO_OPTIONS,
+  'benefit-details-completed': ['yes'],
+  'other-income-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
 } as const
 
@@ -47,6 +49,8 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'employment-status',
   'income-completed',
   'receives-benefits',
+  'benefit-details-completed',
+  'other-income-completed',
   'partner-employment-status',
   ...CONTROLLED_WORK_COUNT_ANSWER_CODES,
 ] as const satisfies readonly ControlledWorkAnswerCode[]
@@ -72,6 +76,8 @@ export const CONTROLLED_WORK_STEP_CODES = {
   employmentStatus: 'employment-status',
   income: 'income',
   benefits: 'controlled-work-benefits',
+  benefitDetails: 'benefit-details',
+  otherIncome: 'other-income',
   partnerEmploymentStatus: 'partner-employment-status',
 } as const
 

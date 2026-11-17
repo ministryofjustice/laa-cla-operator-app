@@ -239,6 +239,20 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     isApplicable: isMeansTestedWithoutPassporting,
   },
   {
+    code: STEPS.benefitDetails,
+    answerCodes: ['benefit-details-completed'],
+    isApplicable: ({ answers, context }) =>
+      isMeansTestedWithoutPassporting({ answers, context }) && answers['receives-benefits'] === YES,
+  },
+  {
+    code: STEPS.otherIncome,
+    answerCodes: ['other-income-completed'],
+    isApplicable: ({ answers, context }) =>
+      isMeansTestedWithoutPassporting({ answers, context }) &&
+      (answers['receives-benefits'] === NO ||
+        (answers['receives-benefits'] === YES && answers['benefit-details-completed'] === YES)),
+  },
+  {
     code: STEPS.partnerEmploymentStatus,
     answerCodes: ['partner-employment-status'],
     isApplicable: (state) => isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,

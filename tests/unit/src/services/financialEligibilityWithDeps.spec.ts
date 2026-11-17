@@ -16,8 +16,10 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
     });
     const getFinancialEligibility = sinon.stub();
     const updateFinancialEligibility = sinon.stub();
+    const getBenefitTypeSuggestions = sinon.stub().resolves([]);
     const apiService = {
       loadCase,
+      getBenefitTypeSuggestions,
       getFinancialEligibility,
       updateFinancialEligibility,
     };
@@ -37,9 +39,29 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
     expect(updateFinancialEligibility.called).to.equal(false);
   });
 
+  it("loads CFE benefit suggestions into the Forge page data", async () => {
+    const getBenefitTypeSuggestions = sinon
+      .stub()
+      .resolves(["Child Benefit", "Tax credits"]);
+    const effects = new FinancialEligibilityEffectsWithDepsImpl({
+      loadCase: sinon.stub(),
+      getBenefitTypeSuggestions,
+    });
+    const context = createTestEffectContext({ session: {} });
+
+    await effects.LoadBenefitSuggestions(deps, context);
+
+    expect(getBenefitTypeSuggestions.calledOnce).to.equal(true);
+    expect(context.getData("controlledWorkBenefitSuggestions")).to.deep.equal([
+      "Child Benefit",
+      "Tax credits",
+    ]);
+  });
+
   it("restores only the current case draft and clears stale journey answers", async () => {
     const effects = new FinancialEligibilityEffectsWithDepsImpl({
       loadCase: sinon.stub(),
+      getBenefitTypeSuggestions: sinon.stub().resolves([]),
     });
     const context = createTestEffectContext({
       params: { caseId: "CASE1" },
@@ -70,6 +92,7 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
   it("returns an incomplete draft to its first missing active question", async () => {
     const effects = new FinancialEligibilityEffectsWithDepsImpl({
       loadCase: sinon.stub(),
+      getBenefitTypeSuggestions: sinon.stub().resolves([]),
     });
     const session: Record<string, unknown> = {};
     const context = createTestEffectContext({
@@ -91,6 +114,7 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
   it("prepares only the active branch and keeps the snapshot in the session", async () => {
     const apiService = {
       loadCase: sinon.stub(),
+      getBenefitTypeSuggestions: sinon.stub().resolves([]),
       getFinancialEligibility: sinon.stub(),
       updateFinancialEligibility: sinon.stub(),
     };
@@ -130,6 +154,7 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
   it("does not render a prepared boundary after the session snapshot is missing", async () => {
     const effects = new FinancialEligibilityEffectsWithDepsImpl({
       loadCase: sinon.stub(),
+      getBenefitTypeSuggestions: sinon.stub().resolves([]),
     });
     const context = createTestEffectContext({
       params: { caseId: "CASE1" },
@@ -144,6 +169,7 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
   it("clears only the current case draft and its preparation state on discard", async () => {
     const effects = new FinancialEligibilityEffectsWithDepsImpl({
       loadCase: sinon.stub(),
+      getBenefitTypeSuggestions: sinon.stub().resolves([]),
     });
     const session: Record<string, unknown> = {
       financialEligibilityDrafts: {
