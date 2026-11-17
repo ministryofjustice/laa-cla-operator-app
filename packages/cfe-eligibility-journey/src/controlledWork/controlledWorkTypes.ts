@@ -57,6 +57,9 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'other-income-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'partner-income-completed': ['yes'],
+  'partner-receives-benefits': YES_NO_OPTIONS,
+  'partner-benefit-details-completed': ['yes'],
+  'partner-other-income-completed': ['yes'],
 } as const
 
 type ChoiceAnswerCode = keyof typeof CONTROLLED_WORK_ANSWER_OPTIONS
@@ -94,6 +97,9 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
+  'partner-receives-benefits',
+  'partner-benefit-details-completed',
+  'partner-other-income-completed',
   ...CONTROLLED_WORK_COUNT_ANSWER_CODES,
 ] as const satisfies readonly ControlledWorkAnswerCode[]
 
@@ -125,6 +131,9 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerDetails: 'partner-details',
   partnerEmploymentStatus: 'partner-employment-status',
   partnerIncome: 'partner-employment-income',
+  partnerBenefits: 'partner-benefits',
+  partnerBenefitDetails: 'partner-benefit-details',
+  partnerOtherIncome: 'partner-other-income',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]

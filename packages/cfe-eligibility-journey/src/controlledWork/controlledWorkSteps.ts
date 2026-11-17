@@ -341,6 +341,23 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     answerCodes: ['partner-income-completed'],
     isApplicable: ({ answers }) => answers['partner-employment-status'] === 'in_work',
   },
+  {
+    code: STEPS.partnerBenefits,
+    answerCodes: ['partner-receives-benefits'],
+    isApplicable: (state) => isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,
+  },
+  {
+    code: STEPS.partnerBenefitDetails,
+    answerCodes: ['partner-benefit-details-completed'],
+    isApplicable: ({ answers }) => answers['partner-receives-benefits'] === YES,
+  },
+  {
+    code: STEPS.partnerOtherIncome,
+    answerCodes: ['partner-other-income-completed'],
+    isApplicable: ({ answers }) =>
+      answers['partner-receives-benefits'] === NO ||
+      (answers['partner-receives-benefits'] === YES && answers['partner-benefit-details-completed'] === YES),
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))

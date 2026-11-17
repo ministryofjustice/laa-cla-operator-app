@@ -102,7 +102,7 @@ describe('Partner employment status page', () => {
     const employed = { ...BASE_ANSWERS, 'partner-employment-status': 'in_work' } as const
     const unemployed = { ...BASE_ANSWERS, 'partner-employment-status': 'unemployed' } as const
     expect(getNextStep(STEPS.partnerEmploymentStatus, employed, ADULT)).to.equal(STEPS.partnerIncome)
-    expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(STEPS.partnerBenefits)
 
     const submission = JSON.stringify(partnerEmploymentStatusStep.onSubmission)
     expect(submission).to.include('SaveControlledWorkAnswers')

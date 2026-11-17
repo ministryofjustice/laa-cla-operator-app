@@ -194,9 +194,9 @@ describe('Controlled-work partner employment income page', () => {
     expect(getApplicableSteps({ ...employed, partner: 'no' }, ADULT)).to.not.include(STEPS.partnerIncome)
     expect(getApplicableSteps({ ...employed, passporting: 'yes' }, ADULT)).to.not.include(STEPS.partnerIncome)
     expect(getNextStep(STEPS.partnerEmploymentStatus, employed, ADULT)).to.equal(STEPS.partnerIncome)
-    expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(STEPS.partnerBenefits)
     expect(getNextStep(STEPS.partnerIncome, { ...employed, 'partner-income-completed': 'yes' }, ADULT)).to.equal(
-      undefined,
+      STEPS.partnerBenefits,
     )
   })
 })

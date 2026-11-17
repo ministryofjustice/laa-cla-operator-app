@@ -158,6 +158,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.benefits,
         STEPS.partnerDetails,
         STEPS.partnerEmploymentStatus,
+        STEPS.partnerBenefits,
       ])
       expect(
         getApplicableSteps(
@@ -252,7 +253,7 @@ describe('Controlled-work journey rules', () => {
       expect(getNextStep(STEPS.applicant, { 'immigration-or-asylum': 'no', passporting: 'yes' }, ADULT)).to.equal(undefined)
     })
 
-    it('routes employed partners to income and leaves the unemployed branch at the incomplete boundary', () => {
+    it('routes partner branches to income and benefits, leaving unimplemented pages at the incomplete boundary', () => {
       const base = {
         'immigration-or-asylum': 'no',
         partner: 'yes',
@@ -262,9 +263,9 @@ describe('Controlled-work journey rules', () => {
       const unemployed = { ...base, 'partner-employment-status': 'unemployed' } as const
 
       expect(getNextStep(STEPS.partnerEmploymentStatus, employed, ADULT)).to.equal(STEPS.partnerIncome)
-      expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(undefined)
+      expect(getNextStep(STEPS.partnerEmploymentStatus, unemployed, ADULT)).to.equal(STEPS.partnerBenefits)
       expect(getNextStep(STEPS.partnerIncome, { ...employed, 'partner-income-completed': 'yes' }, ADULT)).to.equal(
-        undefined,
+        STEPS.partnerBenefits,
       )
       expect(findMissingSteps(employed, ADULT)).to.deep.include({
         stepCode: STEPS.partnerIncome,
