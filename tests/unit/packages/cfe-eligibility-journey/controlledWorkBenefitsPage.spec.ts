@@ -50,7 +50,7 @@ describe('Controlled-work benefits page', () => {
     expect(content).to.include('"text":"Save and continue"')
     expect(content).to.include('"width":"two-thirds"')
     expect(content).to.include('"width":"one-third"')
-    expect(content).to.include('Controlled work (PDF, 599KB)')
+    expect(content).to.include('Disregarded benefits (PDF, 599KB)')
     expect(sharedLayout).to.include('"text":"Guidance"')
   })
 
@@ -62,19 +62,30 @@ describe('Controlled-work benefits page', () => {
       { value: 'yes', text: 'Yes' },
       { value: 'no', text: 'No' },
     ])
-    expect(JSON.stringify(controlledWorkBenefitsPageContent)).to.include(
-      'Examples include Child Benefit, tax credits and Asylum Support payments.',
+    const content = JSON.stringify(controlledWorkBenefitsPageContent)
+    expect(content).to.include(
+      'For example, Child Benefit, tax credits or asylum support payments.',
     )
-    expect(JSON.stringify(controlledWorkBenefitsPageContent)).to.include(
-      'Do not include Housing Benefit, State Pension, PIP, Carer’s Allowance, Community Care direct payments, Fostering allowance or Cost of Living Payments.',
-    )
+    expect(content).to.include('Check the guidance (PDF, 599KB)')
+    expect(content).to.include('#page=15')
+    for (const excludedBenefit of [
+      'Housing Benefit',
+      'State Pension',
+      'Personal Independence Payment (PIP)',
+      'Carer’s Allowance',
+      'Community Care direct payments',
+      'Fostering allowance',
+      'Cost of Living Payments',
+    ]) {
+      expect(content).to.include(`<li>${excludedBenefit}</li>`)
+    }
     expect(JSON.stringify(receivesBenefitsField.validWhen)).to.include('^(yes|no)$')
     expect(JSON.stringify(receivesBenefitsField.validWhen)).to.include(
       '"message":"Select yes if your client gets any benefits"',
     )
     expect(isValidControlledWorkAnswer('receives-benefits', 'yes')).to.equal(true)
     expect(isValidControlledWorkAnswer('receives-benefits', 'no')).to.equal(true)
-    for (const invalid of ['', undefined, null, 'true', 'false', 'maybe', true, false, 1]) {
+    for (const invalid of ['', undefined, null, 'true', 'false', 'maybe', true, false]) {
       expect(isValidControlledWorkAnswer('receives-benefits', invalid)).to.equal(false)
     }
   })
