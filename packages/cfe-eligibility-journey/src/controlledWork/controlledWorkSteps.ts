@@ -841,8 +841,12 @@ export function getNextStep(
   answers: ControlledWorkAnswers,
   context: ControlledWorkContext,
 ): ControlledWorkStepCode | undefined {
-  // The unimplemented mortgage-payment page must remain a boundary before property details on means routes.
-  if (currentStep === STEPS.property && answers['property-owned'] === 'with_mortgage' && answers.passporting === NO) {
+  // Unimplemented housing-cost pages must remain boundaries on means-tested routes.
+  if (
+    currentStep === STEPS.property &&
+    answers.passporting === NO &&
+    (answers['property-owned'] === 'with_mortgage' || answers['property-owned'] === 'none')
+  ) {
     return undefined
   }
   const order = CONTROLLED_WORK_STEPS.map(({ code }) => code)

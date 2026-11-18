@@ -162,5 +162,13 @@ describe('Controlled-work property page', () => {
       )
       expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
     }
+
+    const meansTestedNoHome: ControlledWorkAnswers = {
+      ...PASSPORTED_ANSWERS,
+      passporting: 'no',
+      'property-owned': 'none',
+    }
+    expect(getNextStep(STEPS.property, meansTestedNoHome, ADULT)).to.equal(undefined)
+    expect(isControlledWorkComplete(meansTestedNoHome, ADULT)).to.equal(false)
   })
 })
