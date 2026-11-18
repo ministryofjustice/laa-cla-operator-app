@@ -83,6 +83,12 @@ const subjectMatterOfDisputeGuidanceLink: BlockDefinition = {
   visibleWhen: IMMIGRATION_OR_ASYLUM_NOT_APPLICABLE,
 }
 
+export const additionalPropertyGuidanceLinks = [
+  additionalPropertyGuidanceLink,
+  trappedCapitalGuidanceLink,
+  subjectMatterOfDisputeGuidanceLink,
+]
+
 export const additionalPropertyPageContent = eligibilityQuestionPageLayout({
   questionBlocks: [
     additionalPropertyHeading,
@@ -90,9 +96,5 @@ export const additionalPropertyPageContent = eligibilityQuestionPageLayout({
     partnerAdditionalPropertyHint,
     additionalPropertyField,
   ],
-  guidanceBlocks: [
-    additionalPropertyGuidanceLink,
-    trappedCapitalGuidanceLink,
-    subjectMatterOfDisputeGuidanceLink,
-  ],
+  guidanceBlocks: additionalPropertyGuidanceLinks,
 })

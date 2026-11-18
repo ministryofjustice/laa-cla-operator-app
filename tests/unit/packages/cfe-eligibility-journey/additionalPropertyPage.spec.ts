@@ -138,7 +138,7 @@ describe('Controlled-work additional property page', () => {
     expect(getNextStep(STEPS.property, nonPassportedNoHome, ADULT)).to.equal(undefined)
   })
 
-  it('routes shared ownership to the existing cannot-use-service outcome and leaves other branches incomplete', () => {
+  it('routes shared ownership to the existing cannot-use-service outcome and owned branches to details', () => {
     const submission = JSON.stringify(additionalPropertyStep.onSubmission)
     const sharedOwnershipAnswers = { ...PASSPORTED_HOMELESS, 'additional-property-owned': 'shared_ownership' } as const
     const noAdditionalPropertyAnswers = { ...PASSPORTED_HOMELESS, 'additional-property-owned': 'none' } as const
@@ -161,7 +161,9 @@ describe('Controlled-work additional property page', () => {
     expect(JSON.stringify(cannotUseServiceStep.blocks)).to.include('/change/additional-property')
     expect(getNextStep(STEPS.additionalProperty, sharedOwnershipAnswers, ADULT)).to.equal(undefined)
     expect(getNextStep(STEPS.additionalProperty, noAdditionalPropertyAnswers, ADULT)).to.equal(undefined)
-    expect(getNextStep(STEPS.additionalProperty, ownedAdditionalPropertyAnswers, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.additionalProperty, ownedAdditionalPropertyAnswers, ADULT)).to.equal(
+      STEPS.additionalPropertyDetails,
+    )
     expect(isControlledWorkComplete(noAdditionalPropertyAnswers, ADULT)).to.equal(false)
     expect(JSON.stringify(controlledWorkIncompleteStep.blocks)).to.include(
       'Further controlled-work questions are not yet available',

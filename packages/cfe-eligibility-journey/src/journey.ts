@@ -57,6 +57,7 @@ import { cannotUseServiceStep } from './propertyLandlordPage/cannotUseServiceSte
 import { sharedOwnershipHousingCostsStep } from './sharedOwnershipHousingCostsPage/sharedOwnershipHousingCostsStep.js'
 import { propertyEntryStep } from './propertyEntryPage/propertyEntryStep.js'
 import { additionalPropertyStep } from './additionalPropertyPage/additionalPropertyStep.js'
+import { additionalPropertyDetailsStep } from './additionalPropertyDetailsPage/additionalPropertyDetailsStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -109,6 +110,7 @@ export const eligibilityJourney = journey({
     sharedOwnershipHousingCostsStep,
     propertyEntryStep,
     additionalPropertyStep,
+    additionalPropertyDetailsStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,

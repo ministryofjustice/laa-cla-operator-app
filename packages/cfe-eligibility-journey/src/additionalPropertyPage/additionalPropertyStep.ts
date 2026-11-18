@@ -8,7 +8,7 @@ import { cannotUseServiceStepCode } from '../propertyLandlordPage/cannotUseServi
 import { additionalPropertyPageContent } from './additionalPropertyBlock.js'
 
 const { additionalProperty: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
-const PREREQUISITE_STEP_CODES = [
+export const ADDITIONAL_PROPERTY_PREREQUISITE_STEP_CODES = [
   ...PROPERTY_PREVIOUS_STEP_CODES,
   CONTROLLED_WORK_STEP_CODES.property,
   CONTROLLED_WORK_STEP_CODES.propertyLandlord,
@@ -27,7 +27,7 @@ export const additionalPropertyStep: StepDefinition = step({
   blocks: [additionalPropertyPageContent],
   onAccess: [
     access({
-      next: PREREQUISITE_STEP_CODES.map((stepCode) =>
+      next: ADDITIONAL_PROPERTY_PREREQUISITE_STEP_CODES.map((stepCode) =>
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(Condition.Equals(stepCode)),
           goto: controlledWorkIncompleteStepCode,
@@ -44,6 +44,10 @@ export const additionalPropertyStep: StepDefinition = step({
           redirect({
             when: Answer('additional-property-owned').match(Condition.Equals('shared_ownership')),
             goto: cannotUseServiceStepCode,
+          }),
+          redirect({
+            when: Answer('additional-property-owned').match(Condition.String.MatchesRegex('^(with_mortgage|outright)$')),
+            goto: CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails,
           }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],

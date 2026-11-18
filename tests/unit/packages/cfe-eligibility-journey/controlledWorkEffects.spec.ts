@@ -207,6 +207,196 @@ describe('Controlled-work effects', () => {
     expect(changedRoute.answers.has('additional-property-owned')).to.equal(false)
   })
 
+  it('persists and restores additional-property rows, clears conditional values, and prunes the collection when its gate changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    const next = save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'outright' })
+    expect(next.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.additionalPropertyDetails)
+
+    const page = fakeContext({
+      session,
+      dateOfBirth: ADULT_DOB,
+      posted: { house_in_dispute_0: 'yes' },
+    })
+    registry.PrepareAdditionalPropertyDetails.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection)).to.deep.equal([
+      {
+        house_value: '',
+        inline_owned_with_mortgage: '',
+        mortgage: '',
+        percentage_owned: '',
+        house_in_dispute: '',
+      },
+    ])
+
+    page.answers.set('house_value_0', '100000')
+    page.answers.set('percentage_owned_0', '40')
+    page.answers.set('house_in_dispute_0', 'yes')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    registry.NormalizeAdditionalPropertyDetails.evaluate(page.context)
+    const completed = save(session, ADULT_DOB, STEPS.additionalPropertyDetails, {})
+
+    expect(readControlledWorkAnswers(session, CASE_ID)['additional-property-details-completed']).to.equal('yes')
+    expect(completed.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]?.[
+        CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection
+      ],
+    ).to.deep.equal([{ house_value: '100000', percentage_owned: '40', house_in_dispute: 'yes' }])
+
+    const revisited = fakeContext({ session: JSON.parse(JSON.stringify(session)), dateOfBirth: ADULT_DOB })
+    registry.PrepareAdditionalPropertyDetails.evaluate(revisited.context)
+    expect(revisited.answers.get('house_value_0')).to.equal('100000')
+    expect(revisited.answers.get('percentage_owned_0')).to.equal('40')
+    expect(revisited.answers.get('house_in_dispute_0')).to.equal('yes')
+
+    const mortgageChoice = save(session, ADULT_DOB, STEPS.additionalProperty, {
+      'additional-property-owned': 'with_mortgage',
+    })
+    expect(mortgageChoice.answers.has('additional-property-details-completed')).to.equal(false)
+    expect(mortgageChoice.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.additionalPropertyDetails)
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]?.[
+        CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection
+      ],
+    ).to.deep.equal([{ house_value: '100000', percentage_owned: '40', house_in_dispute: 'yes' }])
+
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]).to.equal(undefined)
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('additional-property-details-completed')
+  })
+
+  it('removes a mortgage amount after a repeated row changes to no mortgage', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'outright' })
+
+    const addRow = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PrepareAdditionalPropertyDetails.evaluate(addRow.context)
+    addRow.answers.set('house_value_0', '100000')
+    addRow.answers.set('percentage_owned_0', '40')
+    registry.AddRepeatingItem.evaluate(
+      addRow.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    addRow.answers.set('house_value_1', '50000')
+    addRow.answers.set('inline_owned_with_mortgage_1', 'yes')
+    addRow.answers.set('mortgage_1', '15000')
+    addRow.answers.set('percentage_owned_1', '50')
+    registry.SaveRepeatingItems.evaluate(
+      addRow.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    registry.NormalizeAdditionalPropertyDetails.evaluate(addRow.context)
+
+    const changedAnswer = fakeContext({
+      session,
+      dateOfBirth: ADULT_DOB,
+      posted: { inline_owned_with_mortgage_1: 'no' },
+    })
+    registry.PrepareAdditionalPropertyDetails.evaluate(changedAnswer.context)
+    changedAnswer.answers.set('inline_owned_with_mortgage_1', 'no')
+    registry.SaveRepeatingItems.evaluate(
+      changedAnswer.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    registry.NormalizeAdditionalPropertyDetails.evaluate(changedAnswer.context)
+
+    const rows = session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]?.[
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection
+    ]
+    expect(rows?.[1]).to.deep.equal({
+      house_value: '50000',
+      inline_owned_with_mortgage: 'no',
+      percentage_owned: '50',
+      house_in_dispute: 'no',
+    })
+  })
+
+  it('keeps checked dispute values with the correct rows when a middle property is removed', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'outright' })
+
+    const page = fakeContext({
+      session,
+      dateOfBirth: ADULT_DOB,
+      posted: { house_in_dispute_0: 'yes' },
+    })
+    registry.PrepareAdditionalPropertyDetails.evaluate(page.context)
+    page.answers.set('house_value_0', '10000')
+    page.answers.set('percentage_owned_0', '100')
+    page.answers.set('house_in_dispute_0', 'yes')
+    registry.AddRepeatingItem.evaluate(
+      page.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    page.answers.set('house_value_1', '20000')
+    page.answers.set('percentage_owned_1', '50')
+    registry.AddRepeatingItem.evaluate(
+      page.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    page.answers.set('house_value_2', '30000')
+    page.answers.set('percentage_owned_2', '25')
+    page.answers.set('house_in_dispute_2', 'yes')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    registry.NormalizeAdditionalPropertyDetails.evaluate(page.context)
+
+    const removeMiddleProperty = fakeContext({
+      session,
+      dateOfBirth: ADULT_DOB,
+      posted: { action: 'remove_1', house_in_dispute_0: 'yes', house_in_dispute_2: 'yes' },
+    })
+    registry.PrepareAdditionalPropertyDetails.evaluate(removeMiddleProperty.context)
+    registry.RemoveRepeatingItem.evaluate(
+      removeMiddleProperty.context,
+      STEPS.additionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned', 'house_in_dispute'],
+    )
+    registry.NormalizeAdditionalPropertyDetails.evaluate(removeMiddleProperty.context)
+
+    const rows = session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]?.[
+      CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection
+    ]
+    expect(rows).to.deep.equal([
+      { house_value: '10000', percentage_owned: '100', house_in_dispute: 'yes' },
+      {
+        house_value: '30000',
+        inline_owned_with_mortgage: '',
+        percentage_owned: '25',
+        house_in_dispute: 'yes',
+      },
+    ])
+  })
+
   it('persists and prepopulates shared housing costs, prunes conditional benefit fields, and clears the branch on change', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

@@ -172,7 +172,7 @@ const propertyEntryHint = GovUKBody({
   }),
 })
 
-const subjectMatterOfDisputeDetails = {
+export const subjectMatterOfDisputeDetails = {
   ...GovUKDetails({
     summaryText: 'Help with subject matter of dispute',
     html: '<p>Any asset owned or partially owned by your client that is the subject of a claim by their opponent in a case is the subject matter of dispute.</p><p>These assets will be disregarded from the calculation, up to a total of £100,000. See Regulation 38 of The Civil Legal Aid (Financial Resources and Payment for Services) Regulations 2013 for more information.</p>',
