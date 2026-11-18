@@ -10,6 +10,8 @@ import {
   addressLookupStep2,
 } from "./address-lookup/step.js";
 
+import {clientCaseStep} from "./case/step.js"
+
 // Define the journeys
 export const dashboardJourney = journey({
   code: "dashboard",
@@ -46,5 +48,6 @@ export const caseJourney = journey({
     addressLookupStep1,
     addressLookupStep2,
     adaptationDetails,
+    clientCaseStep
   ],
 });

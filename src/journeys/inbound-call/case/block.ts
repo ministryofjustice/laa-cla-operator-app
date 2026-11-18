@@ -1,12 +1,14 @@
-import { CollectionBlock } from "#node_modules/@ministryofjustice/hmpps-forge/dist/core/components/index.js";
+import {
+  CollectionBlock,
+} from "@ministryofjustice/hmpps-forge/core/components";
+import {
+  GovUKButton,
+} from "@ministryofjustice/hmpps-forge/govuk-components";
 
-
-
-
-export const casseDetails = CollectionBlock({
+export const clientHomeBlock = CollectionBlock({
 
     collection : [
-        
-    ]
 
-})
+        GovUKButton({ text: "Continue to Scope" }),
+        ]
+});
