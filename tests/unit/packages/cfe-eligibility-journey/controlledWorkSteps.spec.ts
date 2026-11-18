@@ -159,6 +159,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.partnerDetails,
         STEPS.partnerEmploymentStatus,
         STEPS.partnerBenefits,
+        STEPS.outgoings,
       ])
       expect(
         getApplicableSteps(
@@ -398,6 +399,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.dependantDetails,
         STEPS.employmentStatus,
         STEPS.benefits,
+        STEPS.outgoings,
       ])
     })
   })
@@ -440,6 +442,7 @@ describe('Controlled-work journey rules', () => {
         { stepCode: STEPS.dependantIncome, answerCodes: ['dependants-get-income'] },
         { stepCode: STEPS.employmentStatus, answerCodes: ['employment-status'] },
         { stepCode: STEPS.benefits, answerCodes: ['receives-benefits'] },
+        { stepCode: STEPS.outgoings, answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'] },
       ])
       expect(findMissingSteps(adultCountMissing, ADULT)[0]).to.deep.equal({
         stepCode: STEPS.dependantDetails,
@@ -490,6 +493,7 @@ describe('Controlled-work journey rules', () => {
 
       expect(findMissingSteps(answers, ADULT)).to.deep.equal([
         { stepCode: STEPS.benefits, answerCodes: ['receives-benefits'] },
+        { stepCode: STEPS.outgoings, answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'] },
       ])
       expect(isValidControlledWorkAnswer('receives-benefits', 'yes')).to.equal(true)
       expect(isValidControlledWorkAnswer('receives-benefits', 'no')).to.equal(true)
@@ -511,6 +515,7 @@ describe('Controlled-work journey rules', () => {
 
       expect(findMissingSteps(base, ADULT)).to.deep.equal([
         { stepCode: STEPS.benefitDetails, answerCodes: ['benefit-details-completed'] },
+        { stepCode: STEPS.outgoings, answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'] },
       ])
       expect(
         getNextStep(STEPS.benefits, base, ADULT),

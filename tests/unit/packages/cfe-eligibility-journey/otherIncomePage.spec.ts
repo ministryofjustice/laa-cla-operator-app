@@ -189,10 +189,11 @@ describe('Controlled-work other income page', () => {
     expect(getNextStep(STEPS.benefits, benefitsNo, ADULT)).to.equal(STEPS.otherIncome)
     expect(getNextStep(STEPS.benefits, benefitsYes, ADULT)).to.equal(STEPS.benefitDetails)
     expect(getNextStep(STEPS.benefitDetails, benefitDetailsComplete, ADULT)).to.equal(STEPS.otherIncome)
+    expect(getNextStep(STEPS.otherIncome, OTHER_INCOME_ANSWERS, ADULT)).to.equal(STEPS.outgoings)
     expect(getFirstMissingStep(benefitsNo, ADULT)).to.equal(STEPS.otherIncome)
 
     const completed = { ...OTHER_INCOME_ANSWERS }
-    expect(getFirstMissingStep(completed, ADULT)).to.equal(undefined)
+    expect(getFirstMissingStep(completed, ADULT)).to.equal(STEPS.outgoings)
     expect(isControlledWorkComplete(completed, ADULT)).to.equal(false)
   })
 
@@ -212,6 +213,10 @@ describe('Controlled-work other income page', () => {
           'other-income-completed',
         ],
       },
+      {
+        stepCode: STEPS.outgoings,
+        answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'],
+      },
     ])
 
     const selected = {
@@ -228,6 +233,10 @@ describe('Controlled-work other income page', () => {
       {
         stepCode: STEPS.otherIncome,
         answerCodes: ['friends_or_family_conditional_value', 'friends_or_family_frequency'],
+      },
+      {
+        stepCode: STEPS.outgoings,
+        answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'],
       },
     ])
   })

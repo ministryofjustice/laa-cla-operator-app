@@ -3,8 +3,14 @@ import type { EffectFunctionContext } from '@ministryofjustice/hmpps-forge/core/
 import { FinancialEligibilityEffectsRegistry } from '#packages/cfe-eligibility-journey/src/effects.js'
 import '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
 import { CONTROLLED_WORK_DATA_KEYS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
-import { readControlledWorkAnswers } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSession.js'
-import { CONTROLLED_WORK_STEP_CODES as STEPS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
+import {
+  readControlledWorkAnswers,
+  writeControlledWorkAnswers,
+} from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSession.js'
+import {
+  CONTROLLED_WORK_STEP_CODES as STEPS,
+  type ControlledWorkAnswers,
+} from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
 import { CLIENT_DATE_OF_BIRTH_DATA_KEY } from '#packages/cfe-eligibility-journey/src/clientAge.js'
 import type { Deps } from '#packages/cfe-eligibility-journey/src/api.js'
 import type { FinancialEligibilitySession } from '#packages/cfe-eligibility-journey/src/context.type.js'
@@ -13,6 +19,22 @@ import { partnerIncomeFieldCodes } from '#packages/cfe-eligibility-journey/src/p
 const CASE_ID = 'CASE1'
 const ADULT_DOB = '1990-01-01'
 const MINOR_DOB = `${new Date().getFullYear() - 10}-01-01`
+const OUTGOINGS_PREREQUISITE_ANSWERS = {
+  'immigration-or-asylum': 'no',
+  partner: 'no',
+  passporting: 'no',
+  'child-dependants': 'no',
+  'adult-dependants': 'no',
+  'employment-status': 'unemployed',
+  'receives-benefits': 'no',
+  friends_or_family_relevant: 'no',
+  maintenance_relevant: 'no',
+  property_or_lodger_relevant: 'no',
+  pension_relevant: 'no',
+  student_finance_relevant: 'no',
+  other_relevant: 'no',
+  'other-income-completed': 'yes',
+} as const satisfies ControlledWorkAnswers
 
 const registry = FinancialEligibilityEffectsRegistry.build({} as Deps)
 
@@ -968,5 +990,78 @@ describe('Controlled-work effects', () => {
 
     expect(session.financialEligibilityDrafts[CASE_ID]).to.equal(undefined)
     expect(answers.size).to.equal(0)
+  })
+
+  it('persists and prepopulates outgoings, and prunes conditional fields when an answer changes to No', () => {
+    const session = newSession()
+    writeControlledWorkAnswers(session, CASE_ID, OUTGOINGS_PREREQUISITE_ANSWERS)
+
+    save(session, ADULT_DOB, STEPS.outgoings, {
+      maintenance_payments_relevant: 'yes',
+      maintenance_payments_conditional_value: '250',
+      maintenance_payments_frequency: 'every_two_weeks',
+      legal_aid_payments_relevant: 'no',
+    })
+
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      maintenance_payments_relevant: 'yes',
+      maintenance_payments_conditional_value: '250',
+      maintenance_payments_frequency: 'every_two_weeks',
+      legal_aid_payments_relevant: 'no',
+    })
+    expect(restore(session, ADULT_DOB).answers.get('maintenance_payments_conditional_value')).to.equal('250')
+
+    save(session, ADULT_DOB, STEPS.outgoings, {
+      maintenance_payments_relevant: 'no',
+      legal_aid_payments_relevant: 'no',
+    })
+
+    const answers = readControlledWorkAnswers(session, CASE_ID)
+    expect(answers.maintenance_payments_relevant).to.equal('no')
+    expect(answers).to.not.have.property('maintenance_payments_conditional_value')
+    expect(answers).to.not.have.property('maintenance_payments_frequency')
+    expect(restore(session, ADULT_DOB).answers.has('maintenance_payments_conditional_value')).to.equal(false)
+  })
+
+  it('prepopulates eligible childcare answers and removes them when child dependants are removed', () => {
+    const session = newSession()
+    const answers: ControlledWorkAnswers = {
+      ...OUTGOINGS_PREREQUISITE_ANSWERS,
+      'child-dependants': 'yes',
+      'child-dependants-count': '1',
+      'dependants-get-income': 'no',
+      'employment-status': 'in_work',
+      'income-completed': 'yes',
+    }
+    writeControlledWorkAnswers(session, CASE_ID, answers)
+    session.casePatternDrafts = {
+      [CASE_ID]: {
+        [STEPS.income]: {
+          [CONTROLLED_WORK_DATA_KEYS.incomeCollection]: [{ income_type: 'employment' }],
+        },
+      },
+    }
+
+    const saved = save(session, ADULT_DOB, STEPS.outgoings, {
+      childcare_payments_relevant: 'yes',
+      childcare_payments_conditional_value: '200',
+      childcare_payments_frequency: 'monthly',
+      maintenance_payments_relevant: 'no',
+      legal_aid_payments_relevant: 'no',
+    })
+
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.childcareEligible)).to.equal(true)
+    expect(readControlledWorkAnswers(session, CASE_ID).childcare_payments_conditional_value).to.equal('200')
+    expect(restore(session, ADULT_DOB).answers.get('childcare_payments_frequency')).to.equal('monthly')
+
+    const changed = save(session, ADULT_DOB, STEPS.dependantDetails, {
+      'child-dependants': 'no',
+      'adult-dependants': 'no',
+    })
+
+    expect(changed.data.get(CONTROLLED_WORK_DATA_KEYS.childcareEligible)).to.equal(false)
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('childcare_payments_relevant')
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('childcare_payments_conditional_value')
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('childcare_payments_frequency')
   })
 })

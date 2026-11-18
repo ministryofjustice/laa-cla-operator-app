@@ -50,6 +50,22 @@ export const PARTNER_OTHER_INCOME_FREQUENCY_CODES = [
   'partner_pension_frequency',
 ] as const
 export const OTHER_INCOME_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
+export const OUTGOINGS_RELEVANT_CODES = [
+  'childcare_payments_relevant',
+  'maintenance_payments_relevant',
+  'legal_aid_payments_relevant',
+] as const
+export const OUTGOINGS_VALUE_CODES = [
+  'childcare_payments_conditional_value',
+  'maintenance_payments_conditional_value',
+  'legal_aid_payments_conditional_value',
+] as const
+export const OUTGOINGS_FREQUENCY_CODES = [
+  'childcare_payments_frequency',
+  'maintenance_payments_frequency',
+  'legal_aid_payments_frequency',
+] as const
+export const OUTGOINGS_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
@@ -82,6 +98,9 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   partner_pension_relevant: YES_NO_OPTIONS,
   partner_student_finance_relevant: YES_NO_OPTIONS,
   partner_other_relevant: YES_NO_OPTIONS,
+  childcare_payments_relevant: YES_NO_OPTIONS,
+  maintenance_payments_relevant: YES_NO_OPTIONS,
+  legal_aid_payments_relevant: YES_NO_OPTIONS,
   'other-income-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'partner-income-completed': ['yes'],
@@ -97,12 +116,16 @@ export type OtherIncomeValueAnswerCode =
 export type OtherIncomeFrequencyAnswerCode =
   | (typeof OTHER_INCOME_FREQUENCY_CODES)[number]
   | (typeof PARTNER_OTHER_INCOME_FREQUENCY_CODES)[number]
+export type OutgoingsValueAnswerCode = (typeof OUTGOINGS_VALUE_CODES)[number]
+export type OutgoingsFrequencyAnswerCode = (typeof OUTGOINGS_FREQUENCY_CODES)[number]
 export type ControlledWorkCountAnswerCode = (typeof CONTROLLED_WORK_COUNT_ANSWER_CODES)[number]
 export type ControlledWorkAnswerCode =
   | ChoiceAnswerCode
   | ControlledWorkCountAnswerCode
   | OtherIncomeValueAnswerCode
   | OtherIncomeFrequencyAnswerCode
+  | OutgoingsValueAnswerCode
+  | OutgoingsFrequencyAnswerCode
 export type ControlledWorkCountAnswer = number | string
 
 export const CONTROLLED_WORK_ANSWER_CODES = [
@@ -129,6 +152,9 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   ...PARTNER_OTHER_INCOME_RELEVANT_CODES,
   ...PARTNER_OTHER_INCOME_VALUE_CODES,
   ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
+  ...OUTGOINGS_RELEVANT_CODES,
+  ...OUTGOINGS_VALUE_CODES,
+  ...OUTGOINGS_FREQUENCY_CODES,
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
@@ -144,6 +170,8 @@ export type ControlledWorkAnswers = {
 } & Partial<Record<ControlledWorkCountAnswerCode, ControlledWorkCountAnswer>>
   & Partial<Record<OtherIncomeValueAnswerCode, string>>
   & Partial<Record<OtherIncomeFrequencyAnswerCode, (typeof OTHER_INCOME_FREQUENCIES)[number]>>
+  & Partial<Record<OutgoingsValueAnswerCode, string>>
+  & Partial<Record<OutgoingsFrequencyAnswerCode, (typeof OUTGOINGS_FREQUENCIES)[number]>>
 
 export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylum: 'immigration-or-asylum',
@@ -169,6 +197,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerBenefits: 'partner-benefits',
   partnerBenefitDetails: 'partner-benefit-details',
   partnerOtherIncome: 'partner-other-income',
+  outgoings: 'outgoings',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]
@@ -184,6 +213,7 @@ export type AssessmentRoute = (typeof ASSESSMENT_ROUTES)[keyof typeof ASSESSMENT
 /** Facts derived from case data, never asked of the user. `isUnder18` is undefined when the DOB is unknown. */
 export interface ControlledWorkContext {
   isUnder18?: boolean
+  eligibleForChildcareCosts?: boolean
 }
 
 export interface MissingControlledWorkStep {

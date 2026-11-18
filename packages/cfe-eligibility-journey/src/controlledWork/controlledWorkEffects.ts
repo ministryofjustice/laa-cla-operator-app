@@ -9,6 +9,7 @@ import {
   getFirstMissingStep,
   getNextStep,
   getStepAnswerCodes,
+  isControlledWorkChildcareEligible,
   resolveControlledWorkJourney,
 } from './controlledWorkSteps.js'
 import { mergeControlledWorkAnswers, readControlledWorkAnswers, writeControlledWorkAnswers } from './controlledWorkSession.js'
@@ -32,6 +33,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   benefitCollection: 'benefits',
   partnerBenefitCollection: 'partner_benefits',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
+  childcareEligible: 'controlledWorkChildcareEligible',
 } as const
 
 export interface ControlledWorkEffectShape {
@@ -80,8 +82,30 @@ function getCaseId(context: EffectFunctionContext): string | undefined {
   return typeof caseId === 'string' && caseId.length > 0 ? caseId : undefined
 }
 
-function getControlledWorkContext(context: EffectFunctionContext): ControlledWorkContext {
-  return deriveControlledWorkContext(context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY), new Date())
+/**
+ * Combines the DOB-derived age with the current CCQ childcare eligibility facts.
+ * @param {EffectFunctionContext} context The Forge effect context
+ * @param {ControlledWorkAnswers} [answers] Answers including any just-submitted values
+ * @returns {ControlledWorkContext} The derived age and childcare eligibility context
+ */
+function getControlledWorkContext(
+  context: EffectFunctionContext,
+  answers?: ControlledWorkAnswers,
+): ControlledWorkContext {
+  const ageContext = deriveControlledWorkContext(context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY), new Date())
+  const caseId = getCaseId(context)
+  const session = context.getSession() as FinancialEligibilitySession | undefined
+  if (caseId === undefined || session === undefined) return { ...ageContext, eligibleForChildcareCosts: false }
+
+  const savedAnswers = answers ?? readControlledWorkAnswers(session, caseId)
+  const casePatterns = getOrMigrateCasePatternDrafts(session, caseId)
+  const incomeRows = casePatterns[INCOME_PATTERN_CODE]?.[CONTROLLED_WORK_DATA_KEYS.incomeCollection]
+  const partnerIncomeRows = casePatterns[PARTNER_INCOME_PATTERN_CODE]?.[CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection]
+
+  return {
+    ...ageContext,
+    eligibleForChildcareCosts: isControlledWorkChildcareEligible(savedAnswers, incomeRows, partnerIncomeRows),
+  }
 }
 
 function syncForgeAnswers(context: EffectFunctionContext, answers: ControlledWorkAnswers): void {
@@ -99,6 +123,7 @@ function setJourneyData(context: EffectFunctionContext, answers: ControlledWorkA
   const { steps } = resolveControlledWorkJourney(answers, journeyContext)
   context.setData(CONTROLLED_WORK_DATA_KEYS.applicableSteps, steps)
   context.setData(CONTROLLED_WORK_DATA_KEYS.firstMissingStep, getFirstMissingStep(answers, journeyContext) ?? NO_STEP)
+  context.setData(CONTROLLED_WORK_DATA_KEYS.childcareEligible, journeyContext.eligibleForChildcareCosts === true)
 }
 
 function getDependantIncomeMaximum(answers: ControlledWorkAnswers): number {
@@ -363,8 +388,8 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       const session = context.getSession() as FinancialEligibilitySession | undefined
       if (!caseId || !session) return
 
-      const journeyContext = getControlledWorkContext(context)
       const saved = readControlledWorkAnswers(session, caseId)
+      const journeyContext = getControlledWorkContext(context, saved)
       const { answers, removedCodes } = resolveControlledWorkJourney(saved, journeyContext)
       const dependantIncomeRowsChanged = reconcileDependantIncomeDrafts(session, caseId, answers)
       const incomeRowsChanged = reconcileIncomeDrafts(session, caseId, answers)
@@ -413,11 +438,11 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       const session = context.getSession() as FinancialEligibilitySession | undefined
       if (!caseId || !session) return
 
-      const journeyContext = getControlledWorkContext(context)
       const merged = mergeControlledWorkAnswers(
         readControlledWorkAnswers(session, caseId),
         readSubmittedAnswers(context, stepCode),
       )
+      const journeyContext = getControlledWorkContext(context, merged)
       const { answers } = resolveControlledWorkJourney(merged, journeyContext)
       reconcileDependantIncomeDrafts(session, caseId, answers)
       reconcileIncomeDrafts(session, caseId, answers)

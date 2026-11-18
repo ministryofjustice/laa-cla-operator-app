@@ -200,6 +200,10 @@ describe('Controlled-work partner other income page', () => {
           'partner-other-income-completed',
         ],
       },
+      {
+        stepCode: STEPS.outgoings,
+        answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'],
+      },
     ])
 
     const selected = {
@@ -217,6 +221,10 @@ describe('Controlled-work partner other income page', () => {
         stepCode: STEPS.partnerOtherIncome,
         answerCodes: ['partner_friends_or_family_conditional_value', 'partner_friends_or_family_frequency'],
       },
+      {
+        stepCode: STEPS.outgoings,
+        answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'],
+      },
     ])
   })
 
@@ -229,6 +237,7 @@ describe('Controlled-work partner other income page', () => {
     expect(getFirstMissingStep(noBenefits, ADULT)).to.equal(STEPS.partnerOtherIncome)
     expect(getNextStep(STEPS.partnerBenefits, yesBenefits, ADULT)).to.equal(STEPS.partnerBenefitDetails)
     expect(getNextStep(STEPS.partnerBenefitDetails, benefitDetailsComplete, ADULT)).to.equal(STEPS.partnerOtherIncome)
+    expect(getNextStep(STEPS.partnerOtherIncome, PARTNER_OTHER_INCOME_ANSWERS, ADULT)).to.equal(STEPS.outgoings)
     expect(getApplicableSteps(noBenefits, ADULT)).to.include(STEPS.partnerOtherIncome)
     expect(getApplicableSteps({ ...noBenefits, partner: 'no' }, ADULT)).to.not.include(STEPS.partnerOtherIncome)
     expect(getApplicableSteps({ ...noBenefits, passporting: 'yes' }, ADULT)).to.not.include(STEPS.partnerOtherIncome)
