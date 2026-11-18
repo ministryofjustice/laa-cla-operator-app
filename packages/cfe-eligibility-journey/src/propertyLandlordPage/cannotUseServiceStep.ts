@@ -9,13 +9,20 @@ const mainPropertySharedOwnershipNotSupported = Answer('property-landlord').matc
 const additionalPropertySharedOwnershipNotSupported = Answer('additional-property-owned').match(
   Condition.Equals('shared_ownership'),
 )
+const partnerAdditionalPropertySharedOwnershipNotSupported = Answer('partner-additional-property-owned').match(
+  Condition.Equals('shared_ownership'),
+)
 
 export const cannotUseServiceStep: StepDefinition = step({
   code: cannotUseServiceStepCode,
   path: '/cannot-use-service',
   title: 'You cannot use this service',
   reachability: {
-    entryWhen: or(mainPropertySharedOwnershipNotSupported, additionalPropertySharedOwnershipNotSupported),
+    entryWhen: or(
+      mainPropertySharedOwnershipNotSupported,
+      additionalPropertySharedOwnershipNotSupported,
+      partnerAdditionalPropertySharedOwnershipNotSupported,
+    ),
   },
   blocks: [
     GovUKHeading({ text: 'You cannot use this service', size: 'l' }),
@@ -30,6 +37,12 @@ export const cannotUseServiceStep: StepDefinition = step({
         text: 'You cannot use this service if your client owns a shared ownership property that they do not live in.',
       }),
       visibleWhen: additionalPropertySharedOwnershipNotSupported,
+    },
+    {
+      ...GovUKBody({
+        text: 'You cannot use this service if your client or their partner owns a shared ownership property that they do not live in.',
+      }),
+      visibleWhen: partnerAdditionalPropertySharedOwnershipNotSupported,
     },
     {
       ...HtmlBlock({
@@ -52,6 +65,17 @@ export const cannotUseServiceStep: StepDefinition = step({
         content: 'Change your answer',
       }),
       visibleWhen: additionalPropertySharedOwnershipNotSupported,
+    },
+    {
+      ...HtmlBlock({
+        tag: 'a',
+        classes: 'govuk-link',
+        attributes: {
+          href: [Format('/cases/%1/cfe-eligibility/change/partner-additional-property', Params('caseId'))],
+        },
+        content: 'Change your answer',
+      }),
+      visibleWhen: partnerAdditionalPropertySharedOwnershipNotSupported,
     },
   ],
 })

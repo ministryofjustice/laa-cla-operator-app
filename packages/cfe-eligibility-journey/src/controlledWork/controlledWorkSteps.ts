@@ -98,6 +98,22 @@ function isAdditionalPropertyApplicable(state: AdditionalPropertyState): boolean
   return propertyOwned !== 'shared_ownership' || answers['property-landlord'] === YES
 }
 
+/**
+ * Checks whether the partner's additional-property question follows the client's property answer.
+ * @param {AdditionalPropertyState} state The resolved answers and case context
+ * @returns {boolean} Whether the partner property question applies
+ */
+function isPartnerAdditionalPropertyApplicable(state: AdditionalPropertyState): boolean {
+  const { answers } = state
+  const { 'additional-property-owned': clientPropertyOwned } = answers
+  if (!isMeansTested(state) || answers.partner !== YES) return false
+  if (clientPropertyOwned === undefined || clientPropertyOwned === 'shared_ownership') return false
+  if (clientPropertyOwned === 'with_mortgage' || clientPropertyOwned === 'outright') {
+    return answers['additional-property-details-completed'] === YES
+  }
+  return true
+}
+
 const PAGE_ANSWER_REQUIREMENT_BY_STEP = new Map<
   ControlledWorkStepCode,
   (code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers) => boolean
@@ -655,6 +671,11 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     answerCodes: ['additional-property-details-completed'],
     isApplicable: ({ answers }) =>
       answers['additional-property-owned'] === 'with_mortgage' || answers['additional-property-owned'] === 'outright',
+  },
+  {
+    code: STEPS.partnerAdditionalProperty,
+    answerCodes: ['partner-additional-property-owned'],
+    isApplicable: isPartnerAdditionalPropertyApplicable,
   },
 ]
 

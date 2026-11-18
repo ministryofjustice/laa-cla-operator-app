@@ -207,6 +207,33 @@ describe('Controlled-work effects', () => {
     expect(changedRoute.answers.has('additional-property-owned')).to.equal(false)
   })
 
+  it('persists and prepopulates partner additional-property ownership and prunes it when the partner leaves', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
+
+    const saved = save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, {
+      'partner-additional-property-owned': 'outright',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-additional-property-owned']).to.equal('outright')
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+
+    const revisited = restore(session, ADULT_DOB)
+    expect(revisited.answers.get('partner-additional-property-owned')).to.equal('outright')
+
+    save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, {
+      'partner-additional-property-owned': 'none',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-additional-property-owned']).to.equal('none')
+
+    const partnerRemoved = save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('partner-additional-property-owned')
+    expect(partnerRemoved.answers.has('partner-additional-property-owned')).to.equal(false)
+  })
+
   it('persists and restores additional-property rows, clears conditional values, and prunes the collection when its gate changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

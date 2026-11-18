@@ -49,6 +49,12 @@ export const additionalPropertyStep: StepDefinition = step({
             when: Answer('additional-property-owned').match(Condition.String.MatchesRegex('^(with_mortgage|outright)$')),
             goto: CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails,
           }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(CONTROLLED_WORK_STEP_CODES.partnerAdditionalProperty),
+            ),
+            goto: CONTROLLED_WORK_STEP_CODES.partnerAdditionalProperty,
+          }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],
       },
