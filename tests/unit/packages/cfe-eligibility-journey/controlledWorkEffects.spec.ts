@@ -137,6 +137,54 @@ describe('Controlled-work effects', () => {
     expect(changedOwnership.answers.has('property-landlord')).to.equal(false)
   })
 
+  it('persists and prepopulates property-entry answers and normalizes an unchecked dispute box to No', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'outright' })
+
+    save(session, ADULT_DOB, STEPS.propertyEntry, {
+      house_value: '350000',
+      percentage_owned: '100',
+      house_in_dispute: ['yes'],
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      house_value: '350000',
+      percentage_owned: '100',
+      house_in_dispute: 'yes',
+    })
+    const savedAndRestored = restore(
+      JSON.parse(JSON.stringify(session)) as FinancialEligibilitySession,
+      ADULT_DOB,
+    )
+    expect(savedAndRestored.answers.get('house_value')).to.equal('350000')
+    expect(savedAndRestored.answers.get('percentage_owned')).to.equal('100')
+    expect(savedAndRestored.answers.get('house_in_dispute')).to.equal('yes')
+
+    const unchecked = save(session, ADULT_DOB, STEPS.propertyEntry, {
+      house_value: '350000',
+      percentage_owned: '100',
+      house_in_dispute: [],
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID).house_in_dispute).to.equal('no')
+    expect(unchecked.answers.get('house_in_dispute')).to.equal('no')
+
+    const changedOwnership = save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('house_value')
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('percentage_owned')
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('house_in_dispute')
+    expect(changedOwnership.answers.has('house_value')).to.equal(false)
+
+    const meansMortgageSession = newSession()
+    save(meansMortgageSession, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(meansMortgageSession, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    const missingMortgagePage = save(meansMortgageSession, ADULT_DOB, STEPS.property, {
+      'property-owned': 'with_mortgage',
+    })
+    expect(missingMortgagePage.data.get(CONTROLLED_WORK_DATA_KEYS.propertyEntryBlocked)).to.equal(true)
+    expect(missingMortgagePage.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+  })
+
   it('persists and prepopulates shared housing costs, prunes conditional benefit fields, and clears the branch on change', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

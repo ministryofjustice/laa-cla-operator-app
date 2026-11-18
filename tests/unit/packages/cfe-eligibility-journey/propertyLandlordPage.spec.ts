@@ -90,12 +90,12 @@ describe('Controlled-work property landlord page', () => {
       'property-owned': 'outright',
     }
     expect(getApplicableSteps(otherOwnership, { isUnder18: false })).not.to.include(STEPS.propertyLandlord)
-    expect(getNextStep(STEPS.property, otherOwnership, { isUnder18: false })).to.equal(undefined)
+    expect(getNextStep(STEPS.property, otherOwnership, { isUnder18: false })).to.equal(STEPS.propertyEntry)
     expect(JSON.stringify(propertyStep.onSubmission)).to.include(CONTROLLED_WORK_DATA_KEYS.nextStep)
     expect(JSON.stringify(propertyStep.onSubmission)).to.include(STEPS.propertyLandlord)
   })
 
-  it('routes No to the CCQ denial screen and Yes to the explicit incomplete boundary', () => {
+  it('routes No to the CCQ denial screen and Yes to the next applicable property page', () => {
     const submission = JSON.stringify(propertyLandlordStep.onSubmission)
     const denial = JSON.stringify(cannotUseServiceStep.blocks)
 
@@ -104,6 +104,7 @@ describe('Controlled-work property landlord page', () => {
     expect(submission).to.include('"arguments":["no"]')
     expect(submission).to.include(cannotUseServiceStepCode)
     expect(submission).to.include('controlled-work-incomplete')
+    expect(submission).to.include(STEPS.propertyEntry)
     expect(JSON.stringify(propertyLandlordStep.onAccess)).to.include(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)
     expect(JSON.stringify(propertyLandlordStep.onAccess)).to.include(STEPS.property)
     expect(cannotUseServiceStep.title).to.equal('You cannot use this service')
@@ -116,7 +117,7 @@ describe('Controlled-work property landlord page', () => {
 
     const yesAnswers = { ...PASSPORTED_SHARED_OWNERSHIP, 'property-landlord': 'yes' } as const
     const noAnswers = { ...PASSPORTED_SHARED_OWNERSHIP, 'property-landlord': 'no' } as const
-    expect(getNextStep(STEPS.propertyLandlord, yesAnswers, { isUnder18: false })).to.equal(undefined)
+    expect(getNextStep(STEPS.propertyLandlord, yesAnswers, { isUnder18: false })).to.equal(STEPS.propertyEntry)
     expect(isControlledWorkComplete(yesAnswers, { isUnder18: false })).to.equal(false)
     expect(getNextStep(STEPS.propertyLandlord, noAnswers, { isUnder18: false })).to.equal(undefined)
   })

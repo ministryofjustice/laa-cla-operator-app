@@ -146,7 +146,7 @@ describe('Controlled-work property page', () => {
     expect(getNextStep(STEPS.partnerDetails, partnerPassportedAnswers, ADULT)).to.equal(STEPS.property)
   })
 
-  it('routes shared ownership to the implemented landlord question and leaves other property pages incomplete', () => {
+  it('routes owned homes to the next implemented page and leaves missing housing-cost branches incomplete', () => {
     for (const propertyOwned of PROPERTY_OWNERSHIP_OPTIONS) {
       const answers: ControlledWorkAnswers = {
         ...PASSPORTED_ANSWERS,
@@ -154,7 +154,11 @@ describe('Controlled-work property page', () => {
       }
 
       expect(getNextStep(STEPS.property, answers, ADULT)).to.equal(
-        propertyOwned === 'shared_ownership' ? STEPS.propertyLandlord : undefined,
+        propertyOwned === 'shared_ownership'
+          ? STEPS.propertyLandlord
+          : propertyOwned === 'none'
+            ? undefined
+            : STEPS.propertyEntry,
       )
       expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
     }

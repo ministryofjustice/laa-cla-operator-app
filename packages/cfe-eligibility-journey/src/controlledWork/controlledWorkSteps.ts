@@ -20,6 +20,8 @@ import {
   PARTNER_OUTGOINGS_FREQUENCY_CODES,
   PARTNER_OUTGOINGS_RELEVANT_CODES,
   PARTNER_OUTGOINGS_VALUE_CODES,
+  PROPERTY_ENTRY_ANSWER_CODES,
+  PROPERTY_ENTRY_VALUE_CODES,
   YES,
   type AssessmentRoute,
   type ControlledWorkAnswerCode,
@@ -36,6 +38,12 @@ import {
   isSharedOwnershipHousingAnswerRelevant,
   isValidSharedOwnershipHousingAnswer,
 } from './sharedOwnershipHousingCostsAnswers.js'
+import {
+  isPropertyEntryAnswerRelevant,
+  isRequiredPropertyEntryAnswer,
+  isValidPropertyEntryAmount,
+  isValidPropertyEntryPercentage,
+} from './propertyEntryAnswers.js'
 
 const STEPS = CONTROLLED_WORK_STEP_CODES
 const NO_DEPENDANTS = 0
@@ -68,6 +76,15 @@ const OTHER_INCOME_CONDITIONAL_CODE_SET = new Set<string>([
   ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
 ])
 const CONTROLLED_WORK_FREQUENCY_SET = new Set<string>([...OTHER_INCOME_FREQUENCIES, ...OUTGOINGS_FREQUENCIES])
+const PROPERTY_ENTRY_VALUE_CODE_SET = new Set<string>(PROPERTY_ENTRY_VALUE_CODES)
+const PROPERTY_ENTRY_ANSWER_CODE_SET = new Set<string>(PROPERTY_ENTRY_ANSWER_CODES)
+const PAGE_ANSWER_REQUIREMENT_BY_STEP = new Map<
+  ControlledWorkStepCode,
+  (code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers) => boolean
+>([
+  [CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts, isRequiredSharedOwnershipHousingAnswer],
+  [CONTROLLED_WORK_STEP_CODES.propertyEntry, isRequiredPropertyEntryAnswer],
+])
 const OTHER_INCOME_AMOUNT_PATTERN = /^-?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/u
 const OUTGOINGS_AMOUNT_PATTERN = /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/u
 
@@ -355,6 +372,7 @@ function dependantsGetIncomeSelected({ answers }: RoutingState): boolean {
  */
 function isAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers, context: ControlledWorkContext): boolean {
   if (isSharedOwnershipHousingAnswerCode(code)) return isSharedOwnershipHousingAnswerRelevant(code, answers)
+  if (PROPERTY_ENTRY_ANSWER_CODE_SET.has(code)) return isPropertyEntryAnswerRelevant(code, answers)
   if (code === 'child-dependants-count') return answers['child-dependants'] === YES
   if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
   if (code === 'childcare_payments_relevant' || code === 'partner_childcare_payments_relevant') {
@@ -403,7 +421,8 @@ function isRequiredAnswer(
     if (code === 'child-dependants-count') return answers['child-dependants'] === YES
     if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
   }
-  if (stepCode === STEPS.sharedOwnershipHousingCosts) return isRequiredSharedOwnershipHousingAnswer(code, answers)
+  const pageAnswerRequirement = PAGE_ANSWER_REQUIREMENT_BY_STEP.get(stepCode)
+  if (pageAnswerRequirement !== undefined) return pageAnswerRequirement(code, answers)
   if ((stepCode === STEPS.otherIncome || stepCode === STEPS.partnerOtherIncome) && OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) {
     return isOtherIncomeConditionalAnswerRelevant(code, answers)
   }
@@ -594,9 +613,31 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
       state.answers['property-owned'] === 'shared_ownership' &&
       state.answers['property-landlord'] === YES,
   },
+  {
+    code: STEPS.propertyEntry,
+    answerCodes: [...PROPERTY_ENTRY_ANSWER_CODES],
+    isApplicable: (state) => {
+      const propertyOwned = state.answers['property-owned']
+      return (
+        propertyOwned !== undefined &&
+        propertyOwned !== 'none' &&
+        (propertyOwned !== 'shared_ownership' || state.answers['property-landlord'] === YES)
+      )
+    },
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))
+
+/**
+ * Validates a dependant count answer.
+ * @param {unknown} value The submitted count
+ * @returns {boolean} Whether the count is a positive integer
+ */
+function isValidCountAnswer(value: unknown): boolean {
+  if (typeof value === 'number') return Number.isInteger(value) && value > NO_DEPENDANTS
+  return typeof value === 'string' && /^\+?\d+$/u.test(value) && Number(value) > NO_DEPENDANTS
+}
 
 /**
  * Checks a value is one of the exact values allowed for the answer code.
@@ -605,11 +646,11 @@ const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) 
  * @returns {boolean} True when the value is allowed
  */
 export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, value: unknown): boolean {
-  if (isCountAnswerCode(code)) {
-    if (typeof value === 'number') return Number.isInteger(value) && value > NO_DEPENDANTS
-    return typeof value === 'string' && /^\+?\d+$/u.test(value) && Number(value) > NO_DEPENDANTS
-  }
+  if (isCountAnswerCode(code)) return isValidCountAnswer(value)
   if (isSharedOwnershipHousingAnswerCode(code)) return isValidSharedOwnershipHousingAnswer(code, value)
+  if (PROPERTY_ENTRY_VALUE_CODE_SET.has(code)) {
+    return code === 'percentage_owned' ? isValidPropertyEntryPercentage(value) : isValidPropertyEntryAmount(value)
+  }
   if (OTHER_INCOME_VALUE_CODE_SET.has(code)) return isValidOtherIncomeAmount(value)
   if (OUTGOINGS_VALUE_CODE_SET.has(code)) return isValidOutgoingsAmount(value)
   if (CONTROLLED_WORK_FREQUENCY_CODE_SET.has(code)) {
@@ -748,6 +789,10 @@ export function getNextStep(
   answers: ControlledWorkAnswers,
   context: ControlledWorkContext,
 ): ControlledWorkStepCode | undefined {
+  // The unimplemented mortgage-payment page must remain a boundary before property details on means routes.
+  if (currentStep === STEPS.property && answers['property-owned'] === 'with_mortgage' && answers.passporting === NO) {
+    return undefined
+  }
   const order = CONTROLLED_WORK_STEPS.map(({ code }) => code)
   const position = order.indexOf(currentStep)
   const applicable = new Set(getApplicableSteps(answers, context))

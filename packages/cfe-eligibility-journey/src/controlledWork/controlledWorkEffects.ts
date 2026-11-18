@@ -34,6 +34,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   partnerBenefitCollection: 'partner_benefits',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
   childcareEligible: 'controlledWorkChildcareEligible',
+  propertyEntryBlocked: 'controlledWorkPropertyEntryBlocked',
 } as const
 
 export interface ControlledWorkEffectShape {
@@ -124,6 +125,10 @@ function setJourneyData(context: EffectFunctionContext, answers: ControlledWorkA
   context.setData(CONTROLLED_WORK_DATA_KEYS.applicableSteps, steps)
   context.setData(CONTROLLED_WORK_DATA_KEYS.firstMissingStep, getFirstMissingStep(answers, journeyContext) ?? NO_STEP)
   context.setData(CONTROLLED_WORK_DATA_KEYS.childcareEligible, journeyContext.eligibleForChildcareCosts === true)
+  context.setData(
+    CONTROLLED_WORK_DATA_KEYS.propertyEntryBlocked,
+    answers['property-owned'] === 'with_mortgage' && answers.passporting === 'no',
+  )
 }
 
 function getDependantIncomeMaximum(answers: ControlledWorkAnswers): number {
@@ -251,6 +256,12 @@ function reconcileBenefitDetailsDrafts(
 function readSubmittedAnswers(context: EffectFunctionContext, stepCode: ControlledWorkStepCode) {
   const posted = context.getAllPostData()
   const submitted = Object.fromEntries(getStepAnswerCodes(stepCode).map((code) => [code, posted[code]]))
+  if (stepCode === CONTROLLED_WORK_STEP_CODES.propertyEntry) {
+    return {
+      ...submitted,
+      house_in_dispute: normalizePropertyEntryDisputeAnswer(posted.house_in_dispute),
+    }
+  }
   if (stepCode === INCOME_PATTERN_CODE) {
     return { ...submitted, 'income-completed': 'yes' }
   }
@@ -270,6 +281,16 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
     return { ...submitted, 'partner-other-income-completed': 'yes' }
   }
   return submitted
+}
+
+/**
+ * Normalises Forge checkbox data so an unchecked dispute box persists as "no".
+ * @param {unknown} value The posted checkbox value
+ * @returns {'yes' | 'no'} The controlled-work answer
+ */
+function normalizePropertyEntryDisputeAnswer(value: unknown): 'yes' | 'no' {
+  if (Array.isArray(value)) return value.includes('yes') ? 'yes' : 'no'
+  return value === 'yes' ? 'yes' : 'no'
 }
 
 function prepareIncomeDetails(context: EffectFunctionContext): void {

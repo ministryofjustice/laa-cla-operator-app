@@ -272,7 +272,7 @@ describe('Controlled-work shared ownership housing-costs page', () => {
         ADULT,
       ).removedCodes,
     ).to.include('combined_frequency')
-    expect(getNextStep(STEPS.sharedOwnershipHousingCosts, oldAnswers, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.sharedOwnershipHousingCosts, oldAnswers, ADULT)).to.equal(STEPS.propertyEntry)
     expect(isControlledWorkComplete(oldAnswers, ADULT)).to.equal(false)
   })
 })

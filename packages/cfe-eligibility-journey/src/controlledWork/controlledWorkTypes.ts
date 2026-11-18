@@ -100,6 +100,8 @@ export const SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES = [
   'every_four_weeks',
   'monthly',
 ] as const
+export const PROPERTY_ENTRY_VALUE_CODES = ['house_value', 'mortgage', 'percentage_owned'] as const
+export const PROPERTY_ENTRY_ANSWER_CODES = [...PROPERTY_ENTRY_VALUE_CODES, 'house_in_dispute'] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
@@ -112,6 +114,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'asylum-support': YES_NO_OPTIONS,
   'property-owned': PROPERTY_OWNERSHIP_OPTIONS,
   'property-landlord': YES_NO_OPTIONS,
+  house_in_dispute: YES_NO_OPTIONS,
   combined_frequency: SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES,
   housing_benefit_relevant: YES_NO_OPTIONS,
   housing_benefit_frequency: SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES,
@@ -173,6 +176,7 @@ export type ControlledWorkAnswerCode =
   | OutgoingsValueAnswerCode
   | OutgoingsFrequencyAnswerCode
   | (typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number]
+  | (typeof PROPERTY_ENTRY_ANSWER_CODES)[number]
 export type ControlledWorkCountAnswer = number | string
 
 export const CONTROLLED_WORK_ANSWER_CODES = [
@@ -185,6 +189,7 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'asylum-support',
   'property-owned',
   'property-landlord',
+  ...PROPERTY_ENTRY_ANSWER_CODES,
   'partner',
   'partner-over-60',
   'passporting',
@@ -229,6 +234,7 @@ export type ControlledWorkAnswers = {
   & Partial<Record<OutgoingsValueAnswerCode, string>>
   & Partial<Record<OutgoingsFrequencyAnswerCode, (typeof OUTGOINGS_FREQUENCIES)[number]>>
   & Partial<Record<(typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number], string>>
+  & Partial<Record<(typeof PROPERTY_ENTRY_VALUE_CODES)[number], string | number>>
 
 export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylum: 'immigration-or-asylum',
@@ -259,6 +265,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   property: 'property',
   propertyLandlord: 'property-landlord',
   sharedOwnershipHousingCosts: 'shared-ownership-housing-costs',
+  propertyEntry: 'property-entry',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]
