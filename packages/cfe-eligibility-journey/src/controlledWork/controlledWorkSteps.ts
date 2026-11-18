@@ -566,6 +566,11 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     isApplicable: (state) =>
       isMeansTested(state) && state.answers.partner !== undefined && state.answers.passporting !== undefined,
   },
+  {
+    code: STEPS.propertyLandlord,
+    answerCodes: ['property-landlord'],
+    isApplicable: (state) => state.answers['property-owned'] === 'shared_ownership',
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))

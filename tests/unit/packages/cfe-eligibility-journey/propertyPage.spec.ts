@@ -146,14 +146,16 @@ describe('Controlled-work property page', () => {
     expect(getNextStep(STEPS.partnerDetails, partnerPassportedAnswers, ADULT)).to.equal(STEPS.property)
   })
 
-  it('does not create unimplemented property questions after any ownership choice', () => {
+  it('routes shared ownership to the implemented landlord question and leaves other property pages incomplete', () => {
     for (const propertyOwned of PROPERTY_OWNERSHIP_OPTIONS) {
       const answers: ControlledWorkAnswers = {
         ...PASSPORTED_ANSWERS,
         'property-owned': propertyOwned,
       }
 
-      expect(getNextStep(STEPS.property, answers, ADULT)).to.equal(undefined)
+      expect(getNextStep(STEPS.property, answers, ADULT)).to.equal(
+        propertyOwned === 'shared_ownership' ? STEPS.propertyLandlord : undefined,
+      )
       expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
     }
   })

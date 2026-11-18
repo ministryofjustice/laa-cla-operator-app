@@ -80,7 +80,7 @@ const partnerInPrisonDetails: BlockDefinition = {
   visibleWhen: PARTNER_PRESENT,
 }
 
-const propertyGuidanceLinks = [
+export const propertyGuidanceLinks = [
   ['Properties (PDF, 599KB)', `${CONTROLLED_WORK_GUIDANCE_URL}#page=36`],
   ['Equity disregard for domestic abuse (PDF, 599KB)', `${CONTROLLED_WORK_GUIDANCE_URL}#page=42`],
   ['Trapped capital (PDF, 599KB)', `${CONTROLLED_WORK_GUIDANCE_URL}#page=26`],

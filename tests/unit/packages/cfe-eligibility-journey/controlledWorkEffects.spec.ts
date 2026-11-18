@@ -117,6 +117,26 @@ describe('Controlled-work effects', () => {
     expect(changedPartner.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.property)
   })
 
+  it('persists and prepopulates the landlord answer, replaces changes, and prunes it when ownership changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'shared_ownership' })
+
+    const yesSubmission = save(session, ADULT_DOB, STEPS.propertyLandlord, { 'property-landlord': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['property-landlord']).to.equal('yes')
+    expect(restore(session, ADULT_DOB).answers.get('property-landlord')).to.equal('yes')
+    expect(yesSubmission.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.include(STEPS.propertyLandlord)
+
+    save(session, ADULT_DOB, STEPS.propertyLandlord, { 'property-landlord': 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['property-landlord']).to.equal('no')
+    expect(restore(session, ADULT_DOB).answers.get('property-landlord')).to.equal('no')
+
+    const changedOwnership = save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'outright' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('property-landlord')
+    expect(changedOwnership.answers.has('property-landlord')).to.equal(false)
+  })
+
   it('persists and prepopulates employment status, replacing the answer when it changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

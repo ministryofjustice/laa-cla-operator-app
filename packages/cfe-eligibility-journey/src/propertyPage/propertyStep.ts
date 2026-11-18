@@ -7,7 +7,7 @@ import { propertyPageContent } from './propertyBlock.js'
 
 const { property: STEP_CODE } = CONTROLLED_WORK_STEP_CODES
 
-const PRIOR_ANSWER_STEPS = [
+export const PROPERTY_PREVIOUS_STEP_CODES = [
   CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum,
   CONTROLLED_WORK_STEP_CODES.under18Clr,
   CONTROLLED_WORK_STEP_CODES.aggregatedMeans,
@@ -32,7 +32,7 @@ const PRIOR_ANSWER_STEPS = [
   CONTROLLED_WORK_STEP_CODES.partnerOtherIncome,
   CONTROLLED_WORK_STEP_CODES.outgoings,
   CONTROLLED_WORK_STEP_CODES.partnerOutgoings,
-]
+] as const
 
 export const propertyStep: StepDefinition = step({
   code: STEP_CODE,
@@ -45,7 +45,7 @@ export const propertyStep: StepDefinition = step({
   blocks: [propertyPageContent],
   onAccess: [
     access({
-      next: PRIOR_ANSWER_STEPS.map((stepCode) =>
+      next: PROPERTY_PREVIOUS_STEP_CODES.map((stepCode) =>
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(Condition.Equals(stepCode)),
           goto: controlledWorkIncompleteStepCode,
@@ -58,7 +58,15 @@ export const propertyStep: StepDefinition = step({
       validate: true,
       onValid: {
         effects: [ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE)],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(CONTROLLED_WORK_STEP_CODES.propertyLandlord),
+            ),
+            goto: CONTROLLED_WORK_STEP_CODES.propertyLandlord,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

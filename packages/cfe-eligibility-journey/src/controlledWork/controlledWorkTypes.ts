@@ -93,6 +93,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'immigration-or-asylum-type': MATTER_TYPE_OPTIONS,
   'asylum-support': YES_NO_OPTIONS,
   'property-owned': PROPERTY_OWNERSHIP_OPTIONS,
+  'property-landlord': YES_NO_OPTIONS,
   partner: YES_NO_OPTIONS,
   'partner-over-60': YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
@@ -161,6 +162,7 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'immigration-or-asylum-type',
   'asylum-support',
   'property-owned',
+  'property-landlord',
   'partner',
   'partner-over-60',
   'passporting',
@@ -228,6 +230,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   outgoings: 'outgoings',
   partnerOutgoings: 'partner-outgoings',
   property: 'property',
+  propertyLandlord: 'property-landlord',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]
