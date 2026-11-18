@@ -86,7 +86,10 @@ describe('Partner details page', () => {
     expect(getApplicableSteps(meansTested, ADULT)).to.include(STEPS.partnerEmploymentStatus)
     expect(getApplicableSteps(applicantIncomplete, ADULT)).to.not.include(STEPS.partnerDetails)
     expect(getApplicableSteps(noPartner, ADULT)).to.not.include(STEPS.partnerDetails)
-    expect(findMissingSteps(passported, ADULT).map(({ stepCode }) => stepCode)).to.deep.equal([STEPS.partnerDetails])
+    expect(findMissingSteps(passported, ADULT).map(({ stepCode }) => stepCode)).to.deep.equal([
+      STEPS.partnerDetails,
+      STEPS.property,
+    ])
   })
 
   it('navigates to partner details from the applicant or client income branch when appropriate', () => {

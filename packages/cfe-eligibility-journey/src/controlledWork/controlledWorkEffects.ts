@@ -438,10 +438,15 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       const session = context.getSession() as FinancialEligibilitySession | undefined
       if (!caseId || !session) return
 
+      const saved = readControlledWorkAnswers(session, caseId)
+      const submitted = readSubmittedAnswers(context, stepCode)
       const merged = mergeControlledWorkAnswers(
-        readControlledWorkAnswers(session, caseId),
-        readSubmittedAnswers(context, stepCode),
+        saved,
+        submitted,
       )
+      if (stepCode === CONTROLLED_WORK_STEP_CODES.applicant && saved.partner !== merged.partner) {
+        delete merged['property-owned']
+      }
       const journeyContext = getControlledWorkContext(context, merged)
       const { answers } = resolveControlledWorkJourney(merged, journeyContext)
       reconcileDependantIncomeDrafts(session, caseId, answers)

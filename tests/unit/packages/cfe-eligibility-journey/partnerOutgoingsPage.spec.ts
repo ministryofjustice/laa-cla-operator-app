@@ -186,7 +186,7 @@ describe('Controlled-work partner outgoings page', () => {
       partner_maintenance_payments_relevant: 'no',
       partner_legal_aid_payments_relevant: 'no',
     } as const satisfies ControlledWorkAnswers
-    expect(getNextStep(STEPS.partnerOutgoings, answered, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.partnerOutgoings, answered, ADULT)).to.equal(STEPS.property)
   })
 
   it('removes conditional and page answers when they become irrelevant', () => {

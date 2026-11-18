@@ -194,7 +194,7 @@ describe('Controlled-work outgoings page', () => {
       ...BASE_ANSWERS,
       maintenance_payments_relevant: 'no',
       legal_aid_payments_relevant: 'no',
-    }, ADULT)).to.equal(undefined)
+    }, ADULT)).to.equal(STEPS.property)
   })
 
   it('applies the CCQ childcare eligibility rules to dependants, client income and partner income', () => {

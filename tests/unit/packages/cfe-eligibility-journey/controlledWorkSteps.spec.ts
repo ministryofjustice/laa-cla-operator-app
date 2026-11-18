@@ -148,6 +148,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.immigrationOrAsylum,
         STEPS.applicant,
         STEPS.partnerDetails,
+        STEPS.property,
       ])
 
       expect(getApplicableSteps({ ...base, passporting: 'no' }, ADULT)).to.deep.equal([
@@ -161,6 +162,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.partnerBenefits,
         STEPS.outgoings,
         STEPS.partnerOutgoings,
+        STEPS.property,
       ])
       expect(
         getApplicableSteps(
@@ -251,8 +253,17 @@ describe('Controlled-work journey rules', () => {
       )
     })
 
-    it('returns undefined at the end of the journey', () => {
-      expect(getNextStep(STEPS.applicant, { 'immigration-or-asylum': 'no', passporting: 'yes' }, ADULT)).to.equal(undefined)
+    it('continues passported routes to property and stops at the explicit incomplete boundary', () => {
+      const answers: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'yes',
+        'property-owned': 'none',
+      }
+
+      expect(getNextStep(STEPS.applicant, answers, ADULT)).to.equal(STEPS.property)
+      expect(getNextStep(STEPS.property, answers, ADULT)).to.equal(undefined)
+      expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
     })
 
     it('routes partner branches to income and benefits, leaving unimplemented pages at the incomplete boundary', () => {
@@ -401,6 +412,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.employmentStatus,
         STEPS.benefits,
         STEPS.outgoings,
+        STEPS.property,
       ])
     })
   })
@@ -444,6 +456,7 @@ describe('Controlled-work journey rules', () => {
         { stepCode: STEPS.employmentStatus, answerCodes: ['employment-status'] },
         { stepCode: STEPS.benefits, answerCodes: ['receives-benefits'] },
         { stepCode: STEPS.outgoings, answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'] },
+        { stepCode: STEPS.property, answerCodes: ['property-owned'] },
       ])
       expect(findMissingSteps(adultCountMissing, ADULT)[0]).to.deep.equal({
         stepCode: STEPS.dependantDetails,
@@ -495,6 +508,7 @@ describe('Controlled-work journey rules', () => {
       expect(findMissingSteps(answers, ADULT)).to.deep.equal([
         { stepCode: STEPS.benefits, answerCodes: ['receives-benefits'] },
         { stepCode: STEPS.outgoings, answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'] },
+        { stepCode: STEPS.property, answerCodes: ['property-owned'] },
       ])
       expect(isValidControlledWorkAnswer('receives-benefits', 'yes')).to.equal(true)
       expect(isValidControlledWorkAnswer('receives-benefits', 'no')).to.equal(true)
@@ -517,6 +531,7 @@ describe('Controlled-work journey rules', () => {
       expect(findMissingSteps(base, ADULT)).to.deep.equal([
         { stepCode: STEPS.benefitDetails, answerCodes: ['benefit-details-completed'] },
         { stepCode: STEPS.outgoings, answerCodes: ['maintenance_payments_relevant', 'legal_aid_payments_relevant'] },
+        { stepCode: STEPS.property, answerCodes: ['property-owned'] },
       ])
       expect(
         getNextStep(STEPS.benefits, base, ADULT),
@@ -556,19 +571,25 @@ describe('Controlled-work journey rules', () => {
     })
 
     it('ignores answers for steps that do not apply', () => {
-      expect(findMissingSteps({ 'immigration-or-asylum': 'no', partner: 'no', passporting: 'yes' }, ADULT)).to.deep.equal([])
+      expect(findMissingSteps({ 'immigration-or-asylum': 'no', partner: 'no', passporting: 'yes' }, ADULT)).to.deep.equal([
+        { stepCode: STEPS.property, answerCodes: ['property-owned'] },
+      ])
     })
 
     it('finds the earliest missing step', () => {
       expect(getFirstMissingStep({ 'immigration-or-asylum': 'yes' }, ADULT)).to.equal(STEPS.immigrationOrAsylumType)
       expect(getFirstMissingStep({ 'immigration-or-asylum': 'no', partner: 'no', passporting: 'yes' }, ADULT)).to.equal(
-        undefined,
+        STEPS.property,
       )
     })
 
-    it('is complete only when every applicable step is answered and the route is known', () => {
+    it('keeps passported routes incomplete until remaining property pages are implemented', () => {
       const complete: ControlledWorkAnswers = { 'immigration-or-asylum': 'no', partner: 'no', passporting: 'yes' }
-      expect(isControlledWorkComplete(complete, ADULT)).to.equal(true)
+      expect(isControlledWorkComplete(complete, ADULT)).to.equal(false)
+      expect(getFirstMissingStep(complete, ADULT)).to.equal(STEPS.property)
+      expect(
+        isControlledWorkComplete({ ...complete, 'property-owned': 'none' }, ADULT),
+      ).to.equal(false)
       expect(isControlledWorkComplete({ 'immigration-or-asylum': 'no' }, ADULT)).to.equal(false)
       expect(isControlledWorkComplete(complete, UNKNOWN_AGE)).to.equal(false)
     })

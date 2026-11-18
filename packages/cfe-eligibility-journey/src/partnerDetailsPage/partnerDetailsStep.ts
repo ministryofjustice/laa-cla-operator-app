@@ -5,7 +5,11 @@ import { controlledWorkIncompleteStepCode } from '../controlledWork/controlledWo
 import { CONTROLLED_WORK_STEP_CODES } from '../controlledWork/controlledWorkTypes.js'
 import { partnerDetailsPageContent } from './partnerDetailsBlock.js'
 
-const { partnerDetails: STEP_CODE, partnerEmploymentStatus: PARTNER_EMPLOYMENT_STATUS_STEP_CODE } = CONTROLLED_WORK_STEP_CODES
+const {
+  partnerDetails: STEP_CODE,
+  partnerEmploymentStatus: PARTNER_EMPLOYMENT_STATUS_STEP_CODE,
+  property: PROPERTY_STEP_CODE,
+} = CONTROLLED_WORK_STEP_CODES
 
 const PRIOR_ANSWER_STEPS = [
   CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum,
@@ -56,6 +60,10 @@ export const partnerDetailsStep: StepDefinition = step({
               Condition.Equals(PARTNER_EMPLOYMENT_STATUS_STEP_CODE),
             ),
             goto: PARTNER_EMPLOYMENT_STATUS_STEP_CODE,
+          }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(PROPERTY_STEP_CODE)),
+            goto: PROPERTY_STEP_CODE,
           }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],

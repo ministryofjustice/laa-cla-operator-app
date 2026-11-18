@@ -4,6 +4,7 @@ export const YES_NO_OPTIONS = [YES, NO] as const
 
 export const MATTER_TYPE_OPTIONS = ['immigration_clr', 'immigration_legal_help', 'asylum'] as const
 export const EMPLOYMENT_STATUS_OPTIONS = ['in_work', 'unemployed'] as const
+export const PROPERTY_OWNERSHIP_OPTIONS = ['with_mortgage', 'shared_ownership', 'outright', 'none'] as const
 export const CONTROLLED_WORK_COUNT_ANSWER_CODES = ['child-dependants-count', 'adult-dependants-count'] as const
 export const OTHER_INCOME_RELEVANT_CODES = [
   'friends_or_family_relevant',
@@ -91,6 +92,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'under-18-assets': YES_NO_OPTIONS,
   'immigration-or-asylum-type': MATTER_TYPE_OPTIONS,
   'asylum-support': YES_NO_OPTIONS,
+  'property-owned': PROPERTY_OWNERSHIP_OPTIONS,
   partner: YES_NO_OPTIONS,
   'partner-over-60': YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
@@ -158,6 +160,7 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'under-18-assets',
   'immigration-or-asylum-type',
   'asylum-support',
+  'property-owned',
   'partner',
   'partner-over-60',
   'passporting',
@@ -224,6 +227,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerOtherIncome: 'partner-other-income',
   outgoings: 'outgoings',
   partnerOutgoings: 'partner-outgoings',
+  property: 'property',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]

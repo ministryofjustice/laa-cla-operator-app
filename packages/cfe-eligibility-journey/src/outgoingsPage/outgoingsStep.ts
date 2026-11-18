@@ -8,6 +8,7 @@ import { outgoingsPageContent } from './outgoingsBlock.js'
 const {
   outgoings: STEP_CODE,
   partnerOutgoings: PARTNER_OUTGOINGS_STEP_CODE,
+  property: PROPERTY_STEP_CODE,
 } = CONTROLLED_WORK_STEP_CODES
 
 const PRIOR_ANSWER_STEPS = [
@@ -63,6 +64,10 @@ export const outgoingsStep: StepDefinition = step({
           redirect({
             when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(PARTNER_OUTGOINGS_STEP_CODE)),
             goto: PARTNER_OUTGOINGS_STEP_CODE,
+          }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(PROPERTY_STEP_CODE)),
+            goto: PROPERTY_STEP_CODE,
           }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],

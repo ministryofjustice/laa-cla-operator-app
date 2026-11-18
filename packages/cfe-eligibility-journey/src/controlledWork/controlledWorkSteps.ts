@@ -310,7 +310,16 @@ function resolveRoute(state: RoutingState): AssessmentRoute {
 }
 
 function isMeansTestedWithoutPassporting(state: RoutingState): boolean {
-  return resolveRoute(state) === ASSESSMENT_ROUTES.means && state.answers.passporting === NO
+  return isMeansTested(state) && state.answers.passporting === NO
+}
+
+/**
+ * Checks whether the route is means-tested, including when a passporting answer is Yes.
+ * @param {RoutingState} state The current controlled-work state
+ * @returns {boolean} Whether the route is means-tested
+ */
+function isMeansTested(state: RoutingState): boolean {
+  return resolveRoute(state) === ASSESSMENT_ROUTES.means
 }
 
 /**
@@ -551,6 +560,12 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     isApplicable: (state) =>
       isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,
   },
+  {
+    code: STEPS.property,
+    answerCodes: ['property-owned'],
+    isApplicable: (state) =>
+      isMeansTested(state) && state.answers.partner !== undefined && state.answers.passporting !== undefined,
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))
@@ -676,6 +691,7 @@ export function isControlledWorkComplete(answers: ControlledWorkAnswers, context
   return (
     route !== ASSESSMENT_ROUTES.undetermined &&
     !isMeansTestedWithoutPassporting(resolvedState) &&
+    !getApplicableSteps(answers, context).includes(STEPS.property) &&
     findMissingSteps(answers, context).length === 0
   )
 }

@@ -208,6 +208,10 @@ describe('Controlled-work partner other income page', () => {
         stepCode: STEPS.partnerOutgoings,
         answerCodes: ['partner_maintenance_payments_relevant', 'partner_legal_aid_payments_relevant'],
       },
+      {
+        stepCode: STEPS.property,
+        answerCodes: ['property-owned'],
+      },
     ])
 
     const selected = {
@@ -232,6 +236,10 @@ describe('Controlled-work partner other income page', () => {
       {
         stepCode: STEPS.partnerOutgoings,
         answerCodes: ['partner_maintenance_payments_relevant', 'partner_legal_aid_payments_relevant'],
+      },
+      {
+        stepCode: STEPS.property,
+        answerCodes: ['property-owned'],
       },
     ])
   })
