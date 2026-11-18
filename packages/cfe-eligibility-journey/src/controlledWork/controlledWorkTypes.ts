@@ -82,6 +82,24 @@ export const PARTNER_OUTGOINGS_FREQUENCY_CODES = [
   'partner_maintenance_payments_frequency',
   'partner_legal_aid_payments_frequency',
 ] as const
+export const SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES = [
+  'rent',
+  'shared_ownership_mortgage',
+  'housing_benefit_value',
+] as const
+export const SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES = [
+  'every_week',
+  'every_two_weeks',
+  'every_four_weeks',
+  'monthly',
+  'total',
+] as const
+export const SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES = [
+  'every_week',
+  'every_two_weeks',
+  'every_four_weeks',
+  'monthly',
+] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
@@ -94,6 +112,9 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'asylum-support': YES_NO_OPTIONS,
   'property-owned': PROPERTY_OWNERSHIP_OPTIONS,
   'property-landlord': YES_NO_OPTIONS,
+  combined_frequency: SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES,
+  housing_benefit_relevant: YES_NO_OPTIONS,
+  housing_benefit_frequency: SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES,
   partner: YES_NO_OPTIONS,
   'partner-over-60': YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
@@ -151,6 +172,7 @@ export type ControlledWorkAnswerCode =
   | OtherIncomeFrequencyAnswerCode
   | OutgoingsValueAnswerCode
   | OutgoingsFrequencyAnswerCode
+  | (typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number]
 export type ControlledWorkCountAnswer = number | string
 
 export const CONTROLLED_WORK_ANSWER_CODES = [
@@ -185,6 +207,10 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   ...PARTNER_OUTGOINGS_RELEVANT_CODES,
   ...PARTNER_OUTGOINGS_VALUE_CODES,
   ...PARTNER_OUTGOINGS_FREQUENCY_CODES,
+  ...SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES,
+  'combined_frequency',
+  'housing_benefit_relevant',
+  'housing_benefit_frequency',
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
@@ -202,6 +228,7 @@ export type ControlledWorkAnswers = {
   & Partial<Record<OtherIncomeFrequencyAnswerCode, (typeof OTHER_INCOME_FREQUENCIES)[number]>>
   & Partial<Record<OutgoingsValueAnswerCode, string>>
   & Partial<Record<OutgoingsFrequencyAnswerCode, (typeof OUTGOINGS_FREQUENCIES)[number]>>
+  & Partial<Record<(typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number], string>>
 
 export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylum: 'immigration-or-asylum',
@@ -231,6 +258,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerOutgoings: 'partner-outgoings',
   property: 'property',
   propertyLandlord: 'property-landlord',
+  sharedOwnershipHousingCosts: 'shared-ownership-housing-costs',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]

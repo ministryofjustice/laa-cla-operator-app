@@ -180,6 +180,12 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
         }),
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
             Condition.Equals(CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum),
           ),
           goto: CONTROLLED_WORK_STEP_CODES.immigrationOrAsylum,

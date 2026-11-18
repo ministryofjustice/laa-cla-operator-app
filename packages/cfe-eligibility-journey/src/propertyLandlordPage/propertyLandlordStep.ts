@@ -39,6 +39,12 @@ export const propertyLandlordStep: StepDefinition = step({
             when: Answer('property-landlord').match(Condition.Equals('no')),
             goto: cannotUseServiceStepCode,
           }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts),
+            ),
+            goto: CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts,
+          }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],
       },

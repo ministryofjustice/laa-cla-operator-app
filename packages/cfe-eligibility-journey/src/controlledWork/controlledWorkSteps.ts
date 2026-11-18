@@ -30,6 +30,12 @@ import {
   type MissingControlledWorkStep,
   type ResolvedControlledWorkJourney,
 } from './controlledWorkTypes.js'
+import {
+  isRequiredSharedOwnershipHousingAnswer,
+  isSharedOwnershipHousingAnswerCode,
+  isSharedOwnershipHousingAnswerRelevant,
+  isValidSharedOwnershipHousingAnswer,
+} from './sharedOwnershipHousingCostsAnswers.js'
 
 const STEPS = CONTROLLED_WORK_STEP_CODES
 const NO_DEPENDANTS = 0
@@ -348,6 +354,7 @@ function dependantsGetIncomeSelected({ answers }: RoutingState): boolean {
  * @returns {boolean} Whether the answer is applicable to the current route
  */
 function isAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers, context: ControlledWorkContext): boolean {
+  if (isSharedOwnershipHousingAnswerCode(code)) return isSharedOwnershipHousingAnswerRelevant(code, answers)
   if (code === 'child-dependants-count') return answers['child-dependants'] === YES
   if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
   if (code === 'childcare_payments_relevant' || code === 'partner_childcare_payments_relevant') {
@@ -396,6 +403,7 @@ function isRequiredAnswer(
     if (code === 'child-dependants-count') return answers['child-dependants'] === YES
     if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
   }
+  if (stepCode === STEPS.sharedOwnershipHousingCosts) return isRequiredSharedOwnershipHousingAnswer(code, answers)
   if ((stepCode === STEPS.otherIncome || stepCode === STEPS.partnerOtherIncome) && OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) {
     return isOtherIncomeConditionalAnswerRelevant(code, answers)
   }
@@ -571,6 +579,21 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     answerCodes: ['property-landlord'],
     isApplicable: (state) => state.answers['property-owned'] === 'shared_ownership',
   },
+  {
+    code: STEPS.sharedOwnershipHousingCosts,
+    answerCodes: [
+      'rent',
+      'shared_ownership_mortgage',
+      'combined_frequency',
+      'housing_benefit_relevant',
+      'housing_benefit_value',
+      'housing_benefit_frequency',
+    ],
+    isApplicable: (state) =>
+      isMeansTestedWithoutPassporting(state) &&
+      state.answers['property-owned'] === 'shared_ownership' &&
+      state.answers['property-landlord'] === YES,
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))
@@ -586,6 +609,7 @@ export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, valu
     if (typeof value === 'number') return Number.isInteger(value) && value > NO_DEPENDANTS
     return typeof value === 'string' && /^\+?\d+$/u.test(value) && Number(value) > NO_DEPENDANTS
   }
+  if (isSharedOwnershipHousingAnswerCode(code)) return isValidSharedOwnershipHousingAnswer(code, value)
   if (OTHER_INCOME_VALUE_CODE_SET.has(code)) return isValidOtherIncomeAmount(value)
   if (OUTGOINGS_VALUE_CODE_SET.has(code)) return isValidOutgoingsAmount(value)
   if (CONTROLLED_WORK_FREQUENCY_CODE_SET.has(code)) {
