@@ -17,6 +17,9 @@ import {
   OUTGOINGS_FREQUENCY_CODES,
   OUTGOINGS_RELEVANT_CODES,
   OUTGOINGS_VALUE_CODES,
+  PARTNER_OUTGOINGS_FREQUENCY_CODES,
+  PARTNER_OUTGOINGS_RELEVANT_CODES,
+  PARTNER_OUTGOINGS_VALUE_CODES,
   YES,
   type AssessmentRoute,
   type ControlledWorkAnswerCode,
@@ -34,13 +37,19 @@ const COUNT_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_COUNT_ANSWER_CODES
 const CONTROLLED_WORK_ANSWER_CODE_SET = new Set<string>(CONTROLLED_WORK_ANSWER_CODES)
 const CHOICE_ANSWER_CODE_SET = new Set<string>(Object.keys(CONTROLLED_WORK_ANSWER_OPTIONS))
 const OTHER_INCOME_VALUE_CODE_SET = new Set<string>([...OTHER_INCOME_VALUE_CODES, ...PARTNER_OTHER_INCOME_VALUE_CODES])
-const OUTGOINGS_VALUE_CODE_SET = new Set<string>(OUTGOINGS_VALUE_CODES)
-const OUTGOINGS_RELEVANT_CODE_SET = new Set<string>(OUTGOINGS_RELEVANT_CODES)
-const OUTGOINGS_CONDITIONAL_CODE_SET = new Set<string>([...OUTGOINGS_VALUE_CODES, ...OUTGOINGS_FREQUENCY_CODES])
+const OUTGOINGS_VALUE_CODE_SET = new Set<string>([...OUTGOINGS_VALUE_CODES, ...PARTNER_OUTGOINGS_VALUE_CODES])
+const OUTGOINGS_RELEVANT_CODE_SET = new Set<string>([...OUTGOINGS_RELEVANT_CODES, ...PARTNER_OUTGOINGS_RELEVANT_CODES])
+const OUTGOINGS_CONDITIONAL_CODE_SET = new Set<string>([
+  ...OUTGOINGS_VALUE_CODES,
+  ...OUTGOINGS_FREQUENCY_CODES,
+  ...PARTNER_OUTGOINGS_VALUE_CODES,
+  ...PARTNER_OUTGOINGS_FREQUENCY_CODES,
+])
 const CONTROLLED_WORK_FREQUENCY_CODE_SET = new Set<string>([
   ...OTHER_INCOME_FREQUENCY_CODES,
   ...PARTNER_OTHER_INCOME_FREQUENCY_CODES,
   ...OUTGOINGS_FREQUENCY_CODES,
+  ...PARTNER_OUTGOINGS_FREQUENCY_CODES,
 ])
 const OTHER_INCOME_RELEVANT_CODE_SET = new Set<string>([
   ...OTHER_INCOME_RELEVANT_CODES,
@@ -108,7 +117,9 @@ function isOtherIncomeRelevantCode(
  * @param {string} code The candidate code
  * @returns {boolean} Whether the code belongs to an outgoings question
  */
-function isOutgoingsRelevantCode(code: string): code is (typeof OUTGOINGS_RELEVANT_CODES)[number] {
+function isOutgoingsRelevantCode(
+  code: string,
+): code is (typeof OUTGOINGS_RELEVANT_CODES)[number] | (typeof PARTNER_OUTGOINGS_RELEVANT_CODES)[number] {
   return OUTGOINGS_RELEVANT_CODE_SET.has(code)
 }
 
@@ -138,7 +149,13 @@ function isOutgoingsConditionalAnswerRelevant(
 ): boolean {
   if (!OUTGOINGS_CONDITIONAL_CODE_SET.has(code)) return true
   const relevantCode = getOutgoingsRelevantCode(code)
-  if (relevantCode === 'childcare_payments_relevant' && context.eligibleForChildcareCosts !== true) return false
+  if (
+    (relevantCode === 'childcare_payments_relevant' ||
+      relevantCode === 'partner_childcare_payments_relevant') &&
+    context.eligibleForChildcareCosts !== true
+  ) {
+    return false
+  }
   return isOutgoingsRelevantCode(relevantCode) && answers[relevantCode] === YES
 }
 
@@ -324,7 +341,9 @@ function dependantsGetIncomeSelected({ answers }: RoutingState): boolean {
 function isAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers, context: ControlledWorkContext): boolean {
   if (code === 'child-dependants-count') return answers['child-dependants'] === YES
   if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
-  if (code === 'childcare_payments_relevant') return context.eligibleForChildcareCosts === true
+  if (code === 'childcare_payments_relevant' || code === 'partner_childcare_payments_relevant') {
+    return context.eligibleForChildcareCosts === true
+  }
   if (OUTGOINGS_CONDITIONAL_CODE_SET.has(code)) return isOutgoingsConditionalAnswerRelevant(code, answers, context)
   return isOtherIncomeConditionalAnswerRelevant(code, answers)
 }
@@ -349,7 +368,9 @@ function isRequiredOutgoingsAnswer(
   answers: ControlledWorkAnswers,
   context: ControlledWorkContext,
 ): boolean {
-  if (code === 'childcare_payments_relevant') return context.eligibleForChildcareCosts === true
+  if (code === 'childcare_payments_relevant' || code === 'partner_childcare_payments_relevant') {
+    return context.eligibleForChildcareCosts === true
+  }
   return (
     !OUTGOINGS_CONDITIONAL_CODE_SET.has(code) ||
     isOutgoingsConditionalAnswerRelevant(code, answers, context)
@@ -369,7 +390,9 @@ function isRequiredAnswer(
   if ((stepCode === STEPS.otherIncome || stepCode === STEPS.partnerOtherIncome) && OTHER_INCOME_CONDITIONAL_CODE_SET.has(code)) {
     return isOtherIncomeConditionalAnswerRelevant(code, answers)
   }
-  if (stepCode === STEPS.outgoings) return isRequiredOutgoingsAnswer(code, answers, context)
+  if (stepCode === STEPS.outgoings || stepCode === STEPS.partnerOutgoings) {
+    return isRequiredOutgoingsAnswer(code, answers, context)
+  }
   return true
 }
 
@@ -517,6 +540,16 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     answerCodes: [...OUTGOINGS_RELEVANT_CODES, ...OUTGOINGS_VALUE_CODES, ...OUTGOINGS_FREQUENCY_CODES],
     isApplicable: (state) =>
       isMeansTestedWithoutPassporting(state) && state.answers.partner !== undefined,
+  },
+  {
+    code: STEPS.partnerOutgoings,
+    answerCodes: [
+      ...PARTNER_OUTGOINGS_RELEVANT_CODES,
+      ...PARTNER_OUTGOINGS_VALUE_CODES,
+      ...PARTNER_OUTGOINGS_FREQUENCY_CODES,
+    ],
+    isApplicable: (state) =>
+      isMeansTestedWithoutPassporting(state) && state.answers.partner === YES,
   },
 ]
 

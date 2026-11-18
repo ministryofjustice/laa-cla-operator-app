@@ -160,6 +160,7 @@ describe('Controlled-work journey rules', () => {
         STEPS.partnerEmploymentStatus,
         STEPS.partnerBenefits,
         STEPS.outgoings,
+        STEPS.partnerOutgoings,
       ])
       expect(
         getApplicableSteps(

@@ -50,6 +50,44 @@ const OUTGOINGS_CATEGORIES = [
 ] as const
 
 type OutgoingsCategory = (typeof OUTGOINGS_CATEGORIES)[number]
+interface OutgoingsCopy {
+  question: string
+  hint?: string
+  requiredChoiceMessage: string
+  requiredMessage: string
+  invalidMessage: string
+  positiveMessage: string
+  frequencyMessage: string
+}
+
+const PARTNER_OUTGOINGS_COPY: Record<OutgoingsCategory['code'], OutgoingsCopy> = {
+  childcare_payments: {
+    question: 'Does the partner pay for childcare?',
+    hint: 'For example, to a childminder, nanny or nursery.',
+    requiredChoiceMessage: 'Select yes if the partner pays for childcare',
+    requiredMessage: 'Enter amount paid for childcare',
+    invalidMessage: 'Amount paid for childcare must be a number',
+    positiveMessage: 'Amount paid for childcare must be more than 0',
+    frequencyMessage: 'Select frequency of childcare payments',
+  },
+  maintenance_payments: {
+    question: 'Does the partner pay maintenance to a former partner?',
+    hint: 'This includes child maintenance.',
+    requiredChoiceMessage: 'Select yes if the partner pays maintenance to a former partner',
+    requiredMessage: 'Enter amount of maintenance paid to a former partner',
+    invalidMessage: 'Amount of maintenance paid to a former partner must be a number',
+    positiveMessage: 'Amount of maintenance paid to a former partner must be more than 0',
+    frequencyMessage: 'Select frequency of maintenance payments to a former partner',
+  },
+  legal_aid_payments: {
+    question: 'Does the partner make payments towards legal aid for a criminal case?',
+    requiredChoiceMessage: 'Select yes if the partner makes payments toward legal aid for a criminal case',
+    requiredMessage: 'Enter amount paid toward legal aid in a criminal case',
+    invalidMessage: 'Amount paid toward legal aid in a criminal case must be a number',
+    positiveMessage: 'Amount paid toward legal aid in a criminal case must be more than 0',
+    frequencyMessage: 'Select frequency of payments towards legal aid in a criminal case',
+  },
+}
 
 const validAmount = moneyConditions.register('IsValidControlledOutgoingsAmount', () => isValidIncomeAmount)
 const positiveAmount = moneyConditions.register('IsPositiveControlledOutgoingsAmount', () => isPositiveIncomeAmount)
@@ -59,12 +97,15 @@ const CHILDCARE_ELIGIBLE = Data(CONTROLLED_WORK_DATA_KEYS.childcareEligible).mat
 /**
  * Creates a conditional currency input for an outgoings question.
  * @param {OutgoingsCategory} category The question and its amount validation copy
+ * @param {boolean} isPartner Whether the field belongs to the partner
  * @returns {ReturnType<typeof GovUKTextInput>} The conditional amount field
  */
-function amountField(category: OutgoingsCategory): ReturnType<typeof GovUKTextInput> {
-  const isRelevant = Answer(`${category.code}_relevant`).match(Condition.Equals('yes'))
+function amountField(category: OutgoingsCategory, isPartner: boolean): ReturnType<typeof GovUKTextInput> {
+  const codePrefix = isPartner ? 'partner_' : ''
+  const copy = isPartner ? PARTNER_OUTGOINGS_COPY[category.code] : category
+  const isRelevant = Answer(`${codePrefix}${category.code}_relevant`).match(Condition.Equals('yes'))
   return GovUKTextInput({
-    code: `${category.code}_conditional_value`,
+    code: `${codePrefix}${category.code}_conditional_value`,
     label: { text: 'Amount', classes: 'govuk-label--s' },
     inputType: 'text',
     attributes: { inputmode: 'decimal' },
@@ -75,15 +116,15 @@ function amountField(category: OutgoingsCategory): ReturnType<typeof GovUKTextIn
     validWhen: [
       validation({
         condition: Self().match(Condition.IsRequired()),
-        message: category.requiredMessage,
+        message: copy.requiredMessage,
       }),
       validation({
         condition: Self().match(validAmount()),
-        message: category.invalidMessage,
+        message: copy.invalidMessage,
       }),
       validation({
         condition: Self().match(positiveAmount()),
-        message: category.positiveMessage,
+        message: copy.positiveMessage,
       }),
     ],
   })
@@ -92,12 +133,15 @@ function amountField(category: OutgoingsCategory): ReturnType<typeof GovUKTextIn
 /**
  * Creates a conditional frequency radio group for an outgoings question.
  * @param {OutgoingsCategory} category The question and its frequency validation copy
+ * @param {boolean} isPartner Whether the field belongs to the partner
  * @returns {ReturnType<typeof GovUKRadioInput>} The conditional frequency field
  */
-function frequencyField(category: OutgoingsCategory): ReturnType<typeof GovUKRadioInput> {
-  const isRelevant = Answer(`${category.code}_relevant`).match(Condition.Equals('yes'))
+function frequencyField(category: OutgoingsCategory, isPartner: boolean): ReturnType<typeof GovUKRadioInput> {
+  const codePrefix = isPartner ? 'partner_' : ''
+  const copy = isPartner ? PARTNER_OUTGOINGS_COPY[category.code] : category
+  const isRelevant = Answer(`${codePrefix}${category.code}_relevant`).match(Condition.Equals('yes'))
   return GovUKRadioInput({
-    code: `${category.code}_frequency`,
+    code: `${codePrefix}${category.code}_frequency`,
     fieldset: {
       legend: {
         text: 'Frequency',
@@ -110,7 +154,7 @@ function frequencyField(category: OutgoingsCategory): ReturnType<typeof GovUKRad
     validWhen: [
       validation({
         condition: Self().match(Condition.String.MatchesRegex('^(every_week|every_two_weeks|every_four_weeks|monthly)$')),
-        message: category.frequencyMessage,
+        message: copy.frequencyMessage,
       }),
     ],
   })
@@ -119,16 +163,19 @@ function frequencyField(category: OutgoingsCategory): ReturnType<typeof GovUKRad
 /**
  * Creates a Yes/No question with its answer-dependent amount and frequency.
  * @param {OutgoingsCategory} category The question copy and validation configuration
+ * @param {boolean} isPartner Whether the question is about the partner
  * @returns {ReturnType<typeof GovUKRadioInput>} The configured outgoings question
  */
-function outgoingsQuestion(category: OutgoingsCategory): ReturnType<typeof GovUKRadioInput> {
+function outgoingsQuestion(category: OutgoingsCategory, isPartner: boolean): ReturnType<typeof GovUKRadioInput> {
+  const codePrefix = isPartner ? 'partner_' : ''
+  const copy: OutgoingsCopy = isPartner ? PARTNER_OUTGOINGS_COPY[category.code] : category
   const isChildcare = category.code === 'childcare_payments'
-  const conditionalFields: BlockDefinition[] = [amountField(category), frequencyField(category)]
+  const conditionalFields: BlockDefinition[] = [amountField(category, isPartner), frequencyField(category, isPartner)]
 
   return GovUKRadioInput({
-    code: `${category.code}_relevant`,
-    fieldset: { legend: { text: category.question } },
-    ...('hint' in category ? { hint: { text: category.hint } } : {}),
+    code: `${codePrefix}${category.code}_relevant`,
+    fieldset: { legend: { text: copy.question } },
+    ...(copy.hint !== undefined ? { hint: { text: copy.hint } } : {}),
     ...(isChildcare ? { visibleWhen: CHILDCARE_ELIGIBLE, dependentWhen: CHILDCARE_ELIGIBLE } : {}),
     items: [
       {
@@ -142,13 +189,14 @@ function outgoingsQuestion(category: OutgoingsCategory): ReturnType<typeof GovUK
     validWhen: [
       validation({
         condition: Self().match(Condition.String.MatchesRegex('^(yes|no)$')),
-        message: category.requiredChoiceMessage,
+        message: copy.requiredChoiceMessage,
       }),
     ],
   })
 }
 
-export const outgoingsQuestionFields = OUTGOINGS_CATEGORIES.map(outgoingsQuestion)
+export const outgoingsQuestionFields = OUTGOINGS_CATEGORIES.map((category) => outgoingsQuestion(category, false))
+export const partnerOutgoingsQuestionFields = OUTGOINGS_CATEGORIES.map((category) => outgoingsQuestion(category, true))
 
 const outgoingsGuidance = HtmlBlock({
   tag: 'a',
@@ -161,6 +209,28 @@ export const outgoingsPageContent = eligibilityQuestionPageLayout({
   questionBlocks: [
     GovUKHeading({ text: QUESTION, size: 'l', level: 2 }), // eslint-disable-line @typescript-eslint/no-magic-numbers -- Questions use an H2 heading.
     ...outgoingsQuestionFields,
+  ],
+  guidanceBlocks: [outgoingsGuidance],
+})
+
+const partnerTag = HtmlBlock({
+  tag: 'div',
+  classes: 'govuk-tag govuk-tag--purple govuk-!-margin-bottom-2',
+  content: 'Partner',
+})
+
+const partnerCaption = HtmlBlock({
+  tag: 'p',
+  classes: 'govuk-body',
+  content: 'Do not include any outgoings already entered for your client.',
+})
+
+export const partnerOutgoingsPageContent = eligibilityQuestionPageLayout({
+  questionBlocks: [
+    partnerTag,
+    GovUKHeading({ text: "The partner's outgoings and deductions", size: 'l', level: 2 }), // eslint-disable-line @typescript-eslint/no-magic-numbers -- Questions use an H2 heading.
+    partnerCaption,
+    ...partnerOutgoingsQuestionFields,
   ],
   guidanceBlocks: [outgoingsGuidance],
 })

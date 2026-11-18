@@ -1064,4 +1064,48 @@ describe('Controlled-work effects', () => {
     expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('childcare_payments_conditional_value')
     expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('childcare_payments_frequency')
   })
+
+  it('persists and prepopulates partner outgoings, then prunes changed answers and inapplicable routes', () => {
+    const session = newSession()
+    writeControlledWorkAnswers(session, CASE_ID, {
+      ...OUTGOINGS_PREREQUISITE_ANSWERS,
+      partner: 'yes',
+      'partner-over-60': 'no',
+      'partner-employment-status': 'unemployed',
+      'partner-receives-benefits': 'no',
+      partner_friends_or_family_relevant: 'no',
+      partner_maintenance_relevant: 'no',
+      partner_property_or_lodger_relevant: 'no',
+      partner_pension_relevant: 'no',
+      partner_student_finance_relevant: 'no',
+      partner_other_relevant: 'no',
+      'partner-other-income-completed': 'yes',
+      maintenance_payments_relevant: 'no',
+      legal_aid_payments_relevant: 'no',
+    })
+
+    save(session, ADULT_DOB, STEPS.partnerOutgoings, {
+      partner_maintenance_payments_relevant: 'yes',
+      partner_maintenance_payments_conditional_value: '250',
+      partner_maintenance_payments_frequency: 'monthly',
+      partner_legal_aid_payments_relevant: 'no',
+    })
+
+    expect(readControlledWorkAnswers(session, CASE_ID).partner_maintenance_payments_conditional_value).to.equal('250')
+    expect(restore(session, ADULT_DOB).answers.get('partner_maintenance_payments_frequency')).to.equal('monthly')
+
+    save(session, ADULT_DOB, STEPS.partnerOutgoings, {
+      partner_maintenance_payments_relevant: 'no',
+      partner_legal_aid_payments_relevant: 'no',
+    })
+    let saved = readControlledWorkAnswers(session, CASE_ID)
+    expect(saved.partner_maintenance_payments_relevant).to.equal('no')
+    expect(saved).to.not.have.property('partner_maintenance_payments_conditional_value')
+    expect(saved).to.not.have.property('partner_maintenance_payments_frequency')
+
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    saved = readControlledWorkAnswers(session, CASE_ID)
+    expect(saved).to.not.have.property('partner_maintenance_payments_relevant')
+    expect(saved).to.not.have.property('partner_legal_aid_payments_relevant')
+  })
 })

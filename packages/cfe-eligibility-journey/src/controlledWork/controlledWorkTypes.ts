@@ -66,6 +66,21 @@ export const OUTGOINGS_FREQUENCY_CODES = [
   'legal_aid_payments_frequency',
 ] as const
 export const OUTGOINGS_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
+export const PARTNER_OUTGOINGS_RELEVANT_CODES = [
+  'partner_childcare_payments_relevant',
+  'partner_maintenance_payments_relevant',
+  'partner_legal_aid_payments_relevant',
+] as const
+export const PARTNER_OUTGOINGS_VALUE_CODES = [
+  'partner_childcare_payments_conditional_value',
+  'partner_maintenance_payments_conditional_value',
+  'partner_legal_aid_payments_conditional_value',
+] as const
+export const PARTNER_OUTGOINGS_FREQUENCY_CODES = [
+  'partner_childcare_payments_frequency',
+  'partner_maintenance_payments_frequency',
+  'partner_legal_aid_payments_frequency',
+] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
@@ -101,6 +116,9 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   childcare_payments_relevant: YES_NO_OPTIONS,
   maintenance_payments_relevant: YES_NO_OPTIONS,
   legal_aid_payments_relevant: YES_NO_OPTIONS,
+  partner_childcare_payments_relevant: YES_NO_OPTIONS,
+  partner_maintenance_payments_relevant: YES_NO_OPTIONS,
+  partner_legal_aid_payments_relevant: YES_NO_OPTIONS,
   'other-income-completed': ['yes'],
   'partner-employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'partner-income-completed': ['yes'],
@@ -116,8 +134,12 @@ export type OtherIncomeValueAnswerCode =
 export type OtherIncomeFrequencyAnswerCode =
   | (typeof OTHER_INCOME_FREQUENCY_CODES)[number]
   | (typeof PARTNER_OTHER_INCOME_FREQUENCY_CODES)[number]
-export type OutgoingsValueAnswerCode = (typeof OUTGOINGS_VALUE_CODES)[number]
-export type OutgoingsFrequencyAnswerCode = (typeof OUTGOINGS_FREQUENCY_CODES)[number]
+export type OutgoingsValueAnswerCode =
+  | (typeof OUTGOINGS_VALUE_CODES)[number]
+  | (typeof PARTNER_OUTGOINGS_VALUE_CODES)[number]
+export type OutgoingsFrequencyAnswerCode =
+  | (typeof OUTGOINGS_FREQUENCY_CODES)[number]
+  | (typeof PARTNER_OUTGOINGS_FREQUENCY_CODES)[number]
 export type ControlledWorkCountAnswerCode = (typeof CONTROLLED_WORK_COUNT_ANSWER_CODES)[number]
 export type ControlledWorkAnswerCode =
   | ChoiceAnswerCode
@@ -155,6 +177,9 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   ...OUTGOINGS_RELEVANT_CODES,
   ...OUTGOINGS_VALUE_CODES,
   ...OUTGOINGS_FREQUENCY_CODES,
+  ...PARTNER_OUTGOINGS_RELEVANT_CODES,
+  ...PARTNER_OUTGOINGS_VALUE_CODES,
+  ...PARTNER_OUTGOINGS_FREQUENCY_CODES,
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
@@ -198,6 +223,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerBenefitDetails: 'partner-benefit-details',
   partnerOtherIncome: 'partner-other-income',
   outgoings: 'outgoings',
+  partnerOutgoings: 'partner-outgoings',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]
