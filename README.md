@@ -51,13 +51,14 @@ Create your local config file `.env` from the template file:
 cp .env.example .env
 ```
 
-#### Align to the Node Version specified for this project
+#### Use the Node version specified for this project
 
-If using Node Version Manager (nvm), use the following command to switch to the correct version:
+From the repository root, install and activate the version pinned in `.nvmrc`:
 
 ```shell
-nvm use
 nvm install
+nvm use
+node --version
 ```
 
 #### Install dependencies and run application for development
@@ -70,6 +71,43 @@ yarn dev
 
 Then, load http://localhost:3000/ in your browser to access the app.
 
+### Synthetic CFE staging demonstration (phase 2A)
+
+The optional `/dev/cfe-synthetic-assessment` page demonstrates a server-side
+controlled-work assessment using a fixed synthetic fixture. It is authenticated,
+uses the application's CSRF protection, is disabled unless explicitly enabled,
+and is always unavailable in production. Its result is kept in the current
+session only; it is not a client assessment and is not saved to a case. It does
+not use the client journey's answers.
+
+In a local development `.env`, set:
+
+```shell
+CFE_SYNTHETIC_DEMO_ENABLED=true
+CFE_API_BASE_URL=https://cfe-civil-staging.cloud-platform.service.justice.gov.uk
+CFE_REQUEST_TIMEOUT_MS=10000
+```
+
+Restart the app and visit `http://localhost:3000/dev/cfe-synthetic-assessment`.
+The CFE client accepts only the documented staging origin, sends no backend
+credentials and has no automatic POST retries. Do not change the fixture to
+include client or case data.
+
+To run a one-off live staging smoke test without starting the web app, use:
+
+```shell
+CFE_SYNTHETIC_DEMO_ENABLED=true yarn cfe:synthetic-smoke
+```
+
+The smoke test prints only the HTTP status, API version, overall result and
+whether CFE returned remarks. It makes a real assessment POST only when run
+explicitly and never runs as part of CI tests. Staging version 7 is used for
+this integration proof; that choice is not production approval. The fixture
+uses the schema-enumerated `DA001` proceeding with involvement type `A`, a
+fixed synthetic date of birth (`1980-01-01`), no income/outgoing payments and
+no bank accounts. These fixture selections are solely for exercising the API
+and do not represent eligibility policy.
+
 #### Install dependencies and run application for production
 
 ```shell
@@ -80,10 +118,11 @@ yarn start
 
 ##### Node Version Manager
 
-You may have to tell your local machine to use the latest version of node already installed on your device, before installing and running the application. Use the following command.
+Before installing and running the application, use the Node version pinned in `.nvmrc`:
 
 ```shell
-nvm install node
+nvm install
+nvm use
 ```
 
 ##### Running locally with docker
@@ -230,6 +269,18 @@ This repo enforces formatting and linting as part of CI.
 - CI lint: `yarn eslint .` checks the code without modifying files
 
 Use `yarn format` and `yarn lint` locally to fix issues before pushing. CI will fail on formatting or lint errors instead of rewriting files. These should be fixed locally.
+
+### Financial eligibility journey
+
+The financial eligibility journey lives in `packages/cfe-eligibility-journey` as a standalone Forge package. It started as a copy of the journey in [laa-manage-your-civil-cases](https://github.com/ministryofjustice/laa-manage-your-civil-cases), which reflects the questions cla_frontend asks. Its journey code (`cfe-eligibility`), URL, import alias (`@ministryofjustice/cfe-eligibility-journey`) and global Forge function names are distinct from manage's so both can be registered in one app.
+
+- The journey runs at `/cases/:caseId/cfe-eligibility/change`. The **Check financial eligibility** button validates and saves client details before starting it; ordinary **Save and continue** still goes to address lookup.
+- Client age answers are derived from the saved date of birth when available. The partner's age is still asked when the client is under 60, because the partner's age decides that branch.
+- Forge stores DOB as an ISO date internally, but the backend personal-details endpoint requires `dob` as `{ day, month, year }`. Case reads return `date_of_birth` as an ISO date for the journey.
+- Financial answers are restored from a case-scoped session draft. The journey does not read or write legacy financial eligibility data. Drafts are temporary and are not recoverable after the session expires.
+- **Prepare submission** validates active-branch answers and stores a versioned answer snapshot in the session. The submission-ready page explicitly states that no CFE calculation has run and no assessment has been saved. There is no CFE request, result, or backend assessment persistence in this phase.
+- The properties question includes an explicit yes/no ownership answer. Selecting **Yes** requires at least one complete property entry; selecting **No** excludes any inactive property draft from the prepared snapshot.
+- Before a CFE request can be implemented, the business must confirm the CFE API version, proceeding mapping, assessment date/exemption policy, and any additional CFE inputs not represented by the current questions. In particular, partner date of birth and the exact CFE treatment of some existing financial questions remain to be agreed. The phase-one snapshot is not a CFE request contract.
 
 ### Pre-commit checks
 

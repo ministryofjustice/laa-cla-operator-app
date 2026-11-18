@@ -6,6 +6,8 @@ import {
   searchCases,
   loadCase,
   saveAdaptationDetails,
+  getFinancialEligibility,
+  updateFinancialEligibility,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
@@ -390,6 +392,113 @@ describe("caseDetailsService", () => {
       expect(result).to.deep.equal(mockResponse.data);
       expect(result.reference).to.equal(mockResponse.data.reference);
       expect(result.full_name).to.equal(mockResponse.data.full_name);
+    });
+  });
+
+  describe("getFinancialEligibility", () => {
+    const url = "/call_centre/api/v1/case/AB-1234-5678/eligibility_check/";
+
+    it("returns the transformed eligibility check", async () => {
+      getStub.resolves({
+        data: { has_partner: true, is_you_under_18: false, category: "debt" },
+      });
+
+      const result = await getFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+      );
+
+      sinon.assert.calledOnceWithExactly(getStub, url);
+      expect(result.status).to.equal("success");
+      expect(result.data?.hasPartner).to.equal(true);
+      expect(result.data?.isUnder17).to.equal(false);
+      expect(result.data?.category).to.equal("debt");
+    });
+
+    it("returns null data when the case has no eligibility check yet (404)", async () => {
+      getStub.rejects({ response: { status: 404 } });
+
+      const result = await getFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+      );
+
+      expect(result).to.deep.equal({ data: null, status: "success" });
+    });
+
+    it("returns an error response for other failures", async () => {
+      getStub.rejects({ response: { status: 500 } });
+
+      const result = await getFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+      );
+
+      expect(result.status).to.equal("error");
+      expect(result.data).to.equal(null);
+      expect(result.message).to.be.a("string");
+    });
+  });
+
+  describe("updateFinancialEligibility", () => {
+    const url = "/call_centre/api/v1/case/AB-1234-5678/eligibility_check/";
+    const payload = { has_partner: false } as never;
+
+    it("PATCHes an existing eligibility check", async () => {
+      patchStub.resolves({ data: { has_partner: false } });
+
+      const result = await updateFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+        payload,
+      );
+
+      sinon.assert.calledOnceWithExactly(patchStub, url, payload);
+      sinon.assert.notCalled(postStub);
+      expect(result.status).to.equal("success");
+      expect(result.data?.hasPartner).to.equal(false);
+    });
+
+    it("POSTs to create the eligibility check when PATCH returns 404", async () => {
+      patchStub.rejects({ response: { status: 404 } });
+      postStub.resolves({ data: { has_partner: false } });
+
+      const result = await updateFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+        payload,
+      );
+
+      sinon.assert.calledOnceWithExactly(postStub, url, payload);
+      expect(result.status).to.equal("success");
+      expect(result.data?.hasPartner).to.equal(false);
+    });
+
+    it("returns an error response when PATCH fails for another reason", async () => {
+      patchStub.rejects({ response: { status: 400 } });
+
+      const result = await updateFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+        payload,
+      );
+
+      sinon.assert.notCalled(postStub);
+      expect(result.status).to.equal("error");
+      expect(result.data).to.equal(null);
+    });
+
+    it("returns an error response when the create POST fails", async () => {
+      patchStub.rejects({ response: { status: 404 } });
+      postStub.rejects({ response: { status: 500 } });
+
+      const result = await updateFinancialEligibility(
+        axiosMiddlewareStub,
+        "AB-1234-5678",
+        payload,
+      );
+
+      expect(result.status).to.equal("error");
     });
   });
 });
