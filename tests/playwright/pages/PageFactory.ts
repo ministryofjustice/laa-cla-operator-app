@@ -4,6 +4,7 @@ import { AddClientDetailsPage } from "./AddClientDetailsPage.js";
 import { AddressPage } from "./addAddressPage.js";
 import { SearchClientPage } from "./SearchClientPage.js";
 import { AdaptationDetailPage } from "./adaptationDetailsPage.js";
+import { ClientHomePage } from "./clientHomePage.js";
 
 /**
  * Factory class for creating page objects
@@ -45,5 +46,9 @@ export class PageFactory {
 
   get AdaptationDetailPage(): AdaptationDetailPage {
     return new AdaptationDetailPage(this.page);
+  }
+
+  get getClientHomePage(): ClientHomePage {
+    return new ClientHomePage(this.page);
   }
 }
