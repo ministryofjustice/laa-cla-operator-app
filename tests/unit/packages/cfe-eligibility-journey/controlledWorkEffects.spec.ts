@@ -185,6 +185,28 @@ describe('Controlled-work effects', () => {
     expect(missingMortgagePage.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
   })
 
+  it('persists and prepopulates additional-property ownership, replaces changes, and prunes it off capital routes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'outright' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['additional-property-owned']).to.equal('outright')
+    expect(restore(session, ADULT_DOB).answers.get('additional-property-owned')).to.equal('outright')
+
+    const changedAnswer = save(session, ADULT_DOB, STEPS.additionalProperty, {
+      'additional-property-owned': 'shared_ownership',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)['additional-property-owned']).to.equal('shared_ownership')
+    expect(changedAnswer.answers.get('additional-property-owned')).to.equal('shared_ownership')
+    expect(changedAnswer.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+
+    const changedRoute = save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('additional-property-owned')
+    expect(changedRoute.answers.has('additional-property-owned')).to.equal(false)
+  })
+
   it('persists and prepopulates shared housing costs, prunes conditional benefit fields, and clears the branch on change', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

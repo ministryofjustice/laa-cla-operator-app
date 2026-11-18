@@ -253,7 +253,7 @@ describe('Controlled-work journey rules', () => {
       )
     })
 
-    it('continues passported routes to property and stops at the explicit incomplete boundary', () => {
+    it('continues passported routes to additional property and stops at the explicit incomplete boundary', () => {
       const answers: ControlledWorkAnswers = {
         'immigration-or-asylum': 'no',
         partner: 'no',
@@ -262,7 +262,8 @@ describe('Controlled-work journey rules', () => {
       }
 
       expect(getNextStep(STEPS.applicant, answers, ADULT)).to.equal(STEPS.property)
-      expect(getNextStep(STEPS.property, answers, ADULT)).to.equal(undefined)
+      expect(getNextStep(STEPS.property, answers, ADULT)).to.equal(STEPS.additionalProperty)
+      expect(getFirstMissingStep(answers, ADULT)).to.equal(STEPS.additionalProperty)
       expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)
     })
 

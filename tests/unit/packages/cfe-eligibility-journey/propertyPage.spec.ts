@@ -157,7 +157,7 @@ describe('Controlled-work property page', () => {
         propertyOwned === 'shared_ownership'
           ? STEPS.propertyLandlord
           : propertyOwned === 'none'
-            ? undefined
+            ? STEPS.additionalProperty
             : STEPS.propertyEntry,
       )
       expect(isControlledWorkComplete(answers, ADULT)).to.equal(false)

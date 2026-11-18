@@ -113,6 +113,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'immigration-or-asylum-type': MATTER_TYPE_OPTIONS,
   'asylum-support': YES_NO_OPTIONS,
   'property-owned': PROPERTY_OWNERSHIP_OPTIONS,
+  'additional-property-owned': PROPERTY_OWNERSHIP_OPTIONS,
   'property-landlord': YES_NO_OPTIONS,
   house_in_dispute: YES_NO_OPTIONS,
   combined_frequency: SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES,
@@ -188,6 +189,7 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'immigration-or-asylum-type',
   'asylum-support',
   'property-owned',
+  'additional-property-owned',
   'property-landlord',
   ...PROPERTY_ENTRY_ANSWER_CODES,
   'partner',
@@ -266,6 +268,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   propertyLandlord: 'property-landlord',
   sharedOwnershipHousingCosts: 'shared-ownership-housing-costs',
   propertyEntry: 'property-entry',
+  additionalProperty: 'additional-property',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]

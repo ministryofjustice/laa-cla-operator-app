@@ -78,6 +78,26 @@ const OTHER_INCOME_CONDITIONAL_CODE_SET = new Set<string>([
 const CONTROLLED_WORK_FREQUENCY_SET = new Set<string>([...OTHER_INCOME_FREQUENCIES, ...OUTGOINGS_FREQUENCIES])
 const PROPERTY_ENTRY_VALUE_CODE_SET = new Set<string>(PROPERTY_ENTRY_VALUE_CODES)
 const PROPERTY_ENTRY_ANSWER_CODE_SET = new Set<string>(PROPERTY_ENTRY_ANSWER_CODES)
+
+interface AdditionalPropertyState {
+  answers: ControlledWorkAnswers
+  context: ControlledWorkContext
+}
+
+/**
+ * Checks whether additional-property questions follow the applicable main-home route.
+ * @param {AdditionalPropertyState} state The resolved answers and case context
+ * @returns {boolean} Whether the client is on a capital route where this page applies
+ */
+function isAdditionalPropertyApplicable(state: AdditionalPropertyState): boolean {
+  const { answers } = state
+  const { 'property-owned': propertyOwned, passporting } = answers
+  if (!isMeansTested(state) || propertyOwned === undefined) return false
+  if (propertyOwned === 'none') return passporting === YES
+  if (propertyOwned === 'with_mortgage' && passporting === NO) return false
+  return propertyOwned !== 'shared_ownership' || answers['property-landlord'] === YES
+}
+
 const PAGE_ANSWER_REQUIREMENT_BY_STEP = new Map<
   ControlledWorkStepCode,
   (code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers) => boolean
@@ -624,6 +644,11 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
         (propertyOwned !== 'shared_ownership' || state.answers['property-landlord'] === YES)
       )
     },
+  },
+  {
+    code: STEPS.additionalProperty,
+    answerCodes: ['additional-property-owned'],
+    isApplicable: isAdditionalPropertyApplicable,
   },
 ]
 

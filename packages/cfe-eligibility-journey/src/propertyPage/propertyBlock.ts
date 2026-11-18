@@ -24,7 +24,7 @@ const partnerQuestionHeading: BlockDefinition = {
   visibleWhen: PARTNER_PRESENT,
 }
 
-const propertyOptions = [
+export const propertyOwnershipOptions = [
   { value: 'with_mortgage', text: 'Yes, with a mortgage or loan' },
   { value: 'shared_ownership', text: 'Yes, through a shared ownership scheme' },
   { value: 'outright', text: 'Yes, owned outright' },
@@ -42,7 +42,7 @@ const singlePropertyField = GovUKRadioInput({
   code: 'property-owned',
   dependentWhen: PARTNER_ABSENT,
   fieldset: { legend: { text: SINGLE_QUESTION, classes: 'govuk-visually-hidden' } },
-  items: propertyOptions,
+  items: propertyOwnershipOptions,
   validWhen: propertyValidation,
 })
 
@@ -50,7 +50,7 @@ const partnerPropertyField = GovUKRadioInput({
   code: 'property-owned',
   dependentWhen: PARTNER_PRESENT,
   fieldset: { legend: { text: PARTNER_QUESTION, classes: 'govuk-visually-hidden' } },
-  items: propertyOptions,
+  items: propertyOwnershipOptions,
   validWhen: propertyValidation,
 })
 

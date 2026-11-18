@@ -71,6 +71,12 @@ export const propertyStep: StepDefinition = step({
             ),
             goto: CONTROLLED_WORK_STEP_CODES.propertyEntry,
           }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(CONTROLLED_WORK_STEP_CODES.additionalProperty),
+            ),
+            goto: CONTROLLED_WORK_STEP_CODES.additionalProperty,
+          }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],
       },
