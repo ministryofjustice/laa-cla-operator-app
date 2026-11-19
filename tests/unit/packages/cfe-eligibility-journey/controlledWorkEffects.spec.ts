@@ -137,6 +137,41 @@ describe('Controlled-work effects', () => {
     expect(changedOwnership.answers.has('property-landlord')).to.equal(false)
   })
 
+  it('prunes shared-ownership follow-up answers when the landlord answer changes to No', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'shared_ownership' })
+    save(session, ADULT_DOB, STEPS.propertyLandlord, { 'property-landlord': 'yes' })
+    save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, {
+      rent: '100',
+      shared_ownership_mortgage: '50',
+      combined_frequency: 'monthly',
+      housing_benefit_relevant: 'no',
+    })
+    save(session, ADULT_DOB, STEPS.propertyEntry, {
+      house_value: '350000',
+      percentage_owned: '100',
+      house_in_dispute: 'no',
+    })
+
+    const changedAnswer = save(session, ADULT_DOB, STEPS.propertyLandlord, { 'property-landlord': 'no' })
+    const saved = readControlledWorkAnswers(session, CASE_ID)
+
+    expect(saved['property-landlord']).to.equal('no')
+    expect(saved).not.to.have.property('rent')
+    expect(saved).not.to.have.property('shared_ownership_mortgage')
+    expect(saved).not.to.have.property('combined_frequency')
+    expect(saved).not.to.have.property('housing_benefit_relevant')
+    expect(saved).not.to.have.property('house_value')
+    expect(saved).not.to.have.property('percentage_owned')
+    expect(changedAnswer.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).not.to.include(
+      STEPS.sharedOwnershipHousingCosts,
+    )
+    expect(changedAnswer.answers.has('rent')).to.equal(false)
+    expect(changedAnswer.answers.has('house_value')).to.equal(false)
+  })
+
   it('persists and prepopulates property-entry answers and normalizes an unchecked dispute box to No', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
