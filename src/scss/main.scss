@@ -13,6 +13,16 @@ $ucd-gutter: 50px;
   width: 80%;
 }
 
+.govuk-main-wrapper:has(.custom-page-layout) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  @include govuk-media-query($from: desktop) {
+    padding-top: 0px !important;
+    padding-bottom: 40px !important;
+  }
+}
+
 .moj-interruption-card {
   margin-inline: calc(50% - 50vw);
   padding-inline: govuk-spacing(6);

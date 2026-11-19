@@ -7,10 +7,9 @@
 {% block content %}
     {% block backLink %}{% endblock %}
 
-    <div class="">
-
+    <!-- Added a unique class to scope or exclude global styles -->
+    <div class="custom-page-layout">
         <div class="">
-        
             <form method="post" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 

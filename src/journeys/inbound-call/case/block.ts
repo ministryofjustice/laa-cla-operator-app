@@ -1,6 +1,17 @@
 import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import { GovUKButton, } from "@ministryofjustice/hmpps-forge/govuk-components";
 
+
+
+async function casseDetails() {
+
+
+  return 
+
+}
+
+
+
 export const clientHomeBlock = CollectionBlock({
   
   collection: [
@@ -17,8 +28,6 @@ HtmlBlock({
     <a href="#" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">Signpost to other help</a>
   </div>
 </div>`
-}),
-    
-    
-    GovUKButton({ text: "Continue to Scope" })],
+})
+],
 });

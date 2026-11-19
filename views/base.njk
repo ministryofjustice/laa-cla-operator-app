@@ -42,21 +42,23 @@
 {% endblock %}
 
 {% block beforeContent %}
+{% if feedBackLink %}
   {{ govukPhaseBanner({
     tag: {
       text: config.SERVICE_PHASE
     },
     html: t('components.phaseBanner.feedbackText') + t('components.phaseBanner.feedbackLinkTextHTML')
   }) }}
+{% endif %}
 
-  {% if backLinkUrl %}
-    {{ govukBackLink({
-      text: "Back",
-      href: backLinkUrl,
-      classes: "govuk-!-margin-bottom-6"
-    }) }}
-  {% endif %}
-  
+{% if backLinkUrl %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLinkUrl,
+    classes: "govuk-!-margin-bottom-6"
+  }) }}
+{% endif %}
+
 {% endblock %}
 
 {% block content %}
