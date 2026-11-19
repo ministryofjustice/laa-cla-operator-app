@@ -13,6 +13,47 @@ $ucd-gutter: 50px;
   width: 80%;
 }
 
+.moj-interruption-card {
+  margin-inline: calc(50% - 50vw);
+  padding-inline: govuk-spacing(6);
+
+  // Name on the far left, buttons on the far right, on the same line
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: govuk-spacing(4);
+
+  .moj-interruption-card__heading,
+  .moj-interruption-card__actions,
+  .moj-interruption-card__actions .govuk-button {
+    margin-bottom: 0;
+  }
+ 
+
+  .moj-interruption-card__actions .govuk-button--inverse {
+    color: #0b0c0c;
+  }
+}
+
+.card-header {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem; 
+}
+
+.govuk-link--inverse {
+  font-size: 19px;
+}
+
+
+
+// Stops the vertical scrollbar width from causing sideways scrolling
+.govuk-template__body {
+  overflow-x: clip;
+}
+
 @include govuk-media-query($from: desktop) {
   .govuk-width-container,
   .moj-header__container {
