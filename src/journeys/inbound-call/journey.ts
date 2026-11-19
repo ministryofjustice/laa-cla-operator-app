@@ -43,11 +43,11 @@ export const caseJourney = journey({
     }),
   ],
   steps: [
+    clientCaseStep,
     addClientDetailsStep,
     addAddressStep,
     addressLookupStep1,
     addressLookupStep2,
     adaptationDetails,
-    clientCaseStep,
   ],
 });

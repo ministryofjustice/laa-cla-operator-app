@@ -4,8 +4,6 @@ import { GovUKButton, } from "@ministryofjustice/hmpps-forge/govuk-components";
 
 
 async function casseDetails() {
-
-
   return 
 
 }
@@ -15,7 +13,7 @@ async function casseDetails() {
 export const clientHomeBlock = CollectionBlock({
   
   collection: [
-HtmlBlock({
+    HtmlBlock({
   content: `<div class="moj-interruption-card">
   <div class="card-header">
     <h1 class="moj-interruption-card__heading">Janet Jackson</h1>
