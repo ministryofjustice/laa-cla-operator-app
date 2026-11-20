@@ -1,17 +1,15 @@
-import { CollectionBlock, HtmlBlock } from "@ministryofjustice/hmpps-forge/core/components";
-
 import {
-  Data,
-  Format
-} from "@ministryofjustice/hmpps-forge/core/authoring";
+  CollectionBlock,
+  HtmlBlock,
+} from "@ministryofjustice/hmpps-forge/core/components";
 
+import { Data, Format } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 export const clientHomeBlock = CollectionBlock({
-  
-collection: [
-  HtmlBlock({
-    content: Format(
-      `<div class="moj-interruption-card">
+  collection: [
+    HtmlBlock({
+      content: Format(
+        `<div class="moj-interruption-card">
   <div class="card-header">
     <h1 class="moj-interruption-card__heading">%1</h1>
     <a class="govuk-link govuk-link--inverse" href="#">%2</a>
@@ -23,10 +21,9 @@ collection: [
     <a href="#" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">Signpost to other help</a>
   </div>
 </div>`,
-      Data('case.full_name'),
-      Data('case.reference')
-     
-    ),
-  }),
-],
+        Data("case.full_name"),
+        Data("case.reference"),
+      ),
+    }),
+  ],
 });
