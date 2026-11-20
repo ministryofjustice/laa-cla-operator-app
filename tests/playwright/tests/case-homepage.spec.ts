@@ -9,13 +9,11 @@ test.describe("case home page", () => {
     );
   });
 
-  test("correct header is displayed and information is displayed", async ({
+  test("interruption card displays case name and reference", async ({
     pages,
   }) => {
     const { caseHomePageDetails } = pages;
-
-    await expect(caseHomePageDetails.interruptionCard).toBeVisible();
-  
+    await expect(caseHomePageDetails.caseReference).toHaveText("ED-0001-0002");
   });
 
   test("interruption card shows action buttons", async ({ pages }) => {

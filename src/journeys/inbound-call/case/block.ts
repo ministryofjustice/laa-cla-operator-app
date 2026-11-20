@@ -9,7 +9,7 @@ export const clientHomeBlock = CollectionBlock({
   collection: [
     HtmlBlock({
       content: Format(
-        `<div class="moj-interruption-card">
+  `<div class="moj-interruption-card">
   <div class="card-header">
     <h1 class="moj-interruption-card__heading">%1</h1>
     <a class="govuk-link govuk-link--inverse" href="#">%2</a>

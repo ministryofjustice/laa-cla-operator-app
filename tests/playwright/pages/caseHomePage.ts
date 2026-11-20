@@ -6,7 +6,7 @@ export class CaseHomePageDetails {
 
   // Interruption card
   readonly interruptionCard: Locator;
-  readonly cardHeading: Locator;
+  readonly caseReference: Locator;
   readonly cardActions: Locator;
   readonly manageCaseButton: Locator;
   readonly arrangeCallbackButton: Locator;
@@ -20,11 +20,9 @@ export class CaseHomePageDetails {
     this.page = page;
 
     this.interruptionCard = page.locator(".moj-interruption-card");
-   
-    this.cardHeading = this.interruptionCard.locator(
-      "h1.moj-interruption-card__heading",
+    this.caseReference = this.interruptionCard.locator(
+      ".card-header a.govuk-link",
     );
- 
     this.cardActions = this.interruptionCard.locator(
       ".moj-interruption-card__actions",
     );
@@ -41,42 +39,15 @@ export class CaseHomePageDetails {
   }
 
   get url(): string {
-    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/client-homepage`;
+    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/case-homepage`;
   }
 
   get pageTitle(): string {
-    return "Client Homepage";
+    return "Case Homepage";
   }
 
   async goto(): Promise<void> {
     await this.page.goto(this.url);
-  }
-
-  // ---- Card content ----
-
-  /** Text of the card's h1 (the %1 placeholder) */
-  async heading(): Promise<string> {
-    return (await this.cardHeading.textContent())?.trim() ?? "";
-  }
-
-  /** Text of the header link (the %2 placeholder) */
-  async linkText(): Promise<string> {
-    return (await this.cardLink.textContent())?.trim() ?? "";
-  }
-
-  /** href of the header link */
-  async linkHref(): Promise<string | null> {
-    return this.cardLink.getAttribute("href");
-  }
-
-  async isCardVisible(): Promise<boolean> {
-    return this.interruptionCard.isVisible();
-  }
-
-  // ---- Actions ----
-
-  async clickCardLink(): Promise<void> {
-    await this.cardLink.click();
   }
 
   async clickManageCase(): Promise<void> {
