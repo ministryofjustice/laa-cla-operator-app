@@ -41,20 +41,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/msal-common@npm:16.14.1":
-  version: 16.14.1
-  resolution: "@azure/msal-common@npm:16.14.1"
-  checksum: 10c0/99abadb8ce40cf234e534776806e17a76904d9f99af069e20e6e7513cb3956428809672cb7fc2e1bde6ab0684b7027225514fe0d11671017b985ce7db8886087
+"@azure/msal-common@npm:16.14.2":
+  version: 16.14.2
+  resolution: "@azure/msal-common@npm:16.14.2"
+  checksum: 10c0/7861c6ef3eea5cfa67ad8d8cabc79e9d27ba4f6d5d8cdf4ae950e2739abea3d8f80fffb1440a1840a3ff1655c90da8d3bf3be2c4d3898cab1e62bd610da5d971
   languageName: node
   linkType: hard
 
-"@azure/msal-node@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "@azure/msal-node@npm:6.0.1"
+"@azure/msal-node@npm:7.1.0":
+  version: 7.1.0
+  resolution: "@azure/msal-node@npm:7.1.0"
   dependencies:
-    "@azure/msal-common": "npm:16.14.1"
+    "@azure/msal-common": "npm:16.14.2"
     jsonwebtoken: "npm:^9.0.0"
-  checksum: 10c0/feab144530e708b3d9c7e50a30e3339a460fc4d9879c8841795ffea49bab78395963c0740235a9e585d8c81587291ed286ff6b99fdd5236748ff662e2aea75c8
+  checksum: 10c0/165f829f7cefebadead0b47c1be66e83d5e0e9ba0f15779ffcdc55653ab10fa533dbcc11082c8ff1ac3f9ed3ef264c19b3d8f78530e3e1d5af18e8ddb4249ee6
   languageName: node
   linkType: hard
 
@@ -1978,7 +1978,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:^2.2.0, body-parser@npm:^2.2.1, body-parser@npm:^2.3.0":
+"body-parser@npm:2.4.0":
+  version: 2.4.0
+  resolution: "body-parser@npm:2.4.0"
+  dependencies:
+    bytes: "npm:^3.1.2"
+    content-type: "npm:^2.1.0"
+    debug: "npm:^4.4.3"
+    http-errors: "npm:^2.0.1"
+    iconv-lite: "npm:^0.7.3"
+    on-finished: "npm:^2.4.1"
+    qs: "npm:^6.16.1"
+    raw-body: "npm:^3.0.2"
+    type-is: "npm:^2.1.0"
+  checksum: 10c0/247b891a27f661410b149c8a4771d3a9a076c86f41fff033d87b8bc828198195bd03ba321e3a8993ac37abca5a7ffeb62c96ea41f7ad3f11c170b73de5c27afe
+  languageName: node
+  linkType: hard
+
+"body-parser@npm:^2.2.1, body-parser@npm:^2.3.0":
   version: 2.3.0
   resolution: "body-parser@npm:2.3.0"
   dependencies:
@@ -3751,7 +3768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:^0.7.2, iconv-lite@npm:~0.7.0":
+"iconv-lite@npm:^0.7.2, iconv-lite@npm:^0.7.3, iconv-lite@npm:~0.7.0":
   version: 0.7.3
   resolution: "iconv-lite@npm:0.7.3"
   dependencies:
@@ -4107,7 +4124,7 @@ __metadata:
   resolution: "laa-express-typescript-template@workspace:."
   dependencies:
     "@axe-core/playwright": "npm:^4.10.2"
-    "@azure/msal-node": "npm:^6.0.1"
+    "@azure/msal-node": "npm:7.1.0"
     "@eslint/js": "npm:^10.0.1"
     "@ministryofjustice/frontend": "npm:^11.1.0"
     "@ministryofjustice/hmpps-forge": "npm:^0.4.5"
@@ -4134,7 +4151,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.71.2"
     axe-core: "npm:^4.14.0"
     axios: "npm:1.20.0"
-    body-parser: "npm:^2.2.0"
+    body-parser: "npm:2.4.0"
     c8: "npm:^12.0.0"
     chai: "npm:^6.3.0"
     chalk: "npm:^6.0.1"
