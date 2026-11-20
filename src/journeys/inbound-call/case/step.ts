@@ -9,4 +9,5 @@ export const clientCaseStep = step({
   reachability: { entryWhen: true },
   view: { template: "main/client-homepage.njk" },
   blocks: [clientHomeBlock],
+
 });

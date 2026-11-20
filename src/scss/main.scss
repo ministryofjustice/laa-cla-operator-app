@@ -39,8 +39,7 @@ $ucd-gutter: 50px;
   .moj-interruption-card__actions .govuk-button {
     margin-bottom: 0;
   }
- 
-
+  padding: 12px !important;
   .moj-interruption-card__actions .govuk-button--inverse {
     color: #0b0c0c;
   }
@@ -51,10 +50,15 @@ $ucd-gutter: 50px;
   align-items: center;
   justify-content: space-between;
   gap: 1.6rem; 
+  margin-left: 40px;
 }
 
 .govuk-link--inverse {
   font-size: 19px;
+  text-decoration: none;
+}
+.moj-interruption-card__actions {
+  margin-right: 40px;
 }
 
 
