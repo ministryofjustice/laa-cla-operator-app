@@ -48,7 +48,6 @@ export class PageFactory {
     return new AdaptationDetailPage(this.page);
   }
 
- 
   get caseHomePageDetails(): CaseHomePageDetails {
     return new CaseHomePageDetails(this.page);
   }
