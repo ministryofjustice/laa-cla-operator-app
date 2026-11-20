@@ -6,9 +6,7 @@ export class CaseHomePageDetails {
 
   // Interruption card
   readonly interruptionCard: Locator;
-  readonly cardHeader: Locator;
   readonly cardHeading: Locator;
-  readonly cardLink: Locator;
   readonly cardActions: Locator;
   readonly manageCaseButton: Locator;
   readonly arrangeCallbackButton: Locator;
@@ -22,11 +20,11 @@ export class CaseHomePageDetails {
     this.page = page;
 
     this.interruptionCard = page.locator(".moj-interruption-card");
-    this.cardHeader = this.interruptionCard.locator(".card-header");
+   
     this.cardHeading = this.interruptionCard.locator(
       "h1.moj-interruption-card__heading",
     );
-    this.cardLink = this.cardHeader.locator("a.govuk-link--inverse");
+ 
     this.cardActions = this.interruptionCard.locator(
       ".moj-interruption-card__actions",
     );

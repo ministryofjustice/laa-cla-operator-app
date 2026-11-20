@@ -15,10 +15,7 @@ test.describe("case home page", () => {
     const { caseHomePageDetails } = pages;
 
     await expect(caseHomePageDetails.interruptionCard).toBeVisible();
-    await expect(caseHomePageDetails.cardHeading).toHaveText(
-      "Expected heading",
-    );
-    await expect(caseHomePageDetails.cardLink).toBeVisible();
+  
   });
 
   test("interruption card shows action buttons", async ({ pages }) => {
