@@ -15,7 +15,7 @@ test("shows all case section tabs", async ({ pages }) => {
   await expect(clientHomePage.caseSectionTabs).toHaveText([
     "Client's details",
     "Scope",
-    "Financial Eligibility",
+    "Financial eligibility",
     "Diversity",
     "Refer",
     "Case history",

@@ -10,7 +10,7 @@ export const clientHomeBlock = CollectionBlock({
       items: [
         { text: "Client's details", href: "#details", active: true },
         { text: "Scope", href: "#scope" },
-        { text: "Financial Eligibility", href: "#eligibility" },
+        { text: "Financial eligibility", href: "#eligibility" },
         { text: "Diversity", href: "#diversity" },
         { text: "Refer", href: "#refer" },
         { text: "Case history", href: "#history" },
