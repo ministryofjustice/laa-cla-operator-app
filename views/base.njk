@@ -25,19 +25,7 @@
 
   {% include "header.njk" %}
   {{ govukServiceNavigation({
-    serviceName: config.SERVICE_NAME,
-    serviceUrl: "/receive-call",
-    navigation: [
-      {
-        href: "/receive-call",
-        text: "Receive calls",
-        current: true
-      },
-      {
-        href: "#",
-        text: "Make calls"
-      }
-    ]
+    serviceName: config.SERVICE_NAME
   }) }}
 {% endblock %}
 
