@@ -25,7 +25,10 @@ import { Forge } from "@ministryofjustice/hmpps-forge/core";
 import type { Deps } from "./journeys/api.js";
 import { apiService } from "./services/api/index.js";
 import { govukComponents } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { MOJCardGroup, MOJSubNavigation } from "@ministryofjustice/hmpps-forge/moj-components";
+import {
+  MOJCardGroup,
+  MOJSubNavigation,
+} from "@ministryofjustice/hmpps-forge/moj-components";
 import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunjucks";
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";

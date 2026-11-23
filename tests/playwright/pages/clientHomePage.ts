@@ -22,8 +22,8 @@ export class ClientHomePage {
 
   get caseSectionTabs(): Locator {
     return this.page
-    .getByRole("navigation", { name: "Case sections" })
-    .getByRole("link");
+      .getByRole("navigation", { name: "Case sections" })
+      .getByRole("link");
   }
 
   async goto(): Promise<void> {
