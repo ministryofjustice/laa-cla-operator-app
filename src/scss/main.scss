@@ -61,3 +61,10 @@ $ucd-gutter: 50px;
   padding: govuk-spacing(5) govuk-spacing(5) govuk-spacing(1);
   margin: govuk-spacing(6) 0;
 }
+
+// Case homepage tabs styling
+.case-homepage {
+    .moj-sub-navigation__item {
+      margin-right: govuk-spacing(7);
+    }
+}
