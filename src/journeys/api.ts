@@ -21,6 +21,10 @@ export interface CaseApiService {
     axiosMiddleware: AxiosInstanceWrapper,
     caseId: string,
   ) => Promise<CaseDetails>;
+  loadPersonalDetails: (
+    axiosMiddleware: AxiosInstanceWrapper,
+    caseId: string,
+  ) => Promise<Record<string, unknown>>;
   searchCases: (
     axiosMiddleware: AxiosInstanceWrapper,
     params: SearchCasesParams,

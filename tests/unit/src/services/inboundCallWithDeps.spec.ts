@@ -32,6 +32,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const getAllCases = sinon.stub().resolves(expected);
     const updatePersonalDetails = sinon.stub().resolves({});
     const loadCase = sinon.stub().resolves({ reference: "FA-1" });
+    const loadPersonalDetails = sinon.stub().resolves({});
     const searchCases = sinon
       .stub()
       .resolves({ count: 1, results: [{ reference: "FA-1" }] });
@@ -45,6 +46,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         searchCases,
         createCase: createCase,
         loadCase,
+        loadPersonalDetails,
         saveAdaptationDetails,
       },
       postCodeApi: new PostcodeLookupService(),
@@ -73,6 +75,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         searchCases: sinon.stub(),
         createCase: sinon.stub(),
         loadCase: sinon.stub(),
+        loadPersonalDetails: sinon.stub(),
         saveAdaptationDetails: sinon.stub(),
       },
       postCodeApi: new PostcodeLookupService(),

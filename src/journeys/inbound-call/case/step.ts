@@ -1,5 +1,6 @@
-import { step } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { clientHomeBlock } from "../case/block.js";
+import { step, access } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { InboundCallEffects } from "#src/journeys/effects.js";
+import { clientHomeBlock, clientHomePersonalDetailsBlock } from "../case/block.js";
 
 export const clientCaseStep = step({
   code: "client-case-details",
@@ -8,5 +9,10 @@ export const clientCaseStep = step({
 
   reachability: { entryWhen: true },
   view: { template: "main/client-homepage.njk" },
-  blocks: [clientHomeBlock],
+  blocks: [clientHomeBlock, clientHomePersonalDetailsBlock],
+  onAccess: [
+    access({
+      effects: [InboundCallEffects.LoadPersonalDetails()],
+    }),
+  ],
 });

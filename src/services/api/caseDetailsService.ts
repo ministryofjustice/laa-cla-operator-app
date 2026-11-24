@@ -31,6 +31,27 @@ export async function getAllCases(
 }
 
 /**
+ * Updates the personal details (address) for a case.
+ *
+ * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
+ * @param {string} caseId The id of the case to update.
+ * @returns {Promise<void>} Resolves when the personal details have been updated.
+ */
+export async function loadPersonalDetails(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+): Promise<Record<string, unknown>> {
+  return await handleApiCall(async () => {
+    const configuredAxios = configureAxiosInstance(axiosMiddleware);
+    const response = await configuredAxios.get<Record<string, unknown>>(
+      `/call_centre/api/v1/case/${caseId}/personal_details/`,
+    );
+    console.log("Loaded personal details: ", response.data)
+    return response.data;
+  }, "Error loading personal details");
+}
+
+/**
  * Retrieves a case from the API.
  * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
  * @param {string} caseId - The case id to load
@@ -45,6 +66,7 @@ export async function loadCase(
     const response = await configuredAxios.get<CaseDetails>(
       `/call_centre/api/v1/case/${caseId}`,
     );
+    console.log("Loaded case details: ", response.data)
     return response.data;
   }, "Error loading case");
 }

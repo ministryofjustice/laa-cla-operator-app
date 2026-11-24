@@ -69,6 +69,7 @@ function hasAdoptionDetails(_case: CaseDetails): boolean {
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
+  LoadPersonalDetails: () => EffectFunctionExpr;
   SetAgentName: () => EffectFunctionExpr;
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress: () => EffectFunctionExpr;
@@ -114,6 +115,21 @@ export const InboundCallEffectsImplementation: Record<
     const authenticatedAxiosState = getAuthenticatedAxios(context);
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
+  },
+
+    /**
+   * Load case from the api
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  LoadPersonalDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
+    const caseId = context.getRequestParam("caseId");
+    if (caseId === undefined) {
+      throw new Error("Case id is required to load a case");
+    }
+    const authenticatedAxiosState = getAuthenticatedAxios(context);
+    const personalDetails = await deps.caseApi.loadPersonalDetails(authenticatedAxiosState, caseId);
+    context.setData("personalDetails", personalDetails);
   },
 
   /**
@@ -219,8 +235,7 @@ export const InboundCallEffectsImplementation: Record<
       full_name: context.getPostData("fullName"),
       date_of_birth: context.getPostData("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
-      safe_to_contact:
-        context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
+      safe_to_contact: context.getPostData("safeToCall"),
       email: context.getPostData("email"),
     };
 
@@ -388,6 +403,10 @@ export const InboundCallEffects: InboundCallEffectShape = {
   LoadCase: InboundCallEffectsRegistry.register(
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
+  ),
+  LoadPersonalDetails: InboundCallEffectsRegistry.register(
+    "LoadPersonalDetails",
+    InboundCallEffectsImplementation.LoadPersonalDetails,
   ),
   AdaptationEffects: InboundCallEffectsRegistry.register(
     "AdaptationEffects",
