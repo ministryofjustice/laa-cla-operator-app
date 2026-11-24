@@ -89,7 +89,6 @@ jobs:
           --set pingdomIPs=$PINGDOM_IPS \
           --set envVars.SERVICE_URL.value=${HOST_NAME} \
           --set envVars.NODE_ENV.value=ephemeral \
-          --force-replace  \
           --install
 
 # upgrade command above may need the following added, it should default to this from values-uat.yml:

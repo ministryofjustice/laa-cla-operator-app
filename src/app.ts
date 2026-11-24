@@ -25,7 +25,10 @@ import { Forge } from "@ministryofjustice/hmpps-forge/core";
 import type { Deps } from "./journeys/api.js";
 import { apiService } from "./services/api/index.js";
 import { govukComponents } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { MOJCardGroup } from "@ministryofjustice/hmpps-forge/moj-components";
+import {
+  MOJCardGroup,
+  MOJSubNavigation,
+} from "@ministryofjustice/hmpps-forge/moj-components";
 import { createExpressRouter } from "@ministryofjustice/hmpps-forge/express-nunjucks";
 import journeyPackages from "./journeys/index.js";
 import { buildSessionConfig } from "#utils/session.js";
@@ -125,7 +128,7 @@ const createApp = async (): Promise<express.Application> => {
   const forge = new Forge({})
     .registerGlobalComponents(govukComponents)
     // MoJ components don't have an "all" option, so we need to register them individually
-    .registerGlobalComponents([MOJCardGroup]);
+    .registerGlobalComponents([MOJCardGroup, MOJSubNavigation]);
 
   // Everytime a new journey is added to the project,
   // it'll be automatically registered with Forge here.

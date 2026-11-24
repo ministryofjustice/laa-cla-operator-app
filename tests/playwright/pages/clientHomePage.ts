@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
 import { TEST_CONFIG } from "../playwright.config.js";
 
 export class ClientHomePage {
@@ -13,11 +13,17 @@ export class ClientHomePage {
   }
 
   get url(): string {
-    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/client-homepage`;
+    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/case-homepage`;
   }
 
   get pageTitle(): string {
     return "Client Homepage";
+  }
+
+  get caseSectionTabs(): Locator {
+    return this.page
+      .getByRole("navigation", { name: "Case sections" })
+      .getByRole("link");
   }
 
   async goto(): Promise<void> {

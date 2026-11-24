@@ -61,3 +61,19 @@ $ucd-gutter: 50px;
   padding: govuk-spacing(5) govuk-spacing(5) govuk-spacing(1);
   margin: govuk-spacing(6) 0;
 }
+
+.case-homepage {
+  .moj-sub-navigation__list {
+    display: flex;
+    justify-content: space-between;
+    column-gap: govuk-spacing(3);
+  }
+
+  .moj-sub-navigation__item {
+    margin-right: 0;
+  }
+
+  .moj-sub-navigation__link {
+    white-space: nowrap;
+  }
+}
