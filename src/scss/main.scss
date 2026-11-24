@@ -45,8 +45,14 @@ $ucd-gutter: 50px;
   }
 }
 
+.moj-interruption-card__actions {
+
+  gap: 15px;
+}
+
 .card-header {
-  display: flex !important;
+  display: flex;             
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1.6rem;
