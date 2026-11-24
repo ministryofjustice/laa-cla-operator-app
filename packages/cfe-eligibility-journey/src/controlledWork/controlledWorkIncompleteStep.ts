@@ -186,6 +186,12 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
         }),
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
+            Condition.Equals(CONTROLLED_WORK_STEP_CODES.mortgageOrLoanPayment),
+          ),
+          goto: CONTROLLED_WORK_STEP_CODES.mortgageOrLoanPayment,
+        }),
+        redirect({
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(
             Condition.Equals(CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails),
           ),
           goto: CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails,

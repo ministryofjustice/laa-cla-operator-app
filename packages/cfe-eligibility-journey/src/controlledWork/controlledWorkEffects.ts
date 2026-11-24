@@ -35,7 +35,6 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   additionalPropertyCollection: 'additional_properties',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
   childcareEligible: 'controlledWorkChildcareEligible',
-  propertyEntryBlocked: 'controlledWorkPropertyEntryBlocked',
 } as const
 
 export interface ControlledWorkEffectShape {
@@ -290,10 +289,6 @@ function setJourneyData(context: EffectFunctionContext, answers: ControlledWorkA
   context.setData(CONTROLLED_WORK_DATA_KEYS.applicableSteps, steps)
   context.setData(CONTROLLED_WORK_DATA_KEYS.firstMissingStep, getFirstMissingStep(answers, journeyContext) ?? NO_STEP)
   context.setData(CONTROLLED_WORK_DATA_KEYS.childcareEligible, journeyContext.eligibleForChildcareCosts === true)
-  context.setData(
-    CONTROLLED_WORK_DATA_KEYS.propertyEntryBlocked,
-    answers['property-owned'] === 'with_mortgage' && answers.passporting === 'no',
-  )
 }
 
 function getDependantIncomeMaximum(answers: ControlledWorkAnswers): number {

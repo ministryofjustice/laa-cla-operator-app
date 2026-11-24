@@ -47,8 +47,9 @@ describe('Controlled-work property-entry page', () => {
     expect(propertyEntryStep.view?.template).to.equal('case_details/forge_forms/eligibility-question-form')
     expect(propertyEntryIndex).to.be.greaterThan(propertyIndex)
     expect(JSON.stringify(propertyEntryStep.reachability)).to.include(CONTROLLED_WORK_DATA_KEYS.applicableSteps)
-    expect(JSON.stringify(propertyEntryStep.onAccess)).to.include(CONTROLLED_WORK_DATA_KEYS.propertyEntryBlocked)
     expect(JSON.stringify(propertyEntryStep.onAccess)).to.include(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)
+    expect(JSON.stringify(propertyEntryStep.onAccess)).to.include(STEPS.mortgageOrLoanPayment)
+    expect(JSON.stringify(propertyEntryStep.onAccess)).not.to.include('controlledWorkPropertyEntryBlocked')
     expect(submission).to.include('SaveControlledWorkAnswers')
     expect(submission).to.include('controlled-work-incomplete')
 
@@ -157,7 +158,7 @@ describe('Controlled-work property-entry page', () => {
     expect(mortgageMissing?.answerCodes).to.deep.equal(['house_value', 'mortgage', 'percentage_owned', 'house_in_dispute'])
   })
 
-  it('routes outright and passported ownership to this page, and preserves the explicit mortgage boundary', () => {
+  it('routes outright and passported ownership to this page, and non-passported mortgages through mortgage payments', () => {
     expect(getApplicableSteps(PASSPORTED_ANSWERS, ADULT)).to.include(STEPS.propertyEntry)
     expect(getNextStep(STEPS.property, PASSPORTED_ANSWERS, ADULT)).to.equal(STEPS.propertyEntry)
 
@@ -170,7 +171,9 @@ describe('Controlled-work property-entry page', () => {
       'property-owned': 'with_mortgage',
     }
     expect(getApplicableSteps(meansMortgage, ADULT)).to.include(STEPS.propertyEntry)
-    expect(getNextStep(STEPS.property, meansMortgage, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.property, meansMortgage, ADULT)).to.equal(STEPS.mortgageOrLoanPayment)
+    expect(getNextStep(STEPS.mortgageOrLoanPayment, meansMortgage, ADULT)).to.equal(STEPS.propertyEntry)
+    expect(findMissingSteps(meansMortgage, ADULT).map(({ stepCode }) => stepCode)).to.include(STEPS.mortgageOrLoanPayment)
   })
 
   it('routes shared ownership through landlord and housing-cost steps before this page', () => {

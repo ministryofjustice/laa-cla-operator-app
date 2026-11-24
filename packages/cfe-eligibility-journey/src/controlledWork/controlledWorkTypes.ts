@@ -100,6 +100,7 @@ export const SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES = [
   'every_four_weeks',
   'monthly',
 ] as const
+export const HOUSING_LOAN_PAYMENT_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
 export const PROPERTY_ENTRY_VALUE_CODES = ['house_value', 'mortgage', 'percentage_owned'] as const
 export const PROPERTY_ENTRY_ANSWER_CODES = [...PROPERTY_ENTRY_VALUE_CODES, 'house_in_dispute'] as const
 
@@ -120,6 +121,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   combined_frequency: SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES,
   housing_benefit_relevant: YES_NO_OPTIONS,
   housing_benefit_frequency: SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES,
+  housing_payments_loan_frequency: HOUSING_LOAN_PAYMENT_FREQUENCIES,
   partner: YES_NO_OPTIONS,
   'partner-over-60': YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
@@ -180,6 +182,7 @@ export type ControlledWorkAnswerCode =
   | OutgoingsFrequencyAnswerCode
   | (typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number]
   | (typeof PROPERTY_ENTRY_ANSWER_CODES)[number]
+  | 'housing_loan_payments'
 export type ControlledWorkCountAnswer = number | string
 
 export const CONTROLLED_WORK_ANSWER_CODES = [
@@ -222,6 +225,8 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'combined_frequency',
   'housing_benefit_relevant',
   'housing_benefit_frequency',
+  'housing_loan_payments',
+  'housing_payments_loan_frequency',
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
@@ -241,6 +246,7 @@ export type ControlledWorkAnswers = {
   & Partial<Record<OutgoingsFrequencyAnswerCode, (typeof OUTGOINGS_FREQUENCIES)[number]>>
   & Partial<Record<(typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number], string>>
   & Partial<Record<(typeof PROPERTY_ENTRY_VALUE_CODES)[number], string | number>>
+  & Partial<Record<'housing_loan_payments', string>>
 
 export const CONTROLLED_WORK_STEP_CODES = {
   immigrationOrAsylum: 'immigration-or-asylum',
@@ -271,6 +277,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   property: 'property',
   propertyLandlord: 'property-landlord',
   sharedOwnershipHousingCosts: 'shared-ownership-housing-costs',
+  mortgageOrLoanPayment: 'mortgage-or-loan-payment',
   propertyEntry: 'property-entry',
   additionalProperty: 'additional-property',
   additionalPropertyDetails: 'additional-property-details',

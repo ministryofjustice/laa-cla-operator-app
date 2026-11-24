@@ -213,11 +213,103 @@ describe('Controlled-work effects', () => {
     const meansMortgageSession = newSession()
     save(meansMortgageSession, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
     save(meansMortgageSession, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
-    const missingMortgagePage = save(meansMortgageSession, ADULT_DOB, STEPS.property, {
+    const meansMortgage = save(meansMortgageSession, ADULT_DOB, STEPS.property, {
       'property-owned': 'with_mortgage',
     })
-    expect(missingMortgagePage.data.get(CONTROLLED_WORK_DATA_KEYS.propertyEntryBlocked)).to.equal(true)
-    expect(missingMortgagePage.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+    expect(meansMortgage.data.has('controlledWorkPropertyEntryBlocked')).to.equal(false)
+    expect(meansMortgage.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.mortgageOrLoanPayment)
+    expect(meansMortgage.data.get(CONTROLLED_WORK_DATA_KEYS.applicableSteps)).to.include(STEPS.mortgageOrLoanPayment)
+  })
+
+  it('persists and prepopulates mortgage or loan payments, and prunes them when the home or passporting changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    for (const [stepCode, posted] of [
+      [STEPS.dependantDetails, { 'child-dependants': 'no', 'adult-dependants': 'no' }],
+      [STEPS.employmentStatus, { 'employment-status': 'unemployed' }],
+      [STEPS.benefits, { 'receives-benefits': 'no' }],
+      [
+        STEPS.otherIncome,
+        {
+          friends_or_family_relevant: 'no',
+          maintenance_relevant: 'no',
+          property_or_lodger_relevant: 'no',
+          pension_relevant: 'no',
+          student_finance_relevant: 'no',
+          other_relevant: 'no',
+        },
+      ],
+      [STEPS.outgoings, { maintenance_payments_relevant: 'no', legal_aid_payments_relevant: 'no' }],
+    ] as const) {
+      save(session, ADULT_DOB, stepCode, posted)
+    }
+
+    const property = save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'with_mortgage' })
+    expect(property.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.mortgageOrLoanPayment)
+    expect(property.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.mortgageOrLoanPayment)
+
+    const payment = save(session, ADULT_DOB, STEPS.mortgageOrLoanPayment, {
+      housing_loan_payments: '750',
+      housing_payments_loan_frequency: 'monthly',
+    })
+    expect(payment.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.propertyEntry)
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      housing_loan_payments: '750',
+      housing_payments_loan_frequency: 'monthly',
+    })
+    const restored = restore(JSON.parse(JSON.stringify(session)) as FinancialEligibilitySession, ADULT_DOB)
+    expect(restored.answers.get('housing_loan_payments')).to.equal('750')
+    expect(restored.answers.get('housing_payments_loan_frequency')).to.equal('monthly')
+    const otherCase = fakeContext({ session, dateOfBirth: ADULT_DOB, caseId: 'OTHER_CASE' })
+    registry.RestoreControlledWorkAnswers.evaluate(otherCase.context)
+    expect(otherCase.answers.has('housing_loan_payments')).to.equal(false)
+
+    save(session, ADULT_DOB, STEPS.mortgageOrLoanPayment, {
+      housing_loan_payments: '0',
+      housing_payments_loan_frequency: 'monthly',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      housing_loan_payments: '0',
+      'employment-status': 'unemployed',
+      'property-owned': 'with_mortgage',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('housing_payments_loan_frequency')
+
+    save(session, ADULT_DOB, STEPS.mortgageOrLoanPayment, {
+      housing_loan_payments: '200',
+      housing_payments_loan_frequency: 'every_week',
+    })
+    save(session, ADULT_DOB, STEPS.propertyEntry, {
+      house_value: '350000',
+      mortgage: '100000',
+      percentage_owned: '100',
+      house_in_dispute: [],
+    })
+    const passported = save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    const afterPassporting = readControlledWorkAnswers(session, CASE_ID)
+    expect(afterPassporting).not.to.have.property('housing_loan_payments')
+    expect(afterPassporting).not.to.have.property('housing_payments_loan_frequency')
+    expect(afterPassporting).not.to.have.property('employment-status')
+    expect(afterPassporting).to.include({
+      'property-owned': 'with_mortgage',
+      house_value: '350000',
+      mortgage: '100000',
+      percentage_owned: '100',
+    })
+    expect(passported.answers.has('housing_loan_payments')).to.equal(false)
+
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'no' })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('housing_loan_payments')
+    save(session, ADULT_DOB, STEPS.mortgageOrLoanPayment, {
+      housing_loan_payments: '200',
+      housing_payments_loan_frequency: 'every_week',
+    })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'outright' })
+    const afterOwnership = readControlledWorkAnswers(session, CASE_ID)
+    expect(afterOwnership).not.to.have.property('housing_loan_payments')
+    expect(afterOwnership).not.to.have.property('housing_payments_loan_frequency')
+    expect(afterOwnership).to.include({ 'immigration-or-asylum': 'no', partner: 'no', house_value: '350000' })
   })
 
   it('persists and prepopulates additional-property ownership, replaces changes, and prunes it off capital routes', () => {

@@ -55,6 +55,7 @@ import { propertyStep } from './propertyPage/propertyStep.js'
 import { propertyLandlordStep } from './propertyLandlordPage/propertyLandlordStep.js'
 import { cannotUseServiceStep } from './propertyLandlordPage/cannotUseServiceStep.js'
 import { sharedOwnershipHousingCostsStep } from './sharedOwnershipHousingCostsPage/sharedOwnershipHousingCostsStep.js'
+import { mortgageOrLoanPaymentStep } from './mortgageOrLoanPaymentPage/mortgageOrLoanPaymentStep.js'
 import { propertyEntryStep } from './propertyEntryPage/propertyEntryStep.js'
 import { additionalPropertyStep } from './additionalPropertyPage/additionalPropertyStep.js'
 import { additionalPropertyDetailsStep } from './additionalPropertyDetailsPage/additionalPropertyDetailsStep.js'
@@ -109,6 +110,7 @@ export const eligibilityJourney = journey({
     propertyLandlordStep,
     cannotUseServiceStep,
     sharedOwnershipHousingCostsStep,
+    mortgageOrLoanPaymentStep,
     propertyEntryStep,
     additionalPropertyStep,
     additionalPropertyDetailsStep,

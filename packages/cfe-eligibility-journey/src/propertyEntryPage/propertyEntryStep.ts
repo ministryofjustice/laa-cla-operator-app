@@ -12,6 +12,7 @@ const PREREQUISITE_STEP_CODES = [
   CONTROLLED_WORK_STEP_CODES.property,
   CONTROLLED_WORK_STEP_CODES.propertyLandlord,
   CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts,
+  CONTROLLED_WORK_STEP_CODES.mortgageOrLoanPayment,
 ]
 
 export const propertyEntryStep: StepDefinition = step({
@@ -25,18 +26,12 @@ export const propertyEntryStep: StepDefinition = step({
   blocks: [propertyEntryPageContent],
   onAccess: [
     access({
-      next: [
+      next: PREREQUISITE_STEP_CODES.map((stepCode) =>
         redirect({
-          when: Data(CONTROLLED_WORK_DATA_KEYS.propertyEntryBlocked).match(Condition.Equals(true)),
+          when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(Condition.Equals(stepCode)),
           goto: controlledWorkIncompleteStepCode,
         }),
-        ...PREREQUISITE_STEP_CODES.map((stepCode) =>
-          redirect({
-            when: Data(CONTROLLED_WORK_DATA_KEYS.firstMissingStep).match(Condition.Equals(stepCode)),
-            goto: controlledWorkIncompleteStepCode,
-          }),
-        ),
-      ],
+      ),
     }),
   ],
   onSubmission: [
