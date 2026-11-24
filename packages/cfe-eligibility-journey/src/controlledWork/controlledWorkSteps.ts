@@ -44,6 +44,12 @@ import {
   isValidMortgageOrLoanPayment,
 } from './mortgageOrLoanPaymentAnswers.js'
 import {
+  isHousingCostAnswerCode,
+  isHousingCostAnswerRelevant,
+  isRequiredHousingCostAnswer,
+  isValidHousingPayment,
+} from './housingCostsAnswers.js'
+import {
   isPropertyEntryAnswerRelevant,
   isRequiredPropertyEntryAnswer,
   isValidPropertyEntryAmount,
@@ -96,9 +102,9 @@ interface AdditionalPropertyState {
  */
 function isAdditionalPropertyApplicable(state: AdditionalPropertyState): boolean {
   const { answers } = state
-  const { 'property-owned': propertyOwned, passporting } = answers
+  const { 'property-owned': propertyOwned } = answers
   if (!isMeansTested(state) || propertyOwned === undefined) return false
-  if (propertyOwned === 'none') return passporting === YES
+  if (propertyOwned === 'none') return true
   return propertyOwned !== 'shared_ownership' || answers['property-landlord'] === YES
 }
 
@@ -124,6 +130,7 @@ const PAGE_ANSWER_REQUIREMENT_BY_STEP = new Map<
 >([
   [CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts, isRequiredSharedOwnershipHousingAnswer],
   [CONTROLLED_WORK_STEP_CODES.mortgageOrLoanPayment, isMortgageOrLoanPaymentAnswerRelevant],
+  [CONTROLLED_WORK_STEP_CODES.housingCosts, isRequiredHousingCostAnswer],
   [CONTROLLED_WORK_STEP_CODES.propertyEntry, isRequiredPropertyEntryAnswer],
 ])
 const OTHER_INCOME_AMOUNT_PATTERN = /^-?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/u
@@ -414,6 +421,7 @@ function dependantsGetIncomeSelected({ answers }: RoutingState): boolean {
 function isAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers, context: ControlledWorkContext): boolean {
   if (isSharedOwnershipHousingAnswerCode(code)) return isSharedOwnershipHousingAnswerRelevant(code, answers)
   if (isMortgageOrLoanPaymentAnswerCode(code)) return isMortgageOrLoanPaymentAnswerRelevant(code, answers)
+  if (isHousingCostAnswerCode(code)) return isHousingCostAnswerRelevant(code, answers)
   if (PROPERTY_ENTRY_ANSWER_CODE_SET.has(code)) return isPropertyEntryAnswerRelevant(code, answers)
   if (code === 'child-dependants-count') return answers['child-dependants'] === YES
   if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
@@ -662,6 +670,18 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
       isMeansTestedWithoutPassporting(state) && state.answers['property-owned'] === 'with_mortgage',
   },
   {
+    code: STEPS.housingCosts,
+    answerCodes: [
+      'housing_payments',
+      'housing_payments_frequency',
+      'housing_benefit_relevant',
+      'housing_benefit_value',
+      'housing_benefit_frequency',
+    ],
+    isApplicable: (state) =>
+      isMeansTestedWithoutPassporting(state) && state.answers['property-owned'] === 'none',
+  },
+  {
     code: STEPS.propertyEntry,
     answerCodes: [...PROPERTY_ENTRY_ANSWER_CODES],
     isApplicable: (state) => {
@@ -713,6 +733,7 @@ export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, valu
   if (isCountAnswerCode(code)) return isValidCountAnswer(value)
   if (isSharedOwnershipHousingAnswerCode(code)) return isValidSharedOwnershipHousingAnswer(code, value)
   if (code === 'housing_loan_payments') return isValidMortgageOrLoanPayment(value)
+  if (code === 'housing_payments') return isValidHousingPayment(value)
   if (PROPERTY_ENTRY_VALUE_CODE_SET.has(code)) {
     return code === 'percentage_owned' ? isValidPropertyEntryPercentage(value) : isValidPropertyEntryAmount(value)
   }
@@ -854,10 +875,6 @@ export function getNextStep(
   answers: ControlledWorkAnswers,
   context: ControlledWorkContext,
 ): ControlledWorkStepCode | undefined {
-  // The unimplemented housing-costs page must remain a boundary on means-tested routes.
-  if (currentStep === STEPS.property && answers.passporting === NO && answers['property-owned'] === 'none') {
-    return undefined
-  }
   const order = CONTROLLED_WORK_STEPS.map(({ code }) => code)
   const position = order.indexOf(currentStep)
   const applicable = new Set(getApplicableSteps(answers, context))

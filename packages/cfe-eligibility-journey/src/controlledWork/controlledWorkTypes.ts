@@ -87,6 +87,7 @@ export const SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES = [
   'shared_ownership_mortgage',
   'housing_benefit_value',
 ] as const
+export const HOUSING_COST_AMOUNT_CODES = ['housing_payments', 'housing_benefit_value'] as const
 export const SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES = [
   'every_week',
   'every_two_weeks',
@@ -101,6 +102,7 @@ export const SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES = [
   'monthly',
 ] as const
 export const HOUSING_LOAN_PAYMENT_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
+export const HOUSING_COST_PAYMENT_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
 export const PROPERTY_ENTRY_VALUE_CODES = ['house_value', 'mortgage', 'percentage_owned'] as const
 export const PROPERTY_ENTRY_ANSWER_CODES = [...PROPERTY_ENTRY_VALUE_CODES, 'house_in_dispute'] as const
 
@@ -122,6 +124,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   housing_benefit_relevant: YES_NO_OPTIONS,
   housing_benefit_frequency: SHARED_OWNERSHIP_HOUSING_BENEFIT_FREQUENCIES,
   housing_payments_loan_frequency: HOUSING_LOAN_PAYMENT_FREQUENCIES,
+  housing_payments_frequency: HOUSING_COST_PAYMENT_FREQUENCIES,
   partner: YES_NO_OPTIONS,
   'partner-over-60': YES_NO_OPTIONS,
   passporting: YES_NO_OPTIONS,
@@ -181,6 +184,7 @@ export type ControlledWorkAnswerCode =
   | OutgoingsValueAnswerCode
   | OutgoingsFrequencyAnswerCode
   | (typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number]
+  | (typeof HOUSING_COST_AMOUNT_CODES)[number]
   | (typeof PROPERTY_ENTRY_ANSWER_CODES)[number]
   | 'housing_loan_payments'
 export type ControlledWorkCountAnswer = number | string
@@ -222,11 +226,13 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   ...PARTNER_OUTGOINGS_VALUE_CODES,
   ...PARTNER_OUTGOINGS_FREQUENCY_CODES,
   ...SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES,
+  ...HOUSING_COST_AMOUNT_CODES,
   'combined_frequency',
   'housing_benefit_relevant',
   'housing_benefit_frequency',
   'housing_loan_payments',
   'housing_payments_loan_frequency',
+  'housing_payments_frequency',
   'other-income-completed',
   'partner-employment-status',
   'partner-income-completed',
@@ -245,6 +251,8 @@ export type ControlledWorkAnswers = {
   & Partial<Record<OutgoingsValueAnswerCode, string>>
   & Partial<Record<OutgoingsFrequencyAnswerCode, (typeof OUTGOINGS_FREQUENCIES)[number]>>
   & Partial<Record<(typeof SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)[number], string>>
+  & Partial<Record<'housing_payments', string>>
+  & Partial<Record<'housing_payments_frequency', (typeof HOUSING_COST_PAYMENT_FREQUENCIES)[number]>>
   & Partial<Record<(typeof PROPERTY_ENTRY_VALUE_CODES)[number], string | number>>
   & Partial<Record<'housing_loan_payments', string>>
 
@@ -278,6 +286,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   propertyLandlord: 'property-landlord',
   sharedOwnershipHousingCosts: 'shared-ownership-housing-costs',
   mortgageOrLoanPayment: 'mortgage-or-loan-payment',
+  housingCosts: 'housing-costs',
   propertyEntry: 'property-entry',
   additionalProperty: 'additional-property',
   additionalPropertyDetails: 'additional-property-details',

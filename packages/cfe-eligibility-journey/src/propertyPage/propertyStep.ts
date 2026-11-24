@@ -79,6 +79,12 @@ export const propertyStep: StepDefinition = step({
           }),
           redirect({
             when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
+              Condition.Equals(CONTROLLED_WORK_STEP_CODES.housingCosts),
+            ),
+            goto: CONTROLLED_WORK_STEP_CODES.housingCosts,
+          }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(
               Condition.Equals(CONTROLLED_WORK_STEP_CODES.additionalProperty),
             ),
             goto: CONTROLLED_WORK_STEP_CODES.additionalProperty,

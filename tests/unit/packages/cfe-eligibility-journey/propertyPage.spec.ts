@@ -168,7 +168,7 @@ describe('Controlled-work property page', () => {
       passporting: 'no',
       'property-owned': 'none',
     }
-    expect(getNextStep(STEPS.property, meansTestedNoHome, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.property, meansTestedNoHome, ADULT)).to.equal(STEPS.housingCosts)
     expect(isControlledWorkComplete(meansTestedNoHome, ADULT)).to.equal(false)
   })
 })

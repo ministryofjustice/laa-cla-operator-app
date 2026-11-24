@@ -134,8 +134,8 @@ describe('Controlled-work additional property page', () => {
       ...PASSPORTED_HOMELESS,
       passporting: 'no',
     } as const
-    expect(getApplicableSteps(nonPassportedNoHome, ADULT)).to.not.include(STEPS.additionalProperty)
-    expect(getNextStep(STEPS.property, nonPassportedNoHome, ADULT)).to.equal(undefined)
+    expect(getApplicableSteps(nonPassportedNoHome, ADULT)).to.include(STEPS.additionalProperty)
+    expect(getNextStep(STEPS.property, nonPassportedNoHome, ADULT)).to.equal(STEPS.housingCosts)
   })
 
   it('routes shared ownership to the existing cannot-use-service outcome and owned branches to details', () => {
