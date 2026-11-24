@@ -6,11 +6,10 @@ $moj-page-width: 1280px;
 @import "@ministryofjustice/hmpps-forge/dist/moj-components/all";
 
 // UCD desktop layout
-$ucd-content-width: 1280px;
 $ucd-gutter: 50px;
 
 .two-thirds-login {
-  width: 80%;
+  width: 90%;
 }
 
 .govuk-main-wrapper:has(.custom-page-layout) {
@@ -23,48 +22,63 @@ $ucd-gutter: 50px;
   }
 }
 
+// Interruption card: full-bleed background, content aligned with the container
 .moj-interruption-card {
+  // Full-bleed background
   margin-inline: calc(50% - 50vw);
-  padding-inline: govuk-spacing(6);
 
-  // Name on the far left, buttons on the far right, on the same line
+  // Name on the left, buttons on the right
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: govuk-spacing(4);
 
+  // Vertical padding only, horizontal is set below
+  padding-block: 12px !important;
+  padding-inline: govuk-spacing(3) !important; // mobile gutter (15px)
+
+  @include govuk-media-query($from: tablet) {
+    padding-inline: govuk-spacing(6) !important; // tablet gutter (30px)
+  }
+
+  // Desktop: content lines up with the 90% container (5% free each side)
+  @include govuk-media-query($from: desktop) {
+    padding-inline: 5vw !important;
+  }
+
   .moj-interruption-card__heading,
   .moj-interruption-card__actions,
   .moj-interruption-card__actions .govuk-button {
     margin-bottom: 0;
   }
-  padding: 12px !important;
-  .moj-interruption-card__actions .govuk-button--inverse {
-    color: #0b0c0c;
+
+  .moj-interruption-card__actions {
+    display: flex;
+    gap: 15px;
+    margin: 0;
+
+    .govuk-button {
+      margin-right: 0;
+    }
+
+    .govuk-button--inverse {
+      color: #0b0c0c;
+    }
   }
 }
 
-.moj-interruption-card__actions {
-
-  gap: 15px;
-}
-
 .card-header {
-  display: flex;             
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1.6rem;
-  margin-left: 40px;
 }
 
 .govuk-link--inverse {
   font-size: 19px;
   text-decoration: none;
-}
-.moj-interruption-card__actions {
-  margin-right: 40px;
 }
 
 // Stops the vertical scrollbar width from causing sideways scrolling
@@ -73,12 +87,16 @@ $ucd-gutter: 50px;
 }
 
 @include govuk-media-query($from: desktop) {
+  // Container takes up 90% of the screen, centred
   .govuk-width-container,
   .moj-header__container {
-    max-width: $ucd-content-width;
-    padding-inline: $ucd-gutter;
-    box-sizing: content-box;
+    max-width: none;
+    width: 90%;
+    margin-inline: auto;
+    padding-inline: 0;
+    box-sizing: border-box;
   }
+
   .two-thirds-login {
     width: 90%;
   }
