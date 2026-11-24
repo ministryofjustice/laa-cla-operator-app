@@ -44,6 +44,12 @@ export const partnerAdditionalPropertyStep: StepDefinition = step({
             when: Answer('partner-additional-property-owned').match(Condition.Equals('shared_ownership')),
             goto: cannotUseServiceStepCode,
           }),
+          redirect({
+            when: Answer('partner-additional-property-owned').match(
+              Condition.String.MatchesRegex('^(with_mortgage|outright)$'),
+            ),
+            goto: CONTROLLED_WORK_STEP_CODES.partnerAdditionalPropertyDetails,
+          }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],
       },

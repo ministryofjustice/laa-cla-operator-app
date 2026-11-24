@@ -134,6 +134,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'employment-status': EMPLOYMENT_STATUS_OPTIONS,
   'income-completed': ['yes'],
   'additional-property-details-completed': ['yes'],
+  'partner-additional-property-details-completed': ['yes'],
   'receives-benefits': YES_NO_OPTIONS,
   'benefit-details-completed': ['yes'],
   friends_or_family_relevant: YES_NO_OPTIONS,
@@ -200,6 +201,7 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'property-owned',
   'additional-property-owned',
   'partner-additional-property-owned',
+  'partner-additional-property-details-completed',
   'additional-property-details-completed',
   'property-landlord',
   ...PROPERTY_ENTRY_ANSWER_CODES,
@@ -291,6 +293,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   additionalProperty: 'additional-property',
   additionalPropertyDetails: 'additional-property-details',
   partnerAdditionalProperty: 'partner-additional-property',
+  partnerAdditionalPropertyDetails: 'partner-additional-property-details',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]

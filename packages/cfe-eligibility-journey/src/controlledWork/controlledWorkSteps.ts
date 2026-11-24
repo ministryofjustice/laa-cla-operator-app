@@ -709,6 +709,14 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     answerCodes: ['partner-additional-property-owned'],
     isApplicable: isPartnerAdditionalPropertyApplicable,
   },
+  {
+    code: STEPS.partnerAdditionalPropertyDetails,
+    answerCodes: ['partner-additional-property-details-completed'],
+    isApplicable: ({ answers }) =>
+      answers.partner === YES &&
+      (answers['partner-additional-property-owned'] === 'with_mortgage' ||
+        answers['partner-additional-property-owned'] === 'outright'),
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))

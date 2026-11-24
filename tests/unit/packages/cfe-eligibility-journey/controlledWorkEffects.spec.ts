@@ -404,7 +404,7 @@ describe('Controlled-work effects', () => {
       'partner-additional-property-owned': 'outright',
     })
     expect(readControlledWorkAnswers(session, CASE_ID)['partner-additional-property-owned']).to.equal('outright')
-    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+    expect(saved.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.partnerAdditionalPropertyDetails)
 
     const revisited = restore(session, ADULT_DOB)
     expect(revisited.answers.get('partner-additional-property-owned')).to.equal('outright')
@@ -483,6 +483,119 @@ describe('Controlled-work effects', () => {
     save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
     expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]).to.equal(undefined)
     expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('additional-property-details-completed')
+  })
+
+  it('persists partner additional-property rows and prunes only those rows when partner ownership changes', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'outright' })
+    save(session, ADULT_DOB, STEPS.additionalPropertyDetails, {})
+    session.casePatternDrafts = {
+      ...(session.casePatternDrafts ?? {}),
+      [CASE_ID]: {
+        ...(session.casePatternDrafts?.[CASE_ID] ?? {}),
+        [STEPS.additionalPropertyDetails]: {
+          [CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection]: [
+            { house_value: '70000', percentage_owned: '50' },
+          ],
+        },
+      },
+    }
+    save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, {
+      'partner-additional-property-owned': 'outright',
+    })
+
+    const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerAdditionalPropertyDetails.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection)).to.deep.equal([
+      { house_value: '', inline_owned_with_mortgage: '', mortgage: '', percentage_owned: '' },
+    ])
+
+    page.answers.set('house_value_0', '120000')
+    page.answers.set('percentage_owned_0', '60')
+    registry.AddRepeatingItem.evaluate(
+      page.context,
+      STEPS.partnerAdditionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned'],
+    )
+    page.answers.set('house_value_1', '80000')
+    page.answers.set('inline_owned_with_mortgage_1', 'yes')
+    page.answers.set('mortgage_1', '20000')
+    page.answers.set('percentage_owned_1', '40')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.partnerAdditionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned'],
+    )
+    registry.NormalizePartnerAdditionalPropertyDetails.evaluate(page.context)
+    save(session, ADULT_DOB, STEPS.partnerAdditionalPropertyDetails, {})
+
+    expect(readControlledWorkAnswers(session, CASE_ID)['partner-additional-property-details-completed']).to.equal('yes')
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerAdditionalPropertyDetails]?.[
+        CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection
+      ],
+    ).to.deep.equal([
+      { house_value: '120000', percentage_owned: '60' },
+      {
+        house_value: '80000',
+        inline_owned_with_mortgage: 'yes',
+        mortgage: '20000',
+        percentage_owned: '40',
+      },
+    ])
+
+    const otherCase = fakeContext({ session, dateOfBirth: ADULT_DOB, caseId: 'CASE2' })
+    registry.PreparePartnerAdditionalPropertyDetails.evaluate(otherCase.context)
+    expect(otherCase.answers.get('house_value_0')).to.equal('')
+
+    const revisited = fakeContext({ session: JSON.parse(JSON.stringify(session)), dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerAdditionalPropertyDetails.evaluate(revisited.context)
+    expect(revisited.answers.get('house_value_0')).to.equal('120000')
+    expect(revisited.answers.get('percentage_owned_0')).to.equal('60')
+    expect(revisited.answers.get('mortgage_1')).to.equal('20000')
+
+    const changedMortgage = fakeContext({
+      session,
+      dateOfBirth: ADULT_DOB,
+      posted: { inline_owned_with_mortgage_1: 'no' },
+    })
+    registry.PreparePartnerAdditionalPropertyDetails.evaluate(changedMortgage.context)
+    changedMortgage.answers.set('inline_owned_with_mortgage_1', 'no')
+    registry.SaveRepeatingItems.evaluate(
+      changedMortgage.context,
+      STEPS.partnerAdditionalPropertyDetails,
+      CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection,
+      ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned'],
+    )
+    registry.NormalizePartnerAdditionalPropertyDetails.evaluate(changedMortgage.context)
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerAdditionalPropertyDetails]?.[
+        CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection
+      ],
+    ).to.deep.equal([
+      { house_value: '120000', percentage_owned: '60' },
+      { house_value: '80000', inline_owned_with_mortgage: 'no', percentage_owned: '40' },
+    ])
+
+    save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, {
+      'partner-additional-property-owned': 'none',
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property(
+      'partner-additional-property-details-completed',
+    )
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerAdditionalPropertyDetails]).to.equal(undefined)
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]?.[
+        CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection
+      ],
+    ).to.deep.equal([{ house_value: '70000', percentage_owned: '50' }])
+    expect(readControlledWorkAnswers(session, CASE_ID)['additional-property-owned']).to.equal('outright')
   })
 
   it('removes a mortgage amount after a repeated row changes to no mortgage', () => {

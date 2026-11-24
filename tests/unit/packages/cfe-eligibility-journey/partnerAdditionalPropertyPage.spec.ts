@@ -25,6 +25,7 @@ import {
   partnerAdditionalPropertyPageContent,
 } from '#packages/cfe-eligibility-journey/src/partnerAdditionalPropertyPage/partnerAdditionalPropertyBlock.js'
 import { partnerAdditionalPropertyStep } from '#packages/cfe-eligibility-journey/src/partnerAdditionalPropertyPage/partnerAdditionalPropertyStep.js'
+import { partnerAdditionalPropertyDetailsStep } from '#packages/cfe-eligibility-journey/src/partnerAdditionalPropertyDetailsPage/partnerAdditionalPropertyDetailsStep.js'
 
 const QUESTION = 'Does the partner own any other property, a holiday home or land?'
 const ADULT = { isUnder18: false }
@@ -43,6 +44,9 @@ describe('Controlled-work partner additional property page', () => {
     const additionalPropertyIndex = steps.findIndex(({ code }) => code === STEPS.additionalProperty)
     const additionalPropertyDetailsIndex = steps.findIndex(({ code }) => code === STEPS.additionalPropertyDetails)
     const partnerAdditionalPropertyIndex = steps.findIndex(({ code }) => code === STEPS.partnerAdditionalProperty)
+    const partnerAdditionalPropertyDetailsIndex = steps.findIndex(
+      ({ code }) => code === STEPS.partnerAdditionalPropertyDetails,
+    )
     const content = JSON.stringify(partnerAdditionalPropertyPageContent)
     const field = JSON.stringify(partnerAdditionalPropertyField)
     const sharedLayout = JSON.stringify(eligibilityQuestionPageLayout({ questionBlocks: [], guidanceBlocks: [] }))
@@ -52,6 +56,7 @@ describe('Controlled-work partner additional property page', () => {
 
     expect(partnerAdditionalPropertyIndex).to.be.greaterThan(additionalPropertyIndex)
     expect(partnerAdditionalPropertyIndex).to.be.greaterThan(additionalPropertyDetailsIndex)
+    expect(partnerAdditionalPropertyDetailsIndex).to.be.greaterThan(partnerAdditionalPropertyIndex)
     expect(partnerAdditionalPropertyStep.path).to.equal('/partner-additional-property')
     expect(partnerAdditionalPropertyStep.title).to.equal(QUESTION)
     expect(partnerAdditionalPropertyStep.view?.template).to.equal(
@@ -81,6 +86,7 @@ describe('Controlled-work partner additional property page', () => {
     expect(submission).to.include('"validate":true')
     expect(submission).to.include(cannotUseServiceStepCode)
     expect(submission).to.include('controlled-work-incomplete')
+    expect(submission).to.include(STEPS.partnerAdditionalPropertyDetails)
     expect(additionalPropertySubmission).to.include(STEPS.partnerAdditionalProperty)
     expect(additionalPropertyDetailsSubmission).to.include(STEPS.partnerAdditionalProperty)
     expect(JSON.stringify(partnerAdditionalPropertyStep.reachability)).to.include(
@@ -161,7 +167,12 @@ describe('Controlled-work partner additional property page', () => {
       ...PASSPORTED_PARTNER_BASE,
       'partner-additional-property-owned': 'outright',
     } as const
-    expect(getNextStep(STEPS.partnerAdditionalProperty, ownedPropertyAnswers, ADULT)).to.equal(undefined)
-    expect(getApplicableSteps(ownedPropertyAnswers, ADULT)).not.to.include('partner-additional-property-details')
+    expect(getNextStep(STEPS.partnerAdditionalProperty, ownedPropertyAnswers, ADULT)).to.equal(
+      STEPS.partnerAdditionalPropertyDetails,
+    )
+    expect(getApplicableSteps(ownedPropertyAnswers, ADULT)).to.include(STEPS.partnerAdditionalPropertyDetails)
+    expect(JSON.stringify(partnerAdditionalPropertyDetailsStep.onAccess)).to.include(
+      CONTROLLED_WORK_DATA_KEYS.firstMissingStep,
+    )
   })
 })

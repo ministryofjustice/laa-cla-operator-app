@@ -33,6 +33,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   benefitCollection: 'benefits',
   partnerBenefitCollection: 'partner_benefits',
   additionalPropertyCollection: 'additional_properties',
+  partnerAdditionalPropertyCollection: 'partner_additional_properties',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
   childcareEligible: 'controlledWorkChildcareEligible',
 } as const
@@ -56,6 +57,10 @@ export interface ControlledWorkEffectShape {
   PrepareAdditionalPropertyDetails: () => EffectFunctionExpr
   /** Removes conditional additional-property values that were hidden when a row was submitted */
   NormalizeAdditionalPropertyDetails: () => EffectFunctionExpr
+  /** Loads repeating partner additional-property rows, case-scoped and prepopulated */
+  PreparePartnerAdditionalPropertyDetails: () => EffectFunctionExpr
+  /** Removes conditional partner mortgage values hidden when a row was submitted */
+  NormalizePartnerAdditionalPropertyDetails: () => EffectFunctionExpr
 }
 
 const ALL_ANSWER_CODES = [...CONTROLLED_WORK_ANSWER_CODES]
@@ -67,12 +72,19 @@ const INCOME_FIELD_CODES = ['income_type', 'income_frequency', 'gross_income', '
 const PARTNER_INCOME_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerIncome
 const PARTNER_BENEFIT_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerBenefitDetails
 const ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails
+const PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerAdditionalPropertyDetails
 const ADDITIONAL_PROPERTY_FIELD_CODES = [
   'house_value',
   'inline_owned_with_mortgage',
   'mortgage',
   'percentage_owned',
   'house_in_dispute',
+]
+const PARTNER_ADDITIONAL_PROPERTY_FIELD_CODES = [
+  'house_value',
+  'inline_owned_with_mortgage',
+  'mortgage',
+  'percentage_owned',
 ]
 const PARTNER_INCOME_FIELD_CODES = [
   'partner_income_type',
@@ -163,6 +175,68 @@ function reconcileAdditionalPropertyDetailsDrafts(
   return true
 }
 
+function reconcilePartnerAdditionalPropertyDetailsDrafts(
+  session: FinancialEligibilitySession,
+  caseId: string,
+  answers: ControlledWorkAnswers,
+): boolean {
+  const casePatterns = session.casePatternDrafts?.[caseId]
+  const pattern = casePatterns?.[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE]
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection
+  const savedRows = pattern?.[collectionCode]
+  const ownership = answers['partner-additional-property-owned']
+
+  if (
+    answers.partner !== 'yes' ||
+    (ownership !== 'with_mortgage' && ownership !== 'outright')
+  ) {
+    if (!savedRows && !pattern) return false
+
+    const updatedCasePatterns = { ...(casePatterns ?? {}) }
+    const updatedPattern = { ...(pattern ?? {}) }
+    delete updatedPattern[collectionCode]
+    if (Object.keys(updatedPattern).length === 0) {
+      delete updatedCasePatterns[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE]
+    } else {
+      updatedCasePatterns[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE] = updatedPattern
+    }
+    session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: updatedCasePatterns }
+    return true
+  }
+
+  if (!Array.isArray(savedRows)) return false
+
+  let changed = false
+  const rows = savedRows.map((row, index) => {
+    if (!isRecord(row)) return row
+    const updated = { ...row }
+
+    if (index === 0) {
+      if (updated.inline_owned_with_mortgage !== undefined) {
+        delete updated.inline_owned_with_mortgage
+        changed = true
+      }
+      if (ownership !== 'with_mortgage' && updated.mortgage !== undefined) {
+        delete updated.mortgage
+        changed = true
+      }
+    } else if (updated.inline_owned_with_mortgage !== 'yes' && updated.mortgage !== undefined) {
+      delete updated.mortgage
+      changed = true
+    }
+    return updated
+  })
+
+  if (!changed) return false
+  const updatedCasePatterns = { ...(casePatterns ?? {}) }
+  updatedCasePatterns[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE] = {
+    ...pattern,
+    [collectionCode]: rows,
+  }
+  session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: updatedCasePatterns }
+  return true
+}
+
 function prepareAdditionalPropertyDetails(context: EffectFunctionContext): void {
   const caseId = getCaseId(context)
   const session = context.getSession() as FinancialEligibilitySession | undefined
@@ -185,6 +259,33 @@ function prepareAdditionalPropertyDetails(context: EffectFunctionContext): void 
   context.setData(collectionCode, rows)
   rows.forEach((row, index) => {
     for (const code of ADDITIONAL_PROPERTY_FIELD_CODES) {
+      context.setAnswer(`${code}_${index}`, row[code] ?? '')
+    }
+  })
+}
+
+function preparePartnerAdditionalPropertyDetails(context: EffectFunctionContext): void {
+  const caseId = getCaseId(context)
+  const session = context.getSession() as FinancialEligibilitySession | undefined
+  if (!caseId || !session) return
+
+  const casePatterns = getOrMigrateCasePatternDrafts(session, caseId)
+  const pattern = casePatterns[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE] ?? {}
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection
+  const savedRows = pattern[collectionCode] as Array<Record<string, unknown>> | undefined
+  const rows = savedRows?.length
+    ? savedRows
+    : [Object.fromEntries(PARTNER_ADDITIONAL_PROPERTY_FIELD_CODES.map((code) => [code, '']))]
+
+  if (!savedRows?.length) {
+    pattern[collectionCode] = rows
+    casePatterns[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE] = pattern
+    session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: casePatterns }
+  }
+
+  context.setData(collectionCode, rows)
+  rows.forEach((row, index) => {
+    for (const code of PARTNER_ADDITIONAL_PROPERTY_FIELD_CODES) {
       context.setAnswer(`${code}_${index}`, row[code] ?? '')
     }
   })
@@ -238,6 +339,59 @@ function normalizeAdditionalPropertyDetails(context: EffectFunctionContext): voi
   const updatedCasePatterns = {
     ...(casePatterns ?? {}),
     [ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE]: {
+      ...pattern,
+      [collectionCode]: updatedRows,
+    },
+  }
+  session.casePatternDrafts = { ...(patternsByCase ?? {}), [caseId]: updatedCasePatterns }
+  invalidatePreparedEligibilitySnapshot(session, caseId)
+  clearEligibilitySubmissionError(session, caseId)
+}
+
+function normalizePartnerAdditionalPropertyDetails(context: EffectFunctionContext): void {
+  const caseId = getCaseId(context)
+  const session = context.getSession() as FinancialEligibilitySession | undefined
+  if (!caseId || !session) return
+
+  const patternsByCase = session.casePatternDrafts
+  const casePatterns = patternsByCase?.[caseId]
+  const pattern = casePatterns?.[PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE]
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection
+  const rows = pattern?.[collectionCode]
+  if (!Array.isArray(rows)) return
+
+  const ownership = readControlledWorkAnswers(session, caseId)['partner-additional-property-owned']
+  const posted = context.getAllPostData()
+  const removeAction = typeof posted.action === 'string' ? /^remove_(\d+)$/u.exec(posted.action) : null
+  const removedRowIndex = removeAction?.[1] === undefined ? undefined : Number(removeAction[1])
+  const updatedRows = rows.map((row, index) => {
+    if (!isRecord(row)) return row
+    const updated = { ...row }
+
+    for (const code of PARTNER_ADDITIONAL_PROPERTY_FIELD_CODES) {
+      const currentAnswer = context.getAnswer(`${code}_${index}`)
+      if (currentAnswer !== undefined) updated[code] = currentAnswer
+    }
+
+    if (index === 0) {
+      delete updated.inline_owned_with_mortgage
+      if (ownership !== 'with_mortgage') delete updated.mortgage
+    } else {
+      const postedIndex = removedRowIndex !== undefined && index >= removedRowIndex ? index + 1 : index
+      const mortgageAnswer = posted[`inline_owned_with_mortgage_${postedIndex}`]
+      if (mortgageAnswer === 'yes' || (Array.isArray(mortgageAnswer) && mortgageAnswer.includes('yes'))) {
+        updated.inline_owned_with_mortgage = 'yes'
+      } else if (mortgageAnswer === 'no') {
+        updated.inline_owned_with_mortgage = 'no'
+      }
+      if (updated.inline_owned_with_mortgage !== 'yes') delete updated.mortgage
+    }
+    return updated
+  })
+
+  const updatedCasePatterns = {
+    ...(casePatterns ?? {}),
+    [PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE]: {
       ...pattern,
       [collectionCode]: updatedRows,
     },
@@ -425,6 +579,9 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
   if (stepCode === ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE) {
     return { ...submitted, 'additional-property-details-completed': 'yes' }
   }
+  if (stepCode === PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE) {
+    return { ...submitted, 'partner-additional-property-details-completed': 'yes' }
+  }
   if (stepCode === INCOME_PATTERN_CODE) {
     return { ...submitted, 'income-completed': 'yes' }
   }
@@ -599,6 +756,11 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         },
       )
       const additionalPropertyRowsChanged = reconcileAdditionalPropertyDetailsDrafts(session, caseId, answers)
+      const partnerAdditionalPropertyRowsChanged = reconcilePartnerAdditionalPropertyDetailsDrafts(
+        session,
+        caseId,
+        answers,
+      )
 
       if (
         removedCodes.length > 0 ||
@@ -607,7 +769,8 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         partnerIncomeRowsChanged ||
         benefitRowsChanged ||
         partnerBenefitRowsChanged ||
-        additionalPropertyRowsChanged
+        additionalPropertyRowsChanged ||
+        partnerAdditionalPropertyRowsChanged
       ) {
         writeControlledWorkAnswers(session, caseId, answers)
         invalidatePreparedEligibilitySnapshot(session, caseId)
@@ -636,6 +799,12 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       ) {
         delete merged['additional-property-details-completed']
       }
+      if (
+        stepCode === CONTROLLED_WORK_STEP_CODES.partnerAdditionalProperty &&
+        saved['partner-additional-property-owned'] !== merged['partner-additional-property-owned']
+      ) {
+        delete merged['partner-additional-property-details-completed']
+      }
       if (stepCode === CONTROLLED_WORK_STEP_CODES.applicant && saved.partner !== merged.partner) {
         delete merged['property-owned']
       }
@@ -655,6 +824,7 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         },
       )
       reconcileAdditionalPropertyDetailsDrafts(session, caseId, answers)
+      reconcilePartnerAdditionalPropertyDetailsDrafts(session, caseId, answers)
       reconcileBenefitDetailsDrafts(
         session,
         caseId,
@@ -741,5 +911,15 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
   NormalizeAdditionalPropertyDetails: FinancialEligibilityEffectsRegistry.register(
     'NormalizeAdditionalPropertyDetails',
     () => normalizeAdditionalPropertyDetails,
+  ),
+
+  PreparePartnerAdditionalPropertyDetails: FinancialEligibilityEffectsRegistry.register(
+    'PreparePartnerAdditionalPropertyDetails',
+    () => preparePartnerAdditionalPropertyDetails,
+  ),
+
+  NormalizePartnerAdditionalPropertyDetails: FinancialEligibilityEffectsRegistry.register(
+    'NormalizePartnerAdditionalPropertyDetails',
+    () => normalizePartnerAdditionalPropertyDetails,
   ),
 }

@@ -61,6 +61,7 @@ import { propertyEntryStep } from './propertyEntryPage/propertyEntryStep.js'
 import { additionalPropertyStep } from './additionalPropertyPage/additionalPropertyStep.js'
 import { additionalPropertyDetailsStep } from './additionalPropertyDetailsPage/additionalPropertyDetailsStep.js'
 import { partnerAdditionalPropertyStep } from './partnerAdditionalPropertyPage/partnerAdditionalPropertyStep.js'
+import { partnerAdditionalPropertyDetailsStep } from './partnerAdditionalPropertyDetailsPage/partnerAdditionalPropertyDetailsStep.js'
 
 // Drafts are case-scoped in the session. Review and preparation only expose active-branch answers.
 export const eligibilityJourney = journey({
@@ -117,6 +118,7 @@ export const eligibilityJourney = journey({
     additionalPropertyStep,
     additionalPropertyDetailsStep,
     partnerAdditionalPropertyStep,
+    partnerAdditionalPropertyDetailsStep,
     under18Step,
     under18RegularPaymentStep,
     under18HasValuablesStep,
