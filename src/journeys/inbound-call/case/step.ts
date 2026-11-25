@@ -5,9 +5,11 @@ import {
 } from "../case/block.js";
 import {clientHomePersonalDetailsBlock} from "../case/client-details-block.js";
 
+export const CASE_HOMEPAGE_STEP_PATH = "case-homepage";
+
 export const clientCaseStep = step({
   code: "client-case-details",
-  path: "/case-homepage",
+  path: CASE_HOMEPAGE_STEP_PATH,
   title: "Client Homepage",
 
   reachability: { entryWhen: true },

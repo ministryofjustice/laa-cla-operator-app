@@ -6,7 +6,7 @@ import {
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 import { clientDetailsBlock } from "./block.js";
-import { ADDRESS_LOOKUP_STEP_CODE } from "../address-lookup/step.js";
+import { CASE_HOMEPAGE_STEP_PATH } from "../case/step.js";
 
 // Step 3: Add new client if clicked on "Start a new case"
 export const addClientDetailsStep = step({
@@ -26,7 +26,7 @@ export const addClientDetailsStep = step({
       validate: true,
       onValid: {
         effects: [InboundCallEffects.saveClientDetails()],
-        next: [redirect({ goto: ADDRESS_LOOKUP_STEP_CODE })],
+        next: [redirect({ goto: CASE_HOMEPAGE_STEP_PATH })],
       },
     }),
   ],
