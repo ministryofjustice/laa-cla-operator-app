@@ -1,4 +1,4 @@
-import type {SummaryListRow} from "@ministryofjustice/hmpps-forge/govuk-components";
+import type { SummaryListRow } from "@ministryofjustice/hmpps-forge/govuk-components";
 import {
   type ChainableRef,
   Condition,

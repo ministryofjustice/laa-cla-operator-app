@@ -28,7 +28,7 @@ test("shows client personal details section", async ({ pages }) => {
   const summaryList = await page.getSummaryListTable("Client details");
   expect(summaryList).toEqual({
     title: "Client details",
-    "Name": "Jane Doe",
+    Name: "Jane Doe",
     "Date of birth": "10 October 1988",
     "Email address": "jane.doe@example.com",
     "Phone number": "1234567890",

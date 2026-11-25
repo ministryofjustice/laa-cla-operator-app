@@ -1,5 +1,5 @@
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import {GovUKSummaryList} from "@ministryofjustice/hmpps-forge/govuk-components";
+import { GovUKSummaryList } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { toRows } from "#src/journeys/inbound-call/case/helpers.js";
 import {
   Data,
@@ -9,8 +9,6 @@ import {
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import { Transformers } from "#src/journeys/transformers.js";
-
-
 
 /**
  * Get Client Details URL for a specific section

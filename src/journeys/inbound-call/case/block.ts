@@ -1,7 +1,6 @@
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import {GovUKButton} from "@ministryofjustice/hmpps-forge/govuk-components";
+import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { MOJSubNavigation } from "@ministryofjustice/hmpps-forge/moj-components";
-
 
 export const clientHomeBlock = CollectionBlock({
   collection: [
@@ -20,5 +19,3 @@ export const clientHomeBlock = CollectionBlock({
     GovUKButton({ text: "Continue to Scope" }),
   ],
 });
-
-

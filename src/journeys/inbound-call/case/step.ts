@@ -1,9 +1,7 @@
 import { step, access } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { InboundCallEffects } from "#src/journeys/effects.js";
-import {
-  clientHomeBlock,
-} from "../case/block.js";
-import {clientHomePersonalDetailsBlock} from "../case/client-details-block.js";
+import { clientHomeBlock } from "../case/block.js";
+import { clientHomePersonalDetailsBlock } from "../case/client-details-block.js";
 
 export const CASE_HOMEPAGE_STEP_PATH = "case-homepage";
 

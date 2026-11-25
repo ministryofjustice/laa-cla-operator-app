@@ -31,9 +31,11 @@ export class ClientHomePage {
   }
   async getSummaryListTable(title: string): Promise<Record<string, string>> {
     const summary: Record<string, string> = {
-      title: title
+      title: title,
     };
-    const table = this.page.locator(`.govuk-summary-card__title:has-text("${title}")`).locator("../..");
+    const table = this.page
+      .locator(`.govuk-summary-card__title:has-text("${title}")`)
+      .locator("../..");
     for (const row of await table.locator(".govuk-summary-list__row").all()) {
       const key = await row.locator(".govuk-summary-list__key").innerText();
       const value = await row.locator(".govuk-summary-list__value").innerText();
