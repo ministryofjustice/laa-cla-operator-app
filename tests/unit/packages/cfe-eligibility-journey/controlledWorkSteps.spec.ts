@@ -584,6 +584,82 @@ describe('Controlled-work journey rules', () => {
       )
     })
 
+    it('routes all means-tested property branches to client assets and prunes conditional asset answers', () => {
+      const base: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'yes',
+        'property-owned': 'none',
+        'additional-property-owned': 'none',
+      }
+      expect(getApplicableSteps(base, ADULT)).to.include(STEPS.assets)
+      expect(getNextStep(STEPS.additionalProperty, base, ADULT)).to.equal(STEPS.assets)
+
+      const mortgageRoute: ControlledWorkAnswers = {
+        ...base,
+        passporting: 'no',
+        'child-dependants': 'no',
+        'adult-dependants': 'no',
+        'employment-status': 'unemployed',
+        'receives-benefits': 'no',
+        friends_or_family_relevant: 'no',
+        maintenance_relevant: 'no',
+        property_or_lodger_relevant: 'no',
+        pension_relevant: 'no',
+        student_finance_relevant: 'no',
+        other_relevant: 'no',
+        'other-income-completed': 'yes',
+        maintenance_payments_relevant: 'no',
+        legal_aid_payments_relevant: 'no',
+        'property-owned': 'with_mortgage',
+        housing_loan_payments: '0',
+        house_value: '250000',
+        mortgage: '100000',
+        percentage_owned: '100',
+        house_in_dispute: 'no',
+        'additional-property-owned': 'none',
+      }
+      expect(getApplicableSteps(mortgageRoute, ADULT)).to.include(STEPS.assets)
+
+      const activeAssets: ControlledWorkAnswers = {
+        ...base,
+        investments_relevant: 'yes',
+        investments: '250',
+        investments_in_dispute: 'yes',
+        valuables_relevant: 'no',
+        valuables_in_dispute: 'no',
+        'assets-completed': 'yes',
+      }
+      expect(resolveControlledWorkJourney(activeAssets, ADULT).answers).to.include({
+        investments_relevant: 'yes',
+        investments: '250',
+        investments_in_dispute: 'yes',
+        valuables_relevant: 'no',
+        'assets-completed': 'yes',
+      })
+
+      const immigrationMatter: ControlledWorkAnswers = {
+        ...activeAssets,
+        'immigration-or-asylum': 'yes',
+        'immigration-or-asylum-type': 'asylum',
+        'asylum-support': 'no',
+      }
+      const resolved = resolveControlledWorkJourney(immigrationMatter, ADULT)
+      expect(resolved.answers).not.to.have.property('investments_in_dispute')
+      expect(resolved.answers).not.to.have.property('valuables_in_dispute')
+
+      const noLongerMeansTested = resolveControlledWorkJourney(
+        {
+          ...activeAssets,
+          'controlled-legal-representation': 'yes',
+        },
+        MINOR,
+      )
+      expect(noLongerMeansTested.answers).not.to.have.property('investments_relevant')
+      expect(noLongerMeansTested.answers).not.to.have.property('investments')
+      expect(noLongerMeansTested.answers).not.to.have.property('assets-completed')
+    })
+
     it('keeps passported routes incomplete until remaining property pages are implemented', () => {
       const complete: ControlledWorkAnswers = { 'immigration-or-asylum': 'no', partner: 'no', passporting: 'yes' }
       expect(isControlledWorkComplete(complete, ADULT)).to.equal(false)

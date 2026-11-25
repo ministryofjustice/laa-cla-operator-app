@@ -17,6 +17,7 @@ import {
   OUTGOINGS_FREQUENCY_CODES,
   OUTGOINGS_RELEVANT_CODES,
   OUTGOINGS_VALUE_CODES,
+  ASSET_AMOUNT_ANSWER_CODES,
   PARTNER_OUTGOINGS_FREQUENCY_CODES,
   PARTNER_OUTGOINGS_RELEVANT_CODES,
   PARTNER_OUTGOINGS_VALUE_CODES,
@@ -55,6 +56,14 @@ import {
   isValidPropertyEntryAmount,
   isValidPropertyEntryPercentage,
 } from './propertyEntryAnswers.js'
+import {
+  isAssetAnswerRelevant,
+  isAtLeastValuablesThreshold,
+  isNonNegativeAssetAmount,
+  isPositiveInvestmentAmount,
+  isRequiredAssetAnswer,
+  isValidAssetAmount,
+} from './assetsAnswers.js'
 
 const STEPS = CONTROLLED_WORK_STEP_CODES
 const NO_DEPENDANTS = 0
@@ -89,6 +98,8 @@ const OTHER_INCOME_CONDITIONAL_CODE_SET = new Set<string>([
 const CONTROLLED_WORK_FREQUENCY_SET = new Set<string>([...OTHER_INCOME_FREQUENCIES, ...OUTGOINGS_FREQUENCIES])
 const PROPERTY_ENTRY_VALUE_CODE_SET = new Set<string>(PROPERTY_ENTRY_VALUE_CODES)
 const PROPERTY_ENTRY_ANSWER_CODE_SET = new Set<string>(PROPERTY_ENTRY_ANSWER_CODES)
+const ASSET_AMOUNT_ANSWER_CODE_SET = new Set<string>(ASSET_AMOUNT_ANSWER_CODES)
+const ASSET_DISPUTE_ANSWER_CODE_SET = new Set<string>(['investments_in_dispute', 'valuables_in_dispute'])
 
 interface AdditionalPropertyState {
   answers: ControlledWorkAnswers
@@ -132,6 +143,7 @@ const PAGE_ANSWER_REQUIREMENT_BY_STEP = new Map<
   [CONTROLLED_WORK_STEP_CODES.mortgageOrLoanPayment, isMortgageOrLoanPaymentAnswerRelevant],
   [CONTROLLED_WORK_STEP_CODES.housingCosts, isRequiredHousingCostAnswer],
   [CONTROLLED_WORK_STEP_CODES.propertyEntry, isRequiredPropertyEntryAnswer],
+  [CONTROLLED_WORK_STEP_CODES.assets, isRequiredAssetAnswer],
 ])
 const OTHER_INCOME_AMOUNT_PATTERN = /^-?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/u
 const OUTGOINGS_AMOUNT_PATTERN = /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/u
@@ -393,6 +405,42 @@ function isMeansTested(state: RoutingState): boolean {
   return resolveRoute(state) === ASSESSMENT_ROUTES.means
 }
 
+function hasMissingStepBefore(stepCode: ControlledWorkStepCode, state: RoutingState): boolean {
+  const resolvedAnswers: ControlledWorkAnswers = {}
+
+  for (const definition of CONTROLLED_WORK_STEPS) {
+    if (definition.code === stepCode) return false
+    if (!definition.isApplicable({ answers: resolvedAnswers, context: state.context })) continue
+
+    for (const code of definition.answerCodes) {
+      if (!isAnswerRelevant(code, resolvedAnswers, state.context)) continue
+      const value = state.answers[code]
+      if (
+        isRequiredAnswer(definition.code, code, resolvedAnswers, state.context) &&
+        (value === undefined || !isValidControlledWorkAnswer(code, value))
+      ) {
+        return true
+      }
+      if (value !== undefined && isValidControlledWorkAnswer(code, value)) {
+        Object.assign(resolvedAnswers, { [code]: value })
+      }
+    }
+  }
+  return true
+}
+
+function isAssetsApplicable(state: RoutingState): boolean {
+  const { answers } = state
+  if (
+    answers['additional-property-owned'] === 'shared_ownership' ||
+    answers['partner-additional-property-owned'] === 'shared_ownership' ||
+    (answers['property-owned'] === 'shared_ownership' && answers['property-landlord'] !== YES)
+  ) {
+    return false
+  }
+  return isMeansTested(state) && !hasMissingStepBefore(STEPS.assets, state)
+}
+
 /**
  * Checks whether either dependant category has been selected.
  * @param {RoutingState} state The current controlled-work state
@@ -423,6 +471,9 @@ function isAnswerRelevant(code: ControlledWorkAnswerCode, answers: ControlledWor
   if (isMortgageOrLoanPaymentAnswerCode(code)) return isMortgageOrLoanPaymentAnswerRelevant(code, answers)
   if (isHousingCostAnswerCode(code)) return isHousingCostAnswerRelevant(code, answers)
   if (PROPERTY_ENTRY_ANSWER_CODE_SET.has(code)) return isPropertyEntryAnswerRelevant(code, answers)
+  if (ASSET_AMOUNT_ANSWER_CODE_SET.has(code) || ASSET_DISPUTE_ANSWER_CODE_SET.has(code)) {
+    return isAssetAnswerRelevant(code, answers)
+  }
   if (code === 'child-dependants-count') return answers['child-dependants'] === YES
   if (code === 'adult-dependants-count') return answers['adult-dependants'] === YES
   if (code === 'childcare_payments_relevant' || code === 'partner_childcare_payments_relevant') {
@@ -717,6 +768,19 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
       (answers['partner-additional-property-owned'] === 'with_mortgage' ||
         answers['partner-additional-property-owned'] === 'outright'),
   },
+  {
+    code: STEPS.assets,
+    answerCodes: [
+      'investments_relevant',
+      'investments',
+      'investments_in_dispute',
+      'valuables_relevant',
+      'valuables',
+      'valuables_in_dispute',
+      'assets-completed',
+    ],
+    isApplicable: isAssetsApplicable,
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))
@@ -742,6 +806,12 @@ export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, valu
   if (isSharedOwnershipHousingAnswerCode(code)) return isValidSharedOwnershipHousingAnswer(code, value)
   if (code === 'housing_loan_payments') return isValidMortgageOrLoanPayment(value)
   if (code === 'housing_payments') return isValidHousingPayment(value)
+  if (ASSET_AMOUNT_ANSWER_CODE_SET.has(code)) {
+    if (!isValidAssetAmount(value)) return false
+    if (code === 'investments') return isPositiveInvestmentAmount(value)
+    if (code === 'valuables') return isAtLeastValuablesThreshold(value)
+    return isNonNegativeAssetAmount(value)
+  }
   if (PROPERTY_ENTRY_VALUE_CODE_SET.has(code)) {
     return code === 'percentage_owned' ? isValidPropertyEntryPercentage(value) : isValidPropertyEntryAmount(value)
   }

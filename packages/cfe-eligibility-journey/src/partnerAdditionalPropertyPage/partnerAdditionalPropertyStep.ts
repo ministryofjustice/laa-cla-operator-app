@@ -50,6 +50,10 @@ export const partnerAdditionalPropertyStep: StepDefinition = step({
             ),
             goto: CONTROLLED_WORK_STEP_CODES.partnerAdditionalPropertyDetails,
           }),
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(CONTROLLED_WORK_STEP_CODES.assets)),
+            goto: CONTROLLED_WORK_STEP_CODES.assets,
+          }),
           redirect({ goto: controlledWorkIncompleteStepCode }),
         ],
       },

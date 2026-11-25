@@ -456,7 +456,7 @@ describe('Controlled-work effects', () => {
     const completed = save(session, ADULT_DOB, STEPS.additionalPropertyDetails, {})
 
     expect(readControlledWorkAnswers(session, CASE_ID)['additional-property-details-completed']).to.equal('yes')
-    expect(completed.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal('')
+    expect(completed.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.assets)
     expect(
       session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]?.[
         CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection
@@ -483,6 +483,79 @@ describe('Controlled-work effects', () => {
     save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
     expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.additionalPropertyDetails]).to.equal(undefined)
     expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('additional-property-details-completed')
+  })
+
+  it('persists case-scoped bank-account rows, restores them, and prunes them without touching other collections', () => {
+    const session = newSession()
+    save(session, MINOR_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'no' })
+    save(session, MINOR_DOB, STEPS.aggregatedMeans, { 'aggregated-means': 'yes' })
+    save(session, MINOR_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+    save(session, MINOR_DOB, STEPS.property, { 'property-owned': 'none' })
+    save(session, MINOR_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
+
+    const page = fakeContext({
+      session,
+      dateOfBirth: MINOR_DOB,
+      posted: { account_in_dispute_0: 'yes' },
+    })
+    registry.PrepareAssets.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection)).to.deep.equal([
+      { amount: '', account_in_dispute: '' },
+    ])
+
+    page.answers.set('amount_0', '1250')
+    page.answers.set('account_in_dispute_0', 'yes')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.assets,
+      CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection,
+      ['amount', 'account_in_dispute'],
+    )
+    registry.NormalizeAssets.evaluate(page.context)
+    save(session, MINOR_DOB, STEPS.assets, {
+      investments_relevant: 'yes',
+      investments: '250',
+      valuables_relevant: 'no',
+    })
+
+    const savedRows =
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.assets]?.[CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]
+    expect(savedRows).to.deep.equal([{ amount: '1250', account_in_dispute: 'yes' }])
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      investments_relevant: 'yes',
+      investments: '250',
+      valuables_relevant: 'no',
+      investments_in_dispute: 'no',
+      'assets-completed': 'yes',
+    })
+
+    const revisit = fakeContext({ session: JSON.parse(JSON.stringify(session)), dateOfBirth: MINOR_DOB })
+    registry.PrepareAssets.evaluate(revisit.context)
+    expect(revisit.answers.get('amount_0')).to.equal('1250')
+    expect(revisit.answers.get('account_in_dispute_0')).to.equal('yes')
+
+    session.casePatternDrafts = {
+      ...(session.casePatternDrafts ?? {}),
+      [CASE_ID]: {
+        ...session.casePatternDrafts?.[CASE_ID],
+        unrelatedPattern: { unrelatedCollection: [{ keep: 'yes' }] },
+      },
+      CASE2: {
+        [STEPS.assets]: {
+          [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '99' }],
+        },
+      },
+    }
+    save(session, MINOR_DOB, STEPS.under18Clr, { 'controlled-legal-representation': 'yes' })
+
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.assets]).to.equal(undefined)
+    expect(session.casePatternDrafts?.[CASE_ID]?.unrelatedPattern).to.deep.equal({
+      unrelatedCollection: [{ keep: 'yes' }],
+    })
+    expect(session.casePatternDrafts?.CASE2?.[STEPS.assets]).to.deep.equal({
+      [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '99' }],
+    })
   })
 
   it('persists partner additional-property rows and prunes only those rows when partner ownership changes', () => {

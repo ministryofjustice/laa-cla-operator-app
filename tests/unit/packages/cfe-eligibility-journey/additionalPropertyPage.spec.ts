@@ -160,7 +160,7 @@ describe('Controlled-work additional property page', () => {
     )
     expect(JSON.stringify(cannotUseServiceStep.blocks)).to.include('/change/additional-property')
     expect(getNextStep(STEPS.additionalProperty, sharedOwnershipAnswers, ADULT)).to.equal(undefined)
-    expect(getNextStep(STEPS.additionalProperty, noAdditionalPropertyAnswers, ADULT)).to.equal(undefined)
+    expect(getNextStep(STEPS.additionalProperty, noAdditionalPropertyAnswers, ADULT)).to.equal(STEPS.assets)
     expect(getNextStep(STEPS.additionalProperty, ownedAdditionalPropertyAnswers, ADULT)).to.equal(
       STEPS.additionalPropertyDetails,
     )
