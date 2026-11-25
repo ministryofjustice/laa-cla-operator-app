@@ -51,6 +51,13 @@ Create your local config file `.env` from the template file:
 cp .env.example .env
 ```
 
+For local sign-in with SiLAS, set `REDIS_ENABLED=true` in `.env` and start the
+local Redis service via Docker:
+
+```shell
+docker compose up -d redis
+```
+
 #### Align to the Node Version specified for this project
 
 If using Node Version Manager (nvm), use the following command to switch to the correct version:

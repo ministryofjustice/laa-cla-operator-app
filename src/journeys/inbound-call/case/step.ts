@@ -7,7 +7,7 @@ import {
 
 export const clientCaseStep = step({
   code: "client-case-details",
-  path: "/client-homepage",
+  path: "/case-homepage",
   title: "Client Homepage",
 
   reachability: { entryWhen: true },

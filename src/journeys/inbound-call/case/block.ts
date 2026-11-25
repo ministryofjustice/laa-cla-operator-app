@@ -15,9 +15,24 @@ import {
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import { Transformers } from "#src/journeys/transformers.js";
+import { MOJSubNavigation } from "@ministryofjustice/hmpps-forge/moj-components";
 
 export const clientHomeBlock = CollectionBlock({
-  collection: [GovUKButton({ text: "Continue to Scope" })],
+  collection: [
+    MOJSubNavigation({
+      label: "Case sections",
+      // TODO: once sections are built add links to real pages
+      items: [
+        { text: "Client's details", href: "#details", active: true },
+        { text: "Scope", href: "#scope" },
+        { text: "Financial eligibility", href: "#eligibility" },
+        { text: "Diversity", href: "#diversity" },
+        { text: "Refer", href: "#refer" },
+        { text: "Case history", href: "#history" },
+      ],
+    }),
+    GovUKButton({ text: "Continue to Scope" }),
+  ],
 });
 
 const toRows = ({
