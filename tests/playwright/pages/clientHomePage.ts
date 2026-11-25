@@ -13,7 +13,7 @@ export class ClientHomePage {
   }
 
   get url(): string {
-    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/case-homepage`;
+    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0003/case-homepage`;
   }
 
   get pageTitle(): string {

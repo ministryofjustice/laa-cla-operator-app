@@ -28,6 +28,11 @@ export const handlers = [
         reference: params.caseId,
       }),
   ),
+  // No personal details available for this specific case, returns empty object
+  http.get(
+    "*/call_centre/api/v1/case/ED-0001-0002/personal_details/",
+    ({ params }) => HttpResponse.json({}),
+  ),
   http.get(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
     ({ params }) =>
