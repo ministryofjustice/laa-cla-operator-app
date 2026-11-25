@@ -27,13 +27,13 @@ export const clientHomePersonalDetailsBlock = CollectionBlock({
       rows: [
         ...toRows({
           label: "Name",
-          value: Data("case.full_name"),
+          value: Data("personalDetails.full_name"),
           link: clientDetailsUrl("fullName"),
         }),
         ...toRows({
-          label: "Date of Birth",
-          value: Data("case.date_of_birth").pipe(
-            Transformer.String.ToDate(),
+          label: "Date of birth",
+          value: Data("personalDetails.dob").pipe(
+            Transformers.dobToDate(),
             Transformer.Date.Format("D MMMM YYYY"),
           ),
           link: clientDetailsUrl("dateOfBirth"),

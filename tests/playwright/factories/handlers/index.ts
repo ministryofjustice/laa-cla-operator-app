@@ -30,7 +30,16 @@ export const handlers = [
   ),
   http.get(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
-    ({ params }) => HttpResponse.json({}),
+    ({ params }) => HttpResponse.json({
+      full_name: "Jane Doe",
+      dob: { month: '10', day: '10', year: '1988' },
+      email: "jane.doe@example.com",
+      mobile_phone: "1234567890",
+      safe_to_contact: "SAFE",
+      announce_call: true,
+      street: "102 Petty France",
+      postcode: "SW1H 9AJ"
+    }),
   ),
   http.put(
     "*/call_centre/api/v1/case/:caseId/personal_details/",

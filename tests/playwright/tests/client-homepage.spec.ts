@@ -21,3 +21,19 @@ test("shows all case section tabs", async ({ pages }) => {
     "Case history",
   ]);
 });
+
+test("shows client personal details section", async ({ pages }) => {
+  const page = pages.getClientHomePage;
+  await page.goto();
+  const summaryList = await page.getSummaryListTable("Client details");
+  expect(summaryList).toEqual({
+    title: "Client details",
+    "Name": "Jane Doe",
+    "Date of birth": "10 October 1988",
+    "Email address": "jane.doe@example.com",
+    "Phone number": "1234567890",
+    "Safe to call": "Yes",
+    "Withheld numbers accepted": "Yes",
+    Address: "102 Petty France, SW1H 9AJ",
+  });
+});

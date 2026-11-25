@@ -4,6 +4,15 @@ import { TransformerRegistry } from "@ministryofjustice/hmpps-forge/core/authori
 export const transformers = new TransformerRegistry<Deps>();
 
 export const Transformers = {
+  dobToDate: transformers.register("dobToDate", (deps) => (value: Record<string, any> | null): Date | null => {
+    if (value === null) {
+      return null;
+    }
+    const { day, month, year } = value
+    const date = new Date(year, month -1, day);
+    console.log(date);
+    return date
+  }),
   /**
    * Converts a "safe to call" value into a human-readable "Yes" or "No".
    * @param {string} value - The input string indicating if it is safe to call.
