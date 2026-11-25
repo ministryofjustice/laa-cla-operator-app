@@ -21,3 +21,9 @@ test("shows all case section tabs", async ({ pages }) => {
     "Case history",
   ]);
 });
+
+test("shows third party section", async ({ pages }) => {
+  const clientHomePage = pages.getClientHomePage;
+  await clientHomePage.goto();
+  await expect(clientHomePage.thirdPartySection).toBeVisible();
+});

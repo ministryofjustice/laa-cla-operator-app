@@ -1,5 +1,5 @@
-import { step, access } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { clientHomeBlock, thirdPartyBlock } from "./block.js";
+import { step, access, Data, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { clientHomeBlock, clientDetailsBlock } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 
 export const clientCaseStep = step({
@@ -9,6 +9,10 @@ export const clientCaseStep = step({
 
   reachability: { entryWhen: true },
   view: { template: "main/client-homepage.njk" },
-  blocks: [clientHomeBlock, thirdPartyBlock],
-  onAccess: [ access({ effects: [InboundCallEffects.LoadThirdPartyDetails()]})]
-});
+  blocks: [clientHomeBlock, clientDetailsBlock],
+  onAccess: [
+    access({
+      when: Data("case.thirdparty_details").match(Condition.IsRequired()),
+      effects: [InboundCallEffects.LoadThirdPartyDetails()],
+    }),
+],});

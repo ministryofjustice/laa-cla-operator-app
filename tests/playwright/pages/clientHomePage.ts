@@ -26,6 +26,11 @@ export class ClientHomePage {
       .getByRole("link");
   }
 
+  get thirdPartySection(): Locator {
+    return this.page
+    .getByRole("heading", { name: "Third Party Details" });
+  }
+
   async goto(): Promise<void> {
     await this.page.goto(this.url);
   }
