@@ -1,9 +1,8 @@
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
-import { GovUKButton, SummaryListRow } from "@ministryofjustice/hmpps-forge/govuk-components";
-import { ChainableRef, Data, Condition, Format, ChainableGenerator, TransformerFunctionExpr } from "@ministryofjustice/hmpps-forge/core/authoring";
+import { GovUKButton, GovUKSummaryList, SummaryListRow } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { ChainableRef, Data, Condition, Format, ChainableGenerator, TransformerFunctionExpr, Transformer } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import { Transformers } from "#src/journeys/transformers.js";
-import { ClientSummaryList } from "./clientSummaryList.js";
 
 
 export const clientHomeBlock = CollectionBlock({
@@ -51,7 +50,7 @@ const clientDetailsUrl = (section: string) => Format("/case/%1/client-details#%2
 
 export const clientHomePersonalDetailsBlock = CollectionBlock({
   collection: [
-    ClientSummaryList({
+    GovUKSummaryList({
       card: {title: {text: "Client details"}},
       rows: [
         ...toRows(
@@ -64,7 +63,7 @@ export const clientHomePersonalDetailsBlock = CollectionBlock({
         ),
         ...toRows({
           label: "Date of Birth",
-          value: Data("case.date_of_birth"),
+          value: Data("case.date_of_birth").pipe(Transformer.String.ToDate(), Transformer.Date.Format("D MMMM YYYY")),
           link: clientDetailsUrl("dateOfBirth"),
         }),
         ...toRows({
@@ -83,7 +82,7 @@ export const clientHomePersonalDetailsBlock = CollectionBlock({
           label: "Withheld numbers accepted",
           value: Data("personalDetails.announce_call"),
           valueKey: "html",
-          link: clientDetailsUrl("announceCall"),
+          link: clientDetailsUrl("acceptsWithheldCalls"),
           transformer: Transformers.WithheldNumbersAccepted(),
         }),
         ...toRows({

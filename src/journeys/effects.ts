@@ -231,23 +231,17 @@ export const InboundCallEffectsImplementation: Record<
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
-    const personalDetails = {
+    let announce_call = context.getPostData("acceptsWithheldCalls");
+    announce_call = announce_call ? announce_call === "yes" : false;
+    const apiPersonalDetails = {
       full_name: context.getPostData("fullName"),
-      date_of_birth: context.getPostData("dateOfBirth"),
+      dob: context.getPostData("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
       safe_to_contact: context.getPostData("safeToCall"),
       email: context.getPostData("email"),
+      announce_call: announce_call,
     };
-
-    const apiPersonalDetails = {
-      full_name: personalDetails.full_name,
-      dob: personalDetails.date_of_birth,
-      mobile_phone: personalDetails.mobile_phone,
-      safe_to_contact: personalDetails.safe_to_contact,
-      email: personalDetails.email,
-    };
-
-    context.setData("personalDetails", personalDetails);
+    context.setData("personalDetails", apiPersonalDetails);
 
     await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,

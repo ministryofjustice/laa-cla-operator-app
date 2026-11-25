@@ -18,6 +18,7 @@ import {
   GovUKBody,
   GovUKUtilityClasses,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { Transformers } from "#src/journeys/transformers.js";
 
 
 
@@ -132,7 +133,9 @@ export const clientDetailsBlock = CollectionBlock({
 
     GovUKRadioInput({
       code: "acceptsWithheldCalls",
-      defaultValue: Data("personalDetails.announce_call"),
+      defaultValue: Data("personalDetails.announce_call").pipe(
+        Transformers.WithheldNumbersAcceptedParser(),
+      ),
       fieldset: {
         legend: {
           text: "If safe to call, does your phone accept calls from a withheld number?",

@@ -19,11 +19,21 @@ export const Transformers = {
     },
   ),
 
+    WithheldNumbersAcceptedParser: transformers.register(
+    'WithheldNumbersAcceptedParser',
+    (deps) => (value: boolean | null) => {
+        if (value === null) {
+          return null
+        }
+        return value ? 'yes' : 'no'
+    },
+  ),
+
   WithheldNumbersAccepted: transformers.register(
     'WithheldNumbersAccepted',
     (deps) => (value: boolean | null) => {
       if (!value) {
-        return 'No <span class="moj-badge moj-badge--red">withheld numbers not screened</span>'
+        return 'No <span class="moj-badge moj-badge--red">withheld numbers screened</span>'
       }
       return 'Yes'
     },
