@@ -6,6 +6,7 @@ import {
   searchCases,
   loadCase,
   saveAdaptationDetails,
+  loadPersonalDetails,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
@@ -125,6 +126,34 @@ describe("caseDetailsService", () => {
       expect(result).to.deep.equal(mockResponse);
     });
   });
+
+
+  describe("loadPersonalDetails", () => {
+    it("should load personal details for a case", async () => {
+      // Arrange
+      const caseId = "TX-123-FR5";
+      const mockResponse = {
+        full_name: "Jane Doe",
+        dob: "2001-05-12",
+        mobile_phone: "07123456789",
+        safe_to_contact: "SAFE",
+        email: "jane@example.com",
+        announce_call: true,
+      };
+      getStub.resolves({ data: mockResponse });
+
+      // Act
+      const result = await loadPersonalDetails(axiosMiddlewareStub, caseId);
+
+      // Assert
+      expect(getStub.calledOnce).to.be.true;
+      expect(getStub.firstCall.args[0]).to.equal(
+        `/call_centre/api/v1/case/${encodeURIComponent(caseId)}/personal_details/`,
+      );
+      expect(result).to.deep.equal(mockResponse);
+    });
+  });
+
 
   describe("updatePersonalDetails", () => {
     it("should update personal details for a case", async () => {
