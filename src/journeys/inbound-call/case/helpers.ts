@@ -9,6 +9,7 @@ import {
 
 export interface SummaryListRowData {
   label: string;
+  enterLabel?: string;
   value: ChainableRef;
   valueKey?: "text" | "html";
   link: string | ChainableGenerator;
@@ -22,6 +23,7 @@ export interface SummaryListRowData {
  */
 export const toRows = (data: SummaryListRowData): SummaryListRow[] => {
   const valueKey = data.valueKey ?? "text";
+  data.enterLabel ??= `Enter ${data.label.toLowerCase()}`;
   return [
     {
       key: { text: data.label },
@@ -46,9 +48,9 @@ export const toRows = (data: SummaryListRowData): SummaryListRow[] => {
       key: { text: data.label },
       value: {
         html: Format(
-          `<a href="%1" class="govuk-link">Enter %2</a>`,
+          `<a href="%1" class="govuk-link">%2</a>`,
           data.link,
-          data.label.toLowerCase(),
+          data.enterLabel,
         ),
       },
       visibleWhen: data.value.not.match(Condition.IsRequired()),

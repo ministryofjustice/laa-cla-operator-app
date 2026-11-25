@@ -42,14 +42,16 @@ export const clientHomePersonalDetailsBlock = CollectionBlock({
           link: clientDetailsUrl("phoneNumber"),
         }),
         ...toRows({
-          label: "Safe to call",
+          label: "Safe to call?",
+          enterLabel: "Enter safe to call",
           value: Data("personalDetails.safe_to_contact"),
           valueKey: "html",
           link: clientDetailsUrl("safeToCall"),
           transformer: Transformers.SafeToCall(),
         }),
         ...toRows({
-          label: "Withheld numbers accepted",
+          label: "Withheld numbers accepted?",
+          enterLabel: "Enter withheld numbers are accepted",
           value: Data("personalDetails.announce_call"),
           valueKey: "html",
           link: clientDetailsUrl("acceptsWithheldCalls"),

@@ -32,8 +32,8 @@ test("shows client personal details section", async ({ pages }) => {
     "Date of birth": "10 October 1988",
     "Email address": "jane.doe@example.com",
     "Phone number": "1234567890",
-    "Safe to call": "Yes",
-    "Withheld numbers accepted": "Yes",
+    "Safe to call?": "Yes",
+    "Withheld numbers accepted?": "Yes",
     Address: "102 Petty France, SW1H 9AJ",
   });
 });
