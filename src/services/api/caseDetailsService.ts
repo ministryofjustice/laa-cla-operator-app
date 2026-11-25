@@ -46,7 +46,7 @@ export async function loadPersonalDetails(
     const response = await configuredAxios.get<Record<string, unknown>>(
       `/call_centre/api/v1/case/${caseId}/personal_details/`,
     );
-    console.log("Loaded personal details: ", response.data)
+    console.log("Loaded personal details: ", response.data);
     return response.data;
   }, "Error loading personal details");
 }
@@ -66,7 +66,7 @@ export async function loadCase(
     const response = await configuredAxios.get<CaseDetails>(
       `/call_centre/api/v1/case/${caseId}`,
     );
-    console.log("Loaded case details: ", response.data)
+    console.log("Loaded case details: ", response.data);
     return response.data;
   }, "Error loading case");
 }

@@ -20,9 +20,6 @@ import {
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { Transformers } from "#src/journeys/transformers.js";
 
-
-
-
 const MAX_CLIENT_AGE_YEARS = 120;
 
 export const clientDetailsBlock = CollectionBlock({

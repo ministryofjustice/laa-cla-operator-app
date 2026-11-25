@@ -117,20 +117,24 @@ export const InboundCallEffectsImplementation: Record<
     context.setData("case", _case);
   },
 
-    /**
+  /**
    * Load case from the api
    * @param {Deps} deps - The dependencies required for the effect.
    * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
    */
-  LoadPersonalDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
-    const caseId = context.getRequestParam("caseId");
-    if (caseId === undefined) {
-      throw new Error("Case id is required to load a case");
-    }
-    const authenticatedAxiosState = getAuthenticatedAxios(context);
-    const personalDetails = await deps.caseApi.loadPersonalDetails(authenticatedAxiosState, caseId);
-    context.setData("personalDetails", personalDetails);
-  },
+  LoadPersonalDetails:
+    (deps: Deps) => async (context: EffectFunctionContext) => {
+      const caseId = context.getRequestParam("caseId");
+      if (caseId === undefined) {
+        throw new Error("Case id is required to load a case");
+      }
+      const authenticatedAxiosState = getAuthenticatedAxios(context);
+      const personalDetails = await deps.caseApi.loadPersonalDetails(
+        authenticatedAxiosState,
+        caseId,
+      );
+      context.setData("personalDetails", personalDetails);
+    },
 
   /**
    * Update client adoption details
