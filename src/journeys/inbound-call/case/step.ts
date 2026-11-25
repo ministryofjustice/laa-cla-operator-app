@@ -7,6 +7,6 @@ export const clientCaseStep = step({
   title: "Client Homepage",
 
   reachability: { entryWhen: true },
-  view: { template: "main/client-homepage.njk" },
+  view: { template: "main/case-homepage.njk" },
   blocks: [clientHomeBlock],
 });
