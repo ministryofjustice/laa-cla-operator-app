@@ -28,6 +28,11 @@ export const handlers = [
         reference: params.caseId,
       }),
   ),
+  http.get(
+    "*/call_centre/api/v1/case/:caseId/personal_details/",
+    ({ params }) =>
+      HttpResponse.json({}),
+  ),
   http.put(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
     () => new HttpResponse(null, { status: 204 }),
