@@ -38,4 +38,8 @@ export interface CaseApiService {
     caseId: string,
     body: Record<string, unknown>,
   ) => Promise<saveAdaptationDetailsParams>;
+  getThirdpartyDetails: (
+    axiosMiddleware: AxiosInstanceWrapper,
+    caseId: string,
+  ) => Promise<any>
 }

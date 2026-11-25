@@ -6,6 +6,7 @@ import type {
   SearchCasesResponse,
   saveAdaptationDetailsResponse,
   saveAdaptationDetailsParams,
+  ThirdPartyDetails,
 } from "#types/api-types.js";
 import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
 
@@ -133,5 +134,14 @@ export async function saveAdaptationDetails(
     ? await configuredAxios.patch<saveAdaptationDetailsResponse>(url, body)
     : await configuredAxios.post<saveAdaptationDetailsResponse>(url, body);
 
+  return response.data;
+}
+
+export async function getThirdpartyDetails(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+): Promise<ThirdPartyDetails> {
+  const configuredAxios = configureAxiosInstance(axiosMiddleware);
+  const response = await configuredAxios.get(`/call_centre/api/v1/case/${caseId}/thirdparty_details/`);
   return response.data;
 }
