@@ -235,15 +235,14 @@ export const InboundCallEffectsImplementation: Record<
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
-    let announce_call = context.getPostData("acceptsWithheldCalls");
-    announce_call = announce_call ? announce_call === "yes" : false;
+    const announceCall = context.getPostData("acceptsWithheldCalls") === "yes";
     const apiPersonalDetails = {
       full_name: context.getPostData("fullName"),
       dob: context.getPostData("dateOfBirth"),
       mobile_phone: context.getPostData("phoneNumber"),
       safe_to_contact: context.getPostData("safeToCall"),
       email: context.getPostData("email"),
-      announce_call: announce_call,
+      announce_call: announceCall,
     };
     context.setData("personalDetails", apiPersonalDetails);
 

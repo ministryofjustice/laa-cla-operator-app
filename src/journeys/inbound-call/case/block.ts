@@ -2,20 +2,27 @@ import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components"
 import {
   GovUKButton,
   GovUKSummaryList,
-  SummaryListRow,
+  type SummaryListRow,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
 import {
-  ChainableRef,
+  type ChainableRef,
   Data,
   Condition,
   Format,
-  ChainableGenerator,
-  TransformerFunctionExpr,
+  type ChainableGenerator,
+  type TransformerFunctionExpr,
   Transformer,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 
 import { Transformers } from "#src/journeys/transformers.js";
 import { MOJSubNavigation } from "@ministryofjustice/hmpps-forge/moj-components";
+interface SummaryListRowData {
+  label: string;
+  value: ChainableRef;
+  valueKey?: "text" | "html";
+  link: string | ChainableGenerator;
+  transformer?: TransformerFunctionExpr;
+}
 
 export const clientHomeBlock = CollectionBlock({
   collection: [
@@ -34,49 +41,53 @@ export const clientHomeBlock = CollectionBlock({
     GovUKButton({ text: "Continue to Scope" }),
   ],
 });
-
-const toRows = ({
-  label,
-  value,
-  valueKey = "text",
-  link,
-  transformer,
-}: {
-  label: string;
-  value: ChainableRef;
-  valueKey?: "text" | "html";
-  link: string | ChainableGenerator;
-  transformer?: TransformerFunctionExpr;
-}): SummaryListRow[] => {
+/**
+ * Create summary list rows from the provided data.
+ * @param {SummaryListRowData} data - The summary list row data.
+ * @returns {SummaryListRow[]} - An array of summary list rows based on the provided data.
+ */
+const toRows = (data: SummaryListRowData): SummaryListRow[] => {
+  const valueKey = data.valueKey ?? "text";
   return [
     {
-      key: { text: label },
-      value: { [valueKey]: transformer ? value.pipe(transformer) : value },
+      key: { text: data.label },
+      value: {
+        [valueKey]:
+          data.transformer === undefined
+            ? data.value
+            : data.value.pipe(data.transformer),
+      },
       actions: {
         items: [
           {
             text: "Change",
-            href: link,
-            visuallyHiddenText: label.toLowerCase(),
+            href: data.link,
+            visuallyHiddenText: data.label.toLowerCase(),
           },
         ],
       },
-      visibleWhen: value.match(Condition.IsRequired()),
+      visibleWhen: data.value.match(Condition.IsRequired()),
     },
     {
-      key: { text: label },
+      key: { text: data.label },
       value: {
         html: Format(
           `<a href="%1" class="govuk-link">Enter %2</a>`,
-          link,
-          label.toLowerCase(),
+          data.link,
+          data.label.toLowerCase(),
         ),
-      }, //`<a href="${link}" class="govuk-link">Enter ${label.toLowerCase()}</a>`
-      visibleWhen: value.not.match(Condition.IsRequired()),
+      },
+      visibleWhen: data.value.not.match(Condition.IsRequired()),
     },
   ];
 };
-const clientDetailsUrl = (section: string) =>
+
+/**
+ * Get Client Details URL for a specific section
+ * @param {string} section - The section of the client details to link to.
+ * @returns {ChainableGenerator} - The URL for the specified client details section.
+ */
+const clientDetailsUrl = (section: string): ChainableGenerator =>
   Format("/case/%1/client-details#%2", Data("case.reference"), section);
 
 export const clientHomePersonalDetailsBlock = CollectionBlock({

@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/index.js";
 
-const DETAILS_PATH = "/case/ED-0001-0002/add-client-details";
+const DETAILS_PATH = "/case/ED-0001-0002/client-details";
 const ADDRESS_PATH = "/case/ED-0001-0002/address-lookup";
 
 async function stubSubmit(page: Page): Promise<string[]> {
