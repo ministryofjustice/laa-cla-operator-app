@@ -105,7 +105,7 @@ export const HOUSING_LOAN_PAYMENT_FREQUENCIES = ['every_week', 'every_two_weeks'
 export const HOUSING_COST_PAYMENT_FREQUENCIES = ['every_week', 'every_two_weeks', 'every_four_weeks', 'monthly'] as const
 export const PROPERTY_ENTRY_VALUE_CODES = ['house_value', 'mortgage', 'percentage_owned'] as const
 export const PROPERTY_ENTRY_ANSWER_CODES = [...PROPERTY_ENTRY_VALUE_CODES, 'house_in_dispute'] as const
-export const ASSET_AMOUNT_ANSWER_CODES = ['investments', 'valuables'] as const
+export const ASSET_AMOUNT_ANSWER_CODES = ['investments', 'valuables', 'partner_investments', 'partner_valuables'] as const
 
 /** Allowed values for controlled-work choice answers. Count answers use a whole-number validator. */
 export const CONTROLLED_WORK_ANSWER_OPTIONS = {
@@ -121,6 +121,8 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'partner-additional-property-owned': PROPERTY_OWNERSHIP_OPTIONS,
   investments_relevant: YES_NO_OPTIONS,
   valuables_relevant: YES_NO_OPTIONS,
+  partner_investments_relevant: YES_NO_OPTIONS,
+  partner_valuables_relevant: YES_NO_OPTIONS,
   investments_in_dispute: YES_NO_OPTIONS,
   valuables_in_dispute: YES_NO_OPTIONS,
   'property-landlord': YES_NO_OPTIONS,
@@ -141,6 +143,7 @@ export const CONTROLLED_WORK_ANSWER_OPTIONS = {
   'additional-property-details-completed': ['yes'],
   'partner-additional-property-details-completed': ['yes'],
   'assets-completed': ['yes'],
+  'partner-assets-completed': ['yes'],
   'receives-benefits': YES_NO_OPTIONS,
   'benefit-details-completed': ['yes'],
   friends_or_family_relevant: YES_NO_OPTIONS,
@@ -210,11 +213,14 @@ export const CONTROLLED_WORK_ANSWER_CODES = [
   'partner-additional-property-owned',
   'investments_relevant',
   'valuables_relevant',
+  'partner_investments_relevant',
+  'partner_valuables_relevant',
   'investments_in_dispute',
   'valuables_in_dispute',
   'partner-additional-property-details-completed',
   'additional-property-details-completed',
   'assets-completed',
+  'partner-assets-completed',
   'property-landlord',
   ...PROPERTY_ENTRY_ANSWER_CODES,
   ...ASSET_AMOUNT_ANSWER_CODES,
@@ -309,6 +315,7 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerAdditionalProperty: 'partner-additional-property',
   partnerAdditionalPropertyDetails: 'partner-additional-property-details',
   assets: 'assets',
+  partnerAssets: 'partner-assets',
 } as const
 
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]

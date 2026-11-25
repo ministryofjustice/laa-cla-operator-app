@@ -144,6 +144,7 @@ const PAGE_ANSWER_REQUIREMENT_BY_STEP = new Map<
   [CONTROLLED_WORK_STEP_CODES.housingCosts, isRequiredHousingCostAnswer],
   [CONTROLLED_WORK_STEP_CODES.propertyEntry, isRequiredPropertyEntryAnswer],
   [CONTROLLED_WORK_STEP_CODES.assets, isRequiredAssetAnswer],
+  [CONTROLLED_WORK_STEP_CODES.partnerAssets, isRequiredAssetAnswer],
 ])
 const OTHER_INCOME_AMOUNT_PATTERN = /^-?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?|\.\d+)$/u
 const OUTGOINGS_AMOUNT_PATTERN = /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/u
@@ -781,6 +782,20 @@ export const CONTROLLED_WORK_STEPS: readonly ControlledWorkStepDefinition[] = [
     ],
     isApplicable: isAssetsApplicable,
   },
+  {
+    code: STEPS.partnerAssets,
+    answerCodes: [
+      'partner_investments_relevant',
+      'partner_investments',
+      'partner_valuables_relevant',
+      'partner_valuables',
+      'partner-assets-completed',
+    ],
+    isApplicable: ({ answers, context }) =>
+      answers.partner === YES &&
+      answers['assets-completed'] === YES &&
+      isAssetsApplicable({ answers, context }),
+  },
 ]
 
 const STEP_DEFINITIONS_BY_CODE = new Map(CONTROLLED_WORK_STEPS.map((definition) => [definition.code, definition]))
@@ -808,8 +823,8 @@ export function isValidControlledWorkAnswer(code: ControlledWorkAnswerCode, valu
   if (code === 'housing_payments') return isValidHousingPayment(value)
   if (ASSET_AMOUNT_ANSWER_CODE_SET.has(code)) {
     if (!isValidAssetAmount(value)) return false
-    if (code === 'investments') return isPositiveInvestmentAmount(value)
-    if (code === 'valuables') return isAtLeastValuablesThreshold(value)
+    if (code === 'investments' || code === 'partner_investments') return isPositiveInvestmentAmount(value)
+    if (code === 'valuables' || code === 'partner_valuables') return isAtLeastValuablesThreshold(value)
     return isNonNegativeAssetAmount(value)
   }
   if (PROPERTY_ENTRY_VALUE_CODE_SET.has(code)) {

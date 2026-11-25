@@ -558,6 +558,78 @@ describe('Controlled-work effects', () => {
     })
   })
 
+  it('persists partner bank-account rows, restores them, and prunes them when the partner answer changes to No', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
+    save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
+    save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
+    save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
+    save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, { 'partner-additional-property-owned': 'none' })
+
+    const clientAssets = save(session, ADULT_DOB, STEPS.assets, {
+      investments_relevant: 'no',
+      valuables_relevant: 'no',
+    })
+    expect(clientAssets.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.partnerAssets)
+
+    const page = fakeContext({ session, dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerAssets.evaluate(page.context)
+    expect(page.data.get(CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection)).to.deep.equal([{ amount: '' }])
+    page.answers.set('amount_0', '1250')
+    registry.SaveRepeatingItems.evaluate(
+      page.context,
+      STEPS.partnerAssets,
+      CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection,
+      ['amount'],
+    )
+    save(session, ADULT_DOB, STEPS.partnerAssets, {
+      partner_investments_relevant: 'yes',
+      partner_investments: '250',
+      partner_valuables_relevant: 'no',
+    })
+
+    expect(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerAssets]?.[
+        CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection
+      ],
+    ).to.deep.equal([{ amount: '1250' }])
+    expect(readControlledWorkAnswers(session, CASE_ID)).to.include({
+      partner_investments_relevant: 'yes',
+      partner_investments: '250',
+      partner_valuables_relevant: 'no',
+      'partner-assets-completed': 'yes',
+    })
+
+    const revisit = fakeContext({ session: JSON.parse(JSON.stringify(session)), dateOfBirth: ADULT_DOB })
+    registry.PreparePartnerAssets.evaluate(revisit.context)
+    expect(revisit.answers.get('amount_0')).to.equal('1250')
+
+    session.casePatternDrafts = {
+      ...(session.casePatternDrafts ?? {}),
+      [CASE_ID]: {
+        ...session.casePatternDrafts?.[CASE_ID],
+        unrelatedPattern: { unrelatedCollection: [{ keep: 'yes' }] },
+      },
+      CASE2: {
+        [STEPS.partnerAssets]: {
+          [CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection]: [{ amount: '99' }],
+        },
+      },
+    }
+    save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
+
+    expect(session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerAssets]).to.equal(undefined)
+    expect(session.casePatternDrafts?.[CASE_ID]?.unrelatedPattern).to.deep.equal({
+      unrelatedCollection: [{ keep: 'yes' }],
+    })
+    expect(session.casePatternDrafts?.CASE2?.[STEPS.partnerAssets]).to.deep.equal({
+      [CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection]: [{ amount: '99' }],
+    })
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('partner-assets-completed')
+    expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('partner_investments')
+  })
+
   it('persists partner additional-property rows and prunes only those rows when partner ownership changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })

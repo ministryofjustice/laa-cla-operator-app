@@ -64,6 +64,8 @@ export function isAssetAnswerRelevant(code: ControlledWorkAnswerCode, answers: C
     return answers.valuables_relevant === 'yes' &&
       (code !== 'valuables_in_dispute' || answers['immigration-or-asylum'] === 'no')
   }
+  if (code === 'partner_investments') return answers.partner_investments_relevant === 'yes'
+  if (code === 'partner_valuables') return answers.partner_valuables_relevant === 'yes'
   return true
 }
 
@@ -76,6 +78,8 @@ export function isAssetAnswerRelevant(code: ControlledWorkAnswerCode, answers: C
 export function isRequiredAssetAnswer(code: ControlledWorkAnswerCode, answers: ControlledWorkAnswers): boolean {
   if (code === 'investments') return answers.investments_relevant === 'yes'
   if (code === 'valuables') return answers.valuables_relevant === 'yes'
+  if (code === 'partner_investments') return answers.partner_investments_relevant === 'yes'
+  if (code === 'partner_valuables') return answers.partner_valuables_relevant === 'yes'
   if (code === 'investments_in_dispute') {
     return answers['immigration-or-asylum'] === 'no' && answers.investments_relevant === 'yes'
   }

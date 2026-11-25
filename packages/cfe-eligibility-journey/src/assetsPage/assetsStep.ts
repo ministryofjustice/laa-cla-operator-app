@@ -69,7 +69,13 @@ export const assetsStep: StepDefinition = step({
           ControlledWorkEffects.NormalizeAssets(),
           ControlledWorkEffects.SaveControlledWorkAnswers(STEP_CODE),
         ],
-        next: [redirect({ goto: controlledWorkIncompleteStepCode })],
+        next: [
+          redirect({
+            when: Data(CONTROLLED_WORK_DATA_KEYS.nextStep).match(Condition.Equals(CONTROLLED_WORK_STEP_CODES.partnerAssets)),
+            goto: CONTROLLED_WORK_STEP_CODES.partnerAssets,
+          }),
+          redirect({ goto: controlledWorkIncompleteStepCode }),
+        ],
       },
     }),
   ],

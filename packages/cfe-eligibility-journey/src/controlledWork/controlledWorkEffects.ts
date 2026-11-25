@@ -34,6 +34,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   benefitCollection: 'benefits',
   partnerBenefitCollection: 'partner_benefits',
   assetBankAccountCollection: 'bank_accounts',
+  partnerAssetBankAccountCollection: 'partner_bank_accounts',
   additionalPropertyCollection: 'additional_properties',
   partnerAdditionalPropertyCollection: 'partner_additional_properties',
   benefitSuggestions: 'controlledWorkBenefitSuggestions',
@@ -67,6 +68,8 @@ export interface ControlledWorkEffectShape {
   PrepareAssets: () => EffectFunctionExpr
   /** Removes hidden asset dispute flags and normalizes unchecked boxes */
   NormalizeAssets: () => EffectFunctionExpr
+  /** Loads repeating partner bank-account rows, case-scoped and prepopulated */
+  PreparePartnerAssets: () => EffectFunctionExpr
 }
 
 const ALL_ANSWER_CODES = [...CONTROLLED_WORK_ANSWER_CODES]
@@ -80,7 +83,9 @@ const PARTNER_BENEFIT_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerB
 const ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails
 const PARTNER_ADDITIONAL_PROPERTY_DETAILS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerAdditionalPropertyDetails
 const ASSETS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.assets
+const PARTNER_ASSETS_PATTERN_CODE = CONTROLLED_WORK_STEP_CODES.partnerAssets
 const ASSET_BANK_ACCOUNT_FIELD_CODES = ['amount', 'account_in_dispute']
+const PARTNER_ASSET_BANK_ACCOUNT_FIELD_CODES = ['amount']
 const ADDITIONAL_PROPERTY_FIELD_CODES = [
   'house_value',
   'inline_owned_with_mortgage',
@@ -285,6 +290,28 @@ function reconcileAssetBankAccountDrafts(
   return true
 }
 
+function reconcilePartnerAssetBankAccountDrafts(
+  session: FinancialEligibilitySession,
+  caseId: string,
+  answers: ControlledWorkAnswers,
+  context: ControlledWorkContext,
+): boolean {
+  const casePatterns = session.casePatternDrafts?.[caseId]
+  const pattern = casePatterns?.[PARTNER_ASSETS_PATTERN_CODE]
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection
+  const savedRows = pattern?.[collectionCode]
+
+  if (isStepApplicable(PARTNER_ASSETS_PATTERN_CODE, answers, context) || (!savedRows && !pattern)) return false
+
+  const updatedCasePatterns = { ...(casePatterns ?? {}) }
+  const updatedPattern = { ...(pattern ?? {}) }
+  delete updatedPattern[collectionCode]
+  if (Object.keys(updatedPattern).length === 0) delete updatedCasePatterns[PARTNER_ASSETS_PATTERN_CODE]
+  else updatedCasePatterns[PARTNER_ASSETS_PATTERN_CODE] = updatedPattern
+  session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: updatedCasePatterns }
+  return true
+}
+
 function prepareAdditionalPropertyDetails(context: EffectFunctionContext): void {
   const caseId = getCaseId(context)
   const session = context.getSession() as FinancialEligibilitySession | undefined
@@ -361,6 +388,33 @@ function prepareAssets(context: EffectFunctionContext): void {
   context.setData(collectionCode, rows)
   rows.forEach((row, index) => {
     for (const code of ASSET_BANK_ACCOUNT_FIELD_CODES) {
+      context.setAnswer(`${code}_${index}`, row[code] ?? '')
+    }
+  })
+}
+
+function preparePartnerAssets(context: EffectFunctionContext): void {
+  const caseId = getCaseId(context)
+  const session = context.getSession() as FinancialEligibilitySession | undefined
+  if (!caseId || !session) return
+
+  const casePatterns = getOrMigrateCasePatternDrafts(session, caseId)
+  const pattern = casePatterns[PARTNER_ASSETS_PATTERN_CODE] ?? {}
+  const collectionCode = CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection
+  const savedRows = pattern[collectionCode] as Array<Record<string, unknown>> | undefined
+  const rows = savedRows?.length
+    ? savedRows
+    : [Object.fromEntries(PARTNER_ASSET_BANK_ACCOUNT_FIELD_CODES.map((code) => [code, '']))]
+
+  if (!savedRows?.length) {
+    pattern[collectionCode] = rows
+    casePatterns[PARTNER_ASSETS_PATTERN_CODE] = pattern
+    session.casePatternDrafts = { ...(session.casePatternDrafts ?? {}), [caseId]: casePatterns }
+  }
+
+  context.setData(collectionCode, rows)
+  rows.forEach((row, index) => {
+    for (const code of PARTNER_ASSET_BANK_ACCOUNT_FIELD_CODES) {
       context.setAnswer(`${code}_${index}`, row[code] ?? '')
     }
   })
@@ -708,6 +762,9 @@ function readSubmittedAnswers(context: EffectFunctionContext, stepCode: Controll
       'assets-completed': 'yes',
     }
   }
+  if (stepCode === PARTNER_ASSETS_PATTERN_CODE) {
+    return { ...submitted, 'partner-assets-completed': 'yes' }
+  }
   if (stepCode === INCOME_PATTERN_CODE) {
     return { ...submitted, 'income-completed': 'yes' }
   }
@@ -888,6 +945,12 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         answers,
       )
       const assetBankAccountRowsChanged = reconcileAssetBankAccountDrafts(session, caseId, answers, journeyContext)
+      const partnerAssetBankAccountRowsChanged = reconcilePartnerAssetBankAccountDrafts(
+        session,
+        caseId,
+        answers,
+        journeyContext,
+      )
 
       if (
         removedCodes.length > 0 ||
@@ -898,7 +961,8 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         partnerBenefitRowsChanged ||
         additionalPropertyRowsChanged ||
         partnerAdditionalPropertyRowsChanged ||
-        assetBankAccountRowsChanged
+        assetBankAccountRowsChanged ||
+        partnerAssetBankAccountRowsChanged
       ) {
         writeControlledWorkAnswers(session, caseId, answers)
         invalidatePreparedEligibilitySnapshot(session, caseId)
@@ -954,6 +1018,7 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
       reconcileAdditionalPropertyDetailsDrafts(session, caseId, answers)
       reconcilePartnerAdditionalPropertyDetailsDrafts(session, caseId, answers)
       reconcileAssetBankAccountDrafts(session, caseId, answers, journeyContext)
+      reconcilePartnerAssetBankAccountDrafts(session, caseId, answers, journeyContext)
       reconcileBenefitDetailsDrafts(
         session,
         caseId,
@@ -1055,6 +1120,11 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
   PrepareAssets: FinancialEligibilityEffectsRegistry.register(
     'PrepareAssets',
     () => prepareAssets,
+  ),
+
+  PreparePartnerAssets: FinancialEligibilityEffectsRegistry.register(
+    'PreparePartnerAssets',
+    () => preparePartnerAssets,
   ),
 
   NormalizeAssets: FinancialEligibilityEffectsRegistry.register(
