@@ -127,7 +127,6 @@ describe("caseDetailsService", () => {
     });
   });
 
-
   describe("loadPersonalDetails", () => {
     it("should load personal details for a case", async () => {
       // Arrange
@@ -153,7 +152,6 @@ describe("caseDetailsService", () => {
       expect(result).to.deep.equal(mockResponse);
     });
   });
-
 
   describe("updatePersonalDetails", () => {
     it("should update personal details for a case", async () => {

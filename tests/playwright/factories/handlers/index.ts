@@ -30,8 +30,7 @@ export const handlers = [
   ),
   http.get(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
-    ({ params }) =>
-      HttpResponse.json({}),
+    ({ params }) => HttpResponse.json({}),
   ),
   http.put(
     "*/call_centre/api/v1/case/:caseId/personal_details/",

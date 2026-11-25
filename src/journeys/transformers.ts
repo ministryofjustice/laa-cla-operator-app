@@ -56,6 +56,7 @@ export const Transformers = {
   Concat: transformers.register(
     "Concat",
     (deps) =>
-      (value: string, separator: string, ...args: string[]) => [value, ...args].join(separator)
+      (value: string, separator: string, ...args: string[]) =>
+        [value, ...args].join(separator),
   ),
 };
