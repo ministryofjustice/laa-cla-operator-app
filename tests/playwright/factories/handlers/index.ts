@@ -28,6 +28,25 @@ export const handlers = [
         reference: params.caseId,
       }),
   ),
+  // No personal details available for this specific case, returns empty object
+  http.get(
+    "*/call_centre/api/v1/case/ED-0001-0002/personal_details/",
+    ({ params }) => HttpResponse.json({}),
+  ),
+  http.get(
+    "*/call_centre/api/v1/case/:caseId/personal_details/",
+    ({ params }) =>
+      HttpResponse.json({
+        full_name: "Jane Doe",
+        dob: { month: "10", day: "10", year: "1988" },
+        email: "jane.doe@example.com",
+        mobile_phone: "1234567890",
+        safe_to_contact: "SAFE",
+        announce_call: true,
+        street: "102 Petty France",
+        postcode: "SW1H 9AJ",
+      }),
+  ),
   http.put(
     "*/call_centre/api/v1/case/:caseId/personal_details/",
     () => new HttpResponse(null, { status: 204 }),

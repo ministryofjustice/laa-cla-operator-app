@@ -5,6 +5,7 @@ import {
   searchCases,
   loadCase,
   saveAdaptationDetails,
+  loadPersonalDetails,
 } from "./caseDetailsService.js";
 
 export * from "./baseApiService.js";
@@ -16,6 +17,7 @@ export const apiService = {
   searchCases,
   createCase,
   loadCase,
+  loadPersonalDetails,
   saveAdaptationDetails,
 
   /* c8 ignore next */

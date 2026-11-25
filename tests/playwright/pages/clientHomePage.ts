@@ -13,7 +13,7 @@ export class ClientHomePage {
   }
 
   get url(): string {
-    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0002/case-homepage`;
+    return `${TEST_CONFIG.BASE_URL}/case/ED-0001-0003/case-homepage`;
   }
 
   get pageTitle(): string {
@@ -28,5 +28,19 @@ export class ClientHomePage {
 
   async goto(): Promise<void> {
     await this.page.goto(this.url);
+  }
+  async getSummaryListTable(title: string): Promise<Record<string, string>> {
+    const summary: Record<string, string> = {
+      title: title,
+    };
+    const table = this.page
+      .locator(`.govuk-summary-card__title:has-text("${title}")`)
+      .locator("../..");
+    for (const row of await table.locator(".govuk-summary-list__row").all()) {
+      const key = await row.locator(".govuk-summary-list__key").innerText();
+      const value = await row.locator(".govuk-summary-list__value").innerText();
+      summary[key] = value;
+    }
+    return summary;
   }
 }

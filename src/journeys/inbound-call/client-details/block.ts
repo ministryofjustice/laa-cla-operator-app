@@ -6,6 +6,7 @@ import {
   or,
   Generator,
   Transformer,
+  Data,
 } from "@ministryofjustice/hmpps-forge/core/authoring";
 import { CollectionBlock } from "@ministryofjustice/hmpps-forge/core/components";
 import {
@@ -17,6 +18,7 @@ import {
   GovUKBody,
   GovUKUtilityClasses,
 } from "@ministryofjustice/hmpps-forge/govuk-components";
+import { Transformers } from "#src/journeys/transformers.js";
 
 const MAX_CLIENT_AGE_YEARS = 120;
 
@@ -27,6 +29,7 @@ export const clientDetailsBlock = CollectionBlock({
     GovUKTextInput({
       code: "fullName",
       label: { text: "Name", classes: GovUKUtilityClasses.Label.Small },
+      defaultValue: Data("case.full_name"),
       validWhen: [
         validation({
           condition: Self().match(Condition.IsRequired()),
@@ -37,6 +40,7 @@ export const clientDetailsBlock = CollectionBlock({
 
     GovUKDateInputFull({
       code: "dateOfBirth",
+      defaultValue: Data("case.date_of_birth"),
       fieldset: {
         legend: {
           text: "Date of birth",
@@ -83,6 +87,7 @@ export const clientDetailsBlock = CollectionBlock({
         text: "Phone number",
         classes: GovUKUtilityClasses.Label.Small,
       },
+      defaultValue: Data("personalDetails.mobile_phone"),
       validWhen: [
         validation({
           condition: and(
@@ -96,6 +101,7 @@ export const clientDetailsBlock = CollectionBlock({
 
     GovUKRadioInput({
       code: "safeToCall",
+      defaultValue: Data("personalDetails.safe_to_contact"),
       fieldset: {
         legend: {
           text: "Is it safe to call this number?",
@@ -103,8 +109,8 @@ export const clientDetailsBlock = CollectionBlock({
         },
       },
       items: [
-        { value: "yes", text: "Yes" },
-        { value: "no", text: "No" },
+        { value: "SAFE", text: "Yes" },
+        { value: "DONT_CALL", text: "No" },
       ],
     }),
 
@@ -124,6 +130,9 @@ export const clientDetailsBlock = CollectionBlock({
 
     GovUKRadioInput({
       code: "acceptsWithheldCalls",
+      defaultValue: Data("personalDetails.announce_call").pipe(
+        Transformers.WithheldNumbersAcceptedParser(),
+      ),
       fieldset: {
         legend: {
           text: "If safe to call, does your phone accept calls from a withheld number?",
@@ -161,6 +170,7 @@ export const clientDetailsBlock = CollectionBlock({
 
     GovUKTextInput({
       code: "email",
+      defaultValue: Data("personalDetails.email"),
       label: {
         text: "Email (optional)",
         classes: GovUKUtilityClasses.Label.Small,

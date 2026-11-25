@@ -32,6 +32,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
     const getAllCases = sinon.stub().resolves(expected);
     const updatePersonalDetails = sinon.stub().resolves({});
     const loadCase = sinon.stub().resolves({ reference: "FA-1" });
+    const loadPersonalDetails = sinon.stub().resolves({});
     const searchCases = sinon
       .stub()
       .resolves({ count: 1, results: [{ reference: "FA-1" }] });
@@ -45,6 +46,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         searchCases,
         createCase: createCase,
         loadCase,
+        loadPersonalDetails,
         saveAdaptationDetails,
       },
       postCodeApi: new PostcodeLookupService(),
@@ -73,6 +75,7 @@ describe("InboundCallEffectsImplementation.GetAllCases", () => {
         searchCases: sinon.stub(),
         createCase: sinon.stub(),
         loadCase: sinon.stub(),
+        loadPersonalDetails: sinon.stub(),
         saveAdaptationDetails: sinon.stub(),
       },
       postCodeApi: new PostcodeLookupService(),
@@ -140,7 +143,8 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     getPostData.withArgs("fullName").returns("Jane Doe");
     getPostData.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
-    getPostData.withArgs("safeToCall").returns("yes");
+    getPostData.withArgs("safeToCall").returns("SAFE");
+    getPostData.withArgs("acceptsWithheldCalls").returns("yes");
     getPostData.withArgs("email").returns("jane@example.com");
     const getData = sinon.stub();
     getData.withArgs("case").returns({ reference: "ED-0001-0002" });
@@ -160,10 +164,11 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     assert.equal(
       setData.calledOnceWithExactly("personalDetails", {
         full_name: "Jane Doe",
-        date_of_birth: "2001-05-12",
+        dob: "2001-05-12",
         mobile_phone: "07123456789",
         safe_to_contact: "SAFE",
         email: "jane@example.com",
+        announce_call: true,
       }),
       true,
     );
@@ -178,6 +183,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
           mobile_phone: "07123456789",
           safe_to_contact: "SAFE",
           email: "jane@example.com",
+          announce_call: true,
         },
       ),
       true,
@@ -196,8 +202,9 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     getPostData.withArgs("fullName").returns("Jane Doe");
     getPostData.withArgs("dateOfBirth").returns("2001-05-12");
     getPostData.withArgs("phoneNumber").returns("07123456789");
-    getPostData.withArgs("safeToCall").returns("no");
+    getPostData.withArgs("safeToCall").returns("DONT_CALL");
     getPostData.withArgs("email").returns("jane@example.com");
+    getPostData.withArgs("acceptsWithheldCalls").returns("no");
     const getData = sinon.stub();
     getData.withArgs("case").returns({ reference: "ED-0001-0002" });
 
@@ -216,10 +223,11 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
     assert.equal(
       setData.calledOnceWithExactly("personalDetails", {
         full_name: "Jane Doe",
-        date_of_birth: "2001-05-12",
+        dob: "2001-05-12",
         mobile_phone: "07123456789",
         safe_to_contact: "DONT_CALL",
         email: "jane@example.com",
+        announce_call: false,
       }),
       true,
     );
@@ -234,6 +242,7 @@ describe("InboundCallEffectsImplementation.saveClientDetails", () => {
           mobile_phone: "07123456789",
           safe_to_contact: "DONT_CALL",
           email: "jane@example.com",
+          announce_call: false,
         },
       ),
       true,

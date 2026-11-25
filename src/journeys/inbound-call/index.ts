@@ -6,6 +6,7 @@ import {
 } from "./journey.js";
 import { InboundCallEffectsRegistry } from "../effects.js";
 import type { Deps } from "../api.js";
+import { transformers } from "../transformers.js";
 
 // Package entrypoint for the inbound call journey.
 // app.ts registers this package with forge.registerPackage(...).
@@ -18,6 +19,6 @@ export const inboundCallJourneyPackage = createForgePackage<Deps>({
 });
 export const caseJourneyPackage = createForgePackage<Deps>({
   journey: caseJourney,
-  functions: [InboundCallEffectsRegistry],
+  functions: [InboundCallEffectsRegistry, transformers],
 });
 // Add custom functions/components here later if this journey needs them.

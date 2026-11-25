@@ -69,6 +69,7 @@ function hasAdoptionDetails(_case: CaseDetails): boolean {
 export interface InboundCallEffectShape {
   GetAllCases: () => EffectFunctionExpr;
   LoadCase: () => EffectFunctionExpr;
+  LoadPersonalDetails: () => EffectFunctionExpr;
   SetAgentName: () => EffectFunctionExpr;
   saveClientDetails: () => EffectFunctionExpr;
   saveClientAddress: () => EffectFunctionExpr;
@@ -115,6 +116,25 @@ export const InboundCallEffectsImplementation: Record<
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
   },
+
+  /**
+   * Load case from the api
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  LoadPersonalDetails:
+    (deps: Deps) => async (context: EffectFunctionContext) => {
+      const caseId = context.getRequestParam("caseId");
+      if (caseId === undefined) {
+        throw new Error("Case id is required to load a case");
+      }
+      const authenticatedAxiosState = getAuthenticatedAxios(context);
+      const personalDetails = await deps.caseApi.loadPersonalDetails(
+        authenticatedAxiosState,
+        caseId,
+      );
+      context.setData("personalDetails", personalDetails);
+    },
 
   /**
    * Update client adoption details
@@ -215,24 +235,16 @@ export const InboundCallEffectsImplementation: Record<
     const _case = getCase(context);
     const authenticatedAxiosState = getAuthenticatedAxios(context);
 
-    const personalDetails = {
-      full_name: context.getPostData("fullName"),
-      date_of_birth: context.getPostData("dateOfBirth"),
-      mobile_phone: context.getPostData("phoneNumber"),
-      safe_to_contact:
-        context.getPostData("safeToCall") === "yes" ? "SAFE" : "DONT_CALL",
-      email: context.getPostData("email"),
-    };
-
+    const announceCall = context.getPostData("acceptsWithheldCalls") === "yes";
     const apiPersonalDetails = {
-      full_name: personalDetails.full_name,
-      dob: personalDetails.date_of_birth,
-      mobile_phone: personalDetails.mobile_phone,
-      safe_to_contact: personalDetails.safe_to_contact,
-      email: personalDetails.email,
+      full_name: context.getPostData("fullName"),
+      dob: context.getPostData("dateOfBirth"),
+      mobile_phone: context.getPostData("phoneNumber"),
+      safe_to_contact: context.getPostData("safeToCall"),
+      email: context.getPostData("email"),
+      announce_call: announceCall,
     };
-
-    context.setData("personalDetails", personalDetails);
+    context.setData("personalDetails", apiPersonalDetails);
 
     await deps.caseApi.updatePersonalDetails(
       authenticatedAxiosState,
@@ -388,6 +400,10 @@ export const InboundCallEffects: InboundCallEffectShape = {
   LoadCase: InboundCallEffectsRegistry.register(
     "LoadCase",
     InboundCallEffectsImplementation.LoadCase,
+  ),
+  LoadPersonalDetails: InboundCallEffectsRegistry.register(
+    "LoadPersonalDetails",
+    InboundCallEffectsImplementation.LoadPersonalDetails,
   ),
   AdaptationEffects: InboundCallEffectsRegistry.register(
     "AdaptationEffects",
