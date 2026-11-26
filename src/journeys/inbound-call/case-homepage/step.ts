@@ -1,4 +1,9 @@
-import { step, access, Data, Condition } from "@ministryofjustice/hmpps-forge/core/authoring";
+import {
+  step,
+  access,
+  Data,
+  Condition,
+} from "@ministryofjustice/hmpps-forge/core/authoring";
 import { clientHomeBlock, clientDetailsBlock } from "./block.js";
 import { InboundCallEffects } from "#src/journeys/effects.js";
 
@@ -15,4 +20,5 @@ export const clientCaseStep = step({
       when: Data("case.thirdparty_details").match(Condition.IsRequired()),
       effects: [InboundCallEffects.LoadThirdPartyDetails()],
     }),
-],});
+  ],
+});

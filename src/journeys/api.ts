@@ -41,5 +41,5 @@ export interface CaseApiService {
   getThirdpartyDetails: (
     axiosMiddleware: AxiosInstanceWrapper,
     caseId: string,
-  ) => Promise<any>
+  ) => Promise<any>;
 }

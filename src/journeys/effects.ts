@@ -117,12 +117,16 @@ export const InboundCallEffectsImplementation: Record<
     context.setData("case", _case);
   },
 
-  LoadThirdPartyDetails: (deps: Deps) => async (context: EffectFunctionContext) => {
-    const _case = getCase(context);
-    const authenticatedAxiosState = getAuthenticatedAxios(context);
-    const thirdparty = await deps.caseApi.getThirdpartyDetails(authenticatedAxiosState, _case.reference);
-    context.setData("thirdparty", thirdparty);
-  },
+  LoadThirdPartyDetails:
+    (deps: Deps) => async (context: EffectFunctionContext) => {
+      const _case = getCase(context);
+      const authenticatedAxiosState = getAuthenticatedAxios(context);
+      const thirdparty = await deps.caseApi.getThirdpartyDetails(
+        authenticatedAxiosState,
+        _case.reference,
+      );
+      context.setData("thirdparty", thirdparty);
+    },
 
   /**
    * Update client adoption details
@@ -440,5 +444,5 @@ export const InboundCallEffects: InboundCallEffectShape = {
   LoadThirdPartyDetails: InboundCallEffectsRegistry.register(
     "LoadThirdPartyDetails",
     InboundCallEffectsImplementation.LoadThirdPartyDetails,
-  )
+  ),
 };

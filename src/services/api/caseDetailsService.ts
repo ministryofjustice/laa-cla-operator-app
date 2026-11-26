@@ -142,6 +142,8 @@ export async function getThirdpartyDetails(
   caseId: string,
 ): Promise<ThirdPartyDetails> {
   const configuredAxios = configureAxiosInstance(axiosMiddleware);
-  const response = await configuredAxios.get(`/call_centre/api/v1/case/${caseId}/thirdparty_details/`);
+  const response = await configuredAxios.get(
+    `/call_centre/api/v1/case/${caseId}/thirdparty_details/`,
+  );
   return response.data;
 }

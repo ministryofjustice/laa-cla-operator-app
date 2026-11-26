@@ -27,8 +27,7 @@ export class ClientHomePage {
   }
 
   get thirdPartySection(): Locator {
-    return this.page
-    .getByRole("heading", { name: "Third Party Details" });
+    return this.page.getByRole("heading", { name: "Third Party Details" });
   }
 
   async goto(): Promise<void> {
