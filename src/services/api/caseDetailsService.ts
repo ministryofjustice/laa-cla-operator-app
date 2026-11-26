@@ -137,6 +137,12 @@ export async function saveAdaptationDetails(
   return response.data;
 }
 
+/**
+ * Get third party details for a case.
+ * @param {AxiosInstanceWrapper} axiosMiddleware - Axios wrapper
+ * @param {string} caseId - Case ID
+ * @returns {Promise<ThirdPartyDetails>} Third party info
+ */
 export async function getThirdpartyDetails(
   axiosMiddleware: AxiosInstanceWrapper,
   caseId: string,

@@ -117,6 +117,11 @@ export const InboundCallEffectsImplementation: Record<
     context.setData("case", _case);
   },
 
+  /**
+   * Load third party details for a case
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
   LoadThirdPartyDetails:
     (deps: Deps) => async (context: EffectFunctionContext) => {
       const _case = getCase(context);
