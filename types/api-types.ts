@@ -74,7 +74,7 @@ export interface SearchCasesParams {
   pageNumber?: number;
 }
 
-export interface saveAdaptationDetailsParams {
+export interface SaveAdaptationDetailsParams {
   bsl_webcam?: boolean;
   minicom?: boolean;
   text_relay?: boolean;
