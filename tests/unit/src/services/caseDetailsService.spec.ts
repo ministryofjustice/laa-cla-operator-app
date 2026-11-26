@@ -6,6 +6,7 @@ import {
   searchCases,
   loadCase,
   saveAdaptationDetails,
+  getThirdpartyDetails,
 } from "#src/services/api/caseDetailsService.js";
 import { strict as assert } from "assert";
 import { expect } from "chai";
@@ -331,6 +332,46 @@ describe("caseDetailsService", () => {
 
       // Assert
       expect(_case).to.deep.equal(mockResponse.data);
+    });
+
+    it("should load third party details", async () => {
+      // Arrange
+      const mockResponse = {
+        data: {
+          reference: "2a9f6beb66324ebfb1025bb263c4660a",
+          personal_details: {
+            reference: "3dba59310a65418b9b69cd6c91b27cbd",
+            title: "Mr",
+            full_name: "Bob",
+            postcode: "SW1H 9AJ",
+            street: "102 Petty France",
+            mobile_phone: "07000000000",
+            home_phone: "",
+            email: "",
+            safe_to_contact: "SAFE",
+            contact_for_research: null,
+          },
+          pass_phrase: "monkey",
+          reason: "CHILD_PATIENT",
+          personal_relationship: "OTHER",
+          personal_relationship_note: "Neighbour",
+          spoke_to: null,
+          no_contact_reason: null,
+          organisation_name: null,
+        },
+      };
+
+      getStub.resolves(mockResponse);
+
+      // Act
+      const result = await getThirdpartyDetails(
+        axiosMiddlewareStub,
+        "FA-3465-9114",
+      );
+
+      // Assert
+      expect(result).to.deep.equal(mockResponse.data);
+      expect(result.reference).to.equal(mockResponse.data.reference);
     });
 
     it("should return friendly API error message", async () => {

@@ -79,6 +79,7 @@ export interface InboundCallEffectShape {
   PostcodeLookup: () => EffectFunctionExpr;
   SaveToSession: () => EffectFunctionExpr;
   SaveAddressLookup: () => EffectFunctionExpr;
+  LoadThirdPartyDetails: () => EffectFunctionExpr;
 }
 
 type InboundCallEffectsImplementation = (
@@ -115,6 +116,22 @@ export const InboundCallEffectsImplementation: Record<
     const _case = await deps.caseApi.loadCase(authenticatedAxiosState, caseId);
     context.setData("case", _case);
   },
+
+  /**
+   * Load third party details for a case
+   * @param {Deps} deps - The dependencies required for the effect.
+   * @returns {(context: EffectFunctionContext) => Promise<void>} Effect function bound to dependencies.
+   */
+  LoadThirdPartyDetails:
+    (deps: Deps) => async (context: EffectFunctionContext) => {
+      const _case = getCase(context);
+      const authenticatedAxiosState = getAuthenticatedAxios(context);
+      const thirdparty = await deps.caseApi.getThirdpartyDetails(
+        authenticatedAxiosState,
+        _case.reference,
+      );
+      context.setData("thirdparty", thirdparty);
+    },
 
   /**
    * Update client adoption details
@@ -428,5 +445,9 @@ export const InboundCallEffects: InboundCallEffectShape = {
   SaveAddressLookup: InboundCallEffectsRegistry.register(
     "SaveAddressLookup",
     InboundCallEffectsImplementation.SaveAddressLookup,
+  ),
+  LoadThirdPartyDetails: InboundCallEffectsRegistry.register(
+    "LoadThirdPartyDetails",
+    InboundCallEffectsImplementation.LoadThirdPartyDetails,
   ),
 };

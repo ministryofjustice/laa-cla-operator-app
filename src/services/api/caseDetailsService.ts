@@ -5,7 +5,8 @@ import type {
   SearchCasesParams,
   SearchCasesResponse,
   saveAdaptationDetailsResponse,
-  saveAdaptationDetailsParams,
+  SaveAdaptationDetailsParams,
+  ThirdPartyDetails,
 } from "#types/api-types.js";
 import { configureAxiosInstance, handleApiCall } from "./baseApiService.js";
 
@@ -117,14 +118,14 @@ export async function createCase(
  * @param {AxiosInstanceWrapper} axiosMiddleware The Axios instance wrapper used to make the API call.
  * @param {boolean} isUpdate Whether to create (POST) or update (PATCH) the adaptation details.
  * @param {string} caseId The ID of the case the adaptation details belong to.
- * @param {saveAdaptationDetailsParams} body The adaptation details payload to send.
+ * @param {SaveAdaptationDetailsParams} body The adaptation details payload to send.
  * @returns {Promise<saveAdaptationDetailsResponse>} The saved adaptation details.
  */
 export async function saveAdaptationDetails(
   axiosMiddleware: AxiosInstanceWrapper,
   isUpdate: boolean,
   caseId: string,
-  body: saveAdaptationDetailsParams,
+  body: SaveAdaptationDetailsParams,
 ): Promise<saveAdaptationDetailsResponse> {
   const configuredAxios = configureAxiosInstance(axiosMiddleware);
   const url = `/call_centre/api/v1/case/${caseId}/adaptation_details/`;
@@ -133,5 +134,22 @@ export async function saveAdaptationDetails(
     ? await configuredAxios.patch<saveAdaptationDetailsResponse>(url, body)
     : await configuredAxios.post<saveAdaptationDetailsResponse>(url, body);
 
+  return response.data;
+}
+
+/**
+ * Get third party details for a case.
+ * @param {AxiosInstanceWrapper} axiosMiddleware - Axios wrapper
+ * @param {string} caseId - Case ID
+ * @returns {Promise<ThirdPartyDetails>} Third party info
+ */
+export async function getThirdpartyDetails(
+  axiosMiddleware: AxiosInstanceWrapper,
+  caseId: string,
+): Promise<ThirdPartyDetails> {
+  const configuredAxios = configureAxiosInstance(axiosMiddleware);
+  const response = await configuredAxios.get<ThirdPartyDetails>(
+    `/call_centre/api/v1/case/${caseId}/thirdparty_details/`,
+  );
   return response.data;
 }

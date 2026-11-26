@@ -31,6 +31,29 @@ export interface CaseDetails {
   adaptation_details?: string | null;
 }
 
+export interface ThirdPartyDetails {
+  reference: string;
+  personal_details: {
+    reference: string;
+    title: string | null;
+    full_name: string | null;
+    postcode: string | null;
+    street: string | null;
+    mobile_phone: string | null;
+    home_phone: string;
+    email: string;
+    safe_to_contact: string | null;
+    contact_for_research: boolean | null;
+  };
+  pass_phrase: string | null;
+  reason: string | null;
+  personal_relationship: string;
+  personal_relationship_note: string;
+  spoke_to: boolean | null;
+  no_contact_reason: string | null;
+  organisation_name: string | null;
+}
+
 export interface GetAllCasesResponse {
   count: number;
   next: string | null;
@@ -51,7 +74,7 @@ export interface SearchCasesParams {
   pageNumber?: number;
 }
 
-export interface saveAdaptationDetailsParams {
+export interface SaveAdaptationDetailsParams {
   bsl_webcam?: boolean;
   minicom?: boolean;
   text_relay?: boolean;
