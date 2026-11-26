@@ -16,6 +16,7 @@ import {
 } from './controlledWorkSteps.js'
 import { reconcileControlledWorkAnswers } from './controlledWorkReconcile.js'
 import { getChangeAnswerNextStep } from './controlledWorkChange.js'
+import { SHARED_OWNERSHIP_HOUSING_FIELD_CODES } from './sharedOwnershipHousingCostsAnswers.js'
 import {
   endControlledWorkChange,
   getControlledWorkChangeNextStep,
@@ -629,6 +630,14 @@ function syncForgeAnswers(context: EffectFunctionContext, answers: ControlledWor
     }
     context.setAnswer(code, value)
   }
+  for (const [code, fieldCode] of Object.entries(SHARED_OWNERSHIP_HOUSING_FIELD_CODES)) {
+    const value = context.getAnswer(code)
+    if (answers['property-owned'] === 'shared_ownership' && value !== undefined) {
+      context.setAnswer(fieldCode, value)
+    } else {
+      context.clearAnswer(fieldCode)
+    }
+  }
 }
 
 function setJourneyData(context: EffectFunctionContext, answers: ControlledWorkAnswers, journeyContext: ControlledWorkContext): void {
@@ -876,6 +885,11 @@ function reconcileBenefitDetailsDrafts(
 function readSubmittedAnswers(context: EffectFunctionContext, stepCode: ControlledWorkStepCode) {
   const posted = context.getAllPostData()
   const submitted = Object.fromEntries(getStepAnswerCodes(stepCode).map((code) => [code, posted[code]]))
+  if (stepCode === CONTROLLED_WORK_STEP_CODES.sharedOwnershipHousingCosts) {
+    for (const [code, fieldCode] of Object.entries(SHARED_OWNERSHIP_HOUSING_FIELD_CODES)) {
+      submitted[code] = posted[fieldCode]
+    }
+  }
   if (stepCode === CONTROLLED_WORK_STEP_CODES.propertyEntry) {
     return {
       ...submitted,
@@ -1118,9 +1132,6 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         saved['partner-additional-property-owned'] !== merged['partner-additional-property-owned']
       ) {
         delete merged['partner-additional-property-details-completed']
-      }
-      if (stepCode === CONTROLLED_WORK_STEP_CODES.applicant && saved.partner !== merged.partner) {
-        delete merged['property-owned']
       }
       const journeyContext = getControlledWorkContext(context, merged)
       const changing = isControlledWorkChangeActive(session, caseId)

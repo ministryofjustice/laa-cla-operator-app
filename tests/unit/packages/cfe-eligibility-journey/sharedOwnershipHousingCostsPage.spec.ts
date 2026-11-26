@@ -25,6 +25,7 @@ import {
 } from '#packages/cfe-eligibility-journey/src/sharedOwnershipHousingCostsPage/sharedOwnershipHousingCostsBlock.js'
 import { sharedOwnershipHousingCostsStep } from '#packages/cfe-eligibility-journey/src/sharedOwnershipHousingCostsPage/sharedOwnershipHousingCostsStep.js'
 import { propertyLandlordStep } from '#packages/cfe-eligibility-journey/src/propertyLandlordPage/propertyLandlordStep.js'
+import { housingCostsFields } from '#packages/cfe-eligibility-journey/src/housingCostsPage/housingCostsBlock.js'
 
 const ADULT = { isUnder18: false }
 const SHARED_OWNERSHIP_ANSWERS = {
@@ -36,6 +37,12 @@ const SHARED_OWNERSHIP_ANSWERS = {
 } as const satisfies ControlledWorkAnswers
 
 describe('Controlled-work shared ownership housing-costs page', () => {
+  it('uses distinct Housing Benefit field codes from the alternative housing-costs page', () => {
+    for (const key of ['housingBenefit', 'housingBenefitAmount', 'housingBenefitFrequency'] as const) {
+      expect(sharedOwnershipHousingCostFields[key].code).not.to.equal(housingCostsFields[key].code)
+    }
+  })
+
   it('uses the shared two-column question layout and the CCQ content', () => {
     const content = JSON.stringify(sharedOwnershipHousingCostsPageContent)
     const layout = JSON.stringify(eligibilityQuestionPageLayout({ questionBlocks: [], guidanceBlocks: [] }))

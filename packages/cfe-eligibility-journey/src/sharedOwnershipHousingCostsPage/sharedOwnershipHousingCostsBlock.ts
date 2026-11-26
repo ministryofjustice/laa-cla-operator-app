@@ -21,6 +21,7 @@ import {
   SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES,
 } from '../controlledWork/controlledWorkTypes.js'
 import { moneyConditions } from '../moneyFieldHelpers.js'
+import { SHARED_OWNERSHIP_HOUSING_FIELD_CODES } from '../controlledWork/sharedOwnershipHousingCostsAnswers.js'
 
 const QUESTION = 'Housing costs'
 const ZERO = 0
@@ -29,7 +30,9 @@ const SECTION_HEADING_LEVEL = 3
 const CONTROLLED_WORK_GUIDANCE_URL =
   'https://assets.publishing.service.gov.uk/media/684ff44229fb1002010c4e6c/LC_s_guidance_on_determining_financial_eligibility__controlled_and_mediation_.pdf'
 const PARTNER_PRESENT = Answer('partner').match(Condition.Equals('yes'))
-const HAS_HOUSING_BENEFIT = Answer('housing_benefit_relevant').match(Condition.Equals('yes'))
+const HAS_HOUSING_BENEFIT = Answer(SHARED_OWNERSHIP_HOUSING_FIELD_CODES.housing_benefit_relevant).match(
+  Condition.Equals('yes'),
+)
 const FREQUENCY_LABELS = {
   every_week: 'Every week',
   every_two_weeks: 'Every 2 weeks',
@@ -139,7 +142,7 @@ const combinedFrequencyField = GovUKRadioInput({
 })
 
 const housingBenefitAmountField = GovUKTextInput({
-  code: 'housing_benefit_value',
+  code: SHARED_OWNERSHIP_HOUSING_FIELD_CODES.housing_benefit_value,
   label: { text: 'Amount' },
   inputType: 'text',
   attributes: { inputmode: 'decimal' },
@@ -166,7 +169,7 @@ const housingBenefitAmountField = GovUKTextInput({
           rent: Answer('rent'),
           mortgage: Answer('shared_ownership_mortgage'),
           combinedFrequency: Answer('combined_frequency'),
-          benefitFrequency: Answer('housing_benefit_frequency'),
+          benefitFrequency: Answer(SHARED_OWNERSHIP_HOUSING_FIELD_CODES.housing_benefit_frequency),
         }),
       ),
       message: 'Housing Benefit cannot be higher than housing costs.',
@@ -175,7 +178,7 @@ const housingBenefitAmountField = GovUKTextInput({
 })
 
 const housingBenefitFrequencyField = GovUKRadioInput({
-  code: 'housing_benefit_frequency',
+  code: SHARED_OWNERSHIP_HOUSING_FIELD_CODES.housing_benefit_frequency,
   fieldset: {
     legend: {
       text: 'Frequency',
@@ -196,7 +199,7 @@ const housingBenefitFrequencyField = GovUKRadioInput({
 })
 
 export const housingBenefitField = GovUKRadioInput({
-  code: 'housing_benefit_relevant',
+  code: SHARED_OWNERSHIP_HOUSING_FIELD_CODES.housing_benefit_relevant,
   fieldset: {
     legend: {
       text: Conditional({

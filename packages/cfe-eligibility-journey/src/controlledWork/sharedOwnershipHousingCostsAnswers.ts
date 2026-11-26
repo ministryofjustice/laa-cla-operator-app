@@ -14,6 +14,13 @@ import {
 } from './sharedOwnershipHousingCostsValidation.js'
 
 const ZERO = 0
+// Forge clears fields on unreachable steps, so the alternative housing pages cannot share field codes.
+export const SHARED_OWNERSHIP_HOUSING_FIELD_CODES = {
+  housing_benefit_relevant: 'shared_ownership_housing_benefit_relevant',
+  housing_benefit_value: 'shared_ownership_housing_benefit_value',
+  housing_benefit_frequency: 'shared_ownership_housing_benefit_frequency',
+} as const satisfies Partial<Record<ControlledWorkAnswerCode, string>>
+
 const AMOUNT_CODE_SET = new Set<string>(SHARED_OWNERSHIP_HOUSING_COST_AMOUNT_CODES)
 const HOUSING_BENEFIT_CONDITIONAL_CODE_SET = new Set<string>(['housing_benefit_value', 'housing_benefit_frequency'])
 const HOUSING_COST_FREQUENCY_SET = new Set<string>(SHARED_OWNERSHIP_HOUSING_COST_FREQUENCIES)

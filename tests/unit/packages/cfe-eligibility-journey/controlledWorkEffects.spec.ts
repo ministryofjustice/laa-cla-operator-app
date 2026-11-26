@@ -192,7 +192,7 @@ describe('Controlled-work effects', () => {
     )
   })
 
-  it('persists and prepopulates property ownership, replaces changed choices, and prunes it when partner context changes', () => {
+  it('persists and prepopulates property ownership, replaces changed choices, and preserves it when partner context changes', () => {
     const session = newSession()
     save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'no' })
     save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
@@ -207,9 +207,14 @@ describe('Controlled-work effects', () => {
     expect(restore(session, ADULT_DOB).answers.get('property-owned')).to.equal('none')
 
     const changedPartner = save(session, ADULT_DOB, STEPS.applicant, { partner: 'no', passporting: 'yes' })
-    expect(readControlledWorkAnswers(session, CASE_ID)).to.not.have.property('property-owned')
-    expect(changedPartner.answers.has('property-owned')).to.equal(false)
-    expect(changedPartner.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.property)
+    expect(readControlledWorkAnswers(session, CASE_ID)['property-owned']).to.equal('none')
+    expect(changedPartner.answers.get('property-owned')).to.equal('none')
+    expect(changedPartner.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.additionalProperty)
+
+    const addedPartner = save(session, ADULT_DOB, STEPS.applicant, { partner: 'yes', passporting: 'yes' })
+    expect(readControlledWorkAnswers(session, CASE_ID)['property-owned']).to.equal('none')
+    expect(addedPartner.answers.get('property-owned')).to.equal('none')
+    expect(restore(session, ADULT_DOB).answers.get('property-owned')).to.equal('none')
   })
 
   it('persists and prepopulates the landlord answer, replaces changes, and prunes it when ownership changes', () => {
@@ -242,7 +247,7 @@ describe('Controlled-work effects', () => {
       rent: '100',
       shared_ownership_mortgage: '50',
       combined_frequency: 'monthly',
-      housing_benefit_relevant: 'no',
+      shared_ownership_housing_benefit_relevant: 'no',
     })
     save(session, ADULT_DOB, STEPS.propertyEntry, {
       house_value: '350000',
@@ -984,30 +989,43 @@ describe('Controlled-work effects', () => {
       housing_benefit_value: '40',
       housing_benefit_frequency: 'monthly',
     }
-    save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, answers)
+    const postedAnswers = {
+      rent: '100',
+      shared_ownership_mortgage: '50',
+      combined_frequency: 'monthly',
+      shared_ownership_housing_benefit_relevant: 'yes',
+      shared_ownership_housing_benefit_value: '40',
+      shared_ownership_housing_benefit_frequency: 'monthly',
+    }
+    save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, postedAnswers)
     expect(readControlledWorkAnswers(session, CASE_ID)).to.include(answers)
     expect(restore(session, ADULT_DOB).answers.get('rent')).to.equal('100')
     expect(restore(session, ADULT_DOB).answers.get('housing_benefit_frequency')).to.equal('monthly')
+    expect(restore(session, ADULT_DOB).answers.get('shared_ownership_housing_benefit_relevant')).to.equal('yes')
+    expect(restore(session, ADULT_DOB).answers.get('shared_ownership_housing_benefit_value')).to.equal('40')
+    expect(restore(session, ADULT_DOB).answers.get('shared_ownership_housing_benefit_frequency')).to.equal('monthly')
 
     save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, {
       rent: '100',
       shared_ownership_mortgage: '50',
       combined_frequency: 'monthly',
-      housing_benefit_relevant: 'no',
+      shared_ownership_housing_benefit_relevant: 'no',
     })
     expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('housing_benefit_value')
     expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('housing_benefit_frequency')
     expect(restore(session, ADULT_DOB).answers.has('housing_benefit_value')).to.equal(false)
+    expect(restore(session, ADULT_DOB).answers.has('shared_ownership_housing_benefit_value')).to.equal(false)
+    expect(restore(session, ADULT_DOB).answers.has('shared_ownership_housing_benefit_frequency')).to.equal(false)
 
     save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, {
       rent: '0',
       shared_ownership_mortgage: '0',
       combined_frequency: 'monthly',
-      housing_benefit_relevant: 'no',
+      shared_ownership_housing_benefit_relevant: 'no',
     })
     expect(readControlledWorkAnswers(session, CASE_ID)).not.to.have.property('combined_frequency')
 
-    save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, answers)
+    save(session, ADULT_DOB, STEPS.sharedOwnershipHousingCosts, postedAnswers)
     const changedOwnership = save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'outright' })
     const saved = readControlledWorkAnswers(session, CASE_ID)
     expect(saved).not.to.have.property('property-landlord')
@@ -1018,6 +1036,9 @@ describe('Controlled-work effects', () => {
     expect(saved).not.to.have.property('housing_benefit_value')
     expect(saved).not.to.have.property('housing_benefit_frequency')
     expect(changedOwnership.answers.has('rent')).to.equal(false)
+    expect(changedOwnership.answers.has('shared_ownership_housing_benefit_relevant')).to.equal(false)
+    expect(changedOwnership.answers.has('shared_ownership_housing_benefit_value')).to.equal(false)
+    expect(changedOwnership.answers.has('shared_ownership_housing_benefit_frequency')).to.equal(false)
   })
 
   it('persists and prepopulates employment status, replacing the answer when it changes', () => {

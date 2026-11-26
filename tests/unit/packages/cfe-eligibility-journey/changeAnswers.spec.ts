@@ -325,6 +325,9 @@ describe('Controlled-work change answers', () => {
         STEPS.partnerAdditionalProperty,
         STEPS.partnerAssets,
       ])
+      expect(finished.trail).not.to.include(STEPS.property)
+      expect(finished.trail).not.to.include(STEPS.propertyEntry)
+      expect(user.answers).to.include({ 'property-owned': 'outright', ...PROPERTY_ENTRY_ANSWERS })
       expect(user.answers).to.include({
         partner: 'yes',
         'partner-over-60': 'no',
@@ -343,7 +346,8 @@ describe('Controlled-work change answers', () => {
       expect(Object.keys(user.savedAnswers).some(isPartnerCode)).to.equal(true)
 
       await user.open(STEPS.applicant, { change: true })
-      await user.finishFrom(await user.submit(STEPS.applicant, { partner: 'no', passporting: 'no' }))
+      const afterRemoval = await user.submit(STEPS.applicant, { partner: 'no', passporting: 'no' })
+      expect(afterRemoval.step).to.equal(COMPLETE)
 
       expect(Object.keys(user.savedAnswers).filter(isPartnerCode)).to.deep.equal([])
       expect(user.savedAnswers).to.deep.equal(SINGLE_HOMEOWNER)
