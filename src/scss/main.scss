@@ -1,6 +1,6 @@
 //custom header
 :root {
-  --page-header-bg: #1d70b8; 
+  --page-header-bg: #1d70b8;
   --page-header-text: #ffffff;
 
   --page-header-name-size: 36px;
@@ -114,12 +114,10 @@ $ucd-gutter: 50px;
   margin: 0;
   color: var(--page-header-text);
   line-height: 1.1;
-
 }
 
 .pageHeaderBanner__ref {
   color: var(--page-header-text);
-  
 }
 
 .pageHeaderBanner .pageHeaderBanner__actions {
