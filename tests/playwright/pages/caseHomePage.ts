@@ -4,10 +4,11 @@ import { TEST_CONFIG } from "../playwright.config.js";
 export class CaseHomePageDetails {
   private readonly page: Page;
 
-  // Interruption card
-  readonly interruptionCard: Locator;
+  // Page header banner
+  readonly pageHeaderBanner: Locator;
+  readonly caseName: Locator;
   readonly caseReference: Locator;
-  readonly cardActions: Locator;
+  readonly bannerActions: Locator;
   readonly manageCaseButton: Locator;
   readonly arrangeCallbackButton: Locator;
   readonly signpostButton: Locator;
@@ -19,21 +20,22 @@ export class CaseHomePageDetails {
   constructor(page: Page) {
     this.page = page;
 
-    this.interruptionCard = page.locator(".moj-interruption-card");
-    this.caseReference = this.interruptionCard.locator(
-      ".card-header a.govuk-link",
+    this.pageHeaderBanner = page.locator(".pageHeaderBanner");
+    this.caseName = this.pageHeaderBanner.locator(".pageHeaderBanner__name");
+    this.caseReference = this.pageHeaderBanner.locator(
+      ".pageHeaderBanner__ref",
     );
-    this.cardActions = this.interruptionCard.locator(
-      ".moj-interruption-card__actions",
+    this.bannerActions = this.pageHeaderBanner.locator(
+      ".pageHeaderBanner__actions",
     );
 
-    this.manageCaseButton = this.cardActions.getByRole("button", {
-      name: "Manage Case",
+    this.manageCaseButton = this.bannerActions.getByRole("button", {
+      name: "Manage case",
     });
-    this.arrangeCallbackButton = this.cardActions.getByRole("button", {
-      name: "Arrange CallBack",
+    this.arrangeCallbackButton = this.bannerActions.getByRole("button", {
+      name: "Arrange callback",
     });
-    this.signpostButton = this.cardActions.getByRole("button", {
+    this.signpostButton = this.bannerActions.getByRole("button", {
       name: "Signpost to other help",
     });
   }

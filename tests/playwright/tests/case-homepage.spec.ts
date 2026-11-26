@@ -15,7 +15,7 @@ test.describe("case home page", () => {
     await expect(caseHomePageDetails.caseReference).toHaveText("ED-0001-0002");
   });
 
-  test("interruption card shows action buttons", async ({ pages }) => {
+  test("shows action buttons", async ({ pages }) => {
     const { caseHomePageDetails } = pages;
 
     await expect(caseHomePageDetails.manageCaseButton).toBeVisible();
