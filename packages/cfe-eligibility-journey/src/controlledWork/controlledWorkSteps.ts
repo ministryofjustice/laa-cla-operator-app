@@ -934,15 +934,15 @@ export function getFirstMissingStep(answers: ControlledWorkAnswers, context: Con
  * @returns {boolean} True when nothing further needs answering
  */
 export function isControlledWorkComplete(answers: ControlledWorkAnswers, context: ControlledWorkContext): boolean {
-  const resolvedState = { answers: resolveControlledWorkJourney(answers, context).answers, context }
-  const route = resolveRoute(resolvedState)
-  // The non-passported means route still has controlled-work pages after the client income section.
-  return (
-    route !== ASSESSMENT_ROUTES.undetermined &&
-    !isMeansTestedWithoutPassporting(resolvedState) &&
-    !getApplicableSteps(answers, context).includes(STEPS.property) &&
-    findMissingSteps(answers, context).length === 0
-  )
+  const resolved = resolveControlledWorkJourney(answers, context)
+  const route = resolveRoute({ answers: resolved.answers, context })
+  const cannotUseService =
+    (resolved.answers['property-owned'] === 'shared_ownership' &&
+      resolved.answers['property-landlord'] === NO) ||
+    resolved.answers['additional-property-owned'] === 'shared_ownership' ||
+    resolved.answers['partner-additional-property-owned'] === 'shared_ownership'
+
+  return route !== ASSESSMENT_ROUTES.undetermined && !cannotUseService && findMissingSteps(resolved.answers, context).length === 0
 }
 
 /**

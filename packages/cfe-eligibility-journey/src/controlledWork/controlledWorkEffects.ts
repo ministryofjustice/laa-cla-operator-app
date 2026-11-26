@@ -10,6 +10,7 @@ import {
   getNextStep,
   getStepAnswerCodes,
   isControlledWorkChildcareEligible,
+  isControlledWorkComplete,
   isStepApplicable,
   resolveControlledWorkJourney,
 } from './controlledWorkSteps.js'
@@ -27,6 +28,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   applicableSteps: 'controlledWorkApplicableSteps',
   nextStep: 'controlledWorkNextStep',
   firstMissingStep: 'controlledWorkFirstMissingStep',
+  complete: 'controlledWorkComplete',
   dependantIncomeCollection: 'dependant_incomes',
   dependantIncomeMaxRows: 'controlledWorkDependantIncomeMaxRows',
   incomeCollection: 'incomes',
@@ -614,7 +616,54 @@ function setJourneyData(context: EffectFunctionContext, answers: ControlledWorkA
   const { steps } = resolveControlledWorkJourney(answers, journeyContext)
   context.setData(CONTROLLED_WORK_DATA_KEYS.applicableSteps, steps)
   context.setData(CONTROLLED_WORK_DATA_KEYS.firstMissingStep, getFirstMissingStep(answers, journeyContext) ?? NO_STEP)
+  context.setData(CONTROLLED_WORK_DATA_KEYS.complete, isControlledWorkComplete(answers, journeyContext))
   context.setData(CONTROLLED_WORK_DATA_KEYS.childcareEligible, journeyContext.eligibleForChildcareCosts === true)
+}
+
+const CONTROLLED_WORK_REPEATING_COLLECTIONS = [
+  [CONTROLLED_WORK_STEP_CODES.dependantIncomeDetails, CONTROLLED_WORK_DATA_KEYS.dependantIncomeCollection],
+  [CONTROLLED_WORK_STEP_CODES.income, CONTROLLED_WORK_DATA_KEYS.incomeCollection],
+  [CONTROLLED_WORK_STEP_CODES.partnerIncome, CONTROLLED_WORK_DATA_KEYS.partnerIncomeCollection],
+  [CONTROLLED_WORK_STEP_CODES.benefitDetails, CONTROLLED_WORK_DATA_KEYS.benefitCollection],
+  [CONTROLLED_WORK_STEP_CODES.partnerBenefitDetails, CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection],
+  [CONTROLLED_WORK_STEP_CODES.additionalPropertyDetails, CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection],
+  [CONTROLLED_WORK_STEP_CODES.partnerAdditionalPropertyDetails, CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection],
+  [CONTROLLED_WORK_STEP_CODES.assets, CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection],
+  [CONTROLLED_WORK_STEP_CODES.partnerAssets, CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection],
+] as const
+
+export type ControlledWorkActiveCollections = Partial<Record<(typeof CONTROLLED_WORK_REPEATING_COLLECTIONS)[number][1], readonly unknown[]>>
+
+export interface ActiveControlledWorkData {
+  answers: ControlledWorkAnswers
+  collections: ControlledWorkActiveCollections
+}
+
+/**
+ * Resolves the active answers and repeating collections for a case without mutating its session drafts.
+ * @param {FinancialEligibilitySession} session Session containing the case drafts
+ * @param {string} caseId Case identifier used to scope both answer and collection drafts
+ * @param {ControlledWorkContext} context Facts derived from the case
+ * @returns {ActiveControlledWorkData} Only valid answers and collections on the active route
+ */
+export function resolveActiveControlledWorkData(
+  session: FinancialEligibilitySession,
+  caseId: string,
+  context: ControlledWorkContext,
+): ActiveControlledWorkData {
+  const { answers } = resolveControlledWorkJourney(readControlledWorkAnswers(session, caseId), context)
+  const casePatterns = session.casePatternDrafts?.[caseId] ?? {}
+  const collections: ControlledWorkActiveCollections = {}
+
+  for (const [stepCode, collectionCode] of CONTROLLED_WORK_REPEATING_COLLECTIONS) {
+    if (!isStepApplicable(stepCode, answers, context)) continue
+    const rows = casePatterns[stepCode]?.[collectionCode]
+    if (Array.isArray(rows)) {
+      Object.assign(collections, { [collectionCode]: [...rows] })
+    }
+  }
+
+  return { answers, collections }
 }
 
 function getDependantIncomeMaximum(answers: ControlledWorkAnswers): number {

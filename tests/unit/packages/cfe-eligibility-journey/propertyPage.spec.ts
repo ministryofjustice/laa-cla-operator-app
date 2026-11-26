@@ -78,6 +78,8 @@ describe('Controlled-work property page', () => {
 
     expect(propertyQuestionFields.single.dependentWhen).to.not.equal(undefined)
     expect(propertyQuestionFields.partner.dependentWhen).to.not.equal(undefined)
+    expect(propertyQuestionFields.single.visibleWhen).to.not.equal(undefined)
+    expect(propertyQuestionFields.partner.visibleWhen).to.not.equal(undefined)
     expect(fields).to.include(SINGLE_QUESTION)
     expect(fields).to.include(PARTNER_QUESTION)
     expect(fields).to.include('"value":"with_mortgage","text":"Yes, with a mortgage or loan"')

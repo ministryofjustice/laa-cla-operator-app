@@ -166,7 +166,7 @@ describe('Controlled-work additional property page', () => {
     )
     expect(isControlledWorkComplete(noAdditionalPropertyAnswers, ADULT)).to.equal(false)
     expect(JSON.stringify(controlledWorkIncompleteStep.blocks)).to.include(
-      'Further controlled-work questions are not yet available',
+      'You must answer all questions that apply to this matter before this journey is complete.',
     )
   })
 

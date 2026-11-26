@@ -116,7 +116,7 @@ describe('Asylum support page', () => {
     expect(submission).to.include('"validate":true')
     expect(submission).to.include('controlled-work-incomplete')
     expect(boundary).to.include(
-      'Your answer has been saved. Further controlled-work questions are not yet available, so this is not a completed assessment.',
+      'Your answer has been saved. You must answer all questions that apply to this matter before this journey is complete.',
     )
   })
 

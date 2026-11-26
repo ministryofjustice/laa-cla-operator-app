@@ -318,6 +318,8 @@ export const CONTROLLED_WORK_STEP_CODES = {
   partnerAssets: 'partner-assets',
 } as const
 
+export const CONTROLLED_WORK_STEP_CODE_LIST = Object.values(CONTROLLED_WORK_STEP_CODES)
+
 export type ControlledWorkStepCode = (typeof CONTROLLED_WORK_STEP_CODES)[keyof typeof CONTROLLED_WORK_STEP_CODES]
 
 export const ASSESSMENT_ROUTES = {

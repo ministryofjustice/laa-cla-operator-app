@@ -64,7 +64,7 @@ describe('Immigration or asylum page', () => {
     expect(controlledWorkIncompleteStep.code).to.equal('controlled-work-incomplete')
     const boundaryBlocks = JSON.stringify(controlledWorkIncompleteStep.blocks)
     expect(boundaryBlocks).to.include(
-      'Your answer has been saved. Further controlled-work questions are not yet available, so this is not a completed assessment.',
+      'Your answer has been saved. You must answer all questions that apply to this matter before this journey is complete.',
     )
     expect(boundaryBlocks).to.include('Change your answer')
   })

@@ -86,6 +86,7 @@ describe('Controlled-work partner additional property page', () => {
     expect(submission).to.include('"validate":true')
     expect(submission).to.include(cannotUseServiceStepCode)
     expect(submission).to.include('controlled-work-incomplete')
+    expect(submission).to.include(STEPS.assets)
     expect(submission).to.include(STEPS.partnerAdditionalPropertyDetails)
     expect(additionalPropertySubmission).to.include(STEPS.partnerAdditionalProperty)
     expect(additionalPropertyDetailsSubmission).to.include(STEPS.partnerAdditionalProperty)

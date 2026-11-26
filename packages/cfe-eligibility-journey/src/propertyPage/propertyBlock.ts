@@ -40,6 +40,7 @@ const propertyValidation = [
 
 const singlePropertyField = GovUKRadioInput({
   code: 'property-owned',
+  visibleWhen: PARTNER_ABSENT,
   dependentWhen: PARTNER_ABSENT,
   fieldset: { legend: { text: SINGLE_QUESTION, classes: 'govuk-visually-hidden' } },
   items: propertyOwnershipOptions,
@@ -48,6 +49,7 @@ const singlePropertyField = GovUKRadioInput({
 
 const partnerPropertyField = GovUKRadioInput({
   code: 'property-owned',
+  visibleWhen: PARTNER_PRESENT,
   dependentWhen: PARTNER_PRESENT,
   fieldset: { legend: { text: PARTNER_QUESTION, classes: 'govuk-visually-hidden' } },
   items: propertyOwnershipOptions,

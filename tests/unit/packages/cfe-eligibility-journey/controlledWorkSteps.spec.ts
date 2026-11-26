@@ -10,18 +10,190 @@ import {
   isStepApplicable,
   isValidControlledWorkAnswer,
   resolveControlledWorkJourney,
+  CONTROLLED_WORK_STEPS,
 } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSteps.js'
 import {
+  CONTROLLED_WORK_STEP_CODE_LIST,
   CONTROLLED_WORK_STEP_CODES as STEPS,
   type ControlledWorkAnswers,
   type ControlledWorkContext,
 } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
+import {
+  CONTROLLED_WORK_INCOMPLETE_STEP_REDIRECTS,
+  controlledWorkIncompleteStep,
+} from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkIncompleteStep.js'
+import { CONTROLLED_WORK_DATA_KEYS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
+import { controlledWorkCompleteStepCode } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkCompleteStep.js'
 
 const ADULT: ControlledWorkContext = { isUnder18: false }
 const MINOR: ControlledWorkContext = { isUnder18: true }
 const UNKNOWN_AGE: ControlledWorkContext = {}
 
 describe('Controlled-work journey rules', () => {
+  it('defines exactly the 37 CCQ controlled-work page IDs once each', () => {
+    const expectedPageIds = [
+      'immigration-or-asylum',
+      'under-18-clr',
+      'aggregated-means',
+      'how-to-aggregate',
+      'regular-income',
+      'under-18-assets',
+      'immigration-or-asylum-type',
+      'asylum-support',
+      'applicant',
+      'dependant-details',
+      'dependant-income',
+      'dependant-income-details',
+      'employment-status',
+      'income',
+      'controlled-work-benefits',
+      'benefit-details',
+      'other-income',
+      'partner-details',
+      'partner-employment-status',
+      'partner-employment-income',
+      'partner-benefits',
+      'partner-benefit-details',
+      'partner-other-income',
+      'outgoings',
+      'partner-outgoings',
+      'property',
+      'property-landlord',
+      'shared-ownership-housing-costs',
+      'mortgage-or-loan-payment',
+      'housing-costs',
+      'property-entry',
+      'additional-property',
+      'additional-property-details',
+      'partner-additional-property',
+      'partner-additional-property-details',
+      'assets',
+      'partner-assets',
+    ]
+    const definedPageIds = CONTROLLED_WORK_STEPS.map(({ code }) => code)
+
+    expect(definedPageIds).to.have.length(37)
+    expect(new Set(definedPageIds).size).to.equal(37)
+    expect(definedPageIds).to.have.members(expectedPageIds)
+    expect(CONTROLLED_WORK_STEP_CODE_LIST).to.have.members(expectedPageIds)
+  })
+
+  it('resolves each assessment-route branch to a complete outcome or a specific missing step', () => {
+    const matrix: Array<{
+      name: string
+      answers: ControlledWorkAnswers
+      context: ControlledWorkContext
+      missing?: keyof typeof STEPS
+      complete?: boolean
+    }> = [
+      {
+        name: 'adult means route',
+        answers: { 'immigration-or-asylum': 'no' },
+        context: ADULT,
+        missing: 'applicant',
+      },
+      {
+        name: 'adult asylum-support exemption',
+        answers: {
+          'immigration-or-asylum': 'yes',
+          'immigration-or-asylum-type': 'asylum',
+          'asylum-support': 'yes',
+        },
+        context: ADULT,
+        complete: true,
+      },
+      {
+        name: 'passported means route after client and partner assets',
+        answers: {
+          'immigration-or-asylum': 'no',
+          partner: 'yes',
+          passporting: 'yes',
+          'partner-over-60': 'no',
+          'property-owned': 'none',
+          'additional-property-owned': 'none',
+          'partner-additional-property-owned': 'none',
+          investments_relevant: 'no',
+          valuables_relevant: 'no',
+          'assets-completed': 'yes',
+          partner_investments_relevant: 'no',
+          partner_valuables_relevant: 'no',
+          'partner-assets-completed': 'yes',
+        },
+        context: ADULT,
+        complete: true,
+      },
+      {
+        name: 'under-18 CLR exemption',
+        answers: { 'immigration-or-asylum': 'no', 'controlled-legal-representation': 'yes' },
+        context: MINOR,
+        complete: true,
+      },
+      {
+        name: 'under-18 aggregated means route',
+        answers: {
+          'immigration-or-asylum': 'no',
+          'controlled-legal-representation': 'no',
+          'aggregated-means': 'yes',
+        },
+        context: MINOR,
+        missing: 'applicant',
+      },
+      {
+        name: 'under-18 regular income means route',
+        answers: {
+          'immigration-or-asylum': 'no',
+          'controlled-legal-representation': 'no',
+          'aggregated-means': 'no',
+          'regular-income': 'yes',
+        },
+        context: MINOR,
+        missing: 'applicant',
+      },
+      {
+        name: 'under-18 assets means route',
+        answers: {
+          'immigration-or-asylum': 'no',
+          'controlled-legal-representation': 'no',
+          'aggregated-means': 'no',
+          'regular-income': 'no',
+          'under-18-assets': 'yes',
+        },
+        context: MINOR,
+        missing: 'applicant',
+      },
+      {
+        name: 'under-18 no-means exemption',
+        answers: {
+          'immigration-or-asylum': 'no',
+          'controlled-legal-representation': 'no',
+          'aggregated-means': 'no',
+          'regular-income': 'no',
+          'under-18-assets': 'no',
+        },
+        context: MINOR,
+        complete: true,
+      },
+    ]
+
+    for (const route of matrix) {
+      const { name, answers, context } = route
+      expect(isControlledWorkComplete(answers, context), name).to.equal(route.complete ?? false)
+      expect(getFirstMissingStep(answers, context), name).to.equal(route.missing ? STEPS[route.missing] : undefined)
+    }
+  })
+
+  it('has a redirect from the incomplete hub for every controlled-work step code', () => {
+    const redirects = JSON.stringify(CONTROLLED_WORK_INCOMPLETE_STEP_REDIRECTS)
+    const incompleteHubAccess = JSON.stringify(controlledWorkIncompleteStep.onAccess)
+
+    expect(CONTROLLED_WORK_INCOMPLETE_STEP_REDIRECTS).to.have.length(CONTROLLED_WORK_STEP_CODE_LIST.length)
+    for (const stepCode of CONTROLLED_WORK_STEP_CODE_LIST) {
+      expect(redirects).to.include(stepCode)
+    }
+    expect(incompleteHubAccess).to.include(CONTROLLED_WORK_DATA_KEYS.complete)
+    expect(incompleteHubAccess).to.include(controlledWorkCompleteStepCode)
+  })
+
   describe('derived age', () => {
     const now = new Date('2026-06-15T12:00:00Z')
 
@@ -285,6 +457,24 @@ describe('Controlled-work journey rules', () => {
         stepCode: STEPS.partnerIncome,
         answerCodes: ['partner-income-completed'],
       })
+    })
+
+    it('routes from partner additional property to client assets and then partner assets', () => {
+      const answers: ControlledWorkAnswers = {
+        'immigration-or-asylum': 'no',
+        partner: 'yes',
+        passporting: 'yes',
+        'partner-over-60': 'no',
+        'property-owned': 'none',
+        'additional-property-owned': 'none',
+        'partner-additional-property-owned': 'none',
+      }
+
+      expect(getNextStep(STEPS.partnerAdditionalProperty, answers, ADULT)).to.equal(STEPS.assets)
+      expect(getFirstMissingStep(answers, ADULT)).to.equal(STEPS.assets)
+      expect(
+        getNextStep(STEPS.assets, { ...answers, 'assets-completed': 'yes' }, ADULT),
+      ).to.equal(STEPS.partnerAssets)
     })
 
     it('goes back to the previous applicable step so a user can revisit earlier pages', () => {

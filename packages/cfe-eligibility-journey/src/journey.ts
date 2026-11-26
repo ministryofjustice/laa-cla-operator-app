@@ -26,6 +26,7 @@ import { discardStep } from './discardChangesPage/discardChangesStep.js'
 import { submissionReadyStep } from './submissionReadyPage/submissionReadyStep.js'
 import { ControlledWorkEffects } from './controlledWork/controlledWorkEffects.js'
 import { controlledWorkIncompleteStep } from './controlledWork/controlledWorkIncompleteStep.js'
+import { controlledWorkCompleteStep } from './controlledWork/controlledWorkCompleteStep.js'
 import { immigrationOrAsylumStep } from './immigrationOrAsylumPage/immigrationOrAsylumStep.js'
 import { under18ClrStep } from './under18ClrPage/under18ClrStep.js'
 import { aggregatedMeansStep } from './aggregatedMeansPage/aggregatedMeansStep.js'
@@ -147,5 +148,6 @@ export const eligibilityJourney = journey({
     partnerDependantsStep,
     discardStep,
     submissionReadyStep,
+    controlledWorkCompleteStep,
   ],
 })

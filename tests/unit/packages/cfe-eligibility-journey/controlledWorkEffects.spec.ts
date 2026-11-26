@@ -2,7 +2,10 @@ import { expect } from 'chai'
 import type { EffectFunctionContext } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { FinancialEligibilityEffectsRegistry } from '#packages/cfe-eligibility-journey/src/effects.js'
 import '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
-import { CONTROLLED_WORK_DATA_KEYS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
+import {
+  CONTROLLED_WORK_DATA_KEYS,
+  resolveActiveControlledWorkData,
+} from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
 import {
   readControlledWorkAnswers,
   writeControlledWorkAnswers,
@@ -95,6 +98,66 @@ describe('Controlled-work effects', () => {
       STEPS.asylumSupport,
     ])
     expect(data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.immigrationOrAsylumType)
+    expect(data.get(CONTROLLED_WORK_DATA_KEYS.complete)).to.equal(false)
+  })
+
+  it('sets the completion flag when the resolved route has no further questions', () => {
+    const session = newSession()
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylum, { 'immigration-or-asylum': 'yes' })
+    save(session, ADULT_DOB, STEPS.immigrationOrAsylumType, { 'immigration-or-asylum-type': 'asylum' })
+
+    const completed = save(session, ADULT_DOB, STEPS.asylumSupport, { 'asylum-support': 'yes' })
+
+    expect(completed.data.get(CONTROLLED_WORK_DATA_KEYS.complete)).to.equal(true)
+    expect(completed.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal('')
+  })
+
+  it('projects only this case’s resolved answers and applicable repeating collections', () => {
+    const session = newSession()
+    const answers: ControlledWorkAnswers = {
+      'immigration-or-asylum': 'no',
+      partner: 'no',
+      passporting: 'yes',
+      'property-owned': 'none',
+      'additional-property-owned': 'none',
+      investments_relevant: 'no',
+      valuables_relevant: 'no',
+      'assets-completed': 'yes',
+    }
+    writeControlledWorkAnswers(session, CASE_ID, answers)
+    session.casePatternDrafts = {
+      [CASE_ID]: {
+        [STEPS.assets]: {
+          [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '0', account_in_dispute: false }],
+        },
+        [STEPS.partnerAssets]: {
+          [CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection]: [{ amount: '250' }],
+        },
+        [STEPS.additionalPropertyDetails]: {
+          [CONTROLLED_WORK_DATA_KEYS.additionalPropertyCollection]: [{ house_value: '100000' }],
+        },
+      },
+      CASE2: {
+        [STEPS.assets]: {
+          [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '900' }],
+        },
+      },
+    }
+
+    const active = resolveActiveControlledWorkData(session, CASE_ID, { isUnder18: false })
+
+    expect(active.answers).to.include({
+      'immigration-or-asylum': 'no',
+      'property-owned': 'none',
+      'additional-property-owned': 'none',
+      'assets-completed': 'yes',
+    })
+    expect(active.collections).to.deep.equal({
+      [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '0', account_in_dispute: false }],
+    })
+    expect(active.collections[CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]).not.to.equal(
+      session.casePatternDrafts?.[CASE_ID]?.[STEPS.assets]?.[CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection],
+    )
   })
 
   it('persists and prepopulates property ownership, replaces changed choices, and prunes it when partner context changes', () => {
@@ -565,7 +628,11 @@ describe('Controlled-work effects', () => {
     save(session, ADULT_DOB, STEPS.partnerDetails, { 'partner-over-60': 'no' })
     save(session, ADULT_DOB, STEPS.property, { 'property-owned': 'none' })
     save(session, ADULT_DOB, STEPS.additionalProperty, { 'additional-property-owned': 'none' })
-    save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, { 'partner-additional-property-owned': 'none' })
+    const partnerProperty = save(session, ADULT_DOB, STEPS.partnerAdditionalProperty, {
+      'partner-additional-property-owned': 'none',
+    })
+    expect(partnerProperty.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.assets)
+    expect(partnerProperty.data.get(CONTROLLED_WORK_DATA_KEYS.firstMissingStep)).to.equal(STEPS.assets)
 
     const clientAssets = save(session, ADULT_DOB, STEPS.assets, {
       investments_relevant: 'no',
@@ -678,9 +745,10 @@ describe('Controlled-work effects', () => {
       ['house_value', 'inline_owned_with_mortgage', 'mortgage', 'percentage_owned'],
     )
     registry.NormalizePartnerAdditionalPropertyDetails.evaluate(page.context)
-    save(session, ADULT_DOB, STEPS.partnerAdditionalPropertyDetails, {})
+    const completed = save(session, ADULT_DOB, STEPS.partnerAdditionalPropertyDetails, {})
 
     expect(readControlledWorkAnswers(session, CASE_ID)['partner-additional-property-details-completed']).to.equal('yes')
+    expect(completed.data.get(CONTROLLED_WORK_DATA_KEYS.nextStep)).to.equal(STEPS.assets)
     expect(
       session.casePatternDrafts?.[CASE_ID]?.[STEPS.partnerAdditionalPropertyDetails]?.[
         CONTROLLED_WORK_DATA_KEYS.partnerAdditionalPropertyCollection
