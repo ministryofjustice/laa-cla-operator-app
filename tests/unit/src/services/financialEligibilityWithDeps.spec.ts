@@ -4,6 +4,7 @@ import { createTestEffectContext } from "@ministryofjustice/hmpps-forge/core/tes
 import type { Deps } from "#packages/cfe-eligibility-journey/src/api.js";
 import type { FinancialEligibilitySession } from "#packages/cfe-eligibility-journey/src/context.type.js";
 import { FinancialEligibilityEffectsWithDepsImpl } from "#src/services/financialEligibilityWithDeps.js";
+import { CONTROLLED_WORK_DATA_KEYS } from "#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js";
 
 const deps = {} as Deps;
 
@@ -93,6 +94,111 @@ describe("FinancialEligibilityEffectsWithDepsImpl", () => {
     const effects = new FinancialEligibilityEffectsWithDepsImpl({
       loadCase: sinon.stub(),
       getBenefitTypeSuggestions: sinon.stub().resolves([]),
+    });
+
+    it("sends an incomplete controlled-work review to its earliest missing question", async () => {
+      const effects = new FinancialEligibilityEffectsWithDepsImpl({
+        loadCase: sinon.stub(),
+        getBenefitTypeSuggestions: sinon.stub().resolves([]),
+      });
+      const context = createTestEffectContext({
+        params: { caseId: "CASE1" },
+        data: {
+          clientDateOfBirth: "1990-01-01",
+          [CONTROLLED_WORK_DATA_KEYS.controlledJourney]: true,
+          [CONTROLLED_WORK_DATA_KEYS.childcareEligible]: false,
+        },
+        session: {
+          financialEligibilityDrafts: {
+            CASE1: {
+              "immigration-or-asylum": "yes",
+              "immigration-or-asylum-type": "asylum",
+            },
+          },
+        },
+      });
+
+      await effects.ValidateDraftAnswers(deps, context);
+
+      expect(context.getData("submissionMissingStep")).to.equal(
+        "asylum-support",
+      );
+    });
+
+    it("does not mark incomplete controlled-work answers ready for payload construction", async () => {
+      const effects = new FinancialEligibilityEffectsWithDepsImpl({
+        loadCase: sinon.stub(),
+        getBenefitTypeSuggestions: sinon.stub().resolves([]),
+      });
+      const context = createTestEffectContext({
+        params: { caseId: "CASE1" },
+        data: {
+          clientDateOfBirth: "1990-01-01",
+          [CONTROLLED_WORK_DATA_KEYS.controlledJourney]: true,
+          [CONTROLLED_WORK_DATA_KEYS.childcareEligible]: false,
+        },
+        session: {
+          financialEligibilityDrafts: {
+            CASE1: {
+              "immigration-or-asylum": "yes",
+              "immigration-or-asylum-type": "asylum",
+            },
+          },
+        },
+      });
+
+      await effects.PrepareSubmission(deps, context);
+
+      const session =
+        context.getSession() as unknown as FinancialEligibilitySession;
+      expect(context.getData("submissionMissingStep")).to.equal(
+        "asylum-support",
+      );
+      expect(session.preparedControlledWork?.CASE1).to.equal(undefined);
+    });
+
+    it("marks a complete controlled-work assessment ready without calling CFE or copying its answers", async () => {
+      const effects = new FinancialEligibilityEffectsWithDepsImpl({
+        loadCase: sinon.stub(),
+        getBenefitTypeSuggestions: sinon.stub().resolves([]),
+      });
+      const dateOfBirth = `${new Date().getFullYear() - 10}-01-01`;
+      const session = {
+        financialEligibilityDrafts: {
+          CASE1: {
+            "immigration-or-asylum": "no",
+            "controlled-legal-representation": "yes",
+          },
+        },
+      };
+      const context = createTestEffectContext({
+        params: { caseId: "CASE1" },
+        data: {
+          clientDateOfBirth: dateOfBirth,
+          [CONTROLLED_WORK_DATA_KEYS.controlledJourney]: true,
+          [CONTROLLED_WORK_DATA_KEYS.childcareEligible]: false,
+        },
+        session,
+      });
+
+      await effects.PrepareSubmission(deps, context);
+
+      const storedSession =
+        context.getSession() as unknown as FinancialEligibilitySession;
+      expect(storedSession.preparedControlledWork?.CASE1).to.deep.equal({
+        clientDateOfBirth: dateOfBirth,
+      });
+      expect(storedSession.preparedEligibilitySnapshots?.CASE1).to.equal(
+        undefined,
+      );
+      expect(storedSession.financialEligibilityDrafts?.CASE1).to.deep.equal(
+        session.financialEligibilityDrafts.CASE1,
+      );
+      expect(context.getData("submissionMissingStep")).to.equal("");
+
+      await effects.CheckPreparedSubmission(deps, context);
+
+      expect(context.getData("preparedSubmissionExists")).to.equal(true);
     });
     const session: Record<string, unknown> = {};
     const context = createTestEffectContext({

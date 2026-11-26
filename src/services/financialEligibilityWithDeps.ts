@@ -15,6 +15,12 @@ import {
 } from "#packages/cfe-eligibility-journey/src/index.js";
 import { CONTROLLED_WORK_DATA_KEYS } from "#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js";
 import {
+  deriveControlledWorkContext,
+  findMissingSteps,
+  isControlledWorkComplete,
+} from "#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSteps.js";
+import { readControlledWorkAnswers } from "#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkSession.js";
+import {
   clearEligibilitySubmissionError,
   invalidatePreparedEligibilitySnapshot,
 } from "#packages/cfe-eligibility-journey/src/draftState.js";
@@ -115,10 +121,47 @@ function setValidationResult(
     context.setData("submissionValidationStep", missing.stepPath);
     return;
   }
-
   clearEligibilitySubmissionError(session, caseId);
   context.setData("submissionMissingStep", "");
   context.setData("submissionValidationStep", "");
+}
+
+/**
+ * Validates controlled-work answers with the shared route definitions.
+ * @param {EffectFunctionContext} context The Forge page context
+ * @param {FinancialEligibilitySession} session The session containing the case draft
+ * @param {string} caseId The current case identifier
+ * @returns {{answerCode: string, stepPath: string} | undefined} The first missing question, if any
+ */
+function controlledWorkMissingAnswer(
+  context: EffectFunctionContext,
+  session: FinancialEligibilitySession,
+  caseId: string,
+): { answerCode: string; stepPath: string } | undefined {
+  const answers = readControlledWorkAnswers(session, caseId);
+  if (answers["immigration-or-asylum"] === undefined) return undefined;
+  const journeyContext = {
+    ...deriveControlledWorkContext(
+      context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY),
+      new Date(),
+    ),
+    eligibleForChildcareCosts:
+      context.getData(CONTROLLED_WORK_DATA_KEYS.childcareEligible) === true,
+  };
+  const missing = findMissingSteps(answers, journeyContext)[0];
+  if (missing) {
+    return {
+      answerCode: missing.answerCodes[0] ?? missing.stepCode,
+      stepPath: missing.stepCode,
+    };
+  }
+  if (!isControlledWorkComplete(answers, journeyContext)) {
+    return {
+      answerCode: "controlled-work-incomplete",
+      stepPath: "controlled-work-incomplete",
+    };
+  }
+  return undefined;
 }
 
 /**
@@ -229,6 +272,18 @@ export class FinancialEligibilityEffectsWithDepsImpl implements FinancialEligibi
   ): Promise<void> => {
     const caseId = getCaseId(context);
     const session = getSession(context);
+    const controlledWorkMissing = controlledWorkMissingAnswer(
+      context,
+      session,
+      caseId,
+    );
+    if (
+      readControlledWorkAnswers(session, caseId)["immigration-or-asylum"] !==
+      undefined
+    ) {
+      setValidationResult(context, session, caseId, controlledWorkMissing);
+      return;
+    }
     const missing = findFirstMissingEligibilityAnswer(
       context.getAllAnswers(),
       getCaseProperties(session, caseId),
@@ -248,6 +303,30 @@ export class FinancialEligibilityEffectsWithDepsImpl implements FinancialEligibi
   ): Promise<void> => {
     const caseId = getCaseId(context);
     const session = getSession(context);
+    const controlledWorkMissing = controlledWorkMissingAnswer(
+      context,
+      session,
+      caseId,
+    );
+    if (
+      readControlledWorkAnswers(session, caseId)["immigration-or-asylum"] !==
+      undefined
+    ) {
+      setValidationResult(context, session, caseId, controlledWorkMissing);
+      if (controlledWorkMissing) {
+        invalidatePreparedEligibilitySnapshot(session, caseId);
+        return;
+      }
+
+      invalidatePreparedEligibilitySnapshot(session, caseId);
+      session.preparedControlledWork ??= {};
+      const dateOfBirth = context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY);
+      session.preparedControlledWork[caseId] =
+        typeof dateOfBirth === "string"
+          ? { clientDateOfBirth: dateOfBirth }
+          : {};
+      return;
+    }
     const answers = context.getAllAnswers();
     const properties = getCaseProperties(session, caseId);
     const missing = findFirstMissingEligibilityAnswer(answers, properties);
@@ -280,6 +359,28 @@ export class FinancialEligibilityEffectsWithDepsImpl implements FinancialEligibi
   ): Promise<void> => {
     const caseId = getCaseId(context);
     const session = getSession(context);
+    if (
+      readControlledWorkAnswers(session, caseId)["immigration-or-asylum"] !==
+      undefined
+    ) {
+      const prepared = session.preparedControlledWork?.[caseId];
+      const dateOfBirth = context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY);
+      const hasCurrentDob =
+        typeof dateOfBirth === "string"
+          ? prepared?.clientDateOfBirth === dateOfBirth
+          : prepared?.clientDateOfBirth === undefined;
+      const answers = readControlledWorkAnswers(session, caseId);
+      const journeyContext = {
+        ...deriveControlledWorkContext(dateOfBirth, new Date()),
+        eligibleForChildcareCosts:
+          context.getData(CONTROLLED_WORK_DATA_KEYS.childcareEligible) === true,
+      };
+      const exists =
+        hasCurrentDob && isControlledWorkComplete(answers, journeyContext);
+      if (!exists) invalidatePreparedEligibilitySnapshot(session, caseId);
+      context.setData("preparedSubmissionExists", exists);
+      return;
+    }
     const snapshot = session.preparedEligibilitySnapshots?.[caseId];
     const currentDob = context.getData(CLIENT_DATE_OF_BIRTH_DATA_KEY);
     const hasCurrentDob =

@@ -14,6 +14,7 @@ export type FinancialEligibilitySession = Session & {
   discardReturnPaths?: Record<string, string>; // last forge journey page visited before the discard interruption page, keyed by caseId
   controlledWorkAnswers?: Record<string, ControlledWorkAnswers>; // Legacy controlled-work answers, migrated into financialEligibilityDrafts on write
   preparedEligibilitySnapshots?: Record<string, EligibilityAnswerSnapshot>;
+  preparedControlledWork?: Record<string, { clientDateOfBirth?: string }>;
   eligibilitySubmissionErrors?: Record<string, string>;
   controlledWorkChangeLoops?: Record<string, ControlledWorkChangeLoop>; // cases with an active controlled-work change-answer loop, keyed by caseId
 }

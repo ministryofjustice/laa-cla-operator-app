@@ -4,7 +4,7 @@ import { GovUKBody, GovUKHeading, GovUKInsetText } from '@ministryofjustice/hmpp
 import { step, type StepDefinition } from '../authoring.js'
 import { CONTROLLED_WORK_DATA_KEYS } from './controlledWorkEffects.js'
 import { CONTROLLED_WORK_STEP_CODE_LIST } from './controlledWorkTypes.js'
-import { controlledWorkCompleteStepCode } from './controlledWorkCompleteStep.js'
+import { checkAnswersStepCode } from '../checkAnswersPage/checkAnswersStep.js'
 
 /** Sends a change-answer loop on to the step it chose, even when the saved step's own redirects don't name it */
 export const CONTROLLED_WORK_CHANGE_STEP_REDIRECTS = CONTROLLED_WORK_STEP_CODE_LIST.map((stepCode) =>
@@ -50,7 +50,7 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
         ...CONTROLLED_WORK_CHANGE_STEP_REDIRECTS,
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.complete).match(Condition.Equals(true)),
-          goto: controlledWorkCompleteStepCode,
+          goto: checkAnswersStepCode,
         }),
       ],
     }),

@@ -7,6 +7,9 @@ export function invalidatePreparedEligibilitySnapshot(
   if (session.preparedEligibilitySnapshots) {
     delete session.preparedEligibilitySnapshots[caseId]
   }
+  if (session.preparedControlledWork) {
+    delete session.preparedControlledWork[caseId]
+  }
 }
 
 export function clearEligibilitySubmissionError(

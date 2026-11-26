@@ -17,11 +17,11 @@ import {
   CONTROLLED_WORK_STEP_CODES as STEPS,
   type ControlledWorkAnswers,
 } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkTypes.js'
-import { controlledWorkCompleteStepCode } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkCompleteStep.js'
+import { checkAnswersStepCode } from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersStep.js'
 
 export const CASE_ID = 'CASE1'
 export const OTHER_CASE_ID = 'CASE2'
-export const COMPLETE = controlledWorkCompleteStepCode
+export const COMPLETE = checkAnswersStepCode
 export const CANNOT_USE_SERVICE = 'cannot-use-service'
 
 const JOURNEY_PATH = `/cases/${CASE_ID}/cfe-eligibility/change`

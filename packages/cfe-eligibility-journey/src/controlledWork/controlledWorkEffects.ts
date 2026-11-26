@@ -41,6 +41,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   firstMissingStep: 'controlledWorkFirstMissingStep',
   changeNextStep: 'controlledWorkChangeNextStep',
   complete: 'controlledWorkComplete',
+  controlledJourney: 'controlledWorkJourney',
   dependantIncomeCollection: 'dependant_incomes',
   dependantIncomeMaxRows: 'controlledWorkDependantIncomeMaxRows',
   incomeCollection: 'incomes',
@@ -58,6 +59,8 @@ export const CONTROLLED_WORK_DATA_KEYS = {
 export interface ControlledWorkEffectShape {
   /** Loads the case's saved controlled-work answers into Forge, removing any that no longer apply */
   RestoreControlledWorkAnswers: () => EffectFunctionExpr
+  /** Exposes only active case-scoped repeating rows to the check-answers page */
+  PrepareCheckAnswers: () => EffectFunctionExpr
   /** Starts a change-answer loop when the request carries `?change=true`, so later saves follow CCQ's change routing */
   StartControlledWorkChange: () => EffectFunctionExpr
   /** Ends the case's change-answer loop once the journey has returned to its answers-complete page */
@@ -633,6 +636,7 @@ function setJourneyData(context: EffectFunctionContext, answers: ControlledWorkA
   context.setData(CONTROLLED_WORK_DATA_KEYS.applicableSteps, steps)
   context.setData(CONTROLLED_WORK_DATA_KEYS.firstMissingStep, getFirstMissingStep(answers, journeyContext) ?? NO_STEP)
   context.setData(CONTROLLED_WORK_DATA_KEYS.complete, isControlledWorkComplete(answers, journeyContext))
+  context.setData(CONTROLLED_WORK_DATA_KEYS.controlledJourney, answers['immigration-or-asylum'] !== undefined)
   context.setData(CONTROLLED_WORK_DATA_KEYS.childcareEligible, journeyContext.eligibleForChildcareCosts === true)
 }
 
@@ -680,6 +684,18 @@ export function resolveActiveControlledWorkData(
   }
 
   return { answers, collections }
+}
+
+function prepareCheckAnswers(context: EffectFunctionContext): void {
+  const caseId = getCaseId(context)
+  const session = context.getSession() as FinancialEligibilitySession | undefined
+  if (!caseId || !session) return
+
+  const journeyContext = getControlledWorkContext(context)
+  const active = resolveActiveControlledWorkData(session, caseId, journeyContext)
+  for (const [, collectionCode] of CONTROLLED_WORK_REPEATING_COLLECTIONS) {
+    context.setData(collectionCode, active.collections[collectionCode] ?? [])
+  }
 }
 
 /**
@@ -1051,6 +1067,11 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         changeNextStep !== undefined && steps.includes(changeNextStep) ? changeNextStep : NO_STEP,
       )
     },
+  ),
+
+  PrepareCheckAnswers: FinancialEligibilityEffectsRegistry.register(
+    'PrepareCheckAnswers',
+    () => (context: EffectFunctionContext) => prepareCheckAnswers(context),
   ),
 
   StartControlledWorkChange: FinancialEligibilityEffectsRegistry.register(

@@ -23,7 +23,7 @@ import {
   controlledWorkIncompleteStep,
 } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkIncompleteStep.js'
 import { CONTROLLED_WORK_DATA_KEYS } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkEffects.js'
-import { controlledWorkCompleteStepCode } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkCompleteStep.js'
+import { checkAnswersStepCode } from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersStep.js'
 
 const ADULT: ControlledWorkContext = { isUnder18: false }
 const MINOR: ControlledWorkContext = { isUnder18: true }
@@ -191,7 +191,7 @@ describe('Controlled-work journey rules', () => {
       expect(redirects).to.include(stepCode)
     }
     expect(incompleteHubAccess).to.include(CONTROLLED_WORK_DATA_KEYS.complete)
-    expect(incompleteHubAccess).to.include(controlledWorkCompleteStepCode)
+    expect(incompleteHubAccess).to.include(checkAnswersStepCode)
   })
 
   describe('derived age', () => {

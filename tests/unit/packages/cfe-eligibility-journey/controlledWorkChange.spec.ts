@@ -30,7 +30,7 @@ import {
   CONTROLLED_WORK_CHANGE_STEP_REDIRECTS,
   controlledWorkIncompleteStep,
 } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkIncompleteStep.js'
-import { controlledWorkCompleteStep } from '#packages/cfe-eligibility-journey/src/controlledWork/controlledWorkCompleteStep.js'
+import { checkAnswersStep } from '#packages/cfe-eligibility-journey/src/checkAnswersPage/checkAnswersStep.js'
 import {
   CONTROLLED_WORK_STEP_CODE_LIST,
   CONTROLLED_WORK_STEP_CODES as STEPS,
@@ -445,7 +445,7 @@ describe('Controlled-work change-answer routing rules', () => {
     })
 
     it('ends the change loop on the complete page', () => {
-      expect(JSON.stringify(controlledWorkCompleteStep.onAccess)).to.include('EndControlledWorkChange')
+      expect(JSON.stringify(checkAnswersStep.onAccess)).to.include('EndControlledWorkChange')
     })
   })
 })

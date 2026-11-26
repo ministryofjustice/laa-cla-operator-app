@@ -152,6 +152,38 @@ describe('Controlled-work effects', () => {
       'additional-property-owned': 'none',
       'assets-completed': 'yes',
     })
+
+    it('prepares check-answer collections from the active case route only', () => {
+      const session = newSession()
+      writeControlledWorkAnswers(session, CASE_ID, {
+        'immigration-or-asylum': 'no',
+        partner: 'no',
+        passporting: 'yes',
+        'property-owned': 'none',
+        'additional-property-owned': 'none',
+        investments_relevant: 'no',
+        valuables_relevant: 'no',
+        'assets-completed': 'yes',
+      })
+      session.casePatternDrafts = {
+        [CASE_ID]: {
+          [STEPS.assets]: {
+            [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '0', account_in_dispute: false }],
+          },
+          [STEPS.partnerAssets]: {
+            [CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection]: [{ amount: '20' }],
+          },
+        },
+      }
+
+      const request = restore(session, ADULT_DOB)
+      registry.PrepareCheckAnswers.evaluate(request.context)
+
+      expect(request.data.get(CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection)).to.deep.equal([
+        { amount: '0', account_in_dispute: false },
+      ])
+      expect(request.data.get(CONTROLLED_WORK_DATA_KEYS.partnerAssetBankAccountCollection)).to.deep.equal([])
+    })
     expect(active.collections).to.deep.equal({
       [CONTROLLED_WORK_DATA_KEYS.assetBankAccountCollection]: [{ amount: '0', account_in_dispute: false }],
     })
