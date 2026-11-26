@@ -1,8 +1,12 @@
-import { Condition, Data } from '@ministryofjustice/hmpps-forge/core/authoring'
+import { access, Condition, Data } from '@ministryofjustice/hmpps-forge/core/authoring'
 import { GovUKBody, GovUKHeading, GovUKInsetText } from '@ministryofjustice/hmpps-forge/govuk-components'
 import { step, type StepDefinition } from '../authoring.js'
-import { CONTROLLED_WORK_DATA_KEYS } from './controlledWorkEffects.js'
+import { CONTROLLED_WORK_DATA_KEYS, ControlledWorkEffects } from './controlledWorkEffects.js'
 
+/**
+ * Where users land once every applicable question is answered, including at the end of a change-answer loop.
+ * It stands in for check answers until controlled-work check answers exist (spec checklist item 14).
+ */
 export const controlledWorkCompleteStepCode = 'controlled-work-answers-complete'
 
 export const controlledWorkCompleteStep: StepDefinition = step({
@@ -12,6 +16,7 @@ export const controlledWorkCompleteStep: StepDefinition = step({
   reachability: {
     entryWhen: Data(CONTROLLED_WORK_DATA_KEYS.complete).match(Condition.Equals(true)),
   },
+  onAccess: [access({ effects: [ControlledWorkEffects.EndControlledWorkChange()] })],
   blocks: [
     GovUKHeading({ text: 'Controlled-work answers complete', size: 'l' }),
     GovUKInsetText({

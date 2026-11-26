@@ -1,7 +1,7 @@
 import type { EffectFunctionContext } from '@ministryofjustice/hmpps-forge/core/authoring'
 import type { Session } from 'express-session'
 import type { EligibilityAnswerSnapshot } from './answerSnapshot.js'
-import type { ControlledWorkAnswers } from './controlledWork/controlledWorkTypes.js'
+import type { ControlledWorkAnswers, ControlledWorkChangeLoop } from './controlledWork/controlledWorkTypes.js'
 
 /**
  * Define what needs to be stored in the session for the financial eligibility
@@ -15,6 +15,7 @@ export type FinancialEligibilitySession = Session & {
   controlledWorkAnswers?: Record<string, ControlledWorkAnswers>; // Legacy controlled-work answers, migrated into financialEligibilityDrafts on write
   preparedEligibilitySnapshots?: Record<string, EligibilityAnswerSnapshot>;
   eligibilitySubmissionErrors?: Record<string, string>;
+  controlledWorkChangeLoops?: Record<string, ControlledWorkChangeLoop>; // cases with an active controlled-work change-answer loop, keyed by caseId
 }
 
 export type FinancialEligibilityEffectContext = EffectFunctionContext<

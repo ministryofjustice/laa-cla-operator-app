@@ -4,6 +4,7 @@ import {
   CONTROLLED_WORK_ANSWER_CODES,
   type ControlledWorkAnswerCode,
   type ControlledWorkAnswers,
+  type ControlledWorkStepCode,
 } from './controlledWorkTypes.js'
 
 const CONTROLLED_WORK_ANSWER_CODE_LIST: ControlledWorkAnswerCode[] = [...CONTROLLED_WORK_ANSWER_CODES]
@@ -82,6 +83,69 @@ export function clearControlledWorkAnswers(session: FinancialEligibilitySession,
     session.financialEligibilityDrafts = { ...session.financialEligibilityDrafts, [caseId]: draft }
   }
   clearLegacyControlledWorkAnswers(session, caseId)
+  endControlledWorkChange(session, caseId)
+}
+
+/**
+ * Starts (or restarts) a change-answer loop for a case. Edits are still saved immediately; the loop only changes where
+ * the journey goes after each save.
+ * @param {FinancialEligibilitySession} session The current session
+ * @param {string} caseId The case identifier
+ * @returns {void}
+ */
+export function startControlledWorkChange(session: FinancialEligibilitySession, caseId: string): void {
+  session.controlledWorkChangeLoops = { ...session.controlledWorkChangeLoops, [caseId]: {} }
+}
+
+/**
+ * Checks whether a case is in a change-answer loop.
+ * @param {FinancialEligibilitySession} session The current session
+ * @param {string} caseId The case identifier
+ * @returns {boolean} True while the loop is active
+ */
+export function isControlledWorkChangeActive(session: FinancialEligibilitySession, caseId: string): boolean {
+  return session.controlledWorkChangeLoops?.[caseId] !== undefined
+}
+
+/**
+ * Records where an active change-answer loop goes next. Does nothing when the case is not in a loop.
+ * @param {FinancialEligibilitySession} session The current session
+ * @param {string} caseId The case identifier
+ * @param {ControlledWorkStepCode | undefined} nextStep The next step, or undefined to return to check answers
+ * @returns {void}
+ */
+export function setControlledWorkChangeNextStep(
+  session: FinancialEligibilitySession,
+  caseId: string,
+  nextStep: ControlledWorkStepCode | undefined,
+): void {
+  if (!isControlledWorkChangeActive(session, caseId)) return
+  session.controlledWorkChangeLoops = { ...session.controlledWorkChangeLoops, [caseId]: { nextStep } }
+}
+
+/**
+ * Reads where an active change-answer loop goes next.
+ * @param {FinancialEligibilitySession} session The current session
+ * @param {string} caseId The case identifier
+ * @returns {ControlledWorkStepCode | undefined} The recorded next step, if any
+ */
+export function getControlledWorkChangeNextStep(
+  session: FinancialEligibilitySession,
+  caseId: string,
+): ControlledWorkStepCode | undefined {
+  return session.controlledWorkChangeLoops?.[caseId]?.nextStep
+}
+
+/**
+ * Ends a case's change-answer loop, leaving other cases and all answers alone.
+ * @param {FinancialEligibilitySession} session The current session
+ * @param {string} caseId The case identifier
+ * @returns {void}
+ */
+export function endControlledWorkChange(session: FinancialEligibilitySession, caseId: string): void {
+  if (!isControlledWorkChangeActive(session, caseId)) return
+  const { [caseId]: _ended, ...remaining } = session.controlledWorkChangeLoops ?? {}
+  session.controlledWorkChangeLoops = remaining
 }
 
 function clearLegacyControlledWorkAnswers(session: FinancialEligibilitySession, caseId: string): void {

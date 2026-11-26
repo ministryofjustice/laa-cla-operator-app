@@ -6,6 +6,14 @@ import { CONTROLLED_WORK_DATA_KEYS } from './controlledWorkEffects.js'
 import { CONTROLLED_WORK_STEP_CODE_LIST } from './controlledWorkTypes.js'
 import { controlledWorkCompleteStepCode } from './controlledWorkCompleteStep.js'
 
+/** Sends a change-answer loop on to the step it chose, even when the saved step's own redirects don't name it */
+export const CONTROLLED_WORK_CHANGE_STEP_REDIRECTS = CONTROLLED_WORK_STEP_CODE_LIST.map((stepCode) =>
+  redirect({
+    when: Data(CONTROLLED_WORK_DATA_KEYS.changeNextStep).match(Condition.Equals(stepCode)),
+    goto: stepCode,
+  }),
+)
+
 export const controlledWorkIncompleteStepCode = 'controlled-work-incomplete'
 
 export const CONTROLLED_WORK_INCOMPLETE_STEP_REDIRECTS = CONTROLLED_WORK_STEP_CODE_LIST.map((stepCode) =>
@@ -39,6 +47,7 @@ export const controlledWorkIncompleteStep: StepDefinition = step({
     access({
       next: [
         ...CONTROLLED_WORK_INCOMPLETE_STEP_REDIRECTS,
+        ...CONTROLLED_WORK_CHANGE_STEP_REDIRECTS,
         redirect({
           when: Data(CONTROLLED_WORK_DATA_KEYS.complete).match(Condition.Equals(true)),
           goto: controlledWorkCompleteStepCode,

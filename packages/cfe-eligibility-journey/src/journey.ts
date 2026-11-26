@@ -77,6 +77,7 @@ export const eligibilityJourney = journey({
         FinancialEligibilityEffects.LoadCaseDetails(),
         FinancialEligibilityEffects.RestoreCaseDraft(),
         FinancialEligibilityEffects.ApplyClientAgeFromDob(),
+        ControlledWorkEffects.StartControlledWorkChange(),
         ControlledWorkEffects.RestoreControlledWorkAnswers(),
         FinancialEligibilityEffects.RestoreSubmissionError(),
         FinancialEligibilityEffects.SaveDiscardReturnPath(),

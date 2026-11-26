@@ -136,6 +136,7 @@ export default [
       "tests/playwright/utils/*", // Test utilities and helpers
       "tests/playwright/playwright.config.ts", // Playwright configuration file
       "tests/helpers/*", // Test helper utilities (if any remain)
+      "tests/unit/**/support/*", // Helpers shared by unit test specs
       "docs/source/javascripts/application.js", // Parsing error this file was not found by the project service. Consider either including it in the `tsconfig.json` or including it in `allowDefaultProject`
       "docs/source/javascripts/govuk_frontend.js", // Documentation JavaScript file, not part of main TypeScript project
       "eslint.config.js", // Parsing error this file was not found by the project service. Consider either including it in the `tsconfig.json` or including it in `allowDefaultProject`,

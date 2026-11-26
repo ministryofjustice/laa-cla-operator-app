@@ -14,7 +14,18 @@ import {
   isStepApplicable,
   resolveControlledWorkJourney,
 } from './controlledWorkSteps.js'
-import { mergeControlledWorkAnswers, readControlledWorkAnswers, writeControlledWorkAnswers } from './controlledWorkSession.js'
+import { reconcileControlledWorkAnswers } from './controlledWorkReconcile.js'
+import { getChangeAnswerNextStep } from './controlledWorkChange.js'
+import {
+  endControlledWorkChange,
+  getControlledWorkChangeNextStep,
+  isControlledWorkChangeActive,
+  mergeControlledWorkAnswers,
+  readControlledWorkAnswers,
+  setControlledWorkChangeNextStep,
+  startControlledWorkChange,
+  writeControlledWorkAnswers,
+} from './controlledWorkSession.js'
 import {
   CONTROLLED_WORK_ANSWER_CODES,
   CONTROLLED_WORK_STEP_CODES,
@@ -28,6 +39,7 @@ export const CONTROLLED_WORK_DATA_KEYS = {
   applicableSteps: 'controlledWorkApplicableSteps',
   nextStep: 'controlledWorkNextStep',
   firstMissingStep: 'controlledWorkFirstMissingStep',
+  changeNextStep: 'controlledWorkChangeNextStep',
   complete: 'controlledWorkComplete',
   dependantIncomeCollection: 'dependant_incomes',
   dependantIncomeMaxRows: 'controlledWorkDependantIncomeMaxRows',
@@ -46,6 +58,10 @@ export const CONTROLLED_WORK_DATA_KEYS = {
 export interface ControlledWorkEffectShape {
   /** Loads the case's saved controlled-work answers into Forge, removing any that no longer apply */
   RestoreControlledWorkAnswers: () => EffectFunctionExpr
+  /** Starts a change-answer loop when the request carries `?change=true`, so later saves follow CCQ's change routing */
+  StartControlledWorkChange: () => EffectFunctionExpr
+  /** Ends the case's change-answer loop once the journey has returned to its answers-complete page */
+  EndControlledWorkChange: () => EffectFunctionExpr
   /** Saves the step's posted answers, removes answers made irrelevant by the change and sets the next step */
   SaveControlledWorkAnswers: (stepCode: ControlledWorkStepCode) => EffectFunctionExpr
   /** Loads repeating dependant-income rows and limits them to the currently selected dependants */
@@ -666,6 +682,59 @@ export function resolveActiveControlledWorkData(
   return { answers, collections }
 }
 
+/**
+ * Reconciles every repeating collection with the resolved answers, removing rows of steps that no longer apply.
+ * Collections of steps that can't be judged yet (an earlier question is unanswered) are left exactly as saved.
+ * @param {FinancialEligibilitySession} session The session containing case-scoped pattern drafts
+ * @param {string} caseId The current case identifier
+ * @param {ControlledWorkAnswers} answers The resolved answers for the current route
+ * @param {ControlledWorkContext} journeyContext Facts derived from the case
+ * @param {readonly ControlledWorkStepCode[]} undecidedSteps Inapplicable steps whose data must be kept for now
+ * @returns {boolean} Whether any collection was removed or trimmed
+ */
+function reconcileCaseCollections(
+  session: FinancialEligibilitySession,
+  caseId: string,
+  answers: ControlledWorkAnswers,
+  journeyContext: ControlledWorkContext,
+  undecidedSteps: readonly ControlledWorkStepCode[],
+): boolean {
+  const kept = CONTROLLED_WORK_REPEATING_COLLECTIONS.map(([stepCode]) => stepCode)
+    .filter((stepCode) => undecidedSteps.includes(stepCode))
+    .flatMap((stepCode) => {
+      const pattern = session.casePatternDrafts?.[caseId]?.[stepCode]
+      return pattern === undefined ? [] : [[stepCode, pattern] as const]
+    })
+
+  const changes = [
+    reconcileDependantIncomeDrafts(session, caseId, answers),
+    reconcileIncomeDrafts(session, caseId, answers),
+    reconcilePartnerIncomeDrafts(session, caseId, answers),
+    reconcileBenefitDetailsDrafts(session, caseId, answers, {
+      patternCode: BENEFIT_DETAILS_PATTERN_CODE,
+      collectionCode: CONTROLLED_WORK_DATA_KEYS.benefitCollection,
+      gateAnswerCode: 'receives-benefits',
+    }),
+    reconcileBenefitDetailsDrafts(session, caseId, answers, {
+      patternCode: PARTNER_BENEFIT_DETAILS_PATTERN_CODE,
+      collectionCode: CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
+      gateAnswerCode: 'partner-receives-benefits',
+    }),
+    reconcileAdditionalPropertyDetailsDrafts(session, caseId, answers),
+    reconcilePartnerAdditionalPropertyDetailsDrafts(session, caseId, answers),
+    reconcileAssetBankAccountDrafts(session, caseId, answers, journeyContext),
+    reconcilePartnerAssetBankAccountDrafts(session, caseId, answers, journeyContext),
+  ]
+
+  const removed = kept.filter(([stepCode, pattern]) => session.casePatternDrafts?.[caseId]?.[stepCode] !== pattern)
+  if (removed.length > 0) {
+    const casePatterns = { ...session.casePatternDrafts?.[caseId] }
+    for (const [stepCode, pattern] of removed) casePatterns[stepCode] = pattern
+    session.casePatternDrafts = { ...session.casePatternDrafts, [caseId]: casePatterns }
+  }
+  return changes.filter(Boolean).length > removed.length
+}
+
 function getDependantIncomeMaximum(answers: ControlledWorkAnswers): number {
   const childCount = answers['child-dependants'] === 'yes' ? Number(answers['child-dependants-count'] ?? 0) : 0
   const adultCount = answers['adult-dependants'] === 'yes' ? Number(answers['adult-dependants-count'] ?? 0) : 0
@@ -963,61 +1032,44 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
 
       const saved = readControlledWorkAnswers(session, caseId)
       const journeyContext = getControlledWorkContext(context, saved)
-      const { answers, removedCodes } = resolveControlledWorkJourney(saved, journeyContext)
-      const dependantIncomeRowsChanged = reconcileDependantIncomeDrafts(session, caseId, answers)
-      const incomeRowsChanged = reconcileIncomeDrafts(session, caseId, answers)
-      const partnerIncomeRowsChanged = reconcilePartnerIncomeDrafts(session, caseId, answers)
-      const benefitRowsChanged = reconcileBenefitDetailsDrafts(
-        session,
-        caseId,
-        answers,
-        {
-          patternCode: BENEFIT_DETAILS_PATTERN_CODE,
-          collectionCode: CONTROLLED_WORK_DATA_KEYS.benefitCollection,
-          gateAnswerCode: 'receives-benefits',
-        },
-      )
-      const partnerBenefitRowsChanged = reconcileBenefitDetailsDrafts(
-        session,
-        caseId,
-        answers,
-        {
-          patternCode: PARTNER_BENEFIT_DETAILS_PATTERN_CODE,
-          collectionCode: CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
-          gateAnswerCode: 'partner-receives-benefits',
-        },
-      )
-      const additionalPropertyRowsChanged = reconcileAdditionalPropertyDetailsDrafts(session, caseId, answers)
-      const partnerAdditionalPropertyRowsChanged = reconcilePartnerAdditionalPropertyDetailsDrafts(
-        session,
-        caseId,
-        answers,
-      )
-      const assetBankAccountRowsChanged = reconcileAssetBankAccountDrafts(session, caseId, answers, journeyContext)
-      const partnerAssetBankAccountRowsChanged = reconcilePartnerAssetBankAccountDrafts(
-        session,
-        caseId,
-        answers,
+      const { answers, retained, removedCodes, undecidedSteps, steps } = reconcileControlledWorkAnswers(
+        saved,
         journeyContext,
+        isControlledWorkChangeActive(session, caseId),
       )
+      const collectionsChanged = reconcileCaseCollections(session, caseId, answers, journeyContext, undecidedSteps)
 
-      if (
-        removedCodes.length > 0 ||
-        dependantIncomeRowsChanged ||
-        incomeRowsChanged ||
-        partnerIncomeRowsChanged ||
-        benefitRowsChanged ||
-        partnerBenefitRowsChanged ||
-        additionalPropertyRowsChanged ||
-        partnerAdditionalPropertyRowsChanged ||
-        assetBankAccountRowsChanged ||
-        partnerAssetBankAccountRowsChanged
-      ) {
-        writeControlledWorkAnswers(session, caseId, answers)
+      if (removedCodes.length > 0 || collectionsChanged) {
+        writeControlledWorkAnswers(session, caseId, { ...retained, ...answers })
         invalidatePreparedEligibilitySnapshot(session, caseId)
       }
       syncForgeAnswers(context, answers)
       setJourneyData(context, answers, journeyContext)
+      const changeNextStep = getControlledWorkChangeNextStep(session, caseId)
+      context.setData(
+        CONTROLLED_WORK_DATA_KEYS.changeNextStep,
+        changeNextStep !== undefined && steps.includes(changeNextStep) ? changeNextStep : NO_STEP,
+      )
+    },
+  ),
+
+  StartControlledWorkChange: FinancialEligibilityEffectsRegistry.register(
+    'StartControlledWorkChange',
+    () => (context: EffectFunctionContext) => {
+      const caseId = getCaseId(context)
+      const session = context.getSession() as FinancialEligibilitySession | undefined
+      if (!caseId || !session || context.getQueryParam('change') !== 'true') return
+      startControlledWorkChange(session, caseId)
+    },
+  ),
+
+  EndControlledWorkChange: FinancialEligibilityEffectsRegistry.register(
+    'EndControlledWorkChange',
+    () => (context: EffectFunctionContext) => {
+      const caseId = getCaseId(context)
+      const session = context.getSession() as FinancialEligibilitySession | undefined
+      if (!caseId || !session) return
+      endControlledWorkChange(session, caseId)
     },
   ),
 
@@ -1050,41 +1102,21 @@ export const ControlledWorkEffects: ControlledWorkEffectShape = {
         delete merged['property-owned']
       }
       const journeyContext = getControlledWorkContext(context, merged)
-      const { answers } = resolveControlledWorkJourney(merged, journeyContext)
-      reconcileDependantIncomeDrafts(session, caseId, answers)
-      reconcileIncomeDrafts(session, caseId, answers)
-      reconcilePartnerIncomeDrafts(session, caseId, answers)
-      reconcileBenefitDetailsDrafts(
-        session,
-        caseId,
-        answers,
-        {
-          patternCode: BENEFIT_DETAILS_PATTERN_CODE,
-          collectionCode: CONTROLLED_WORK_DATA_KEYS.benefitCollection,
-          gateAnswerCode: 'receives-benefits',
-        },
-      )
-      reconcileAdditionalPropertyDetailsDrafts(session, caseId, answers)
-      reconcilePartnerAdditionalPropertyDetailsDrafts(session, caseId, answers)
-      reconcileAssetBankAccountDrafts(session, caseId, answers, journeyContext)
-      reconcilePartnerAssetBankAccountDrafts(session, caseId, answers, journeyContext)
-      reconcileBenefitDetailsDrafts(
-        session,
-        caseId,
-        answers,
-        {
-          patternCode: PARTNER_BENEFIT_DETAILS_PATTERN_CODE,
-          collectionCode: CONTROLLED_WORK_DATA_KEYS.partnerBenefitCollection,
-          gateAnswerCode: 'partner-receives-benefits',
-        },
-      )
+      const changing = isControlledWorkChangeActive(session, caseId)
+      const { answers, retained, undecidedSteps } = reconcileControlledWorkAnswers(merged, journeyContext, changing)
+      reconcileCaseCollections(session, caseId, answers, journeyContext, undecidedSteps)
 
-      writeControlledWorkAnswers(session, caseId, answers)
+      writeControlledWorkAnswers(session, caseId, { ...retained, ...answers })
       invalidatePreparedEligibilitySnapshot(session, caseId)
       clearEligibilitySubmissionError(session, caseId)
       syncForgeAnswers(context, answers)
       setJourneyData(context, answers, journeyContext)
-      context.setData(CONTROLLED_WORK_DATA_KEYS.nextStep, getNextStep(stepCode, answers, journeyContext) ?? NO_STEP)
+      const nextStep = changing
+        ? getChangeAnswerNextStep(stepCode, answers, journeyContext)
+        : getNextStep(stepCode, answers, journeyContext)
+      setControlledWorkChangeNextStep(session, caseId, changing ? nextStep : undefined)
+      context.setData(CONTROLLED_WORK_DATA_KEYS.nextStep, nextStep ?? NO_STEP)
+      context.setData(CONTROLLED_WORK_DATA_KEYS.changeNextStep, nextStep !== undefined && changing ? nextStep : NO_STEP)
     },
   ),
 

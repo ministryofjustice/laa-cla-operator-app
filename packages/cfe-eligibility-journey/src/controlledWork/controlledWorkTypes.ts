@@ -349,3 +349,17 @@ export interface ResolvedControlledWorkJourney {
   /** Answer codes that were present but no longer belong to an applicable step */
   removedCodes: ControlledWorkAnswerCode[]
 }
+
+export interface ReconciledControlledWorkJourney extends ResolvedControlledWorkJourney {
+  /** Saved answers kept inactive because their step could still become applicable once pending questions are answered */
+  retained: ControlledWorkAnswers
+  /** Steps that don't apply yet but could once pending questions are answered; their saved data is kept meanwhile */
+  undecidedSteps: ControlledWorkStepCode[]
+}
+
+/** A change-answer loop in progress for a case */
+export interface ControlledWorkChangeLoop {
+  /** The step the loop goes to next after the last save, used when a step's own redirects don't name it */
+  nextStep?: ControlledWorkStepCode
+}
+
