@@ -6,26 +6,33 @@ import { GovUKButton } from "@ministryofjustice/hmpps-forge/govuk-components";
 import { MOJSubNavigation } from "@ministryofjustice/hmpps-forge/moj-components";
 import { Data, Format } from "@ministryofjustice/hmpps-forge/core/authoring";
 
-export const clientHomeBlock = CollectionBlock({
+export const caseHomeBlockHeader = CollectionBlock({
   collection: [
     HtmlBlock({
       content: Format(
-        `<div class="moj-interruption-card">
-  <div class="card-header">
-    <h1 class="moj-interruption-card__heading">%1</h1>
-    <a class="govuk-link govuk-link--inverse" href="#">%2</a>
-  </div>
-
-  <div class="govuk-button-group moj-interruption-card__actions">
-    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">Manage Case</a>
-    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">Arrange CallBack</a>
-    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">Signpost to other help</a>
-  </div>
-</div>`,
+        `<div class="pageHeaderBanner">
+    <div class="pageHeaderBanner__inner">
+      <div class="pageHeaderBanner__identity">
+        <h1 class="govuk-heading-l pageHeaderBanner__name">%1</h1>
+        <span class="pageHeaderBanner__ref">%2</span>
+      </div>
+      
+      <div class="govuk-button-group pageHeaderBanner__actions">
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Manage case</a>
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Arrange callback</a>
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Signpost to other help</a>
+      </div>
+        </div>
+      </div>`,
         Data("case.full_name"),
         Data("case.reference"),
       ),
     }),
+  ],
+});
+
+export const clientHomeBlock = CollectionBlock({
+  collection: [
     MOJSubNavigation({
       label: "Case sections",
       // TODO: once sections are built add links to real pages
