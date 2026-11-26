@@ -14,7 +14,7 @@ export const caseHomeBlockHeader = CollectionBlock({
     <div class="pageHeaderBanner__inner">
       <div class="pageHeaderBanner__identity">
         <h1 class="govuk-heading-l pageHeaderBanner__name">%1</h1>
-        <span class="pageHeaderBanner__ref">%2</span>
+        <span class="pageHeaderBanner__ref govuk-body govuk-!-margin-bottom-0">%2</span>
       </div>
       
       <div class="govuk-button-group pageHeaderBanner__actions">

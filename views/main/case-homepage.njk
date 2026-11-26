@@ -4,17 +4,23 @@
 
 {% set backLinkUrl = "/dashboard" %}
 
+{% block pageHeader %}
+    {{ blocks[0] | safe }}
+{% endblock %}
+
 {% block content %}
     {% block backLink %}{% endblock %}
 
     <!-- Added a unique class to scope or exclude global styles -->
-    <div class="custom-page-layout">
-        <div class="">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds case-homepage">   
             <form method="post" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
                 {% for block in blocks %}
-                    {{ block | safe }}
+                    {% if not loop.first %}
+                        {{ block | safe }}
+                    {% endif %}
                 {% endfor %}
             </form>
             {% block afterForm %} {% endblock %}

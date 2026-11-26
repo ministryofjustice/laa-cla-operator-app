@@ -1,6 +1,6 @@
 //custom header
 :root {
-  --page-header-bg: #1d70b8;
+  --page-header-bg: #1d70b8; 
   --page-header-text: #ffffff;
 
   --page-header-name-size: 36px;
@@ -27,11 +27,6 @@ $ucd-gutter: 50px;
 
 .two-thirds-login {
   width: 80%;
-}
-
-//To move this back
-.govuk-main-wrapper {
-  padding-top: 0px !important;
 }
 
 @include govuk-media-query($from: desktop) {
@@ -118,15 +113,13 @@ $ucd-gutter: 50px;
 .pageHeaderBanner__name {
   margin: 0;
   color: var(--page-header-text);
-  font-size: var(--page-header-name-size);
   line-height: 1.1;
-  font-weight: 700;
+
 }
 
 .pageHeaderBanner__ref {
-  font-size: var(--page-header-ref-size);
   color: var(--page-header-text);
-  font-weight: 300;
+  
 }
 
 .pageHeaderBanner .pageHeaderBanner__actions {
