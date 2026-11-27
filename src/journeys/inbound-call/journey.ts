@@ -10,7 +10,7 @@ import {
   addressLookupStep2,
 } from "./address-lookup/step.js";
 
-import { clientCaseStep } from "./case/step.js";
+import { clientCaseStep } from "./case-homepage/step.js";
 
 // Define the journeys
 export const dashboardJourney = journey({
