@@ -83,7 +83,7 @@ export const clientHomeBlock = CollectionBlock({
 const thirdPartySummary = [
   GovUKSummaryList({
     visibleWhen: Data("case.thirdparty_details").match(Condition.IsRequired()),
-    card: { title: { text: "Third Party Details" } },
+    card: { title: { text: "Third party details" } },
     rows: [
       ...toRows({
         label: "Name",
@@ -131,12 +131,12 @@ const thirdPartySummary = [
     visibleWhen: Data("case.thirdparty_details").not.match(
       Condition.IsRequired(),
     ),
-    card: { title: { text: "Third Party Details" } },
+    card: { title: { text: "Third party details" } },
     rows: [
       {
         key: { text: "Third party" },
         value: {
-          html: '<a href="#" class="govuk-link">Enter third party details</a>',
+          html: '<a href="#" class="govuk-link">Enter details</a>',
         },
       },
     ],
@@ -146,6 +146,6 @@ const thirdPartySummary = [
 export const clientDetailsBlock = CollectionBlock({
   collection: [
     ...thirdPartySummary,
-    GovUKButton({ text: "Continue to Scope" }),
+    GovUKButton({ text: "Continue to scope" }),
   ],
 });
