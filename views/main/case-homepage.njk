@@ -5,7 +5,20 @@
 {% set backLinkUrl = "/dashboard" %}
 
 {% block pageHeader %}
-    {{ blocks[0] | safe }}
+    <div class="pageHeaderBanner">
+    <div class="pageHeaderBanner__inner">
+      <div class="pageHeaderBanner__identity">
+        <h1 class="govuk-heading-l pageHeaderBanner__name">{{ data.case.full_name }}</h1>
+        <span class="pageHeaderBanner__ref govuk-body govuk-!-margin-bottom-0">{{ data.case.reference }}</span>
+      </div>
+      
+      <div class="govuk-button-group pageHeaderBanner__actions">
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Manage case</a>
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Arrange callback</a>
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Signpost to other help</a>
+      </div>
+        </div>
+      </div>
 {% endblock %}
 
 {% block content %}
@@ -18,10 +31,9 @@
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
                 {% for block in blocks %}
-                    {% if not loop.first %}
                         {{ block | safe }}
-                    {% endif %}
                 {% endfor %}
+                
             </form>
             {% block afterForm %} {% endblock %}
         </div>
