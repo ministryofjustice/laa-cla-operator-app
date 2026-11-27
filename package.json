@@ -69,7 +69,7 @@
     "govuk-frontend": "^6.5.1",
     "helmet": "^8.1.0",
     "http-errors": "~2.0.0",
-    "i18next": "^26.4.7",
+    "i18next": "^26.7.2",
     "jsonwebtoken": "^9.0.3",
     "jwks-rsa": "^4.1.0",
     "libphonenumber-js": "^1.13.15",
