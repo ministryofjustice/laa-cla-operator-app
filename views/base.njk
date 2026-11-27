@@ -25,38 +25,30 @@
 
   {% include "header.njk" %}
   {{ govukServiceNavigation({
-    serviceName: config.SERVICE_NAME,
-    serviceUrl: "/receive-call",
-    navigation: [
-      {
-        href: "/receive-call",
-        text: "Receive calls",
-        current: true
-      },
-      {
-        href: "#",
-        text: "Make calls"
-      }
-    ]
+    serviceName: config.SERVICE_NAME
   }) }}
 {% endblock %}
 
 {% block beforeContent %}
+{% if feedBackLink %}
   {{ govukPhaseBanner({
     tag: {
       text: config.SERVICE_PHASE
     },
     html: t('components.phaseBanner.feedbackText') + t('components.phaseBanner.feedbackLinkTextHTML')
   }) }}
+{% endif %}
 
-  {% if backLinkUrl %}
-    {{ govukBackLink({
-      text: "Back",
-      href: backLinkUrl,
-      classes: "govuk-!-margin-bottom-6"
-    }) }}
-  {% endif %}
-  
+{% if backLinkUrl %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLinkUrl,
+    classes: "govuk-!-margin-bottom-4"
+  }) }}
+{% endif %}
+
+{% block pageHeader %}{% endblock %}
+
 {% endblock %}
 
 {% block content %}

@@ -1,0 +1,41 @@
+{% extends "base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% set backLinkUrl = "/dashboard" %}
+
+{% block pageHeader %}
+    <div class="pageHeaderBanner">
+    <div class="pageHeaderBanner__inner">
+      <div class="pageHeaderBanner__identity">
+        <h1 class="govuk-heading-l pageHeaderBanner__name">{{ data.case.full_name }}</h1>
+        <span class="pageHeaderBanner__ref govuk-body govuk-!-margin-bottom-0">{{ data.case.reference }}</span>
+      </div>
+      
+      <div class="govuk-button-group pageHeaderBanner__actions">
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Manage case</a>
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Arrange callback</a>
+        <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">Signpost to other help</a>
+      </div>
+        </div>
+      </div>
+{% endblock %}
+
+{% block content %}
+    {% block backLink %}{% endblock %}
+
+    <!-- Added a unique class to scope or exclude global styles -->
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds case-homepage">   
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+                {% for block in blocks %}
+                        {{ block | safe }}
+                {% endfor %}
+                
+            </form>
+            {% block afterForm %} {% endblock %}
+        </div>
+    </div>
+{% endblock %}

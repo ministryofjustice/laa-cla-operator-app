@@ -1,3 +1,19 @@
+//custom header
+:root {
+  --page-header-bg: #1d70b8;
+  --page-header-text: #ffffff;
+
+  --page-header-name-size: 36px;
+  --page-header-name-size-mobile: 32px;
+  --page-header-ref-size: 19px;
+
+  --page-header-max-width: 1378px;
+  --page-header-min-height: 81px;
+  --page-header-padding-y: 20px;
+  --page-header-padding-x: 55px;
+  --page-header-padding-x-mobile: 15px;
+}
+
 $govuk-page-width: 1280px;
 $moj-page-width: 1280px;
 
@@ -60,6 +76,73 @@ $ucd-gutter: 50px;
 .search-client-box {
   padding: govuk-spacing(5) govuk-spacing(5) govuk-spacing(1);
   margin: govuk-spacing(6) 0;
+}
+
+/* Outer layer: always full viewport width */
+.pageHeaderBanner {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-bottom: 20px;
+  background-color: var(--page-header-bg);
+  color: var(--page-header-text);
+}
+
+/* Inner layer: your layout spec */
+.pageHeaderBanner__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--page-header-max-width);
+  min-height: var(--page-header-min-height);
+  margin: 0 auto;
+  padding: var(--page-header-padding-y) var(--page-header-padding-x);
+}
+
+.pageHeaderBanner__identity {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.pageHeaderBanner__name {
+  margin: 0;
+  color: var(--page-header-text);
+  line-height: 1.1;
+}
+
+.pageHeaderBanner__ref {
+  color: var(--page-header-text);
+}
+
+.pageHeaderBanner .pageHeaderBanner__actions {
+  margin: 0;
+  align-items: center;
+}
+
+.pageHeaderBanner .pageHeaderBanner__actions .govuk-button {
+  margin-bottom: 0;
+}
+
+@media (max-width: 40.0525em) {
+  .pageHeaderBanner__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--page-header-padding-y) var(--page-header-padding-x-mobile);
+  }
+
+  .pageHeaderBanner__name {
+    font-size: var(--page-header-name-size-mobile);
+  }
+
+  .govuk-button-group {
+    gap: 15px;
+  }
 }
 
 .case-homepage {
