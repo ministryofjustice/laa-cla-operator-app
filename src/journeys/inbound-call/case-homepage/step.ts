@@ -1,5 +1,5 @@
 import { step } from "@ministryofjustice/hmpps-forge/core/authoring";
-import { clientHomeBlock } from "../case/block.js";
+import { clientHomeBlock } from "../case-homepage/block.js";
 
 export const clientCaseStep = step({
   code: "client-case-details",
@@ -7,6 +7,6 @@ export const clientCaseStep = step({
   title: "Client Homepage",
 
   reachability: { entryWhen: true },
-  view: { template: "main/client-homepage.njk" },
+  view: { template: "main/case-homepage.njk" },
   blocks: [clientHomeBlock],
 });
